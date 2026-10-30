@@ -235,16 +235,16 @@ export function RevenueTrendChart({
           {peakDay && peakDay.value > 0 && (
             <span>
               Peak Day:{" "}
-              <strong className="font-medium text-zinc-900">
+              <span className="font-medium text-zinc-900">
                 {fmtCurrency(peakDay.value, currency)}
-              </strong>
+              </span>
             </span>
           )}
           <span>
             Active Days:{" "}
-            <strong className="font-medium text-zinc-900">
+            <span className="font-medium text-zinc-900">
               {activeDaysCount}
-            </strong>
+            </span>
           </span>
           <span className="flex items-center gap-1">
             <span className="size-2 rounded-sm bg-[#F5D061]" />

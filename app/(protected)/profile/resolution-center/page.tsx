@@ -5,5 +5,9 @@ export const dynamic = "force-dynamic";
 
 export default async function GuestResolutionCenterPage() {
   await requirePageUser();
-  return <main className="px-4 sm:px-6 lg:px-8"><DirectResolutionCenter audience="guest" /></main>;
+  return (
+    <div className="w-full">
+      <DirectResolutionCenter audience="guest" />
+    </div>
+  );
 }

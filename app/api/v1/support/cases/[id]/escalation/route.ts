@@ -9,7 +9,13 @@ import { supportCaseService } from "@/services/support-case.service";
 
 export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ id: string }> };
-const schema = z.object({ expectedVersion: z.number().int().positive(), level: z.number().int().min(1).max(4), reason: z.string().min(1).max(2_000), escalationOwnerId: z.string().min(1).nullable().optional() });
+const schema = z.object({
+  expectedVersion: z.number().int().positive(),
+  level: z.number().int().min(1).max(4),
+  reason: z.string().min(1).max(2_000),
+  escalationOwnerId: z.string().min(1).nullable().optional(),
+  idempotencyKey: z.string().min(8).max(200).optional(),
+});
 
 export const POST = apiHandler(async (req: NextRequest, context: Context) => {
   const actor = await requireApiPermission(req, PERMISSIONS.DISPUTES_MANAGE);

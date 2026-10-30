@@ -7,7 +7,7 @@ import { LogoutButton } from "./logout-button";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { AdminBreadcrumb } from "./admin-breadcrumb";
 import { useLanguage } from "@/lib/i18n/language-context";
-import { refreshUnreadNotificationCount, resetUnreadNotificationCount, useUnreadNotificationCount } from "@/lib/notifications/unread-count-store";
+import { invalidateUnreadNotificationCount, refreshUnreadNotificationCount, resetUnreadNotificationCount, useUnreadNotificationCount } from "@/lib/notifications/unread-count-store";
 
 interface AdminHeaderProps {
   onToggleSidebar: () => void;
@@ -42,7 +42,21 @@ export function AdminHeader({
 
   useEffect(() => {
     resetUnreadNotificationCount();
-    if (hasUser) void refreshUnreadNotificationCount();
+    if (!hasUser) return;
+    void refreshUnreadNotificationCount();
+    const refresh = () => {
+      invalidateUnreadNotificationCount();
+      void refreshUnreadNotificationCount({ force: true });
+    };
+    const onVisible = () => { if (document.visibilityState === "visible") refresh(); };
+    const poll = window.setInterval(onVisible, 30_000);
+    window.addEventListener("homyz:notifications-updated", refresh);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearInterval(poll);
+      window.removeEventListener("homyz:notifications-updated", refresh);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [hasUser, user?.email]);
 
   return (

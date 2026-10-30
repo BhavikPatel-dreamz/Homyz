@@ -447,9 +447,9 @@ export function PropertyComparisonTable({
       <div className="mt-4 flex flex-col gap-3 text-xs font-normal text-zinc-500 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <span>
           {pagination.total} result{pagination.total === 1 ? "" : "s"} · Page{" "}
-          <strong className="font-medium text-zinc-900">
+          <span className="font-medium text-zinc-900">
             {pagination.page}
-          </strong>{" "}
+          </span>{" "}
           of {pagination.totalPages}
         </span>
 

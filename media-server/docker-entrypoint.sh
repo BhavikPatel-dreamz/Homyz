@@ -14,7 +14,8 @@ mkdir -p \
   "$DATA_DIR/avatars" \
   "$DATA_DIR/reviews" \
   "$DATA_DIR/dispute-evidence" \
-  "$DATA_DIR/moderation-evidence"
+  "$DATA_DIR/moderation-evidence" \
+  "$DATA_DIR/support-case-evidence"
 
 chown -R 999:999 "$DATA_DIR"
 

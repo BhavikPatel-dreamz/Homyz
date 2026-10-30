@@ -14,6 +14,7 @@ type Context = { params: Promise<{ id: string }> };
 const schema = z.object({
   content: z.string().min(1).max(10_000),
   visibility: z.nativeEnum(SupportCaseContentVisibility).optional(),
+  targetAudience: z.enum(["GUEST", "HOST", "ALL"]).optional(),
   idempotencyKey: z.string().min(8).max(200).optional(),
 });
 

@@ -507,6 +507,9 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
         currency={reporting.chart.currency || selectedTotals?.currency || "SAR"}
         selectedPointIndex={selectedPoint}
         onSelectPoint={setSelectedPoint}
+        onPeriodChange={handlePeriodChange}
+        onListingChange={(id) => update({ propertyId: id })}
+        onOpenCustomRange={() => setShowCompareModal(true)}
       />
 
       {/* ── Section C: Earnings Numerical KPI Cards (Numbers BELOW Chart) ── */}
@@ -528,6 +531,11 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
                 in {reporting.timeframeLabel || reporting.monthLabel}
               </span>
             </div>
+            {reporting.totalsByCurrency.length > 1 && (
+              <p className="mt-1 text-xs text-[#727272]">
+                Amounts stay separated by settlement currency.
+              </p>
+            )}
           </div>
 
           {/* Comparison Delta Callout */}

@@ -18,6 +18,7 @@ export const MEDIA_KINDS = Object.freeze([
   "reviews",
   "dispute-evidence",
   "moderation-evidence",
+  "support-case-evidence",
   "travel-covers",
   "travel-photos",
 ]);

@@ -332,7 +332,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
             if (window.history.length > 1) {
               router.back();
             } else {
-              router.push("/host/resolution-center");
+              router.push("/host/support");
             }
           }}
           aria-label="Back to Resolution Center"
@@ -343,7 +343,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           className="flex items-center gap-1.5 sm:gap-2 text-[#727272] min-w-0 py-0.5 overflow-hidden"
         >
           <Link
-            href="/host/resolution-center"
+            href="/host/support"
             className="shrink-0 font-normal hover:text-[#1F1F1F] transition-colors"
           >
             Case Details

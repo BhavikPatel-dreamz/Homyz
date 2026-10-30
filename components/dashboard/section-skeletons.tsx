@@ -165,74 +165,110 @@ export function ProfileManagementSkeleton() {
 
 export function SupportChatSkeleton() {
   return (
-    <div aria-label="Loading concierge chat" role="status" className="flex flex-col animate-pulse">
-      {/* Title Header Skeleton */}
-      <div className="mb-6 space-y-2 lg:mb-8">
-        <div className="h-9 w-72 rounded-lg bg-zinc-200 skeleton-shimmer" />
-        <div className="h-4 w-full max-w-xl rounded bg-zinc-100 skeleton-shimmer" />
+    <div aria-label="Loading Help & Support workspace" role="status" className="flex flex-col animate-pulse space-y-6">
+      {/* Page Header Skeleton */}
+      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-2">
+          <div className="h-8 w-48 rounded-lg bg-zinc-200 skeleton-shimmer sm:h-9 sm:w-60" />
+          <div className="h-4 w-72 rounded bg-zinc-100 skeleton-shimmer sm:w-96" />
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-32 rounded-full border border-zinc-200 bg-white skeleton-shimmer" />
+          <div className="h-9 w-44 rounded-full bg-zinc-900/10 skeleton-shimmer" />
+        </div>
       </div>
 
-      {/* Grid Layout matching SupportChatView */}
-      <div className="grid grid-cols-1 gap-5 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
-        {/* Live Chat Box Skeleton */}
-        <div className="flex h-[540px] min-w-0 flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-xs">
-          {/* Agent Header Bar */}
-          <div className="flex min-w-0 items-center justify-between gap-3 border-b border-zinc-200 bg-zinc-50 px-4 py-3 sm:px-5">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-zinc-200 skeleton-shimmer" />
-              <div className="space-y-1.5">
-                <div className="h-4 w-36 rounded bg-zinc-200 skeleton-shimmer" />
-                <div className="h-3 w-48 rounded bg-zinc-100 skeleton-shimmer" />
-              </div>
-            </div>
-            <div className="h-3 w-28 rounded bg-zinc-100 skeleton-shimmer max-[420px]:hidden" />
-          </div>
-
-          {/* Chat Messages Feed Skeleton */}
-          <div className="flex-1 overflow-hidden p-4 sm:p-6 space-y-4">
-            {/* Agent Message Bubble */}
-            <div className="flex flex-col items-start">
-              <div className="h-16 w-3/4 max-w-[85%] rounded-2xl rounded-bl-none bg-zinc-100 skeleton-shimmer" />
-              <div className="mt-1 h-2.5 w-12 rounded bg-zinc-100" />
-            </div>
-            {/* User Message Bubble */}
-            <div className="flex flex-col items-end">
-              <div className="h-10 w-1/2 max-w-[75%] rounded-2xl rounded-br-none bg-zinc-200 skeleton-shimmer" />
-              <div className="mt-1 h-2.5 w-12 rounded bg-zinc-100" />
-            </div>
-            {/* Agent Reply Bubble */}
-            <div className="flex flex-col items-start">
-              <div className="h-14 w-2/3 max-w-[85%] rounded-2xl rounded-bl-none bg-zinc-100 skeleton-shimmer" />
-              <div className="mt-1 h-2.5 w-12 rounded bg-zinc-100" />
+      {/* 4 Summary Cards Skeleton */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="flex items-center gap-3.5 rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-2xs">
+            <div className="size-11 shrink-0 rounded-full bg-zinc-100 skeleton-shimmer" />
+            <div className="space-y-1.5 flex-1">
+              <div className="h-6 w-12 rounded bg-zinc-200 skeleton-shimmer" />
+              <div className="h-3 w-20 rounded bg-zinc-100 skeleton-shimmer" />
             </div>
           </div>
+        ))}
+      </div>
 
-          {/* Quick Prompts Bar Skeleton */}
-          <div className="flex items-center gap-2 border-t border-zinc-200 bg-white px-4 py-2">
-            <div className="h-8 w-44 rounded-full bg-zinc-100 skeleton-shimmer" />
-            <div className="h-8 w-52 rounded-full bg-zinc-100 skeleton-shimmer" />
-            <div className="h-8 w-40 rounded-full bg-zinc-100 skeleton-shimmer" />
-          </div>
+      {/* Filter Tabs Skeleton */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="h-8 w-28 rounded-full bg-zinc-900/10 skeleton-shimmer" />
+        <div className="h-8 w-32 rounded-full bg-zinc-100 skeleton-shimmer" />
+        <div className="h-8 w-32 rounded-full bg-zinc-100 skeleton-shimmer" />
+        <div className="h-8 w-28 rounded-full bg-zinc-100 skeleton-shimmer" />
+      </div>
 
-          {/* Message Input Bar Skeleton */}
-          <div className="flex items-center gap-2 border-t border-zinc-200 bg-white p-3">
-            <div className="h-10 flex-1 rounded-full bg-zinc-100 skeleton-shimmer" />
-            <div className="h-10 w-20 rounded-full bg-zinc-200 skeleton-shimmer" />
-          </div>
-        </div>
+      {/* Search & Dropdown Filters Skeleton */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="h-10 rounded-xl border border-zinc-200 bg-white skeleton-shimmer sm:col-span-1" />
+        <div className="h-10 rounded-xl border border-zinc-200 bg-white skeleton-shimmer" />
+        <div className="h-10 rounded-xl border border-zinc-200 bg-white skeleton-shimmer" />
+      </div>
 
-        {/* Other Help Channels Sidebar Skeleton */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 xl:flex xl:flex-col">
+      {/* Two-Pane Workspace Skeleton */}
+      <div className="grid gap-6 xl:grid-cols-[minmax(280px,40%)_minmax(0,1fr)]">
+        {/* Left: Case List Skeleton */}
+        <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="space-y-3 rounded-lg border border-zinc-200 bg-white p-4 sm:p-5">
-              <div className="h-4 w-32 rounded bg-zinc-200 skeleton-shimmer" />
-              <div className="h-3.5 w-full rounded bg-zinc-100 skeleton-shimmer" />
-              <div className="h-3.5 w-4/5 rounded bg-zinc-100 skeleton-shimmer" />
-              <div className="pt-1">
-                <div className="h-4 w-28 rounded bg-zinc-200 skeleton-shimmer" />
+            <div key={i} className="flex gap-3.5 rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-2xs">
+              <div className="size-16 shrink-0 rounded-xl bg-zinc-100 skeleton-shimmer sm:size-20" />
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="h-3 w-24 rounded bg-zinc-200 skeleton-shimmer" />
+                  <div className="h-5 w-20 rounded-full bg-zinc-100 skeleton-shimmer" />
+                </div>
+                <div className="h-4 w-3/4 rounded bg-zinc-200 skeleton-shimmer" />
+                <div className="h-3 w-1/2 rounded bg-zinc-100 skeleton-shimmer" />
+                <div className="h-2.5 w-40 rounded bg-zinc-100 skeleton-shimmer pt-1" />
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Right: Selected Case Detail Skeleton */}
+        <div className="space-y-5 rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-2xs sm:p-6">
+          <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
+            <div className="h-3.5 w-28 rounded bg-zinc-100 skeleton-shimmer" />
+            <div className="h-6 w-24 rounded-full bg-zinc-100 skeleton-shimmer" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-3 w-28 rounded bg-zinc-200 skeleton-shimmer" />
+            <div className="h-6 w-3/4 rounded bg-zinc-200 skeleton-shimmer" />
+            <div className="h-4 w-full rounded bg-zinc-100 skeleton-shimmer" />
+          </div>
+          {/* Metadata Grid Skeleton */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[1, 2, 3, 4].map((j) => (
+              <div key={j} className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3 space-y-1.5">
+                <div className="h-2.5 w-14 rounded bg-zinc-200 skeleton-shimmer" />
+                <div className="h-3.5 w-20 rounded bg-zinc-100 skeleton-shimmer" />
+              </div>
+            ))}
+          </div>
+          {/* Tabs Skeleton */}
+          <div className="flex gap-4 border-b border-zinc-200 pt-2">
+            <div className="h-7 w-28 rounded-t bg-zinc-200 skeleton-shimmer" />
+            <div className="h-7 w-24 rounded-t bg-zinc-100 skeleton-shimmer" />
+            <div className="h-7 w-20 rounded-t bg-zinc-100 skeleton-shimmer" />
+          </div>
+          {/* Messages Feed Skeleton */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-start gap-3">
+              <div className="size-8 rounded-full bg-zinc-200 skeleton-shimmer" />
+              <div className="space-y-1.5 flex-1">
+                <div className="h-3 w-28 rounded bg-zinc-200 skeleton-shimmer" />
+                <div className="h-16 w-4/5 rounded-2xl bg-zinc-100 skeleton-shimmer" />
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="size-8 rounded-full bg-zinc-200 skeleton-shimmer" />
+              <div className="space-y-1.5 flex-1">
+                <div className="h-3 w-32 rounded bg-zinc-200 skeleton-shimmer" />
+                <div className="h-12 w-3/4 rounded-2xl bg-zinc-100 skeleton-shimmer" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

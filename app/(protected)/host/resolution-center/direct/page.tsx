@@ -1,12 +1,19 @@
-import { DirectResolutionCenter } from "@/components/resolution/direct-resolution-center";
 import { Role } from "@/generated/prisma/enums";
 import { requirePageRole } from "@/lib/permissions/page-guards";
-import { HostHeader } from "@/components/host/host-header";
-import { Container } from "@/components/ui";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function HostDirectResolutionCenterPage() {
+export default async function HostDirectResolutionCenterPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   await requirePageRole([Role.HOST]);
-  return <div className="min-h-screen bg-white text-[#1F1F1F]"><HostHeader /><Container className="px-4 sm:px-6"><DirectResolutionCenter audience="host" /></Container></div>;
+  const params = await searchParams;
+  const caseId = typeof params.caseId === "string" ? params.caseId : undefined;
+  if (caseId) {
+    redirect(`/host/support/cases/${encodeURIComponent(caseId)}?view=direct`);
+  }
+  redirect(`/host/support?view=direct`);
 }

@@ -13,6 +13,7 @@ export const CASE_TRANSITIONS: Record<SupportCaseStatus, ReadonlySet<SupportCase
     SupportCaseStatus.WAITING_FOR_HOST,
     SupportCaseStatus.WAITING_FOR_ADMIN,
     SupportCaseStatus.RESOLVED,
+    SupportCaseStatus.CLOSED,
     SupportCaseStatus.ESCALATED,
   ]),
   [SupportCaseStatus.WAITING_FOR_GUEST]: new Set([
@@ -48,6 +49,8 @@ export const CASE_TRANSITIONS: Record<SupportCaseStatus, ReadonlySet<SupportCase
     SupportCaseStatus.WAITING_FOR_HOST,
     SupportCaseStatus.WAITING_FOR_ADMIN,
     SupportCaseStatus.RESOLVED,
+    SupportCaseStatus.CLOSED,
+    SupportCaseStatus.REOPENED,
   ]),
 };
 

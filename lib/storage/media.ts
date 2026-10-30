@@ -137,6 +137,17 @@ function mediaPublicBaseUrl(): string {
   return process.env.MEDIA_PUBLIC_BASE_URL?.trim().replace(/\/$/, "") || "";
 }
 
+/**
+ * Maps logical media kinds to remote storage kinds when a legacy or remote
+ * media service has not yet rolled out newly added kinds.
+ */
+function storageWireKind(kind: MediaKind): MediaKind {
+  if (kind === "support-case-evidence") {
+    return "dispute-evidence";
+  }
+  return kind;
+}
+
 function publicMediaUrl(key: string, fallback?: string | null): string {
   const base = mediaPublicBaseUrl();
   // If fallback is an internal Docker URL, replace with public base URL
@@ -352,7 +363,8 @@ async function writeObject(options: {
   cacheControl?: string;
 }): Promise<{ url: string; fileName: string; key: string }> {
   const fileName = path.basename(options.fileName);
-  const key = objectKey(options.kind, fileName);
+  const wireKind = storageWireKind(options.kind);
+  const key = objectKey(wireKind, fileName);
 
   if (isS3Enabled()) {
     await putS3({
@@ -365,16 +377,33 @@ async function writeObject(options: {
   }
 
   if (isMediaServerEnabled()) {
-    const saved = await putMediaServer({
-      key,
-      body: options.body,
-      contentType: options.contentType,
-    });
-    return {
-      url: publicMediaUrl(key, saved.publicUrl),
-      fileName,
-      key,
-    };
+    try {
+      const saved = await putMediaServer({
+        key,
+        body: options.body,
+        contentType: options.contentType,
+      });
+      return {
+        url: publicMediaUrl(key, saved.publicUrl),
+        fileName,
+        key,
+      };
+    } catch (err) {
+      if (wireKind !== options.kind) {
+        const originalKey = objectKey(options.kind, fileName);
+        const saved = await putMediaServer({
+          key: originalKey,
+          body: options.body,
+          contentType: options.contentType,
+        });
+        return {
+          url: publicMediaUrl(originalKey, saved.publicUrl),
+          fileName,
+          key: originalKey,
+        };
+      }
+      throw err;
+    }
   }
 
   throw new Error(
@@ -383,7 +412,8 @@ async function writeObject(options: {
 }
 
 async function removeObject(kind: MediaKind, fileName: string): Promise<void> {
-  const key = resolveStoredKey(kind, fileName);
+  const wireKind = storageWireKind(kind);
+  const key = resolveStoredKey(wireKind, fileName);
 
   if (isS3Enabled()) {
     await deleteS3Object(key);
@@ -425,7 +455,8 @@ export async function savePrivateMedia(options: {
     ...options,
     cacheControl: "private, max-age=0, no-store",
   });
-  const storagePath = saved.key.slice(options.kind.length + 1);
+  const slashIdx = saved.key.indexOf("/");
+  const storagePath = slashIdx !== -1 ? saved.key.slice(slashIdx + 1) : saved.key;
   return { fileName: saved.fileName, storagePath };
 }
 
@@ -433,12 +464,20 @@ export async function readPrivateMedia(
   kind: PrivateMediaKind,
   fileName: string,
 ): Promise<Buffer> {
-  const key = resolveStoredKey(kind, fileName);
+  const wireKind = storageWireKind(kind);
+  const key = resolveStoredKey(wireKind, fileName);
 
   if (isS3Enabled()) {
     try {
       return await getS3Object(key);
     } catch {
+      if (wireKind !== kind) {
+        try {
+          return await getS3Object(resolveStoredKey(kind, fileName));
+        } catch {
+          // fall through
+        }
+      }
       throw Object.assign(new Error("Requested document file not found."), {
         code: "NOT_FOUND",
       });
@@ -446,7 +485,18 @@ export async function readPrivateMedia(
   }
 
   if (isMediaServerEnabled()) {
-    return getMediaServer(key);
+    try {
+      return await getMediaServer(key);
+    } catch (err) {
+      if (wireKind !== kind) {
+        try {
+          return await getMediaServer(resolveStoredKey(kind, fileName));
+        } catch {
+          throw err;
+        }
+      }
+      throw err;
+    }
   }
 
   throw new Error(
@@ -465,7 +515,11 @@ export async function deletePrivateMedia(options: {
   kind: PrivateMediaKind;
   fileName: string;
 }): Promise<void> {
-  await removeObject(options.kind, options.fileName);
+  const wireKind = storageWireKind(options.kind);
+  await removeObject(wireKind, options.fileName).catch(() => undefined);
+  if (wireKind !== options.kind) {
+    await removeObject(options.kind, options.fileName).catch(() => undefined);
+  }
 }
 
 /** Best-effort delete for a stored URL. Unmanaged URLs are ignored. */

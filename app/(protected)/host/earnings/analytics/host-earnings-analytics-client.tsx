@@ -16,6 +16,7 @@ import {
   AnalyticsPageHeader,
   FinancialKPICard,
   PercentageChangeBadge,
+  DonutBreakdownChart,
   RevenueTrendChart, // Premium interactive chart matching EarningsInteractiveChart specification
   FinancialWaterfallChart,
   PropertyComparisonTable,

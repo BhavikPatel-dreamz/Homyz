@@ -104,6 +104,12 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") void refreshUnreadNotificationCount();
     };
+    // No socket/SSE transport is configured for notifications. A single
+    // visibility-aware interval keeps the header badge current across devices
+    // without creating a request loop while the tab is hidden.
+    const poll = window.setInterval(() => {
+      if (document.visibilityState === "visible") void refreshUnreadNotificationCount({ force: true });
+    }, 30_000);
 
     window.addEventListener("homyz:notifications-updated", handleNotificationsUpdated);
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -111,6 +117,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
     return () => {
       window.removeEventListener("homyz:notifications-updated", handleNotificationsUpdated);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.clearInterval(poll);
     };
   }, [hasUser, notificationAccountKey]);
 
@@ -641,15 +648,17 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                           </Link>
 
                           <Link
-                            href="/host/resolution-center"
+                            href="/host/support"
                             onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm font-normal rounded-xl transition-colors group duration-300 ${pathname?.startsWith("/host/resolution-center") ? "bg-amber-100 text-[#1F1F1F] font-normal" : "text-[#1F1F1F] hover:bg-white"
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm font-normal rounded-xl transition-colors group duration-300 ${pathname?.startsWith("/host/support") || pathname?.startsWith("/host/resolution-center") ? "bg-amber-100 text-[#1F1F1F] font-normal" : "text-[#1F1F1F] hover:bg-white"
                               }`}
                           >
                             <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] border border-zinc-200/60 shadow-2xs">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 3 4.5 6v5c0 4.8 3.1 8.6 7.5 10 4.4-1.4 7.5-5.2 7.5-10V6L12 3Z" /><path d="m8.5 12 2.2 2.2 4.8-4.8" /></svg>
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                              </svg>
                             </span>
-                            <span>{t("host_nav_resolution") || "Resolution Center"}</span>
+                            <span>Help &amp; Resolution Center</span>
                           </Link>
 
                         </div>

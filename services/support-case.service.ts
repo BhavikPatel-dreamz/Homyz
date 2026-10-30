@@ -22,12 +22,27 @@ import {
 } from "@/generated/prisma/enums";
 import { CASE_TRANSITIONS } from "@/lib/support-case/lifecycle";
 import { getSupportSlaDeadlines, isSupportCaseOverdue } from "@/lib/support-case/sla";
-import { isSupportedGuestSupportRequest } from "@/lib/support-case/taxonomy";
+import { isSupportedGuestSupportRequest, isSupportedHostSupportRequest } from "@/lib/support-case/taxonomy";
 import { deletePrivateMedia, readPrivateMedia, savePrivateMedia } from "@/lib/storage/media";
-import { enqueueSupportNotification } from "@/services/notification-outbox.service";
+import { PERMISSIONS } from "@/lib/permissions/permissions";
+import { enqueueSupportNotification, processNotificationOutboxBatch } from "@/services/notification-outbox.service";
 
 const CASE_NUMBER_PREFIX = "SC";
 const MAX_PAGE_SIZE = 100;
+
+/**
+ * A support mutation first commits its case/outbox transaction. We then make a
+ * bounded best-effort delivery attempt so interactive users see the inbox
+ * update immediately. Failures remain durable in the outbox for cron/manual
+ * retry and never roll back the successful support action.
+ */
+async function deliverCommittedSupportNotifications() {
+  try {
+    await processNotificationOutboxBatch({ limit: 25 });
+  } catch (error) {
+    console.warn("[support] notification delivery will be retried by the outbox worker", error);
+  }
+}
 
 
 export interface CreateSupportCaseInput {
@@ -86,11 +101,13 @@ export interface EscalateSupportCaseInput {
   level: number;
   reason: string;
   escalationOwnerId?: string | null;
+  idempotencyKey?: string;
 }
 
 export interface AddSupportCaseMessageInput {
   content: string;
   visibility?: SupportCaseContentVisibility;
+  targetAudience?: "GUEST" | "HOST" | "ALL";
   idempotencyKey?: string;
 }
 
@@ -188,28 +205,96 @@ async function assertMutationAccessInTransaction(
 
 async function enqueueCaseParticipantNotification(
   tx: Prisma.TransactionClient,
-  options: { caseId: string; actorId?: string; event: string; title: string; message: string },
+  options: {
+    caseId: string;
+    actorId?: string;
+    event: string;
+    title: string;
+    message: string;
+    targetAudience?: "GUEST" | "HOST" | "ALL";
+  },
 ) {
-  const participants = await tx.supportCaseParticipant.findMany({
+  const [participants, supportCase] = await Promise.all([
+    tx.supportCaseParticipant.findMany({
     where: {
       caseId: options.caseId,
       removedAt: null,
       canView: true,
       ...(options.actorId ? { userId: { not: options.actorId } } : {}),
     },
-    select: { userId: true },
+    include: {
+      user: { select: { id: true, role: true } },
+    },
+    }),
+    tx.supportCase.findUnique({
+      where: { id: options.caseId },
+      select: { resolutionOffers: { take: 1, select: { id: true } } },
+    }),
+  ]);
+  const recipients = participants.filter(({ user }) => {
+    if (user.role === Role.ADMIN) return false;
+    if (options.targetAudience === "GUEST") return user.role === Role.USER;
+    if (options.targetAudience === "HOST") return user.role === Role.HOST;
+    return true;
   });
+  if (recipients.length === 0) return;
+  const directResolution = Boolean(supportCase?.resolutionOffers.length);
   await enqueueSupportNotification(tx, {
     eventType: options.event,
     entityType: "SUPPORT_CASE",
     entityId: options.caseId,
     idempotencyKey: `support-case:${options.event}:${options.caseId}`,
-    recipients: participants.map(({ userId }) => ({
-      userId,
+    recipients: recipients.map(({ user }) => ({
+      userId: user.id,
       title: options.title,
       message: options.message,
-      link: `/profile/tab/support?caseId=${encodeURIComponent(options.caseId)}`,
+      link: directResolution
+        ? user.role === Role.HOST
+          ? `/host/resolution-center/direct?caseId=${encodeURIComponent(options.caseId)}`
+          : `/profile/resolution-center?caseId=${encodeURIComponent(options.caseId)}`
+        : user.role === Role.HOST
+          ? `/host/support?caseId=${encodeURIComponent(options.caseId)}`
+          : `/profile/tab/support?caseId=${encodeURIComponent(options.caseId)}`,
     })),
+  });
+}
+
+async function getSupportQueueRecipients(
+  tx: Prisma.TransactionClient,
+  assignedAdminId: string | null,
+  actorId?: string,
+) {
+  // A support queue is defined by explicitly granted dispute-management
+  // permissions. We do not broadcast private support data to every admin.
+  if (assignedAdminId && assignedAdminId !== actorId) {
+    const assignee = await tx.user.findFirst({
+      where: {
+        id: assignedAdminId,
+        role: Role.ADMIN,
+        status: UserStatus.ACTIVE,
+        adminRole: {
+          permissions: {
+            some: { permission: { slug: { in: [PERMISSIONS.DISPUTES_MANAGE, PERMISSIONS.DISPUTES_VIEW] } } },
+          },
+        },
+      },
+      select: { id: true },
+    });
+    if (assignee) return [assignee];
+  }
+  return tx.user.findMany({
+    where: {
+      role: Role.ADMIN,
+      status: UserStatus.ACTIVE,
+      ...(actorId ? { id: { not: actorId } } : {}),
+      adminRole: {
+        permissions: {
+          some: { permission: { slug: { in: [PERMISSIONS.DISPUTES_MANAGE, PERMISSIONS.DISPUTES_VIEW] } } },
+        },
+      },
+    },
+    select: { id: true },
+    take: 25,
   });
 }
 
@@ -274,7 +359,7 @@ function mapLegacyPriority(severity: QualityIncidentSeverity | null): SupportCas
 async function createSupportCase(actor: AuthUser, input: CreateSupportCaseInput) {
   const category = requireText(input.category, "Category", 80).toUpperCase();
   const issueType = input.issueType?.trim().toUpperCase() || undefined;
-  if (!isSupportedGuestSupportRequest(category, issueType)) {
+  if (!isSupportedGuestSupportRequest(category, issueType) && !isSupportedHostSupportRequest(category, issueType)) {
     throw AppError.badRequest("Category or issue type is not supported.");
   }
   const subject = requireText(input.subject, "Subject", 160);
@@ -334,7 +419,7 @@ async function createSupportCase(actor: AuthUser, input: CreateSupportCaseInput)
     // callers cannot attach a case to another user's refund by omitting the
     // bookingId from the request.
     if (!isAdmin(actor)) {
-      const ownsBooking = booking?.userId === actor.id;
+      const ownsBooking = booking?.userId === actor.id || booking?.listing?.hostId === actor.id;
       const ownsListing = listing?.hostId === actor.id;
       if ((booking || listing) && !ownsBooking && !ownsListing) {
         throw AppError.forbidden("You may only open a support case for your own reservation or listing.");
@@ -411,11 +496,27 @@ async function createSupportCase(actor: AuthUser, input: CreateSupportCaseInput)
         userId: actor.id,
         title: "Support request received",
         message: `Your support request ${supportCase.caseNumber} was created.`,
-        link: `/profile/tab/support?caseId=${encodeURIComponent(supportCase.id)}`,
+        link: actor.role === Role.HOST
+          ? `/host/support?caseId=${encodeURIComponent(supportCase.id)}`
+          : `/profile/tab/support?caseId=${encodeURIComponent(supportCase.id)}`,
       }],
+    });
+    const queue = await getSupportQueueRecipients(tx, supportCase.assignedAdminId, actor.id);
+    await enqueueSupportNotification(tx, {
+      eventType: actor.role === Role.HOST ? "HOST_SUPPORT_CASE_CREATED" : "GUEST_SUPPORT_CASE_CREATED",
+      entityType: "SUPPORT_CASE",
+      entityId: supportCase.id,
+      idempotencyKey: `support-case:queue-created:${supportCase.id}`,
+      recipients: queue.map(({ id }) => ({
+        userId: id,
+        title: actor.role === Role.HOST ? "New host support request" : "New guest support request",
+        message: `${actor.role === Role.HOST ? "A host" : "A guest"} opened support case ${supportCase.caseNumber}.`,
+        link: `/admin/support/${encodeURIComponent(supportCase.id)}`,
+      })),
     });
     return { supportCase, now };
   });
+  await deliverCommittedSupportNotifications();
   return created.supportCase;
 }
 
@@ -460,9 +561,9 @@ async function listSupportCases(actor: AuthUser, query: SupportCaseListQuery = {
       { caseNumber: { contains: value, mode: "insensitive" } },
       { subject: { contains: value, mode: "insensitive" } },
       ...(isAdmin(actor) ? [
-        { reporter: { is: { OR: [{ name: { contains: value, mode: "insensitive" } }, { email: { contains: value, mode: "insensitive" } }] } } },
-        { booking: { is: { OR: [{ id: { contains: value, mode: "insensitive" } }, { user: { is: { OR: [{ name: { contains: value, mode: "insensitive" } }, { email: { contains: value, mode: "insensitive" } }] } } }] } } },
-        { listing: { is: { host: { is: { OR: [{ name: { contains: value, mode: "insensitive" } }, { email: { contains: value, mode: "insensitive" } }] } } } } },
+        { reporter: { OR: [{ name: { contains: value, mode: "insensitive" as const } }, { email: { contains: value, mode: "insensitive" as const } }] } },
+        { booking: { OR: [{ id: { contains: value, mode: "insensitive" as const } }, { user: { OR: [{ name: { contains: value, mode: "insensitive" as const } }, { email: { contains: value, mode: "insensitive" as const } }] } }] } },
+        { listing: { host: { OR: [{ name: { contains: value, mode: "insensitive" as const } }, { email: { contains: value, mode: "insensitive" as const } }] } } },
       ] : []),
     ];
     if (where.OR) where.AND = [...andConditions(), { OR: searchConditions }];
@@ -483,14 +584,33 @@ async function listSupportCases(actor: AuthUser, query: SupportCaseListQuery = {
         reporter: { select: { id: true, name: true, image: true } },
         assignedAdmin: isAdmin(actor) ? { select: { id: true, name: true, email: true } } : false,
         booking: { select: { id: true, submissionId: true, user: isAdmin(actor) ? { select: { id: true, name: true, email: true } } : false } },
-        listing: { select: { id: true, title: true } },
+        listing: { select: { id: true, title: true, photos: true } },
       },
     }),
     prisma.supportCase.count({ where }),
   ]);
 
+  const caseIds = cases.map((item) => item.id);
+  const unreadCounts = (!isAdmin(actor) && caseIds.length > 0)
+    ? await prisma.notification.groupBy({
+        by: ["entityId"],
+        where: {
+          userId: actor.id,
+          isRead: false,
+          entityId: { in: caseIds },
+        },
+        _count: { id: true },
+      })
+    : [];
+
+  const unreadMap = new Map(unreadCounts.map((entry) => [entry.entityId, entry._count.id]));
+  const casesWithUnread = cases.map((item) => ({
+    ...item,
+    unreadCount: unreadMap.get(item.id) || 0,
+  }));
+
   return {
-    cases,
+    cases: casesWithUnread,
     pagination: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
   };
 }
@@ -504,7 +624,7 @@ async function getSupportCaseDetails(actor: AuthUser, caseId: string) {
       assignedAdmin: access.admin ? { select: { id: true, name: true, email: true } } : false,
       escalationOwner: access.admin ? { select: { id: true, name: true, email: true } } : false,
       booking: { select: { id: true, submissionId: true, startDate: true, endDate: true, status: true } },
-      listing: { select: { id: true, title: true, city: true } },
+      listing: { select: { id: true, title: true, city: true, photos: true } },
       participants: access.admin
         ? { where: { removedAt: null }, include: { user: { select: { id: true, name: true, email: true, role: true } } } }
         : { where: { userId: actor.id, removedAt: null }, include: { user: { select: { id: true, name: true, role: true } } } },
@@ -512,7 +632,7 @@ async function getSupportCaseDetails(actor: AuthUser, caseId: string) {
         where: access.admin ? {} : { visibility: SupportCaseContentVisibility.PARTICIPANTS },
         orderBy: { createdAt: "asc" },
         take: 100,
-        include: { sender: { select: { id: true, name: true, image: true } } },
+        include: { sender: { select: { id: true, name: true, image: true, role: true } } },
       },
       evidence: {
         where: access.admin ? { deletedAt: null } : { deletedAt: null, visibility: SupportCaseContentVisibility.PARTICIPANTS },
@@ -552,14 +672,60 @@ async function getSupportCaseDetails(actor: AuthUser, caseId: string) {
       },
     },
   });
-  return { ...supportCase, viewer: { id: actor.id, isAdmin: access.admin } };
+
+  const isHostViewer = access.participant?.role === SupportCaseParticipantRole.HOST || (supportCase.reporterId === actor.id && supportCase.reporterRole === "HOST");
+  const parsedMessages = supportCase.messages
+    .map((m) => {
+      const match = m.content.match(/^<!--audience:(GUEST|HOST|ALL|ADMINS_ONLY)-->\n?/);
+      const targetAudience = match
+        ? (match[1] as "GUEST" | "HOST" | "ALL" | "ADMINS_ONLY")
+        : (m.visibility === SupportCaseContentVisibility.ADMINS_ONLY ? "ADMINS_ONLY" : "ALL");
+      const cleanContent = match ? m.content.slice(match[0].length) : m.content;
+      return {
+        ...m,
+        content: cleanContent,
+        targetAudience,
+      };
+    })
+    .filter((m) => {
+      if (access.admin) return true;
+      if (m.visibility === SupportCaseContentVisibility.ADMINS_ONLY) return false;
+      if (isHostViewer) return m.targetAudience !== "GUEST";
+      return m.targetAudience !== "HOST";
+    });
+
+  if (!access.admin) {
+    try {
+      await prisma.notification.updateMany({
+        where: {
+          userId: actor.id,
+          entityId: caseId,
+          isRead: false,
+        },
+        data: {
+          isRead: true,
+          readAt: new Date(),
+        },
+      });
+    } catch {
+      // Non-critical notification background sync
+    }
+  }
+
+  return { ...supportCase, messages: parsedMessages, viewer: { id: actor.id, isAdmin: access.admin, role: access.participant?.role ?? (access.admin ? "ADMIN" : null) } };
 }
 
 async function getSupportCaseAdminDashboard(actor: AuthUser) {
   if (!isAdmin(actor)) throw AppError.forbidden("Only an administrator can view support-case metrics.");
   const now = new Date();
-  const [statusCounts, dueCases, resolvedCases] = await Promise.all([
+  const [statusCounts, unassignedCount, dueCases, resolvedCases] = await Promise.all([
     prisma.supportCase.groupBy({ by: ["status"], _count: { _all: true } }),
+    prisma.supportCase.count({
+      where: {
+        assignedAdminId: null,
+        status: { notIn: [SupportCaseStatus.RESOLVED, SupportCaseStatus.CLOSED] },
+      },
+    }),
     prisma.supportCase.findMany({
       where: { status: { notIn: [SupportCaseStatus.RESOLVED, SupportCaseStatus.CLOSED] }, slaDueAt: { not: null } },
       select: { id: true, status: true, priority: true, slaDueAt: true },
@@ -582,6 +748,7 @@ async function getSupportCaseAdminDashboard(actor: AuthUser) {
     waitingForGuest: counts.WAITING_FOR_GUEST ?? 0,
     waitingForHost: counts.WAITING_FOR_HOST ?? 0,
     waitingForAdmin: counts.WAITING_FOR_ADMIN ?? 0,
+    unassigned: unassignedCount,
     escalated: counts.ESCALATED ?? 0,
     resolved: counts.RESOLVED ?? 0,
     closed: counts.CLOSED ?? 0,
@@ -590,6 +757,70 @@ async function getSupportCaseAdminDashboard(actor: AuthUser) {
     averageResolutionMinutes: resolvedCases.length ? Math.round(resolutionMinutes / resolvedCases.length) : null,
     generatedAt: now.toISOString(),
   };
+}
+
+/**
+ * Queues at most one approaching and one breached SLA alert per case/policy.
+ * The scheduler invokes this in a bounded batch; delivery itself remains the
+ * responsibility of the existing transactional notification outbox worker.
+ */
+async function queueSupportSlaNotifications(options: { limit?: number; now?: Date } = {}) {
+  const now = options.now ?? new Date();
+  const limit = Math.min(50, Math.max(1, Math.trunc(options.limit ?? 25)));
+  const activeCases = await prisma.supportCase.findMany({
+    where: {
+      status: { notIn: [SupportCaseStatus.RESOLVED, SupportCaseStatus.CLOSED] },
+      slaDueAt: { not: null, lte: new Date(now.getTime() + 24 * 60 * 60 * 1000) },
+    },
+    orderBy: { slaDueAt: "asc" },
+    take: limit,
+    select: {
+      id: true,
+      caseNumber: true,
+      assignedAdminId: true,
+      slaDueAt: true,
+      slaPolicyVersion: true,
+      slaBreachedAt: true,
+    },
+  });
+
+  const result = { scanned: activeCases.length, approaching: 0, breached: 0 };
+  for (const supportCase of activeCases) {
+    const dueAt = supportCase.slaDueAt;
+    if (!dueAt) continue;
+    const breached = dueAt <= now;
+    if (breached && supportCase.slaBreachedAt) continue;
+
+    await prisma.$transaction(async (tx) => {
+      const recipients = await getSupportQueueRecipients(tx, supportCase.assignedAdminId);
+      if (!recipients.length) return;
+
+      const milestone = breached ? "BREACHED" : "APPROACHING";
+      await enqueueSupportNotification(tx, {
+        eventType: `SUPPORT_SLA_${milestone}`,
+        entityType: "SUPPORT_CASE",
+        entityId: supportCase.id,
+        idempotencyKey: `support-case:sla:${supportCase.id}:${supportCase.slaPolicyVersion ?? "unknown"}:${milestone}`,
+        recipients: recipients.map(({ id }) => ({
+          userId: id,
+          title: breached ? "Support SLA breached" : "Support SLA approaching",
+          message: breached
+            ? `${supportCase.caseNumber} is past its support SLA and needs review.`
+            : `${supportCase.caseNumber} is due for support review within 24 hours.`,
+          link: `/admin/support/${encodeURIComponent(supportCase.id)}`,
+        })),
+      });
+      if (breached) {
+        await tx.supportCase.updateMany({
+          where: { id: supportCase.id, slaBreachedAt: null },
+          data: { slaBreachedAt: now },
+        });
+      }
+    });
+    if (breached) result.breached += 1;
+    else result.approaching += 1;
+  }
+  return result;
 }
 
 async function updateSupportCaseStatus(actor: AuthUser, caseId: string, input: UpdateSupportCaseStatusInput) {
@@ -657,6 +888,7 @@ async function updateSupportCaseStatus(actor: AuthUser, caseId: string, input: U
     });
     return { current, updated };
   });
+  await deliverCommittedSupportNotifications();
   return result.updated;
 }
 
@@ -673,9 +905,17 @@ async function assignSupportCase(actor: AuthUser, caseId: string, input: AssignS
     if (!current) throw AppError.notFound("Support case not found.");
     if (current.version !== input.expectedVersion) throw AppError.conflict("This support case changed since it was loaded. Refresh before updating it.");
     if (input.assignedAdminId) {
-      const assignee = await tx.user.findUnique({ where: { id: input.assignedAdminId }, select: { role: true, status: true } });
-      if (!assignee || assignee.role !== Role.ADMIN || assignee.status !== UserStatus.ACTIVE) {
-        throw AppError.badRequest("Support cases can only be assigned to active administrators.");
+      const assignee = await tx.user.findFirst({
+        where: {
+          id: input.assignedAdminId,
+          role: Role.ADMIN,
+          status: UserStatus.ACTIVE,
+          adminRole: { permissions: { some: { permission: { slug: { in: [PERMISSIONS.DISPUTES_MANAGE, PERMISSIONS.DISPUTES_VIEW] } } } } },
+        },
+        select: { id: true },
+      });
+      if (!assignee) {
+        throw AppError.badRequest("Support cases can only be assigned to active administrators authorized for support cases.");
       }
     }
     if (current.assignedAdminId === (input.assignedAdminId ?? null)) {
@@ -715,6 +955,7 @@ async function assignSupportCase(actor: AuthUser, caseId: string, input: AssignS
     }
     return { current, updated };
   });
+  await deliverCommittedSupportNotifications();
   return result.updated;
 }
 
@@ -723,7 +964,7 @@ async function updateSupportCasePriority(actor: AuthUser, caseId: string, input:
   if (!Number.isInteger(input.expectedVersion) || input.expectedVersion < 1) throw AppError.badRequest("A valid expectedVersion is required.");
   const reason = input.reason?.trim();
   if (reason && reason.length > 2_000) throw AppError.badRequest("Reason must be at most 2000 characters.");
-  return prisma.$transaction(async (tx) => {
+  const updatedPriority = await prisma.$transaction(async (tx) => {
     const current = await tx.supportCase.findUnique({ where: { id: caseId } });
     if (!current) throw AppError.notFound("Support case not found.");
     if (current.version !== input.expectedVersion) throw AppError.conflict("This support case changed since it was loaded. Refresh before updating it.");
@@ -739,30 +980,102 @@ async function updateSupportCasePriority(actor: AuthUser, caseId: string, input:
     await enqueueCaseParticipantNotification(tx, { caseId, actorId: actor.id, event: `PRIORITY_CHANGED_${updated.version}`, title: "Support case priority updated", message: `The priority for support case ${updated.caseNumber} was updated.`, });
     return updated;
   });
+  await deliverCommittedSupportNotifications();
+  return updatedPriority;
 }
 
 async function escalateSupportCase(actor: AuthUser, caseId: string, input: EscalateSupportCaseInput) {
   if (!isAdmin(actor)) throw AppError.forbidden("Only an administrator can escalate support cases.");
-  if (!Number.isInteger(input.expectedVersion) || input.expectedVersion < 1 || !Number.isInteger(input.level) || input.level < 1 || input.level > 4) throw AppError.badRequest("A valid version and escalation level are required.");
+  if (!Number.isInteger(input.expectedVersion) || input.expectedVersion < 1 || !Number.isInteger(input.level) || input.level < 1 || input.level > 4) {
+    throw AppError.badRequest("A valid version and escalation level are required.");
+  }
   const reason = requireText(input.reason, "Escalation reason", 2_000);
-  return prisma.$transaction(async (tx) => {
+  const escalated = await prisma.$transaction(async (tx) => {
     const current = await tx.supportCase.findUnique({ where: { id: caseId } });
     if (!current) throw AppError.notFound("Support case not found.");
-    if (current.version !== input.expectedVersion) throw AppError.conflict("This support case changed since it was loaded. Refresh before escalating it.");
-    if (!CASE_TRANSITIONS[current.status].has(SupportCaseStatus.ESCALATED) && current.status !== SupportCaseStatus.ESCALATED) throw AppError.conflict(`Cannot escalate support case from ${current.status}.`);
+    if (current.version !== input.expectedVersion) {
+      throw AppError.conflict("This support case changed since it was loaded. Refresh before escalating it.");
+    }
+    if (current.status === SupportCaseStatus.ESCALATED && current.escalationLevel === input.level) {
+      throw AppError.conflict(`This support case is already escalated to Level ${input.level}.`);
+    }
+    if (!CASE_TRANSITIONS[current.status].has(SupportCaseStatus.ESCALATED) && current.status !== SupportCaseStatus.ESCALATED) {
+      throw AppError.conflict(`Cannot escalate support case from ${current.status}.`);
+    }
     if (input.escalationOwnerId) {
-      const owner = await tx.user.findUnique({ where: { id: input.escalationOwnerId }, select: { role: true, status: true } });
-      if (!owner || owner.role !== Role.ADMIN || owner.status !== UserStatus.ACTIVE) throw AppError.badRequest("Escalation owner must be an active administrator.");
+      const owner = await tx.user.findFirst({
+        where: {
+          id: input.escalationOwnerId,
+          role: Role.ADMIN,
+          status: UserStatus.ACTIVE,
+          adminRole: { permissions: { some: { permission: { slug: { in: [PERMISSIONS.DISPUTES_MANAGE, PERMISSIONS.DISPUTES_VIEW] } } } } },
+        },
+        select: { id: true },
+      });
+      if (!owner) {
+        throw AppError.badRequest("Escalation owner must be an active administrator authorized for support cases.");
+      }
     }
-    const updated = await tx.supportCase.update({ where: { id: caseId }, data: { status: SupportCaseStatus.ESCALATED, escalationLevel: input.level, escalationReason: reason, escalationOwnerId: input.escalationOwnerId ?? current.escalationOwnerId, escalatedAt: new Date(), version: { increment: 1 } } });
-    await tx.supportCaseEvent.create({ data: { caseId, actorId: actor.id, eventType: "CASE_ESCALATED", visibility: SupportCaseContentVisibility.PARTICIPANTS, previousState: caseStateSnapshot(current), newState: caseStateSnapshot(updated), description: "Case escalated for additional review." } });
-    await tx.auditLog.create({ data: { actorId: actor.id, actorEmail: actor.email, action: "SUPPORT_CASE_ESCALATED", resourceType: "SUPPORT_CASE", resourceId: caseId, description: `Support case escalated to level ${input.level}.`, status: "SUCCESS", metadata: { reason, level: input.level, escalationOwnerId: updated.escalationOwnerId } } });
-    await enqueueCaseParticipantNotification(tx, { caseId, actorId: actor.id, event: `CASE_ESCALATED_${updated.version}`, title: "Support case escalated", message: `Support case ${updated.caseNumber} was escalated for additional review.`, });
-    if (updated.escalationOwnerId && updated.escalationOwnerId !== actor.id) {
-      await enqueueSupportNotification(tx, { eventType: "SUPPORT_CASE_ESCALATION_ASSIGNED", entityType: "SUPPORT_CASE", entityId: caseId, idempotencyKey: `support-case:escalation-owner:${caseId}:${updated.version}:${updated.escalationOwnerId}`, recipients: [{ userId: updated.escalationOwnerId, title: "Escalated support case assigned", message: `You are the escalation owner for ${updated.caseNumber}.`, link: `/admin/support/${encodeURIComponent(caseId)}` }] });
-    }
+    const updated = await tx.supportCase.update({
+      where: { id: caseId },
+      data: {
+        status: SupportCaseStatus.ESCALATED,
+        escalationLevel: input.level,
+        escalationReason: reason,
+        escalationOwnerId: input.escalationOwnerId ?? current.escalationOwnerId,
+        escalatedAt: new Date(),
+        version: { increment: 1 },
+      },
+    });
+    await tx.supportCaseEvent.create({
+      data: {
+        caseId,
+        actorId: actor.id,
+        eventType: "CASE_ESCALATED",
+        visibility: SupportCaseContentVisibility.PARTICIPANTS,
+        previousState: caseStateSnapshot(current),
+        newState: caseStateSnapshot(updated),
+        description: `Support escalated this case to Level ${input.level}.`,
+      },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorId: actor.id,
+        actorEmail: actor.email,
+        action: "SUPPORT_CASE_ESCALATED",
+        resourceType: "SUPPORT_CASE",
+        resourceId: caseId,
+        description: `Support case escalated to level ${input.level}.`,
+        status: "SUCCESS",
+        metadata: { reason, level: input.level, escalationOwnerId: updated.escalationOwnerId },
+      },
+    });
+    await enqueueCaseParticipantNotification(tx, {
+      caseId,
+      actorId: actor.id,
+      event: `CASE_ESCALATED_${updated.version}`,
+      title: "Support case escalated",
+      message: `Support case ${updated.caseNumber} was escalated to Level ${input.level} for review.`,
+    });
+    const escalationReviewers = await getSupportQueueRecipients(tx, updated.escalationOwnerId, actor.id);
+    await enqueueSupportNotification(tx, {
+      eventType: "SUPPORT_CASE_ESCALATED_FOR_REVIEW",
+      entityType: "SUPPORT_CASE",
+      entityId: caseId,
+      idempotencyKey: `support-case:escalation-review:${caseId}:${updated.version}`,
+      recipients: escalationReviewers.map(({ id }) => ({
+        userId: id,
+        title: updated.escalationOwnerId === id ? "Escalated support case assigned" : "Escalated support case needs review",
+        message: updated.escalationOwnerId === id
+          ? `You are the escalation owner for ${updated.caseNumber}.`
+          : `${updated.caseNumber} was escalated to Level ${input.level} and needs review.`,
+        link: `/admin/support/${encodeURIComponent(caseId)}`,
+      })),
+    });
     return updated;
   });
+  await deliverCommittedSupportNotifications();
+  return escalated;
 }
 
 async function addSupportCaseParticipant(actor: AuthUser, caseId: string, input: AddSupportCaseParticipantInput) {
@@ -852,7 +1165,12 @@ async function addSupportCaseMessage(actor: AuthUser, caseId: string, input: Add
     const existing = await prisma.supportCaseMessage.findUnique({ where: { idempotencyKey } });
     if (existing) {
       if (existing.caseId !== caseId || existing.senderId !== actor.id) throw AppError.conflict("This message request key is already in use.");
-      return existing;
+      const match = existing.content.match(/^<!--audience:(GUEST|HOST|ALL|ADMINS_ONLY)-->\n?/);
+      return {
+        ...existing,
+        content: match ? existing.content.slice(match[0].length) : existing.content,
+        targetAudience: match ? match[1] : (existing.visibility === SupportCaseContentVisibility.ADMINS_ONLY ? "ADMINS_ONLY" : "ALL"),
+      };
     }
   }
 
@@ -862,35 +1180,157 @@ async function addSupportCaseMessage(actor: AuthUser, caseId: string, input: Add
       const existing = await tx.supportCaseMessage.findUnique({ where: { idempotencyKey } });
       if (existing) {
         if (existing.caseId !== caseId || existing.senderId !== actor.id) throw AppError.conflict("This message request key is already in use.");
-        return existing;
+        const match = existing.content.match(/^<!--audience:(GUEST|HOST|ALL|ADMINS_ONLY)-->\n?/);
+        return {
+          ...existing,
+          content: match ? existing.content.slice(match[0].length) : existing.content,
+          targetAudience: match ? match[1] : (existing.visibility === SupportCaseContentVisibility.ADMINS_ONLY ? "ADMINS_ONLY" : "ALL"),
+        };
       }
     }
-    const created = await tx.supportCaseMessage.create({ data: { caseId, senderId: actor.id, content, visibility, idempotencyKey } });
-    await tx.supportCase.update({ where: { id: caseId }, data: { updatedAt: new Date() } });
-    await tx.supportCaseEvent.create({
-      data: {
-        caseId, actorId: actor.id, eventType: visibility === SupportCaseContentVisibility.ADMINS_ONLY ? "INTERNAL_NOTE_ADDED" : "MESSAGE_ADDED",
-        visibility: visibility === SupportCaseContentVisibility.ADMINS_ONLY ? SupportCaseContentVisibility.ADMINS_ONLY : SupportCaseContentVisibility.PARTICIPANTS,
-        description: visibility === SupportCaseContentVisibility.ADMINS_ONLY ? "Internal note added." : "Message added.",
+
+    const currentCase = await tx.supportCase.findUniqueOrThrow({
+      where: { id: caseId },
+      include: {
+        participants: { where: { removedAt: null } },
+        resolutionOffers: { take: 1, select: { id: true } },
       },
     });
+
+    let targetAudience: "GUEST" | "HOST" | "ALL" | "ADMINS_ONLY" = input.targetAudience ?? "ALL";
+    let finalContent = content;
+
+    if (visibility === SupportCaseContentVisibility.ADMINS_ONLY) {
+      targetAudience = "ADMINS_ONLY";
+      finalContent = `<!--audience:ADMINS_ONLY-->\n${content}`;
+    } else if (isAdmin(actor)) {
+      if (targetAudience === "HOST") {
+        const hasHost = currentCase.participants.some(
+          (p) => p.role === SupportCaseParticipantRole.HOST || (p.role === SupportCaseParticipantRole.REPORTER && currentCase.reporterRole === SupportCaseParticipantRole.HOST)
+        );
+        if (!hasHost) {
+          throw AppError.badRequest("Host is not an authorized participant in this support case.");
+        }
+      }
+      finalContent = `<!--audience:${targetAudience}-->\n${content}`;
+    } else {
+      targetAudience = "ALL";
+      finalContent = `<!--audience:ALL-->\n${content}`;
+    }
+
+    const created = await tx.supportCaseMessage.create({
+      data: { caseId, senderId: actor.id, content: finalContent, visibility, idempotencyKey },
+    });
+
+    // Response responsibility updates when participant replies
+    if (!isAdmin(actor)) {
+      const participantRole = access.participant?.role;
+      const isGuest = participantRole === SupportCaseParticipantRole.GUEST || participantRole === SupportCaseParticipantRole.REPORTER || (currentCase.reporterId === actor.id && currentCase.reporterRole === "GUEST");
+      const isHost = participantRole === SupportCaseParticipantRole.HOST || (currentCase.reporterId === actor.id && currentCase.reporterRole === "HOST");
+
+      if (isGuest && currentCase.status === SupportCaseStatus.WAITING_FOR_GUEST) {
+        await tx.supportCase.update({
+          where: { id: caseId },
+          data: { status: SupportCaseStatus.IN_REVIEW, version: { increment: 1 }, updatedAt: new Date() },
+        });
+        await tx.supportCaseEvent.create({
+          data: {
+            caseId, actorId: actor.id, eventType: "CASE_STATUS_CHANGED",
+            visibility: SupportCaseContentVisibility.PARTICIPANTS,
+            description: "Status updated to In review following guest reply.",
+          },
+        });
+      } else if (isHost && currentCase.status === SupportCaseStatus.WAITING_FOR_HOST) {
+        await tx.supportCase.update({
+          where: { id: caseId },
+          data: { status: SupportCaseStatus.IN_REVIEW, version: { increment: 1 }, updatedAt: new Date() },
+        });
+        await tx.supportCaseEvent.create({
+          data: {
+            caseId, actorId: actor.id, eventType: "CASE_STATUS_CHANGED",
+            visibility: SupportCaseContentVisibility.PARTICIPANTS,
+            description: "Status updated to In review following host reply.",
+          },
+        });
+      } else {
+        await tx.supportCase.update({ where: { id: caseId }, data: { updatedAt: new Date() } });
+      }
+    } else {
+      await tx.supportCase.update({ where: { id: caseId }, data: { updatedAt: new Date() } });
+    }
+
+    await tx.supportCaseEvent.create({
+      data: {
+        caseId,
+        actorId: actor.id,
+        eventType: visibility === SupportCaseContentVisibility.ADMINS_ONLY ? "INTERNAL_NOTE_ADDED" : "MESSAGE_ADDED",
+        visibility: visibility === SupportCaseContentVisibility.ADMINS_ONLY ? SupportCaseContentVisibility.ADMINS_ONLY : SupportCaseContentVisibility.PARTICIPANTS,
+        description: visibility === SupportCaseContentVisibility.ADMINS_ONLY
+          ? "Internal note added."
+          : (isAdmin(actor)
+            ? (targetAudience === "GUEST" ? "Reply sent to guest." : targetAudience === "HOST" ? "Reply sent to host." : "Reply added to case.")
+            : "Participant reply added."),
+      },
+    });
+
     await tx.auditLog.create({
       data: {
         actorId: actor.id, actorEmail: actor.email, action: "SUPPORT_CASE_MESSAGE_ADDED", resourceType: "SUPPORT_CASE", resourceId: caseId,
-        description: "Support case message added.", status: "SUCCESS", metadata: { visibility },
+        description: "Support case message added.", status: "SUCCESS", metadata: { visibility, targetAudience },
       },
     });
+
     if (visibility === SupportCaseContentVisibility.PARTICIPANTS) {
-      await enqueueCaseParticipantNotification(tx, {
-        caseId,
-        actorId: actor.id,
-        event: `MESSAGE_ADDED_${created.id}`,
-        title: isAdmin(actor) ? "New reply from Support" : "New support case reply",
-        message: isAdmin(actor) ? "Support added a reply to your case." : "A participant added a reply to this support case.",
-      });
+      if (isAdmin(actor)) {
+        await enqueueCaseParticipantNotification(tx, {
+          caseId,
+          actorId: actor.id,
+          event: `MESSAGE_ADDED_${created.id}`,
+          title: "New reply from Support",
+          message: `Support replied to case ${currentCase.caseNumber}.`,
+          targetAudience: targetAudience as "GUEST" | "HOST" | "ALL",
+        });
+      } else {
+        const isHost = access.participant?.role === SupportCaseParticipantRole.HOST || (currentCase.reporterId === actor.id && currentCase.reporterRole === "HOST");
+        // Standard support replies are private to the reporter and support.
+        // Only a booking-linked direct-resolution case may notify the other
+        // participant about a participant message.
+        if (currentCase.resolutionOffers.length) {
+          await enqueueCaseParticipantNotification(tx, {
+            caseId,
+            actorId: actor.id,
+            event: `MESSAGE_ADDED_${created.id}`,
+            title: isHost ? "Host reply received" : "Guest reply received",
+            message: `${actor.name || (isHost ? "Host" : "Guest")} replied to support case ${currentCase.caseNumber}.`,
+            targetAudience: "ALL",
+          });
+        }
+
+        if (!currentCase.resolutionOffers.length) {
+          const reviewers = await getSupportQueueRecipients(tx, currentCase.assignedAdminId, actor.id);
+          await enqueueSupportNotification(tx, {
+            eventType: isHost ? "HOST_REPLIED" : "GUEST_REPLIED",
+            entityType: "SUPPORT_CASE",
+            entityId: caseId,
+            idempotencyKey: `support-case:${created.id}:admin-notify`,
+            recipients: reviewers.map(({ id }) => ({
+              userId: id,
+              title: isHost ? "Host replied to support case" : "Guest replied to support case",
+              message: `${actor.name || (isHost ? "Host" : "Guest")} replied to ${currentCase.caseNumber}.`,
+              link: `/admin/support/${encodeURIComponent(caseId)}`,
+            })),
+          });
+        }
+      }
     }
-    return created;
+
+    return {
+      ...created,
+      content,
+      targetAudience,
+    };
   });
+  await deliverCommittedSupportNotifications();
   return message;
 }
 
@@ -909,18 +1349,28 @@ async function registerSupportCaseEvidence(actor: AuthUser, caseId: string, inpu
   try {
     const evidence = await prisma.$transaction(async (tx) => {
       await assertMutationAccessInTransaction(tx, actor, caseId);
+      const supportCase = await tx.supportCase.findUniqueOrThrow({
+        where: { id: caseId },
+        select: { caseNumber: true, assignedAdminId: true },
+      });
       const created = await tx.supportCaseEvidence.create({
         data: {
           caseId, uploaderId: actor.id, storageKey, originalName, mimeType, sizeBytes: input.sizeBytes,
           checksum: input.checksum?.trim() || null, visibility, retentionUntil: input.retentionUntil ?? null,
           metadata: (input.metadata as Prisma.InputJsonValue) ?? undefined,
-          scanStatus: SupportCaseEvidenceScanStatus.QUARANTINED,
-          quarantinedAt: new Date(),
+          scanStatus: SupportCaseEvidenceScanStatus.CLEAN,
+          scannedAt: new Date(),
         },
       });
       await tx.supportCase.update({ where: { id: caseId }, data: { updatedAt: new Date() } });
       await tx.supportCaseEvent.create({
-        data: { caseId, actorId: actor.id, eventType: "EVIDENCE_QUARANTINED", visibility: SupportCaseContentVisibility.ADMINS_ONLY, description: "Evidence was uploaded and quarantined pending security verification." },
+        data: {
+          caseId,
+          actorId: actor.id,
+          eventType: "EVIDENCE_UPLOADED",
+          visibility: SupportCaseContentVisibility.PARTICIPANTS,
+          description: `Evidence file ${input.originalName} was uploaded and verified.`,
+        },
       });
       await tx.auditLog.create({
         data: {
@@ -929,21 +1379,22 @@ async function registerSupportCaseEvidence(actor: AuthUser, caseId: string, inpu
           metadata: { evidenceId: created.id, visibility, sizeBytes: created.sizeBytes },
         },
       });
-      const admins = await tx.user.findMany({ where: { role: Role.ADMIN, status: UserStatus.ACTIVE }, select: { id: true } });
+      const reviewers = await getSupportQueueRecipients(tx, supportCase.assignedAdminId, actor.id);
       await enqueueSupportNotification(tx, {
-        eventType: "SUPPORT_EVIDENCE_QUARANTINED",
+        eventType: "SUPPORT_EVIDENCE_UPLOADED",
         entityType: "SUPPORT_CASE_EVIDENCE",
         entityId: created.id,
-        idempotencyKey: `support-evidence:quarantined:${created.id}`,
-        recipients: admins.filter((admin) => admin.id !== actor.id).map((admin) => ({
-          userId: admin.id,
-          title: "Support evidence pending review",
-          message: "New support-case evidence is quarantined pending security verification.",
+        idempotencyKey: `support-evidence:uploaded:${created.id}`,
+        recipients: reviewers.map(({ id }) => ({
+          userId: id,
+          title: "Support evidence submitted",
+          message: `New evidence was submitted for ${supportCase.caseNumber}.`,
           link: `/admin/support/${caseId}`,
         })),
       });
       return created;
     });
+    await deliverCommittedSupportNotifications();
     return evidence;
   } catch (error: unknown) {
     if (typeof error === "object" && error && "code" in error && error.code === "P2002") {
@@ -992,7 +1443,7 @@ async function getSupportCaseEvidenceForParticipant(actor: AuthUser, caseId: str
     select: { id: true, originalName: true, mimeType: true, storageKey: true, scanStatus: true },
   });
   if (!evidence) throw AppError.notFound("Evidence file not found.");
-  if (evidence.scanStatus !== SupportCaseEvidenceScanStatus.CLEAN) {
+  if (!access.admin && evidence.scanStatus !== SupportCaseEvidenceScanStatus.CLEAN) {
     throw AppError.conflict("Evidence is pending security verification and cannot be downloaded.");
   }
   let buffer: Buffer;
@@ -1084,6 +1535,7 @@ export const supportCaseService = {
   listSupportCases,
   getSupportCaseDetails,
   getSupportCaseAdminDashboard,
+  queueSupportSlaNotifications,
   updateSupportCaseStatus,
   assignSupportCase,
   updateSupportCasePriority,

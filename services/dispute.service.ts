@@ -1217,11 +1217,14 @@ export async function listDisputesForHost(actor: AuthUser, query: HostDisputeLis
     createdAt: true,
     updatedAt: true,
     resolvedAt: true,
+    // A legacy incident can be mirrored into the new support domain. Expose
+    // only the identifier so host clients can avoid rendering it twice.
+    supportCase: { select: { id: true } },
     listing: { select: { id: true, title: true, photos: true, city: true, country: true } },
     booking: { select: { id: true, startDate: true, endDate: true, status: true, totalPrice: true, currency: true } },
   } as const;
 
-  const [incidents, total, responseRequired, underReview, resolved] = await Promise.all([
+  const [incidents, total, responseRequired, underReview, resolved, linkedToSupportCases, unlinkedResponseRequired, unlinkedUnderReview, unlinkedResolved] = await Promise.all([
     prisma.listingQualityIncident.findMany({
       where,
       select,
@@ -1250,6 +1253,32 @@ export async function listDisputesForHost(actor: AuthUser, query: HostDisputeLis
         AND: [{ OR: [{ status: QualityIncidentStatus.RESOLVED }, metadataPathEquals(["disputeStatus"], "CLOSED")] }],
       } as any,
     }),
+    prisma.listingQualityIncident.count({
+      where: { ...hostCaseVisibilityWhere(actor.id), supportCase: { isNot: null } },
+    }),
+    prisma.listingQualityIncident.count({
+      where: {
+        ...hostCaseVisibilityWhere(actor.id),
+        supportCase: { is: null },
+        status: { in: OPEN_INCIDENT_STATUSES },
+        AND: [hostResponseRequiredWhere(), metadataPathNotEquals(["disputeStatus"], "CLOSED"), metadataPathNotEquals(["disputeStatus"], "RESOLVED")],
+      } as any,
+    }),
+    prisma.listingQualityIncident.count({
+      where: {
+        ...hostCaseVisibilityWhere(actor.id),
+        supportCase: { is: null },
+        status: { in: OPEN_INCIDENT_STATUSES },
+        AND: [metadataPathNotEquals(["disputeStatus"], "CLOSED")],
+      } as any,
+    }),
+    prisma.listingQualityIncident.count({
+      where: {
+        ...hostCaseVisibilityWhere(actor.id),
+        supportCase: { is: null },
+        AND: [{ OR: [{ status: QualityIncidentStatus.RESOLVED }, metadataPathEquals(["disputeStatus"], "CLOSED")] }],
+      } as any,
+    }),
   ]);
 
   return {
@@ -1269,9 +1298,19 @@ export async function listDisputesForHost(actor: AuthUser, query: HostDisputeLis
         createdAt: incident.createdAt,
         updatedAt: incident.updatedAt,
         resolvedAt: incident.resolvedAt,
+        supportCaseId: incident.supportCase?.id || null,
       };
     }),
-    summary: { totalCases: total, responseRequired, underReview, resolved },
+    summary: {
+      totalCases: total,
+      responseRequired,
+      underReview,
+      resolved,
+      linkedToSupportCases,
+      unlinkedResponseRequired,
+      unlinkedUnderReview,
+      unlinkedResolved,
+    },
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   };
 }
