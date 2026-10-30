@@ -125,6 +125,12 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
             {t("host_res_center_desc", "Manage booking complaints, respond to support inquiries, submit evidence, and propose resolutions for your properties.")}
           </p>
         </div>
+        <Link
+          href="/host/resolution-center/direct"
+          className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-300 bg-white px-4 text-sm font-medium text-[#1F1F1F] hover:border-zinc-900"
+        >
+          Direct resolutions
+        </Link>
       </div>
 
       {/* 4 KPI Summary Cards */}

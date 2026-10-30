@@ -222,7 +222,7 @@ export function PropertySelector({
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by title, city or country…"
+              placeholder="Search property by title, city or country…"
               className="w-full rounded-lg border border-[#ddd] bg-[#F7F7F8] py-2.5 pl-10 pr-9 text-xs sm:text-sm text-[#1F1F1F] placeholder:text-[#8E8E93] transition-colors focus:border-[#1F1F1F] focus:bg-white focus:outline-hidden"
             />
             {search && (
@@ -432,7 +432,7 @@ export function PropertySelector({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by title, city or country…"
+                placeholder="Search property by title, city or country…"
                 className="w-full rounded-2xl border border-[#D7D7D7] bg-[#F7F7F8] py-2.5 pl-10 pr-9 text-sm text-[#1F1F1F] focus:border-[#1F1F1F] focus:bg-white focus:outline-hidden"
               />
               {search && (

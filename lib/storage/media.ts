@@ -26,7 +26,8 @@ export type PrivateMediaKind =
   | "host-documents"
   | "message-attachments"
   | "dispute-evidence"
-  | "moderation-evidence";
+  | "moderation-evidence"
+  | "support-case-evidence";
 
 export type MediaKind = PublicMediaKind | PrivateMediaKind;
 
@@ -45,6 +46,7 @@ export const PRIVATE_KINDS = new Set<string>([
   "message-attachments",
   "dispute-evidence",
   "moderation-evidence",
+  "support-case-evidence",
 ]);
 export const ALL_KINDS = new Set<string>([...PUBLIC_KINDS, ...PRIVATE_KINDS]);
 

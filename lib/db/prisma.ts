@@ -2,10 +2,11 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "@/generated/prisma/client";
 
-// Prisma 7's `prisma-client` generator ships no query engine binary — a driver
-// adapter is REQUIRED. We connect to PostgreSQL via `@prisma/adapter-pg`, which
-// bundles `pg`. The connection URL comes from the environment (Next.js loads
-// `.env` automatically; standalone scripts load it via `dotenv/config`). Freshly regenerated.
+// Prisma 7's `prisma-client` generator has no query engine binary, so a
+// driver adapter is required. Keep this module deliberately simple: the
+// instance below is shared through `globalThis` in development. Trying to
+// validate the generated client via its private DMMF internals caused a fresh
+// client (and therefore a new PostgreSQL pool) on every hot reload.
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   throw new Error(
@@ -13,82 +14,32 @@ if (!connectionString) {
   );
 }
 
-type PrismaRuntimeClient = PrismaClient & {
-  _baseDmmf?: { modelMap?: Record<string, { fields?: Array<{ name: string }> }> };
-  _dmmf?: { modelMap?: Record<string, { fields?: Array<{ name: string }> }> };
-};
+function getPoolSize(): number {
+  const configuredSize = Number.parseInt(process.env.DATABASE_POOL_MAX ?? "5", 10);
 
-const createPrismaClient = (): PrismaClient => {
-  if (process.env.NODE_ENV !== "production" && typeof require !== "undefined") {
-    try {
-      Object.keys(require.cache).forEach((key) => {
-        if (key.includes("generated/prisma") || key.includes("generated\\prisma")) {
-          delete require.cache[key];
-        }
-      });
-      // eslint-disable-next-line @typescript-eslint/no-require-imports -- deliberately reload generated client in development
-      const FreshClient = (require("@/generated/prisma/client") as {
-        PrismaClient: typeof PrismaClient;
-      }).PrismaClient;
-      return new FreshClient({
-        adapter: new PrismaPg({ connectionString }),
-        log: ["error", "warn"],
-      });
-    } catch {
-      // Fallback to static import if require fail
-    }
-  }
-
-  return new PrismaClient({
-    adapter: new PrismaPg({ connectionString }),
-    log:
-      process.env.NODE_ENV === "development"
-        ? ["error", "warn"]
-        : ["error"],
-  });
-};
-
-// Reuse a single client across hot-reloads in dev to avoid exhausting connections.
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
-
-function getPrismaClient(): PrismaClient {
-  const existing = globalForPrisma.prisma as PrismaRuntimeClient | undefined;
-  const dmmfModels = existing?._baseDmmf?.modelMap ?? existing?._dmmf?.modelMap ?? {};
-  const listingFields = dmmfModels.Listing?.fields ?? [];
-  const hasHostingTypeField = listingFields.some((field) => field.name === "hostingType");
-  const hasStatusField = listingFields.some((field) => field.name === "status");
-  const hasIsFeaturedField = listingFields.some((field) => field.name === "isFeatured");
-
-  if (
-    existing &&
-    hasHostingTypeField &&
-    hasStatusField &&
-    hasIsFeaturedField &&
-    typeof existing.hostRegistrationRequest !== "undefined" &&
-    typeof existing.hostPermissionOverride !== "undefined" &&
-    typeof existing.adminPermissionOverride !== "undefined" &&
-    typeof existing.adminInvitation !== "undefined" &&
-    typeof existing.listingCoHost !== "undefined" &&
-    typeof existing.appSettings !== "undefined" &&
-    typeof existing.backgroundJob !== "undefined" &&
-    typeof existing.hostEntitlementGrant !== "undefined" &&
-    typeof existing.hostPayoutMethod !== "undefined" &&
-    typeof existing.payoutRoutingRule !== "undefined" &&
-    typeof existing.bookingPayoutDistribution !== "undefined" &&
-    typeof existing.hostTaxpayerProfile !== "undefined" &&
-    typeof existing.hostTaxDocument !== "undefined" &&
-    typeof existing.listing !== "undefined"
-  ) {
-    return existing;
-  }
-
-  const client = createPrismaClient();
-  if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.prisma = client;
-  }
-  return client;
+  return Number.isFinite(configuredSize) && configuredSize > 0
+    ? configuredSize
+    : 5;
 }
 
-export const prisma = getPrismaClient();
+const createPrismaClient = () =>
+  new PrismaClient({
+    adapter: new PrismaPg({
+      connectionString,
+      // The hosted database has a modest connection limit. This is enough
+      // concurrency for the app while leaving room for migrations and tools.
+      max: getPoolSize(),
+    }),
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+  });
+
+const globalForPrisma = globalThis as typeof globalThis & {
+  prisma?: PrismaClient;
+};
+
+// Reuse one Prisma client and its pool across every Turbopack hot reload.
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}

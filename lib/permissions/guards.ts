@@ -24,7 +24,11 @@ export async function requireApiRole(
   req: NextRequest,
   roles: readonly Role[],
 ): Promise<AuthUser> {
-  const user = await getAuthContext(req);
+  // Keep role-only handlers on the same live-account-status policy as
+  // permission-protected handlers. getAuthContext resolves the current user
+  // record, so a previously issued session cannot keep using privileged APIs
+  // after the account has been suspended.
+  const user = await requireApiAuth(req);
   authorize(user, roles);
   return user;
 }

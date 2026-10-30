@@ -16,6 +16,6 @@ export const POST = apiHandler(async (req, ctx: Ctx) => {
     endDate: body.endDate,
     guests: body.guests ? Number(body.guests) : undefined,
   });
-  revalidateBookingPaths(updated.id);
+  revalidateBookingPaths(id);
   return ok(updated);
 });

@@ -8,10 +8,7 @@ import { payoutService, HoldType } from "@/services/payout.service";
 export const dynamic = "force-dynamic";
 
 export const POST = apiHandler(async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
-  const actor = await requireApiPermission(req, [
-    PERMISSIONS.PAYOUTS_VIEW,
-    PERMISSIONS.BOOKINGS_VIEW,
-  ]);
+  const actor = await requireApiPermission(req, PERMISSIONS.PAYOUTS_MANAGE);
 
   const { id } = await params;
   const bookingId = id.startsWith("po_") ? id.replace("po_", "") : id;
@@ -23,4 +20,3 @@ export const POST = apiHandler(async (req: NextRequest, { params }: { params: Pr
   const result = await payoutService.holdPayout(actor, bookingId, { holdType, reason });
   return ok(result);
 });
-

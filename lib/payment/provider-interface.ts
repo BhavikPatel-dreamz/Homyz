@@ -29,7 +29,7 @@ export interface GatewayCapabilities {
   payoutStatusTracking: boolean;
   /** Supports automated settlement and reconciliation reports */
   paymentReconciliation: boolean;
-  /** Supports gateway-level idempotency keys on requests */
+  /** Supports gateway-level idempotency keys on every financial mutation */
   idempotencyKeys: boolean;
 }
 
@@ -123,8 +123,8 @@ export const MOYASAR_CAPABILITY_MATRIX: GatewayCapabilityMatrixEntry[] = [
   },
   {
     capability: "idempotencyKeys",
-    status: "SUPPORTED_UNTESTED",
-    notes: "Moyasar supports request deduplication; Homyz enforces local database uniqueness on idempotencyKey.",
+    status: "REQUIRES_MORE_INFORMATION",
+    notes: "Moyasar documents given_id for payment creation, but does not document a refund idempotency key. Homyz reserves refund dispatches locally and requires reconciliation after an unknown outcome.",
   },
 ];
 
@@ -206,6 +206,8 @@ export interface RefundResult {
   amount: number;
   currency: string;
   status: RefundStatus;
+  /** CONFIRMED is a provider response; final settlement is webhook-authoritative. */
+  providerOutcome?: "CONFIRMED" | "REJECTED" | "UNKNOWN";
   errorCode?: string;
   errorMessage?: string;
   rawResponse?: unknown;
@@ -252,4 +254,3 @@ export interface PaymentProviderInterface {
   verifyWebhookSignature(payload: string, signature: string, secret?: string): boolean;
   parseWebhookEvent(payload: string | Record<string, unknown>): WebhookEventPayload | null;
 }
-

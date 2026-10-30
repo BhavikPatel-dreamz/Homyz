@@ -8,6 +8,7 @@ import { HostHeader } from "@/components/host/host-header";
 import { Container } from "@/components/ui";
 import { hostEarningsAnalyticsService } from "@/services/host-earnings-analytics.service";
 import type { DateRangePreset } from "@/lib/dashboard/reporting-filter";
+import { normalizeAnalyticsReportingFilters } from "@/lib/dashboard/insights-query";
 import { HostEarningsAnalyticsClient } from "./host-earnings-analytics-client";
 import { HOST_REPORTING_CONTAINER_CLASS, HOST_REPORTING_MAIN_CLASS } from "@/components/host/dashboard/host-reporting-layout";
 
@@ -20,11 +21,16 @@ export default async function HostEarningsAnalyticsPage({ searchParams }: { sear
   const params = await searchParams;
   const displayCurrency = (await cookies()).get("homyz_display_currency")?.value || "SAR";
   const single = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
+  const analyticsFilters = normalizeAnalyticsReportingFilters(new URLSearchParams(
+    Object.entries(params).flatMap(([key, value]) =>
+      Array.isArray(value) ? value.map((item) => [key, item]) : value ? [[key, value]] : [],
+    ),
+  ));
   const data = await hostEarningsAnalyticsService.getOverview(actor, {
     listingId: single(params.propertyId) || single(params.listingId),
-    period: single(params.period) as DateRangePreset | undefined,
-    startDate: single(params.startDate),
-    endDate: single(params.endDate),
+    period: analyticsFilters.period as DateRangePreset | undefined,
+    startDate: analyticsFilters.startDate,
+    endDate: analyticsFilters.endDate,
     comparisonStartDate: single(params.comparisonStartDate),
     comparisonEndDate: single(params.comparisonEndDate),
     currency: single(params.currency) || displayCurrency,

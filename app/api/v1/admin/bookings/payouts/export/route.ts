@@ -6,15 +6,23 @@ import { payoutService } from "@/services/payout.service";
 
 export const dynamic = "force-dynamic";
 
-export const GET = apiHandler(async (req: NextRequest) => {
-  const actor = await requireApiPermission(req, [
-    PERMISSIONS.PAYOUTS_VIEW,
-    PERMISSIONS.BOOKINGS_VIEW,
-  ]);
+// Generating this file marks payout distributions as EXPORTED. Keep it a POST
+// action so navigation, crawlers, and browser prefetching cannot mutate
+// settlement state.
+export const POST = apiHandler(async (req: NextRequest) => {
+  // Exporting creates settlement records, so it is a payout mutation rather
+  // than a view-only report download.
+  const actor = await requireApiPermission(req, PERMISSIONS.PAYOUTS_MANAGE);
 
-  const { searchParams } = new URL(req.url);
-  const idsParam = searchParams.get("ids");
-  const bookingIds = idsParam ? idsParam.split(",").map((s) => s.trim()).filter(Boolean) : undefined;
+  let bookingIds: string[] | undefined;
+  try {
+    const body = await req.json();
+    if (Array.isArray(body.bookingIds)) {
+      bookingIds = body.bookingIds.filter((id: unknown): id is string => typeof id === "string" && id.trim().length > 0);
+    }
+  } catch {
+    // An empty request body exports all eligible distributions.
+  }
 
   const csvContent = await payoutService.exportBatchSettlementCSV(actor, bookingIds);
 
@@ -28,4 +36,3 @@ export const GET = apiHandler(async (req: NextRequest) => {
     },
   });
 });
-

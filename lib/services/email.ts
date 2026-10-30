@@ -20,6 +20,10 @@ interface DeliveryOptions {
   requireDelivery?: boolean;
 }
 
+export function isEmailDeliveryConfigured(): boolean {
+  return Boolean(process.env.RESEND_API_KEY?.trim());
+}
+
 function appUrl(): string {
   return process.env.APP_URL ?? "http://localhost:3000";
 }
@@ -116,6 +120,25 @@ async function deliver(msg: EmailMessage, options: DeliveryOptions = {}): Promis
   console.warn(
     "[email] RESEND_API_KEY not configured in production; email not sent",
   );
+}
+
+/**
+ * Operational notifications are sent only when the real provider is configured.
+ * Console development fallback is intentionally not used: an outbox consumer
+ * must never record a pretend email delivery.
+ */
+export async function sendOperationalNotificationEmail(message: EmailMessage): Promise<{ providerMessageId: string | null }> {
+  const resend = getResendClient();
+  if (!resend) throw new Error("EMAIL_PROVIDER_NOT_CONFIGURED");
+  const { data, error } = await resend.emails.send({
+    from: formatFromAddress(process.env.EMAIL_FROM),
+    to: message.to,
+    subject: message.subject,
+    text: message.text,
+    ...(message.html ? { html: message.html } : {}),
+  });
+  if (error) throw new Error(`EMAIL_PROVIDER_REJECTED:${error.message}`);
+  return { providerMessageId: data?.id ?? null };
 }
 
 export async function sendVerificationEmail(
@@ -554,4 +577,3 @@ export async function sendHostApplicationSubmittedEmail(params: {
 
   await deliver({ to, subject: `[Homyz] Host Application Received (${applicationId})`, text, html });
 }
-

@@ -9,7 +9,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { PropertySelector } from "@/components/host/reporting/property-selector";
 import { DatePeriodPicker, type DatePeriodPickerState } from "@/components/host/reporting/date-period-picker";
 import { PeriodComparisonModal, type ComparisonPeriodConfig } from "@/components/host/reporting/period-comparison-modal";
-import { EarningsInteractiveChart } from "@/components/host/reporting/earnings-interactive-chart";
+import { EarningsPerformanceCard } from "@/components/host/earnings/earnings-performance-card";
 import type { TimeframeGranularity } from "@/lib/dashboard/reporting-filter";
 import type { HostDashboardEntitlements } from "@/lib/entitlements/host-dashboard";
 import { ChevronRightIcon } from "@/components/host/account-settings/icons";
@@ -151,6 +151,21 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
     if (date) scope.set("date", date);
     if (startDate) scope.set("startDate", startDate);
     if (endDate) scope.set("endDate", endDate);
+    [
+      "weekStart",
+      "quarter",
+      "compare",
+      "compareTimeframe",
+      "compareStartDate",
+      "compareEndDate",
+      "compareMonth",
+      "compareYear",
+      "compareQuarter",
+      "comparePreset",
+    ].forEach((key) => {
+      const value = query.get(key);
+      if (value) scope.set(key, value);
+    });
     const suffix = scope.toString();
     return `${path}${suffix ? `?${suffix}` : ""}`;
   };
@@ -186,8 +201,10 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       (totals, point) => ({
         gross: totals.gross + point.grossEarnings,
         fees: totals.fees + point.platformFee,
+        refunds: totals.refunds + point.refunds,
+        adjustments: totals.adjustments + point.adjustments,
       }),
-      { gross: 0, fees: 0 },
+      { gross: 0, fees: 0, refunds: 0, adjustments: 0 },
     ),
     [chartPoints],
   );
@@ -424,7 +441,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/60 bg-[#FCDF9C]/25 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#1F1F1F]">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/60 bg-[#FCDF9C]/25 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#1F1F1F]">
                   <span className="size-1.5 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
                   Period Comparison
                 </span>
@@ -484,39 +501,13 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
         </div>
       )}
 
-      {/* ── Section B: Main Earnings Chart (Visual Chart FIRST) ── */}
-      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-xs sm:p-6 sm:rounded-3xl lg:p-8">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-zinc-100 pb-4">
-          <div>
-            <h2 className="text-lg min-[480px]:text-xl font-medium tracking-tight text-[#1f1f1f]">Earnings performance</h2>
-            <p className="mt-1 text-xs sm:text-sm text-[#727272]">
-              {reporting.chart.currency || "SAR"} realized net host payouts across {reporting.timeframeLabel || reporting.monthLabel}
-            </p>
-            {reporting.totalsByCurrency.length > 1 && (
-              <p className="mt-1 text-xs sm:text-sm text-[#727272]">
-                Amounts stay separated by settlement currency.
-              </p>
-            )}
-          </div>
-          {reporting.totalsByCurrency.length > 1 && (
-            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-medium text-[#727272]">
-              Reporting in {reporting.chart.currency || "SAR"}
-            </span>
-          )}
-        </div>
-
-        <div className="mt-4 overflow-x-auto">
-          <EarningsInteractiveChart
-            points={chartPoints}
-            currency={reporting.chart.currency || "SAR"}
-            timeframeLabel={reporting.timeframeLabel || reporting.monthLabel}
-            comparisonLabel={reporting.comparison?.periodLabel}
-            selectedPointIndex={selectedPoint}
-            onSelectPoint={(idx) => setSelectedPoint(idx)}
-            selectedListingId={reporting.selectedListingId}
-          />
-        </div>
-      </section>
+      {/* ── Section B: Main Earnings Chart & Performance Dashboard (Design Reference Match) ── */}
+      <EarningsPerformanceCard
+        reporting={reporting}
+        currency={reporting.chart.currency || selectedTotals?.currency || "SAR"}
+        selectedPointIndex={selectedPoint}
+        onSelectPoint={setSelectedPoint}
+      />
 
       {/* ── Section C: Earnings Numerical KPI Cards (Numbers BELOW Chart) ── */}
       <section
@@ -572,13 +563,6 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
             comparisonLabel={reporting.comparison?.periodLabel}
             currency={reporting.chart.currency || selectedTotals?.currency || "SAR"}
           />
-          <PeriodFinancialMetric
-            label="Realized net earnings"
-            value={selectedTotals?.monthlyRecognized || 0}
-            comparisonValue={reporting.comparison?.netEarnings}
-            comparisonLabel={reporting.comparison?.periodLabel}
-            currency={reporting.chart.currency || selectedTotals?.currency || "SAR"}
-          />
           <div className="min-[480px]:col-span-2 lg:col-span-1">
             <PeriodFinancialMetric
               label="Host service fees"
@@ -589,18 +573,30 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
               unfavorableIncrease
             />
           </div>
+          <PeriodFinancialMetric
+            label="Refunds and adjustments"
+            value={periodFinancials.refunds + periodFinancials.adjustments}
+            currency={reporting.chart.currency || selectedTotals?.currency || "SAR"}
+            unfavorableIncrease
+          />
         </div>
 
-        {/* 3-Card KPI Grid */}
+        {/* Supporting KPIs — payouts remain in the dedicated activity section. */}
         <div className="mt-6 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4">
-            <p className="text-xs sm:text-sm font-normal text-[#727272]">Upcoming payout</p>
+            <p className="text-xs sm:text-sm font-normal text-[#727272]">Bookings</p>
             <p className="mt-1 text-xl min-[480px]:text-2xl font-medium tracking-tight text-[#1f1f1f] truncate">
-              {selectedTotals
-                ? fmt(selectedTotals.upcomingPayout, selectedTotals.currency)
-                : "—"}
+              {(reporting.performanceMetrics?.bookingsCount || 0).toLocaleString("en-US")}
             </p>
-            <p className="mt-6 pt-3 border-t border-zinc-200 text-xs text-[#727272]">Scheduled and ready for release</p>
+            <p className="mt-6 pt-3 border-t border-zinc-200 text-xs text-[#727272]">Completed stays in this period</p>
+          </div>
+
+          <div className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4">
+            <p className="text-xs sm:text-sm font-normal text-[#727272]">Average per booking</p>
+            <p className="mt-1 text-xl min-[480px]:text-2xl font-medium tracking-tight text-[#1f1f1f] truncate">
+              {fmt(reporting.performanceMetrics?.averagePerBooking || 0, reporting.chart.currency || selectedTotals?.currency || "SAR")}
+            </p>
+            <p className="mt-6 pt-3 border-t border-zinc-200 text-xs text-[#727272]">Realized net per completed stay</p>
           </div>
 
           <button
@@ -614,23 +610,10 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
               <span className="size-5 rounded-full text-sm border border-[#727272] text-[#727272] flex justify-center items-center shrink-0">ℹ</span>
             </div>
             <p className="mt-1 text-xl min-[480px]:text-2xl font-medium tracking-tight text-[#1f1f1f] truncate">
-              {selectedTotals
-                ? fmt(
-                  selectedTotals.ytdNet + selectedTotals.ytdAdjustments,
-                  selectedTotals.currency,
-                )
-                : "—"}
+              {selectedTotals ? fmt(selectedTotals.ytdNet + selectedTotals.ytdAdjustments, selectedTotals.currency) : "—"}
             </p>
             <p className="mt-6 pt-3 border-t border-zinc-200 text-xs text-[#727272]">Full {reporting.selectedYear} cumulative</p>
           </button>
-
-          <div className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4 min-[480px]:col-span-2 lg:col-span-1">
-            <p className="text-xs sm:text-sm font-normal text-[#727272]">Settled payouts volume</p>
-            <p className="mt-1 text-xl min-[480px]:text-2xl font-medium tracking-tight text-[#1f1f1f] truncate">
-              {fmt(data.summary.totalPaidVolume, selectedTotals?.currency || "SAR")}
-            </p>
-            <p className="mt-6 pt-3 border-t border-zinc-200 text-xs text-[#727272]">{data.summary.totalPaidCount} verified payout transfers</p>
-          </div>
         </div>
 
         {reporting.unavailableSnapshotCount > 0 && (

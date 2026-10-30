@@ -121,6 +121,27 @@ export async function processPaymentWebhook(
       throw AppError.notFound("Payment not found during atomic update.");
     }
 
+    // The optimistic check above avoids needless work, while this check under
+    // the payment lock closes the race between concurrent deliveries of the
+    // same webhook event. AuditLog has no unique constraint for this key.
+    const processedEvent = await tx.auditLog.findFirst({
+      where: {
+        resourceType: "WEBHOOK_EVENT",
+        resourceId: eventId,
+        action: "PAYMENT_WEBHOOK_PROCESSED",
+      },
+      select: { id: true },
+    });
+    if (processedEvent) {
+      return {
+        payment: freshPayment,
+        booking: freshPayment.booking,
+        status: freshPayment.status,
+        updated: false,
+        duplicate: true,
+      };
+    }
+
     // Terminal state protection: terminal states cannot be regressed by delayed/out-of-order events
     if (freshPayment.status === PaymentStatus.REFUNDED || freshPayment.status === PaymentStatus.VOIDED) {
       return {
@@ -145,6 +166,7 @@ export async function processPaymentWebhook(
           booking: freshPayment.booking,
           status: freshPayment.status,
           updated: false,
+          duplicate: false,
         };
       }
 
@@ -189,11 +211,11 @@ export async function processPaymentWebhook(
           data: {
             status: RefundStatus.SUCCEEDED,
             succeededAt: now,
-            providerRefundId: String(event.data.id || paymentProviderId),
             metadata: {
               ...((existingRefund.metadata as Record<string, unknown>) || {}),
               webhookSynchronizedAt: now.toISOString(),
               webhookEventId: eventId,
+              providerPaymentId: paymentProviderId,
             },
           },
         });
@@ -213,10 +235,10 @@ export async function processPaymentWebhook(
               approvedById: "GATEWAY_WEBHOOK",
               processedAt: now,
               succeededAt: now,
-              providerRefundId: String(event.data.id || paymentProviderId),
               metadata: {
                 refundType: nextRefundedAmount >= freshPayment.capturedAmount ? "FULL" : "PARTIAL",
                 webhookEventId: eventId,
+                providerPaymentId: paymentProviderId,
               },
             },
           });
@@ -281,6 +303,7 @@ export async function processPaymentWebhook(
       booking: updatedBooking,
       status: targetPaymentStatus,
       updated: true,
+      duplicate: false,
     };
   });
 
@@ -347,7 +370,7 @@ export async function processPaymentWebhook(
 
   return {
     success: true,
-    duplicate: false,
+    duplicate: Boolean(result.duplicate),
     eventId,
     paymentId: payment.id,
     bookingId: payment.bookingId,
@@ -355,4 +378,3 @@ export async function processPaymentWebhook(
     message: "Webhook processed successfully.",
   };
 }
-

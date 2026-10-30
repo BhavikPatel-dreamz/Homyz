@@ -74,17 +74,17 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
       <header className="border-b border-zinc-200 pb-6">
         <Link
           href={returnToReportsHref}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 transition-colors hover:text-zinc-950"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 transition-colors hover:text-zinc-950"
         >
           ← Back to all reports
         </Link>
 
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
               Annual Financial Statement
             </p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
+            <h1 className="mt-1 text-3xl font-medium tracking-tight text-zinc-950 sm:text-4xl">
               {data.year} Earnings Report
             </h1>
             <p className="mt-1 text-sm text-zinc-600">
@@ -98,7 +98,7 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
               type="button"
               disabled={downloadingType !== null}
               onClick={() => handleDownload("csv")}
-              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 px-4 py-2 text-xs font-semibold text-zinc-800 transition-colors hover:border-zinc-900 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 px-4 py-2 text-xs font-medium text-zinc-800 transition-colors hover:border-zinc-900 disabled:opacity-50"
             >
               {downloadingType === "csv" ? "Exporting…" : "Download CSV"}
             </button>
@@ -106,7 +106,7 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
               type="button"
               disabled={downloadingType !== null}
               onClick={() => handleDownload("pdf")}
-              className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-zinc-800 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-4 py-2 text-xs font-medium text-white shadow-xs transition-colors hover:bg-zinc-800 disabled:opacity-50"
             >
               {downloadingType === "pdf" ? "Exporting…" : "Download PDF"}
             </button>
@@ -116,11 +116,11 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
 
       {/* Annual Summary Card */}
       <section className="rounded-3xl border border-zinc-200 bg-gradient-to-br from-zinc-50 to-white p-6 shadow-xs sm:p-8">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+        <h2 className="text-xs font-medium uppercase tracking-wider text-zinc-500">
           Annual Performance
         </h2>
         <div className="mt-2 flex flex-wrap items-baseline gap-3">
-          <p className="text-4xl font-bold tracking-tight text-zinc-950 sm:text-5xl">
+          <p className="text-4xl font-medium tracking-tight text-zinc-950 sm:text-5xl">
             {formatNative(summary.netEarnings, currency)}
           </p>
           <span className="text-sm font-medium text-zinc-500">Total Net Earnings</span>
@@ -129,25 +129,25 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
         <div className="mt-8 grid grid-cols-2 gap-4 border-t border-zinc-200 pt-6 sm:grid-cols-4">
           <div>
             <p className="text-xs text-zinc-500">Gross earnings</p>
-            <p className="mt-1 text-lg font-semibold text-zinc-900">
+            <p className="mt-1 text-lg font-medium text-zinc-900">
               {formatNative(summary.grossEarnings, currency)}
             </p>
           </div>
           <div>
             <p className="text-xs text-zinc-500">Total deductions</p>
-            <p className="mt-1 text-lg font-semibold text-zinc-700">
+            <p className="mt-1 text-lg font-medium text-zinc-700">
               −{formatNative(summary.platformFee + summary.taxesWithheld, currency)}
             </p>
           </div>
           <div>
             <p className="text-xs text-zinc-500">Completed payouts</p>
-            <p className="mt-1 text-lg font-semibold text-emerald-700">
+            <p className="mt-1 text-lg font-medium text-emerald-700">
               {formatNative(summary.paidPayouts, currency)}
             </p>
           </div>
           <div>
             <p className="text-xs text-zinc-500">Upcoming payouts</p>
-            <p className="mt-1 text-lg font-semibold text-zinc-900">
+            <p className="mt-1 text-lg font-medium text-zinc-900">
               {formatNative(summary.upcomingPayouts, currency)}
             </p>
           </div>
@@ -158,12 +158,12 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
         <div className="flex items-baseline justify-between">
           <div>
-            <h2 className="text-lg font-bold text-zinc-950">Monthly earnings comparison</h2>
+            <h2 className="text-lg font-medium text-zinc-950">Monthly earnings comparison</h2>
             <p className="text-xs text-zinc-500">
               Net earnings recognized across 12 calendar months
             </p>
           </div>
-          <span className="text-xs font-semibold text-zinc-400">{currency}</span>
+          <span className="text-xs font-medium text-zinc-400">{currency}</span>
         </div>
 
         {/* Visual Bar Graph */}
@@ -202,7 +202,7 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
         {selectedMonthIndex !== null && (
           <div className="mt-4 flex items-center justify-between rounded-xl bg-zinc-50 p-3 text-sm">
             <div>
-              <span className="font-semibold text-zinc-900">
+              <span className="font-medium text-zinc-900">
                 {data.monthlyBreakdown[selectedMonthIndex].monthName} {data.year}:
               </span>{" "}
               {formatNative(data.monthlyBreakdown[selectedMonthIndex].netEarnings, currency)}
@@ -211,7 +211,7 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
               href={`/host/earnings/reports/monthly/${data.year}/${data.monthlyBreakdown[selectedMonthIndex].month}${
                 query.toString() ? `?${query.toString()}` : ""
               }`}
-              className="font-semibold text-zinc-950 underline underline-offset-2 hover:text-zinc-600"
+              className="font-medium text-zinc-950 underline underline-offset-2 hover:text-zinc-600"
             >
               Open detailed report →
             </Link>
@@ -221,14 +221,14 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
 
       {/* Monthly Breakdown Table */}
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
-        <h2 className="text-xl font-bold text-zinc-950">Monthly report breakdown</h2>
+        <h2 className="text-xl font-medium text-zinc-950">Monthly report breakdown</h2>
         <p className="mt-1 text-xs text-zinc-500">
           Click any month to open its dedicated accounting snapshot and transaction details
         </p>
 
         <div className="mt-6 overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-zinc-200 text-xs font-semibold uppercase text-zinc-500">
+            <thead className="border-b border-zinc-200 text-xs font-medium uppercase text-zinc-500">
               <tr>
                 <th className="pb-3">Month</th>
                 <th className="pb-3 text-right">Gross</th>
@@ -247,7 +247,7 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
 
                 return (
                   <tr key={m.month} className="group hover:bg-zinc-50/70">
-                    <td className="py-3.5 font-semibold text-zinc-900">
+                    <td className="py-3.5 font-medium text-zinc-900">
                       <Link href={monthDetailHref} className="hover:underline">
                         {m.monthName} {m.year}
                       </Link>
@@ -258,7 +258,7 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
                     <td className="py-3.5 text-right text-zinc-600">
                       −{formatNative(m.platformFee + m.taxesWithheld, currency)}
                     </td>
-                    <td className="py-3.5 text-right font-bold text-zinc-950">
+                    <td className="py-3.5 text-right font-medium text-zinc-950">
                       {formatNative(m.netEarnings, currency)}
                     </td>
                     <td className="py-3.5 text-right text-emerald-700">
@@ -266,7 +266,7 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
                     </td>
                     <td className="py-3.5 text-center">
                       <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                        className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${
                           m.status === "COMPLETED"
                             ? "bg-emerald-50 text-emerald-700"
                             : m.status === "IN_PROGRESS"
@@ -284,7 +284,7 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
                     <td className="py-3.5 text-right">
                       <Link
                         href={monthDetailHref}
-                        className="text-xs font-semibold text-zinc-900 underline underline-offset-2 hover:text-zinc-600"
+                        className="text-xs font-medium text-zinc-900 underline underline-offset-2 hover:text-zinc-600"
                       >
                         View →
                       </Link>
@@ -299,14 +299,14 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
 
       {/* Property-wise annual breakdown */}
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
-        <h2 className="text-xl font-bold text-zinc-950">Property annual earnings breakdown</h2>
+        <h2 className="text-xl font-medium text-zinc-950">Property annual earnings breakdown</h2>
         <p className="mt-1 text-xs text-zinc-500">
           Annual financial totals aggregated per authorized property
         </p>
 
         <div className="mt-6 overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-zinc-200 text-xs font-semibold uppercase text-zinc-500">
+            <thead className="border-b border-zinc-200 text-xs font-medium uppercase text-zinc-500">
               <tr>
                 <th className="pb-3">Property Title</th>
                 <th className="pb-3 text-center">Bookings</th>
@@ -319,7 +319,7 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
               {data.propertyBreakdown.length > 0 ? (
                 data.propertyBreakdown.map((p) => (
                   <tr key={p.listingId} className="hover:bg-zinc-50/70">
-                    <td className="py-3.5 font-semibold text-zinc-900">{p.listingTitle}</td>
+                    <td className="py-3.5 font-medium text-zinc-900">{p.listingTitle}</td>
                     <td className="py-3.5 text-center text-zinc-600">{p.transactionsCount}</td>
                     <td className="py-3.5 text-right text-zinc-600">
                       {formatNative(p.grossEarnings, currency)}
@@ -327,7 +327,7 @@ export function HostYearlyReportClient({ initialData }: HostYearlyReportClientPr
                     <td className="py-3.5 text-right text-zinc-600">
                       −{formatNative(p.deductions, currency)}
                     </td>
-                    <td className="py-3.5 text-right font-bold text-zinc-950">
+                    <td className="py-3.5 text-right font-medium text-zinc-950">
                       {formatNative(p.netEarnings, currency)}
                     </td>
                   </tr>

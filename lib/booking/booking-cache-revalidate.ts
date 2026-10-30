@@ -36,3 +36,4 @@ export function revalidateBookingPaths(bookingId?: string) {
     console.warn("[revalidateBookingPaths] Warning:", err);
   }
 }
+

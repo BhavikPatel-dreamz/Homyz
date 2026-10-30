@@ -31,7 +31,10 @@ export class MoyasarAdapter implements PaymentProviderInterface {
     hostTransfersPayouts: false, // Acquiring gateway only, requires Saudi corporate banking
     payoutStatusTracking: false,
     paymentReconciliation: true,
-    idempotencyKeys: true,
+    // Moyasar documents a given_id for payment creation, but not an
+    // idempotency key on its refund endpoint. Refund safety is therefore
+    // enforced by the local durable dispatch claim in refund.service.
+    idempotencyKeys: false,
   };
 
   private get apiKey(): string | undefined {
@@ -344,52 +347,87 @@ export class MoyasarAdapter implements PaymentProviderInterface {
         amount: params.amount,
         currency: params.currency,
         status: RefundStatus.FAILED,
+        providerOutcome: "REJECTED",
         errorCode: "NOT_CONFIGURED",
         errorMessage: "Payment provider credentials are not configured.",
       };
     }
 
-    const response = await fetch(
-      `${this.baseUrl}/payments/${encodeURIComponent(params.providerPaymentId)}/refund`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${Buffer.from(`${this.apiKey}:`).toString("base64")}`,
-          "Content-Type": "application/json",
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/payments/${encodeURIComponent(params.providerPaymentId)}/refund`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${Buffer.from(`${this.apiKey}:`).toString("base64")}`,
+            "Content-Type": "application/json",
+          },
+          // The documented refund API accepts amount. Do not send an
+          // undocumented idempotency header or assume data.id is a refund ID.
+          body: JSON.stringify({ amount: params.amount }),
         },
-        body: JSON.stringify({
+      );
+      const raw = await response.text();
+      let data: Record<string, any> = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        return {
+          success: false,
+          providerRefundId: "",
+          providerPaymentId: params.providerPaymentId,
           amount: params.amount,
-          reason: params.reason,
-        }),
-      },
-    );
+          currency: params.currency,
+          status: RefundStatus.PROCESSING,
+          providerOutcome: "UNKNOWN",
+          errorCode: "PROVIDER_INVALID_RESPONSE",
+          errorMessage: "Provider returned an unreadable refund response.",
+          rawResponse: raw,
+        };
+      }
 
-    const data = await response.json();
-    if (!response.ok) {
+      if (!response.ok) {
+        const unknown = response.status >= 500;
+        return {
+          success: false,
+          providerRefundId: "",
+          providerPaymentId: params.providerPaymentId,
+          amount: params.amount,
+          currency: params.currency,
+          status: unknown ? RefundStatus.PROCESSING : RefundStatus.FAILED,
+          providerOutcome: unknown ? "UNKNOWN" : "REJECTED",
+          errorCode: data.type || (unknown ? "PROVIDER_UNAVAILABLE" : "REFUND_FAILED"),
+          errorMessage: data.message || "Failed to create refund with provider.",
+          rawResponse: data,
+        };
+      }
+
+      return {
+        success: true,
+        // Moyasar returns the payment object. It is not a refund transaction
+        // identifier and must not be stored in BookingRefund.providerRefundId.
+        providerRefundId: "",
+        providerPaymentId: params.providerPaymentId,
+        amount: typeof data.amount === "number" ? data.amount : params.amount,
+        currency: typeof data.currency === "string" ? data.currency : params.currency,
+        status: RefundStatus.PROCESSING,
+        providerOutcome: "CONFIRMED",
+        rawResponse: data,
+      };
+    } catch (error) {
       return {
         success: false,
         providerRefundId: "",
         providerPaymentId: params.providerPaymentId,
         amount: params.amount,
         currency: params.currency,
-        status: RefundStatus.FAILED,
-        errorCode: data.type || "REFUND_FAILED",
-        errorMessage: data.message || "Failed to create refund with provider.",
-        rawResponse: data,
+        status: RefundStatus.PROCESSING,
+        providerOutcome: "UNKNOWN",
+        errorCode: "PROVIDER_NETWORK_ERROR",
+        errorMessage: error instanceof Error ? error.message : "Provider request failed.",
       };
     }
-
-    return {
-      success: true,
-      providerRefundId: data.id,
-      providerPaymentId: params.providerPaymentId,
-      amount: data.amount,
-      currency: data.currency,
-      status: RefundStatus.SUCCEEDED,
-      rawResponse: data,
-    };
   }
 }
 
 export const moyasarAdapter = new MoyasarAdapter();
-

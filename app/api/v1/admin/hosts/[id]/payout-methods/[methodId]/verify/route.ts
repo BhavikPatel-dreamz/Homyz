@@ -12,10 +12,7 @@ export const POST = apiHandler(
     req: NextRequest,
     { params }: { params: Promise<{ id: string; methodId: string }> },
   ) => {
-    const actor = await requireApiPermission(req, [
-      PERMISSIONS.HOSTS_VIEW,
-      PERMISSIONS.PAYOUTS_VIEW,
-    ]);
+    const actor = await requireApiPermission(req, PERMISSIONS.PAYOUTS_MANAGE);
 
     const { id: hostId, methodId } = await params;
     const body = await req.json();
@@ -33,4 +30,3 @@ export const POST = apiHandler(
     return ok(result);
   },
 );
-
