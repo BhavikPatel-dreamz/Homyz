@@ -1144,6 +1144,12 @@ model Listing {
   approvalMethod           ListingApprovalMethod?
   licenseUnlistedAt        DateTime?
   licenseUnlistingReason   String?                         @db.Text
+  // Saudi registration data is per-listing. The national ID is encrypted and
+  // deliberately excluded from normal listing DTOs and logs.
+  licenseAccommodationType String?
+  encryptedLicenseNationalId String?                       @db.Text
+  licenseNationalIdLast4   String?
+  licenseRegistrationUpdatedAt DateTime?
 
   deletedAt     DateTime?
   removalReason Json?

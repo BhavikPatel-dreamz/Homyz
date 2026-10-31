@@ -22,7 +22,7 @@ import type {
   CreateListingInput,
   UpdateListingInput,
 } from "@/lib/validation/listing";
-import { BookingStatus, ListingCoHostStatus, ListingStatus, ReviewDirection, ReviewStatus, Role } from "@/generated/prisma/enums";
+import { BookingStatus, ListingCoHostStatus, ListingLicenseEligibilityStatus, ListingStatus, ReviewDirection, ReviewStatus, Role } from "@/generated/prisma/enums";
 import { Prisma, type Listing } from "@/generated/prisma/client";
 import { getExpiryThresholdDate, isBookingRequestExpired } from "@/lib/booking/booking-expiry";
 import { validateStayAvailability } from "@/lib/booking/availability";
@@ -2095,11 +2095,11 @@ async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> 
   }
 
   // An existing Saudi licence link is a legal eligibility constraint, not a
-  // replacement for normal moderation.  Check it synchronously so a listing
-  // cannot be republished in the gap before the expiry job next runs. Listings
-  // without a licence link can still follow the normal manual-review path.
-  if (isSaudiArabia(existing.country) && ["EXPIRED", "INELIGIBLE"].includes(existing.licenseEligibilityStatus)) {
-    throw AppError.badRequest("This Saudi listing has an expired or ineligible license and cannot be published until it is reverified.");
+  // replacement for normal moderation. Check it synchronously so a listing
+  // cannot be republished unless its license is verified and eligible. Listings
+  // without a licence link (non-Saudi) follow the normal review path.
+  if (isSaudiArabia(existing.country) && existing.licenseEligibilityStatus !== ListingLicenseEligibilityStatus.ELIGIBLE) {
+    throw AppError.badRequest("This Saudi listing has an unverified, expired, or ineligible license and cannot be published until it is reverified and eligible.");
   }
 
   // Direct publishing is reserved for admins and listings already approved

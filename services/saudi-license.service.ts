@@ -18,6 +18,11 @@ import { auditService } from "@/services/audit.service";
 import { listingService } from "@/services/listing.service";
 import { notificationService } from "@/services/notification.service";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions/permissions";
+import { decryptAccountIdentifier, encryptAccountIdentifier } from "@/lib/security/payout-encryption";
+import {
+  validateSaudiRegistrationDetails,
+  type SaudiRegistrationDetailsInput,
+} from "@/lib/validation/saudi-license-registration";
 
 type ProviderResult = {
   status: PropertyLicenseStatus;
@@ -42,6 +47,13 @@ interface SaudiLicenseProvider {
 }
 
 const normalizedLicense = (value: string) => value.trim().toUpperCase().replace(/\s+/g, "");
+function parseRegistrationDetails(input: SaudiRegistrationDetailsInput) {
+  try {
+    return validateSaudiRegistrationDetails(input);
+  } catch (error) {
+    throw AppError.validation(error instanceof Error ? error.message : "Enter valid registration details.");
+  }
+}
 const SAUDI_PORTAL_BASE_URL = "https://customer-gateway.tourism.sa";
 const SAUDI_TOKEN_PATH = "/api/facility-portal/developer/licensing/token";
 const SAUDI_TRAVEL_AGENCY_VERIFY_PATH = "/api/developer-integration/licensing/verify/travel-agency";
@@ -264,11 +276,12 @@ function provider(): SaudiLicenseProvider {
 }
 
 function automaticApprovalEnabled(result: ProviderResult): boolean {
-  return process.env.NODE_ENV !== "production"
-    && process.env.SAUDI_LICENSE_VERIFICATION_ENABLED === "true"
-    && process.env.SAUDI_LICENSE_AUTO_APPROVAL_ENABLED === "true"
-    && ((result.source === LicenseVerificationSource.SANDBOX && result.simulated)
-      || result.source === LicenseVerificationSource.SAUDI_GOVERNMENT);
+  if (process.env.SAUDI_LICENSE_VERIFICATION_ENABLED !== "true" || process.env.SAUDI_LICENSE_AUTO_APPROVAL_ENABLED !== "true") return false;
+  // Sandbox fixtures are never a production publishing authority. A live
+  // government response can be, but only after the provider's explicit host
+  // authorization check has passed (enforced separately in eligibility()).
+  return result.source === LicenseVerificationSource.SAUDI_GOVERNMENT
+    || (result.source === LicenseVerificationSource.SANDBOX && result.simulated && process.env.NODE_ENV !== "production");
 }
 
 function eligibility(result: ProviderResult): ListingLicenseEligibilityStatus {
@@ -523,12 +536,77 @@ async function getListingLicense(actor: AuthUser, listingId: string) {
     eligibilityStatus: link.eligibilityStatus,
     authorizationStatus: ownership?.authorizationStatus ?? LicenseAuthorizationStatus.PENDING,
     simulated: link.license.verificationSource === LicenseVerificationSource.SANDBOX,
-    automaticApprovalAvailable: [LicenseVerificationSource.SANDBOX, LicenseVerificationSource.SAUDI_GOVERNMENT].includes(link.license.verificationSource)
+    automaticApprovalAvailable: (link.license.verificationSource === LicenseVerificationSource.SAUDI_GOVERNMENT
+      || (link.license.verificationSource === LicenseVerificationSource.SANDBOX && process.env.NODE_ENV !== "production"))
       && link.eligibilityStatus === ListingLicenseEligibilityStatus.ELIGIBLE
-      && process.env.NODE_ENV !== "production"
       && process.env.SAUDI_LICENSE_VERIFICATION_ENABLED === "true"
       && process.env.SAUDI_LICENSE_AUTO_APPROVAL_ENABLED === "true",
   };
+}
+
+/**
+ * Registration data is only returned to the authorized host's own wizard.
+ * It is never included in normal listing DTOs, logs, or management endpoints.
+ */
+async function getRegistrationDetails(actor: AuthUser, listingId: string) {
+  const listing = await getOwnedSaudiListing(actor, listingId, "manage");
+  const license = await prisma.propertyLicenseLink.findUnique({
+    where: { listingId }, select: { license: { select: { licenseNumber: true } } },
+  });
+  return {
+    accommodationType: listing.licenseAccommodationType ?? "",
+    licenseNumber: license?.license.licenseNumber ?? "",
+    nationalId: listing.encryptedLicenseNationalId
+      ? decryptAccountIdentifier(listing.encryptedLicenseNationalId) ?? ""
+      : "",
+    complete: Boolean(
+      listing.licenseAccommodationType
+      && license?.license.licenseNumber
+      && listing.encryptedLicenseNationalId,
+    ),
+  };
+}
+
+/**
+ * Persist the required Saudi registration fields before any provider call.
+ * Saving a registration always invalidates this listing's previous result,
+ * including when only the national ID or accommodation type changed.
+ */
+async function saveRegistrationDetails(actor: AuthUser, listingId: string, input: SaudiRegistrationDetailsInput) {
+  const listing = await getOwnedSaudiListing(actor, listingId, "manage");
+  const details = parseRegistrationDetails(input);
+  await saveLicenseForListing(actor, listingId, details.licenseNumber, "Registration details updated");
+  const now = new Date();
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await tx.listing.update({
+      where: { id: listingId },
+      data: {
+        licenseAccommodationType: details.accommodationType,
+        encryptedLicenseNationalId: encryptAccountIdentifier(details.nationalId),
+        licenseNationalIdLast4: details.nationalId.slice(-4),
+        licenseRegistrationUpdatedAt: now,
+        licenseEligibilityStatus: ListingLicenseEligibilityStatus.PENDING,
+      },
+    });
+    await tx.propertyLicenseLink.updateMany({
+      where: { listingId },
+      data: { eligibilityStatus: ListingLicenseEligibilityStatus.PENDING },
+    });
+  });
+  await invalidateListingCache(listingId, listing.hostId);
+  // The caller already has the submitted national ID; never echo it back in
+  // a save response or any provider-facing response.
+  return { accommodationType: details.accommodationType, licenseNumber: details.licenseNumber, complete: true };
+}
+
+async function assertRegistrationForListing(actor: AuthUser, listingId: string) {
+  const details = await getRegistrationDetails(actor, listingId);
+  if (!details.complete) {
+    throw AppError.badRequest("Add your registration details before verifying this listing.");
+  }
+  // Verify encrypted, persisted values again so neither direct URL navigation
+  // nor a forged client request can bypass the registration constraints.
+  return parseRegistrationDetails(details);
 }
 
 /**
@@ -648,6 +726,7 @@ async function saveLicenseForListing(actor: AuthUser, listingId: string, input: 
 }
 
 async function reverifyForListing(actor: AuthUser, listingId: string) {
+  await assertRegistrationForListing(actor, listingId);
   const license = await getListingLicense(actor, listingId);
   if (!license) throw AppError.badRequest("Verify a Saudi license before requesting reverification.");
   return verifyForListing(actor, listingId, license.licenseNumber);
@@ -725,9 +804,11 @@ async function submitFinal(actor: AuthUser, listingId: string, requestedMethod: 
   }
   const isSaudi = isSaudiArabia(listing.country);
   if (!isSaudi || requestedMethod === "manual") {
-    await prisma.listing.update({ where: { id: listingId }, data: { approvalMethod: ListingApprovalMethod.MANUAL_REVIEW, currentStep: 21 } });
+    await prisma.listing.update({ where: { id: listingId }, data: { approvalMethod: ListingApprovalMethod.MANUAL_REVIEW, currentStep: 22 } });
     return listingService.submitForReview(actor, listingId);
   }
+
+  await assertRegistrationForListing(actor, listingId);
 
   // Treat a previously saved verification as a cache, not publishing evidence.
   // Recheck at the authoritative provider immediately before automatic launch.
@@ -738,11 +819,11 @@ async function submitFinal(actor: AuthUser, listingId: string, requestedMethod: 
     include: { license: { include: { ownerships: { where: { hostId: listing.hostId } } } } },
   });
   const ownership = link?.license.ownerships[0];
-  const canAutoApprove = process.env.NODE_ENV !== "production"
-    && process.env.SAUDI_LICENSE_VERIFICATION_ENABLED === "true"
+  const canAutoApprove = process.env.SAUDI_LICENSE_VERIFICATION_ENABLED === "true"
     && process.env.SAUDI_LICENSE_AUTO_APPROVAL_ENABLED === "true"
     && link?.eligibilityStatus === ListingLicenseEligibilityStatus.ELIGIBLE
-    && [LicenseVerificationSource.SANDBOX, LicenseVerificationSource.SAUDI_GOVERNMENT].includes(link.license.verificationSource)
+    && (link.license.verificationSource === LicenseVerificationSource.SAUDI_GOVERNMENT
+      || (link.license.verificationSource === LicenseVerificationSource.SANDBOX && process.env.NODE_ENV !== "production"))
     && link.license.status === PropertyLicenseStatus.ACTIVE
     && Boolean(link.license.expiryDate && link.license.expiryDate >= new Date())
     && ownership?.authorizationStatus === LicenseAuthorizationStatus.AUTHORIZED;
@@ -759,7 +840,7 @@ async function submitFinal(actor: AuthUser, listingId: string, requestedMethod: 
       approvalMethod: ListingApprovalMethod.SAUDI_LICENSE_AUTOMATIC,
       licenseEligibilityStatus: ListingLicenseEligibilityStatus.ELIGIBLE,
       approvedAt: new Date(),
-      currentStep: 21,
+      currentStep: 22,
     },
   });
   const published = await listingService.publish(actor, listingId);
@@ -825,6 +906,8 @@ async function enforceExpiry() {
 export const saudiLicenseService = {
   verifyForListing,
   saveLicenseForListing,
+  saveRegistrationDetails,
+  getRegistrationDetails,
   reverifyForListing,
   getListingLicense,
   getLicenseManagement,
