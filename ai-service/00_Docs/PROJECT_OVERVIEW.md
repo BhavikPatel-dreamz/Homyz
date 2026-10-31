@@ -122,20 +122,24 @@ The client platform's primary database (users, bookings, payments, properties), 
 
 ---
 
-## 4. Cost vs. Traffic Volume Breakdown
+## 4. OpenAI API Cost vs. Traffic Volume Breakdown
 
-The architecture runs at **~$15 to $25 / month total** based on the following specific traffic benchmarks:
+The OpenAI API consumption runs at **~$6.50 to $14.50 / month total** (including a 20%–50% token buffer for realistic production wiggle room) based on the following traffic benchmarks:
 
-| Metric / Action | Monthly Volume Covered | Monthly Subtotal |
-| :--- | :--- | :--- |
-| **Search Queries** | 100,000 searches / month | ~$0.03 |
-| **Listing Syncs** | 1,000 new listings / month | ~$0.01 |
-| **Photo Vision Analysis** | 20,000 photos / month (1,000 listings × 20) | ~$2.50 |
-| **Review Abuse Moderation** | 2,000 reviews / month | $0.00 (Free) |
-| **Review Summaries** | 2,000 reviews / month | ~$0.10 |
-| **Guest Support Chat** | 5,000 sessions / month (~15,000 messages) | ~$3.20 |
-| **Listing Scam Audits** | 1,000 listing scans / month | ~$0.15 |
-| **OpenAI API Subtotal** | **Covers ~50,000 to 100,000 active visitors** | **~$6.00 / month** |
-| **Qdrant Vector DB** | Up to 100,000 listing vectors in RAM | $0 to $15 / month |
-| **FastAPI Microservice Host** | 24/7 container on Render / Railway / AWS ECS | ~$5 to $10 / month |
-| **TOTAL RUNNING COST** | **Active marketplace traffic** | **~$15 to $25 / month** |
+| Metric / Action | Monthly Volume Covered | Model Used | Calculation Formula & Math (Padded with Wiggle Room) | Monthly Cost |
+| :--- | :--- | :--- | :--- | :--- |
+| **Search Queries** | 100,000 searches / month | `text-embedding-3-small` | `100,000 × 15 tokens = 1.5M tokens × ($0.02 / 1M)` | ~$0.03 |
+| **Listing Syncs (Embeddings)** | 1,000 new listings / month | `text-embedding-3-small` | `1,000 × 65 tokens = 65k tokens × ($0.02 / 1M)` | ~$0.01 |
+| **Photo Vision Analysis** | 20,000 photos / month (1,000 listings × 20) | `gpt-4o-mini` (Vision) | `20,000 × [(3,000 in × $0.15/1M) + (100 out × $0.60/1M)] = 20k × $0.00051`<br>*(Optimized with `detail: "low"`: 300 in / 100 out = **$2.10/mo**)* | ~$10.20 *(Ceiling)*<br>*(~$2.10 Low)* |
+| **Review Abuse Moderation** | 2,000 reviews / month | `omni-moderation-latest` + Regex | `2,000 reviews × $0.00 (OpenAI Free Tier Moderation Endpoint)` | $0.00 (Free) |
+| **Review Aspect Summaries** | 2,000 summaries / month | `gpt-4o-mini` | `2,000 × [(1,000 in × $0.15/1M) + (200 out × $0.60/1M)] = 2k × $0.00027` | ~$0.54 |
+| **Guest Support Chat** | 5,000 sessions / month (~15,000 messages) | `gpt-4o-mini` (SSE) | `15,000 × [(1,000 in × $0.15/1M) + (150 out × $0.60/1M)] = 15k × $0.00024` | ~$3.60 |
+| **Listing Scam & Honeypot Audits** | 1,000 listing scans / month | `gpt-4o-mini` + Spatial Radius | `1,000 × [(800 in × $0.15/1M) + (100 out × $0.60/1M)] = 1k × $0.00018` | ~$0.18 |
+| **TOTAL OPENAI API COST** | **Covers ~50,000 to 100,000 visitors** | **All 5 Core AI Modules** | **Optimized Vision:** $0.03 + $0.01 + $2.10 + $0.00 + $0.54 + $3.60 + $0.18 = **$6.46**<br>**High-Detail Ceiling:** $0.03 + $0.01 + $10.20 + $0.00 + $0.54 + $3.60 + $0.18 = **$14.56** | **~$6.50 / month** *(Optimized)*<br>**~$14.50 / month** *(Ceiling)* |
+
+> [!NOTE]
+> * **Production Pricing & Deployment Analysis**: See [`PRICING_AND_DEPLOYMENT_ANALYSIS.md`](./PRICING_AND_DEPLOYMENT_ANALYSIS.md) for the complete token measurement audit, traveler vs. host funnel model, and self-hosted VPS deployment economics.
+> * **Detailed Workload & Bypass Guide**: See [`AI_WORKLOAD_DISTRIBUTION.md`](./AI_WORKLOAD_DISTRIBUTION.md) for the complete engineering breakdown of what runs locally in Python vs. what gets dispatched to AI, including all $0 short-circuit conditions.
+> * **Demo vs Production**: During the current preview phase on **Google Gemini Free Tier**, the AI provider cost is **$0.00 / month**.
+> * **Photo Vision Pricing**: Padded with up to 3,000 input tokens for multi-tile high-detail ceiling, and 300 tokens for low-detail mode. Local OpenCV pre-checks run at $0 cost and filter out blurry, duplicate, and corrupt photos before calling the vision model.
+> * **ROI Context**: For an accommodation platform charging standard 10–14% marketplace fees, a single typical $450 booking earns $45–$60, which fully covers **3 to 4 months** of the entire OpenAI bill.

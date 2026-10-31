@@ -196,7 +196,25 @@ class PhotoService:
             parser = JsonOutputParser(pydantic_object=PhotoAIAnalysis)
             format_instructions = parser.get_format_instructions()
 
-            b64_data = base64.b64encode(raw_bytes).decode("utf-8")
+            # Optimize image payload: Resize image down to max 1024x1024 if larger
+            # to minimize network bandwidth while preserving visual clarity for AI
+            optimized_bytes = raw_bytes
+            try:
+                with Image.open(io.BytesIO(raw_bytes)) as pil_img:
+                    pil_img_rgb = pil_img.convert("RGB")
+                    max_dim = max(pil_img_rgb.width, pil_img_rgb.height)
+                    if max_dim > 1024:
+                        scale = 1024.0 / max_dim
+                        new_w = int(pil_img_rgb.width * scale)
+                        new_h = int(pil_img_rgb.height * scale)
+                        resized_img = pil_img_rgb.resize((new_w, new_h), Image.Resampling.LANCZOS)
+                        buf = io.BytesIO()
+                        resized_img.save(buf, format="JPEG", quality=85)
+                        optimized_bytes = buf.getvalue()
+            except Exception as exc:
+                logger.debug("Image optimization failed, using original bytes: %s", exc)
+
+            b64_data = base64.b64encode(optimized_bytes).decode("utf-8")
             prompt_text = (
                 "You are an expert accommodation photographer and quality auditor for a luxury marketplace. "
                 "Analyze this single accommodation photo carefully:\n"
@@ -204,9 +222,10 @@ class PhotoService:
                 "'Balcony/Patio', 'Dining Room', 'Exterior/Entrance', 'Amenities/Pool', or 'Other').\n"
                 "2. is_relevant_property_photo: Mark true if it portrays an actual accommodation room, building, "
                 "or amenity. Mark false if it portrays a document, newspaper, chat screenshot, meme, receipt, or selfie.\n"
-                "3. lighting_score (1-10): Rate lighting balance.\n"
-                "4. composition_score (1-10): Rate camera angle and staging.\n"
-                "5. feedback_tips: Provide 1-2 brief, actionable tips for the host to improve this photo. "
+                "3. is_blurry: Mark true if the photo has visible camera motion shake, out-of-focus blur, or lens smearing that makes the space look soft or unsharp. Mark false if lines and room details are sharp and clear.\n"
+                "4. lighting_score (1-10): Rate lighting balance.\n"
+                "5. composition_score (1-10): Rate camera angle and staging.\n"
+                "6. feedback_tips: Provide 1-2 brief, actionable tips for the host to improve this photo. "
                 "Return an empty list if the photo is already clean and well-lit.\n\n"
                 f"{format_instructions}"
             )
@@ -216,7 +235,7 @@ class PhotoService:
                     {"type": "text", "text": prompt_text},
                     {
                         "type": "image_url",
-                        "image_url": {"url": f"data:image/jpeg;base64,{b64_data}"},
+                        "image_url": {"url": f"data:image/jpeg;base64,{b64_data}", "detail": "low"},
                     },
                 ]
             )
@@ -432,6 +451,9 @@ class PhotoService:
             matched = next((r for r in VALID_ROOM_TYPES if r.lower() == room_type.lower()), "Other")
             room_type = matched
 
+        # Dual-layer blur detection: combine local OpenCV Laplacian variance and AI visual assessment
+        combined_is_blurry = bool(local.is_blurry or ai_output.is_blurry)
+
         # Non-property detection: omit scores and room categorization for non-accommodation photos
         if not ai_output.is_relevant_property_photo:
             doc_tip = "This photo does not appear to portray accommodation spaces or amenities. Please upload genuine property photos."
@@ -441,7 +463,7 @@ class PhotoService:
                 is_recommended_cover=False,
                 scores=None,
                 flags=PhotoFlags(
-                    is_blurry=local.is_blurry,
+                    is_blurry=combined_is_blurry,
                     is_duplicate=False,
                     duplicate_of=None,
                     is_non_property=True,
@@ -452,7 +474,7 @@ class PhotoService:
 
         # Calculate composite aesthetic score (1.0 to 10.0)
         base_aesthetic = (ai_output.lighting_score * 0.5) + (ai_output.composition_score * 0.5)
-        if local.is_blurry:
+        if combined_is_blurry:
             base_aesthetic -= 2.5
         if local.is_too_dark:
             base_aesthetic -= 1.5
@@ -463,7 +485,7 @@ class PhotoService:
 
         # Determine overall poor quality flag
         poor_quality = (
-            local.is_blurry
+            combined_is_blurry
             or local.is_pitch_black
             or clamped_aesthetic < 5.0
             or (local.width < MIN_IMAGE_DIMENSION or local.height < MIN_IMAGE_DIMENSION)
@@ -475,6 +497,10 @@ class PhotoService:
             clean = tip.strip()
             if clean and clean not in all_tips:
                 all_tips.append(clean)
+
+        # If AI detected blur that local OpenCV missed, ensure the host gets the blur feedback tip
+        if ai_output.is_blurry and not any("blurry" in t.lower() for t in all_tips):
+            all_tips.append("Image appears blurry or out of focus. Consider retaking with a steady camera.")
 
         for tip in ai_output.feedback_tips:
             clean = tip.strip()
@@ -491,7 +517,7 @@ class PhotoService:
                 overall_aesthetic=clamped_aesthetic,
             ),
             flags=PhotoFlags(
-                is_blurry=local.is_blurry,
+                is_blurry=combined_is_blurry,
                 is_duplicate=False,
                 duplicate_of=None,
                 is_non_property=False,

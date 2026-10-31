@@ -34,6 +34,7 @@
 - [x] Implement local blur detection using OpenCV Laplacian variance in `app/services/photo_service.py`
 - [x] Implement local duplicate photo detection using `imagehash.phash`
 - [x] Implement AI Vision structured analysis (Gemini 3.5 Flash for demo via `langchain-google-genai`; switchable to `gpt-4o-mini` for prod)
+- [x] Implement dual-layer blur detection (OpenCV Laplacian variance + AI vision inspection fallback) and low-detail payload optimization
 - [x] Implement automatic Cover Photo recommendation logic
 - [x] Create thin route controller in `app/api/v1/photos.py`
 - [x] Write unit/integration tests with sample images in `app/tests/test_photos.py`
@@ -66,7 +67,9 @@
 - [x] Define Pydantic schemas for listing risk audit in `app/models/risk.py`
 - [x] Implement price anomaly detector (queries Qdrant for 5km neighborhood median price; flags listings >50% below median)
 - [x] Implement scam text pattern scanner via `gpt-4o-mini` (detects disguised contact info, wire transfer, crypto)
+- [x] Implement AI price honeypot detection for extreme low-price luxury listing scams
 - [x] Connect risk audit into listing sync service (runs automatically upon listing publish)
+- [x] Implement hard quarantine in listing sync (unindex and remove fraud listings from Qdrant vector database)
 - [x] Create standalone on-demand audit route in `app/api/v1/risk.py`
 - [x] Write unit/integration tests with scam fixtures in `app/tests/test_risk.py`
 

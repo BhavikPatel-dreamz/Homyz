@@ -56,7 +56,24 @@ class ListingService:
             signals=[s.model_dump() for s in audit_res.signals],
         )
 
-        # 2. Embedding generation
+        # 2. Hard quarantine: If flagged as fraud/scam, do not index in Qdrant
+        if audit_res.is_flagged:
+            logger.warning(
+                "Listing '%s' flagged as fraud/scam (score=%d, verdict=%s). Quarantining listing and removing from vector index.",
+                request.listing_id,
+                audit_res.risk_score,
+                audit_res.verdict,
+            )
+            # Remove from vector index if previously indexed
+            await self.qdrant_service.delete_listing(request.listing_id)
+            return ListingSyncResponse(
+                status="quarantined",
+                listing_id=request.listing_id,
+                indexed=False,
+                risk_audit=risk_summary,
+            )
+
+        # 3. Embedding generation
         search_text = build_listing_search_text(request)
         vector = await self.embedding_service.get_embedding(search_text)
 
@@ -81,7 +98,7 @@ class ListingService:
             "risk_audit": risk_summary.model_dump(),
         }
 
-        # 3. Vector database upsert
+        # 4. Vector database upsert
         await self.qdrant_service.upsert_listing(
             listing_id=request.listing_id,
             vector=vector,

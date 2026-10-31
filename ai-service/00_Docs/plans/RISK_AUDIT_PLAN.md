@@ -15,8 +15,8 @@ Module 5 provides an automated anti-fraud and risk assessment engine designed to
    * Identifies listings priced $>50\%$ below the neighborhood median as potential bait-and-switch honeypots.
 2. **Tier-0 Deterministic Regex Scanner ($0 AI Cost / <1ms)**:
    * Instantly scans titles and descriptions for obfuscated contact vectors (e.g. `w-h-a-t-s-a-p-p`, `wa.me/`, disguised phone numbers, email bypasses) and off-platform payment solicitations (wire transfers, Western Union, Zelle, CashApp, crypto/Bitcoin).
-3. **AI Contextual Scam Classifier (Multilingual)**:
-   * Employs structured LLM evaluation to detect pressure tactics (*"send deposit within 2 hours or booking is void"*), courier key-delivery stories, impossible geographical claims, and subtle off-platform evasion.
+3. **AI Contextual Scam Classifier (Multilingual & Pricing-Aware)**:
+   * Employs structured LLM evaluation to detect pressure tactics (*"send deposit within 2 hours or booking is void"*), courier key-delivery stories, impossible geographical claims, subtle off-platform evasion, and impossible asset-to-price honeypots ($15-$50 for multi-million dollar luxury estates during cold-start). Runs on every listing audit unless already quarantined by critical Tier-0 checks.
 4. **Composite Risk Scoring Engine (0 – 100)**:
    * Aggregates spatial anomalies, deterministic signals, and contextual analysis into an authoritative verdict:
      * **Score $\ge 70$**: `FLAG_FOR_MANUAL_AUDIT` (`is_flagged=True`, block instant-book / flag for Trust & Safety).

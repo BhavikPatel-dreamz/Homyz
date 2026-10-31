@@ -6,13 +6,15 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from langchain_core.messages import AIMessageChunk
 
+from core.config import get_settings
 from core.constants import API_KEY_HEADER_NAME
 from main import app
 from models.chat import ChatMessage, ChatRequest
 from services.chat_service import ChatService, get_chat_service
 from services.qdrant_service import QdrantService
 
-TEST_API_KEY = "dev-secret-internal-key-123"
+settings = get_settings()
+TEST_API_KEY = settings.API_KEY_SECRET
 AUTH_HEADERS = {
     API_KEY_HEADER_NAME: TEST_API_KEY,
     "Content-Type": "application/json",

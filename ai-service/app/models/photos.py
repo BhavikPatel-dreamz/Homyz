@@ -86,6 +86,13 @@ class PhotoAIAnalysis(BaseModel):
             "False if it portrays documents, newspapers, memes, receipts, chat screenshots, or selfies."
         ),
     )
+    is_blurry: bool = Field(
+        default=False,
+        description=(
+            "True if the photo appears visibly blurry, out of focus, has camera motion shake, "
+            "or lens smearing. False if details are sharp and clear."
+        ),
+    )
     lighting_score: int = Field(
         ...,
         ge=1,

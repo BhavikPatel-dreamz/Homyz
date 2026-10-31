@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from core.config import get_settings
 from core.constants import API_KEY_HEADER_NAME
 from main import app
 from models.reviews import (
@@ -13,7 +14,8 @@ from models.reviews import (
 )
 from services.review_service import ReviewService, get_review_service
 
-TEST_API_KEY = "dev-secret-internal-key-123"
+settings = get_settings()
+TEST_API_KEY = settings.API_KEY_SECRET
 AUTH_HEADERS = {API_KEY_HEADER_NAME: TEST_API_KEY}
 
 

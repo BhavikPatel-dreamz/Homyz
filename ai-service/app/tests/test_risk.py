@@ -6,13 +6,15 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from langchain_core.messages import AIMessage
 
+from core.config import get_settings
 from core.constants import API_KEY_HEADER_NAME
 from main import app
 from models.listings import HouseRules
 from models.risk import RiskAuditRequest
 from services.risk_service import RiskService, get_risk_service
 
-TEST_API_KEY = "dev-secret-internal-key-123"
+settings = get_settings()
+TEST_API_KEY = settings.API_KEY_SECRET
 AUTH_HEADERS = {
     API_KEY_HEADER_NAME: TEST_API_KEY,
     "Content-Type": "application/json",
@@ -573,3 +575,56 @@ async def test_audit_listing_dynamic_recommendation_no_pricing_when_no_anomaly(
         # Must NEVER mention neighborhood or pricing
         assert "neighborhood" not in result.recommendation.lower()
         assert "pricing" not in result.recommendation.lower()
+
+
+@pytest.mark.asyncio
+async def test_sync_listing_quarantines_fraud_listing() -> None:
+    """Flagged fraud listings are quarantined, unindexed, and never upserted into Qdrant."""
+    transport = ASGITransport(app=app)
+    scam_payload = {
+        "listing_id": "prop_scam_quarantined_01",
+        "title": "Ultra Luxury Villa",
+        "description": "Send direct wire transfer to our account within 2 hours to confirm booking.",
+        "price": 10000,
+        "city": "Miami Beach",
+        "country": "United States",
+        "latitude": 25.7890,
+        "longitude": -80.1280,
+        "guests": 6,
+        "bedrooms": 3,
+        "beds": 3,
+        "bathrooms": 2.0,
+        "property_type": "Villa",
+        "listing_type": "Entire place",
+    }
+
+    mock_upsert = AsyncMock()
+    mock_delete = AsyncMock(return_value=True)
+
+    with patch(
+        "services.qdrant_service.QdrantService.upsert_listing",
+        new=mock_upsert,
+    ), patch(
+        "services.qdrant_service.QdrantService.delete_listing",
+        new=mock_delete,
+    ), patch(
+        "services.qdrant_service.QdrantService.get_neighborhood_prices",
+        new=AsyncMock(return_value=([9000, 10000, 11000], "neighborhood_5km")),
+    ):
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.post(
+                "/api/v1/listings/sync",
+                headers=AUTH_HEADERS,
+                json=scam_payload,
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert data["status"] == "quarantined"
+            assert data["listing_id"] == "prop_scam_quarantined_01"
+            assert data["indexed"] is False
+            assert data["risk_audit"]["is_flagged"] is True
+            assert data["risk_audit"]["verdict"] == "FLAG_FOR_MANUAL_AUDIT"
+            # Verify upsert was strictly avoided and delete was invoked for safety
+            mock_upsert.assert_not_called()
+            mock_delete.assert_called_once_with("prop_scam_quarantined_01")
+

@@ -6,9 +6,13 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from main import app
+from core.config import get_settings
 from core.constants import API_KEY_HEADER_NAME, BLUR_LAPLACIAN_THRESHOLD
 from models.photos import PhotoAIAnalysis, PhotoAnalysisRequest
 from services.photo_service import PhotoService, _compute_local_image_metrics
+
+settings = get_settings()
+TEST_API_KEY = settings.API_KEY_SECRET
 
 
 def _create_synthetic_image(
@@ -59,7 +63,7 @@ async def test_photo_analyze_unauthorized() -> None:
 async def test_photo_analyze_empty_photos_validation() -> None:
     """Rejects empty photos array with 422 Unprocessable Content."""
     transport = ASGITransport(app=app)
-    headers = {API_KEY_HEADER_NAME: "dev-secret-internal-key-123"}
+    headers = {API_KEY_HEADER_NAME: TEST_API_KEY}
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.post(
             "/api/v1/photos/analyze",
@@ -223,7 +227,7 @@ async def test_non_property_document_detection() -> None:
 async def test_end_to_end_photo_analyze_endpoint() -> None:
     """Full HTTP integration test through FastAPI route."""
     transport = ASGITransport(app=app)
-    headers = {API_KEY_HEADER_NAME: "dev-secret-internal-key-123"}
+    headers = {API_KEY_HEADER_NAME: TEST_API_KEY}
     img_bytes = _create_synthetic_image(pattern="sharp")
 
     mock_analysis = PhotoAIAnalysis(
@@ -463,4 +467,44 @@ def test_extreme_aspect_ratio_warning() -> None:
     panoramic_bytes = _create_synthetic_image(width=1200, height=400, pattern="sharp")
     res = _compute_local_image_metrics("https://test.com/pano.jpg", panoramic_bytes)
     assert any("Extreme aspect ratio" in tip for tip in res.feedback_tips)
+
+
+@pytest.mark.asyncio
+async def test_ai_blur_fallback_detection() -> None:
+    """Validates that if local OpenCV misses blur (texture noise), AI vision catches it."""
+    service = PhotoService()
+    # Image is locally marked sharp by pattern
+    sharp_bytes = _create_synthetic_image(pattern="sharp")
+
+    # AI vision identifies perceptual blur / camera shake
+    mock_ai_output = PhotoAIAnalysis(
+        room_type="Living Room",
+        is_relevant_property_photo=True,
+        is_blurry=True,
+        lighting_score=7,
+        composition_score=6,
+        feedback_tips=["Camera was shaken slightly during capture."],
+    )
+
+    with patch.object(
+        service,
+        "_download_single_image",
+        return_value=("https://test.com/texture_blur.jpg", sharp_bytes, None),
+    ), patch.object(service, "_evaluate_vision", return_value=mock_ai_output):
+        response = await service.analyze_photos(
+            PhotoAnalysisRequest(
+                listing_id="prop_texture_blur",
+                photos=["https://test.com/texture_blur.jpg"],
+            )
+        )
+
+        item = response.photos[0]
+        # Dual-layer verification: AI flagged blur even though local Laplacian variance was high
+        assert item.flags.is_blurry is True
+        assert item.flags.poor_quality is True
+        # Aesthetic penalty applied (-2.5) -> (7*0.5 + 6*0.5) - 2.5 = 6.5 - 2.5 = 4.0
+        assert item.scores is not None
+        assert item.scores.overall_aesthetic == 4.0
+        assert any("blurry" in tip.lower() for tip in item.feedback_tips)
+
 

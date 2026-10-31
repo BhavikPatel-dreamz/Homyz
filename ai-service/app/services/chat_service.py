@@ -160,7 +160,7 @@ class ChatService:
                 "What is the cleaning fee refund policy?",
             ]),
             (["check-in", "checkin", "key", "lock", "arrival", "enter", "access"], [
-                "What is the wifi password?",
+                "What time is check-out?",
                 "Is parking available?",
                 "Can I request early check-in?",
             ]),
@@ -170,8 +170,8 @@ class ChatService:
                 "What are the house rules?",
             ]),
             (["park", "parking", "car", "garage", "vehicle", "suv"], [
-                "What is the wifi password?",
                 "What time is check-in?",
+                "What are the house rules?",
                 "Are pets allowed?",
             ]),
         ]

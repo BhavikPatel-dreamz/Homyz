@@ -96,6 +96,31 @@ All error responses return standard JSON:
 }
 ```
 
+* **Quarantine Behavior (Fraud / Scam Detected)**:
+  If `is_flagged: true`, the listing is **not** indexed in Qdrant (`indexed: false`, `status: "quarantined"`). If an existing listing is updated with fraudulent terms, it is immediately unindexed and removed from Qdrant to protect public search and spatial price benchmarks.
+
+#### Quarantined Response (`200 OK`)
+```json
+{
+  "status": "quarantined",
+  "listing_id": "prop_scam_001",
+  "indexed": false,
+  "risk_audit": {
+    "risk_score": 100,
+    "verdict": "FLAG_FOR_MANUAL_AUDIT",
+    "is_flagged": true,
+    "signals": [
+      {
+        "signal_type": "OFF_PLATFORM_PAYMENT",
+        "severity": "CRITICAL",
+        "score_impact": 75,
+        "details": "Direct wire transfer detected."
+      }
+    ]
+  }
+}
+```
+
 ---
 
 ### 2.2 Delete Listing
@@ -446,7 +471,7 @@ data: {"token": "Check-in starts at 3:00 PM. "}
 
 data: {"token": "Yes, you can park your SUV—there is 1 free dedicated space that fits full-size SUVs."}
 
-data: {"done": true, "suggested_quick_replies": ["Where is the nearest grocery store?", "What is the wifi password?"]}
+data: {"done": true, "suggested_quick_replies": ["Where is the nearest grocery store?", "What time is check-out?"]}
 ```
 
 #### TypeScript DTOs
