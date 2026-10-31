@@ -1,6 +1,15 @@
 "use client";
 
 import { AppHeader } from "@/components/dashboard/app-header";
+export {
+  HostNavigationDrawer,
+  DrawerHeader,
+  DrawerProfile,
+  DrawerNavigation,
+  DrawerFooter,
+  HostResourcesCard,
+  type HostNavigationDrawerProps,
+} from "./navigation/host-navigation-drawer";
 
 export interface HostHeaderProps {
   user?: {

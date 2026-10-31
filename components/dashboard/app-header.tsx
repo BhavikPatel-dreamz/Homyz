@@ -18,6 +18,7 @@ import {
   refreshUnreadNotificationCount,
   useUnreadNotificationCount,
 } from "@/lib/notifications/unread-count-store";
+import { HostNavigationDrawer } from "@/components/host/navigation/host-navigation-drawer";
 
 const BecomeHostModal = dynamic(
   () => import("@/components/host/become-host-modal").then((mod) => mod.BecomeHostModal),
@@ -65,6 +66,9 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      if ((event.target as Element)?.closest?.("[data-host-navigation-drawer-root]")) {
+        return;
+      }
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
@@ -445,15 +449,41 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
             {sessionLoading ? (
               <div className="hidden h-9 w-9 shrink-0 animate-pulse rounded-full bg-zinc-100 min-[992px]:block" aria-hidden="true" />
             ) : user?.image && user.image !== failedAvatarUrl ? (
-              <Link href="/profile" className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 min-[992px]:block" title="Profile">
-                <Image src={user.image} alt={user.name || "User avatar"} fill className="object-cover" sizes="36px" priority onError={() => setFailedAvatarUrl(user.image ?? null)} />
-              </Link>
+              isHosting ? (
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((prev) => !prev)}
+                  className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 min-[992px]:block cursor-pointer"
+                  title="Host menu"
+                  aria-label="Host menu"
+                >
+                  <Image src={user.image} alt={user.name || "User avatar"} fill className="object-cover" sizes="36px" priority onError={() => setFailedAvatarUrl(user.image ?? null)} />
+                </button>
+              ) : (
+                <Link href="/profile" className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 min-[992px]:block" title="Profile">
+                  <Image src={user.image} alt={user.name || "User avatar"} fill className="object-cover" sizes="36px" priority onError={() => setFailedAvatarUrl(user.image ?? null)} />
+                </Link>
+              )
             ) : user ? (
-              <Link href="/profile" className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title={t("header_profile") || "Profile"}>
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                </svg>
-              </Link>
+              isHosting ? (
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((prev) => !prev)}
+                  className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex cursor-pointer"
+                  title="Host menu"
+                  aria-label="Host menu"
+                >
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                </button>
+              ) : (
+                <Link href="/profile" className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title={t("header_profile") || "Profile"}>
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                </Link>
+              )
             ) : (
               <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title={t("header_account_settings") || "Account"}>
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -481,288 +511,118 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               )}
             </button>
 
-            {/* Logged-in menus keep their account details and sign-out action visible; only their links scroll. */}
-            {menuOpen && !sessionLoading && (
-              <div className={`absolute right-0 top-full z-50 max-h-[calc(100dvh-2rem)] w-72 max-w-[calc(100vw-2rem)] rounded-[16px] border-2 border-white bg-[#F3F4F5] p-3.5 pr-2.5 text-[#1F1F1F] shadow-2xl animate-in fade-in zoom-in-95 sm:w-80 lg:max-h-[620px] ${user ? "flex h-[calc(100dvh-11.25rem-env(safe-area-inset-bottom))] max-h-[calc(100dvh-11.25rem-env(safe-area-inset-bottom))] flex-col overflow-hidden sm:h-auto sm:max-h-[calc(100dvh-2rem)]" : "visible-scrollbar overflow-x-hidden overflow-y-auto overscroll-contain"}`}>
-                {!user ? (
-                  /* ------------------------------------------------------------- */
-                  /* LOGGED OUT DROPDOWN MENU (100% Matches Reference Screenshot 3)*/
-                  /* ------------------------------------------------------------- */
-                  <div className="space-y-1">
-                    {/* Languages & currency */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        setLangModalOpen(true);
-                      }}
-                      className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-normal text-[#1f1f1f] hover:bg-white rounded-xl transition-colors duration-200 text-left cursor-pointer group"
-                    >
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] transition-colors duration-200">
-                        <Image src="/images/icons/translate-icon.svg" alt="" width={20} height={20} className="size-5 object-contain" />
-                      </span>
-                      <span>{t("header_languages_currency")}</span>
-                    </button>
-
-                    {/* Help Centre */}
-                    <Link
-                      href="/help"
-                      onClick={() => setMenuOpen(false)}
-                      className="w-full flex items-center gap-3 px-3.5 py-2 text-sm font-normal text-[#1f1f1f] hover:bg-white rounded-xl transition-colors duration-200 text-left group"
-                    >
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] transition-colors duration-200">
-                        <svg className="w-5 h-5 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </span>
-                      <span>{t("header_help_centre")}</span>
-                    </Link>
-
-                    <div className="my-2 border-t border-zinc-200/80" />
-
-                    {/* Become a host Card Banner with Host Illustration */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        setBecomeHostModalOpen(true);
-                      }}
-                      className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white border border-zinc-300 transition-colors duration-200 group cursor-pointer text-left"
-                    >
-                      <div className="pr-2">
-                        <p className="text-sm font-normal text-[#1F1F1F] group-hover:text-[#727272] transition-colors">{t("header_become_a_host")}</p>
-                        <p className="text-xs text-[#727272] mt-0.5 leading-relaxed">{t("header_become_a_host_subtitle") || "It's easy to start hosting and earn extra income."}</p>
-                      </div>
-                      {/* Host Illustration matching Screenshot 3 */}
-                      <div className="w-12 h-14 flex items-center justify-center shrink-0">
-                        <svg className="w-10 h-12 shrink-0" viewBox="0 0 40 48" fill="none">
-                          <circle cx="20" cy="10" r="5" fill="#8D5B4C" />
-                          <circle cx="20" cy="9" r="4" fill="#FFCDB2" />
-                          <path d="M14 17C14 15.5 16.5 15 20 15C23.5 15 26 15.5 26 17L27 28H13L14 17Z" fill="#C84B31" />
-                          <path d="M26 18L32 14C33 13.5 34 14.5 33.5 15.5L30 22L27 20Z" fill="#C84B31" />
-                          <path d="M14 28H19V44H15V28Z" fill="#3D405B" />
-                          <path d="M21 28H26V44H22V28Z" fill="#3D405B" />
-                          <rect x="14" y="44" width="5" height="3" rx="1.5" fill="#2B2D42" />
-                          <rect x="21" y="44" width="5" height="3" rx="1.5" fill="#2B2D42" />
-                        </svg>
-                      </div>
-                    </button>
-
-                    <div className="my-2 border-t border-zinc-200/80" />
-
-                    {/* Refer a host */}
-                    <Link
-                      href="/host/refer"
-                      onClick={() => setMenuOpen(false)}
-                      className="block px-3.5 py-2 text-sm font-normal text-[#1f1f1f] hover:bg-white rounded-xl transition-colors"
-                    >
-                      {t("header_refer_a_host")}
-                    </Link>
-
-                    {/* Find a co-host */}
-                    <Link
-                      href="/host/co-host"
-                      onClick={() => setMenuOpen(false)}
-                      className="block px-3.5 py-2 text-sm font-normal text-[#1f1f1f] hover:bg-white rounded-xl transition-colors"
-                    >
-                      {t("header_find_cohost")}
-                    </Link>
-
-                    <div className="my-2 border-t border-zinc-200/80" />
-
-                    {/* Log in or sign up */}
-                    <Link
-                      href="/login"
-                      onClick={() => setMenuOpen(false)}
-                      className="block px-3.5 py-2 text-sm font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
-                    >
-                      {t("header_login_signup")}
-                    </Link>
-                  </div>
-                ) : isHosting ? (
-                  /* ------------------------------------------------------------- */
-                  /* HOSTING MENU (Active when host is in hosting mode /host/*)    */
-                  /* ------------------------------------------------------------- */
-                  <div className="flex min-h-0 flex-1 flex-col">
-                    <div className="mb-1 shrink-0 border-b border-[#727272]/30 px-2 pb-2 sm:px-3.5 sm:py-3">
-                      <p className="text-sm font-medium text-[#1F1F1F] truncate">{user.name || user.email}</p>
-                      <div className="flex items-center justify-between gap-5">
-                        <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
-                        <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-medium text-amber-800">
-                          {role || "HOST"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="visible-scrollbar min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-1">
-                      <div className="space-y-1">
-                        {/* <div className="my-1 border-t border-zinc-200/80" /> */}
-
-                        {/* Host Navigation */}
-                        <div className="py-0.5 space-y-1">
-                          {/* Dashboard */}
-                          <Link
-                            href="/host/dashboard"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm font-normal rounded-xl transition-colors group duration-300 ${pathname === "/host/dashboard" ? "bg-amber-100 text-[#1F1F1F] font-normal" : "text-[#1F1F1F] hover:bg-white"
-                              }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] border border-zinc-200/60 shadow-2xs">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                                <path d="M4 19V9m6 10V5m6 14v-7m4 7H2" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            </span>
-                            <span>{t("header_nav_dashboard") || "Dashboard"}</span>
-                          </Link>
-
-                          {/* Earnings */}
-                          <Link
-                            href="/host/earnings"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm font-normal rounded-xl transition-colors group duration-300 ${pathname?.startsWith("/host/earnings") ? "bg-amber-100 text-[#1F1F1F] font-normal" : "text-[#1F1F1F] hover:bg-white"
-                              }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] border border-zinc-200/60 shadow-2xs text-[#1F1F1F]">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                                <rect width="20" height="14" x="2" y="5" rx="2" />
-                                <line x1="2" x2="22" y1="10" y2="10" />
-                              </svg>
-                            </span>
-                            <span>{t("host_nav_earnings", "Earnings")}</span>
-                          </Link>
-
-                          {/* Insights */}
-                          <Link
-                            href="/host/insights"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm font-normal rounded-xl transition-colors group duration-300 ${pathname?.startsWith("/host/insights") ? "bg-amber-100 text-[#1F1F1F] font-normal" : "text-[#1F1F1F] hover:bg-white"
-                              }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] border border-zinc-200/60 shadow-2xs">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                                <path d="M3 3v18h18" />
-                                <path d="m19 9-5 5-4-4-3 3" />
-                              </svg>
-                            </span>
-                            <span>{t("host_nav_insights", "Insights")}</span>
-                          </Link>
-
-                          <Link
-                            href="/host/support"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm font-normal rounded-xl transition-colors group duration-300 ${pathname?.startsWith("/host/support") || pathname?.startsWith("/host/resolution-center") ? "bg-amber-100 text-[#1F1F1F] font-normal" : "text-[#1F1F1F] hover:bg-white"
-                              }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] border border-zinc-200/60 shadow-2xs">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                              </svg>
-                            </span>
-                            <span>Help &amp; Resolution Center</span>
-                          </Link>
-
-                        </div>
-
-                        <div className="my-1 border-t border-zinc-200/80" />
-
-                        {/* Host Account / Profile */}
-                        <div className="py-0.5 space-y-1">
-                          {/* Profile */}
-                          <Link
-                            href="/profile"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm font-normal rounded-xl transition-colors group duration-300 ${pathname === "/profile" ? "bg-amber-100 text-[#1F1F1F] font-normal" : "text-[#1F1F1F] hover:bg-white"
-                              }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] border border-zinc-200/60 shadow-2xs">
-                              <Image src="/images/icons/profile.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                            </span>
-                            <span>{t("header_profile") || "Profile"}</span>
-                          </Link>
-
-                          {/* Notifications */}
-                          <Link
-                            href="/profile/tab/notifications"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm font-normal rounded-xl transition-colors group duration-300 ${pathname?.startsWith("/profile/tab/notifications") ? "bg-amber-100 text-[#1F1F1F] font-normal" : "text-[#1F1F1F] hover:bg-white"
-                              }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] border border-zinc-200/60 shadow-2xs">
-                              <Image src="/images/icons/Notifications.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                            </span>
-                            <span>{t("header_notifications") || "Notifications"}</span>
-                            {unreadCount !== null && unreadCount > 0 && (
-                              <span
-                                aria-label={`${unreadCount} unread notifications`}
-                                className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-normal text-white shadow-xs"
-                              >
-                                {unreadCount > 99 ? "99+" : unreadCount}
-                              </span>
-                            )}
-                          </Link>
-
-                          {/* Host Account Settings */}
-                          <Link
-                            href="/host/account-settings"
-                            prefetch={false}
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm font-normal rounded-xl transition-colors group duration-300 ${pathname?.startsWith("/host/account-settings") ? "bg-amber-100 text-[#1F1F1F] font-normal" : "text-[#1F1F1F] hover:bg-white"
-                              }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] border border-zinc-200/60 shadow-2xs">
-                              <Image src="/images/icons/setting.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                            </span>
-                            <span>{t("header_account_settings") || "Account settings"}</span>
-                          </Link>
-
-                          {role === "ADMIN" && (
-                            <Link
-                              href="/admin"
-                              onClick={() => setMenuOpen(false)}
-                              className={`flex items-center gap-3.5 px-3 py-2 text-sm font-normal rounded-xl transition-colors group duration-300 ${pathname?.startsWith("/admin") ? "bg-amber-100 text-[#1F1F1F] font-normal" : "text-[#1F1F1F] hover:bg-white"
-                                }`}
-                            >
-                              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] border border-zinc-200/60 shadow-2xs">
-                                <Image src="/images/icons/grid-Icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                              </span>
-                              <span>{t("header_admin") || "Admin"}</span>
-                            </Link>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Host Menu Footer */}
-                    <div className="shrink-0 border-t border-zinc-200/80 pt-1.5 mt-1 space-y-1">
+            {/* Host-Side Airbnb-Style Right Sliding Navigation Drawer */}
+            {isHosting ? (
+              <HostNavigationDrawer
+                isOpen={menuOpen}
+                onClose={() => setMenuOpen(false)}
+                user={user}
+                unreadCount={unreadCount}
+                onOpenLanguagesCurrency={() => {
+                  setMenuOpen(false);
+                  setLangModalOpen(true);
+                }}
+              />
+            ) : (
+              /* Client / Guest / Traveling Dropdown Menu */
+              menuOpen && !sessionLoading && (
+                <div className={`absolute right-0 top-full z-50 max-h-[calc(100dvh-2rem)] w-72 max-w-[calc(100vw-2rem)] rounded-[16px] border-2 border-white bg-[#F3F4F5] p-3.5 pr-2.5 text-[#1F1F1F] shadow-2xl animate-in fade-in zoom-in-95 sm:w-80 lg:max-h-[620px] ${user ? "flex h-[calc(100dvh-11.25rem-env(safe-area-inset-bottom))] max-h-[calc(100dvh-11.25rem-env(safe-area-inset-bottom))] flex-col overflow-hidden sm:h-auto sm:max-h-[calc(100dvh-2rem)]" : "visible-scrollbar overflow-x-hidden overflow-y-auto overscroll-contain"}`}>
+                  {!user ? (
+                    /* ------------------------------------------------------------- */
+                    /* LOGGED OUT DROPDOWN MENU (100% Matches Reference Screenshot 3)*/
+                    /* ------------------------------------------------------------- */
+                    <div className="space-y-1">
+                      {/* Languages & currency */}
                       <button
                         type="button"
                         onClick={() => {
                           setMenuOpen(false);
                           setLangModalOpen(true);
                         }}
-                        className="flex w-full items-center gap-3.5 px-3 py-2 text-left text-sm font-normal text-[#1F1F1F] transition-colors duration-300 group hover:bg-white rounded-xl cursor-pointer"
+                        className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-normal text-[#1f1f1f] hover:bg-white rounded-xl transition-colors duration-200 text-left cursor-pointer group"
                       >
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] border border-zinc-200/60 shadow-2xs">
-                          <Image src="/images/icons/translate-icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] transition-colors duration-200">
+                          <Image src="/images/icons/translate-icon.svg" alt="" width={20} height={20} className="size-5 object-contain" />
                         </span>
-                        <span>{t("header_languages_currency") || "Languages & currency"}</span>
+                        <span>{t("header_languages_currency")}</span>
                       </button>
 
-                      <div className="border-t border-zinc-200/80 pt-1">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMenuOpen(false);
-                            signOut({ callbackUrl: "/login?logged_out=true" });
-                          }}
-                            className="w-full text-left px-3.5 py-2 text-sm font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors duration-300 group underline underline-offset-4 cursor-pointer"
-                        >
-                          {t("header_sign_out") || "Sign out"}
-                        </button>
-                      </div>
+                      {/* Help Centre */}
+                      <Link
+                        href="/help"
+                        onClick={() => setMenuOpen(false)}
+                        className="w-full flex items-center gap-3 px-3.5 py-2 text-sm font-normal text-[#1f1f1f] hover:bg-white rounded-xl transition-colors duration-200 text-left group"
+                      >
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] transition-colors duration-200">
+                          <svg className="w-5 h-5 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </span>
+                        <span>{t("header_help_centre")}</span>
+                      </Link>
+
+                      <div className="my-2 border-t border-zinc-200/80" />
+
+                      {/* Become a host Card Banner with Host Illustration */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setBecomeHostModalOpen(true);
+                        }}
+                        className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white border border-zinc-300 transition-colors duration-200 group cursor-pointer text-left"
+                      >
+                        <div className="pr-2">
+                          <p className="text-sm font-normal text-[#1F1F1F] group-hover:text-[#727272] transition-colors">{t("header_become_a_host")}</p>
+                          <p className="text-xs text-[#727272] mt-0.5 leading-relaxed">{t("header_become_a_host_subtitle") || "It's easy to start hosting and earn extra income."}</p>
+                        </div>
+                        {/* Host Illustration matching Screenshot 3 */}
+                        <div className="w-12 h-14 flex items-center justify-center shrink-0">
+                          <svg className="w-10 h-12 shrink-0" viewBox="0 0 40 48" fill="none">
+                            <circle cx="20" cy="10" r="5" fill="#8D5B4C" />
+                            <circle cx="20" cy="9" r="4" fill="#FFCDB2" />
+                            <path d="M14 17C14 15.5 16.5 15 20 15C23.5 15 26 15.5 26 17L27 28H13L14 17Z" fill="#C84B31" />
+                            <path d="M26 18L32 14C33 13.5 34 14.5 33.5 15.5L30 22L27 20Z" fill="#C84B31" />
+                            <path d="M14 28H19V44H15V28Z" fill="#3D405B" />
+                            <path d="M21 28H26V44H22V28Z" fill="#3D405B" />
+                            <rect x="14" y="44" width="5" height="3" rx="1.5" fill="#2B2D42" />
+                            <rect x="21" y="44" width="5" height="3" rx="1.5" fill="#2B2D42" />
+                          </svg>
+                        </div>
+                      </button>
+
+                      <div className="my-2 border-t border-zinc-200/80" />
+
+                      {/* Refer a host */}
+                      <Link
+                        href="/host/refer"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-3.5 py-2 text-sm font-normal text-[#1f1f1f] hover:bg-white rounded-xl transition-colors"
+                      >
+                        {t("header_refer_a_host")}
+                      </Link>
+
+                      {/* Find a co-host */}
+                      <Link
+                        href="/host/co-host"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-3.5 py-2 text-sm font-normal text-[#1f1f1f] hover:bg-white rounded-xl transition-colors"
+                      >
+                        {t("header_find_cohost")}
+                      </Link>
+
+                      <div className="my-2 border-t border-zinc-200/80" />
+
+                      {/* Log in or sign up */}
+                      <Link
+                        href="/login"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-3.5 py-2 text-sm font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
+                      >
+                        {t("header_login_signup")}
+                      </Link>
                     </div>
-                  </div>
-                ) : (
+                  ) : (
                   /* ------------------------------------------------------------- */
                   /* TRAVELING MENU (For Guests & Hosts Browsing / Traveling)      */
                   /* ------------------------------------------------------------- */
@@ -771,7 +631,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                       <p className="text-sm font-medium text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <div className="flex items-center justify-between gap-5">
                         <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
-                        <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
+                        <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-medium text-amber-800">
                           {isHost ? "TRAVELER" : (role || "USER")}
                         </span>
                       </div>
@@ -1004,7 +864,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                   </div>
                 )}
               </div>
-            )}
+            ))}
           </div>
         </div>
       </Container>
@@ -1016,7 +876,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative animate-in zoom-in-95 my-auto mx-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 mb-5">
-              <h3 className="text-lg font-semibold text-[#1F1F1F]">{t("header_languages_currency")}</h3>
+              <h3 className="text-lg font-medium text-[#1F1F1F]">{t("header_languages_currency")}</h3>
               <button
                 type="button"
                 onClick={() => setLangModalOpen(false)}
@@ -1029,15 +889,15 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
             <div className="space-y-6">
               {/* Language Selection */}
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">{t("header_language")}</label>
+                <label className="block text-xs font-medium text-zinc-700 uppercase tracking-wider mb-2">{t("header_language")}</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {["English (US)", "English (UK)", "Español", "Français", "Deutsch", "Hindi", "العربية"].map((lang) => (
                     <button
                       key={lang}
                       type="button"
                       onClick={() => setLanguage(lang)}
-                      className={`p-3 rounded-2xl border text-xs font-semibold text-left transition-all cursor-pointer ${selectedLangLabel === lang
-                        ? "border-amber-400 bg-amber-50 text-amber-950 font-semibold"
+                      className={`p-3 rounded-2xl border text-xs font-medium text-left transition-all cursor-pointer ${selectedLangLabel === lang
+                        ? "border-amber-400 bg-amber-50 text-amber-950 font-medium"
                         : "border-zinc-200 bg-white text-[#1f1f1f] hover:bg-white"
                         }`}
                     >
@@ -1049,15 +909,15 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
 
               {/* Currency Selection */}
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">{t("header_currency")}</label>
+                <label className="block text-xs font-medium text-zinc-700 uppercase tracking-wider mb-2">{t("header_currency")}</label>
                 <div className="grid grid-cols-3 gap-2">
                   {DISPLAY_CURRENCIES.map((curr) => (
                     <button
                       key={curr}
                       type="button"
                       onClick={() => setSelectedCurrency(curr)}
-                      className={`p-3 rounded-2xl border text-xs font-semibold text-center transition-all cursor-pointer ${selectedCurrency === curr
-                        ? "border-amber-400 bg-amber-50 text-amber-950 font-semibold"
+                      className={`p-3 rounded-2xl border text-xs font-medium text-center transition-all cursor-pointer ${selectedCurrency === curr
+                        ? "border-amber-400 bg-amber-50 text-amber-950 font-medium"
                         : "border-zinc-200 bg-white text-[#1f1f1f] hover:bg-white"
                         }`}
                     >
@@ -1072,7 +932,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               <button
                 type="button"
                 onClick={() => setLangModalOpen(false)}
-                className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all cursor-pointer"
+                className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs px-6 py-2.5 transition-all cursor-pointer"
               >
                 {t("header_done")}
               </button>

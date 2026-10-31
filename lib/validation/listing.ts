@@ -144,6 +144,8 @@ const photoRoomAssignmentSchema = z.object({
   roomInstanceId: z.string().trim().min(1).max(120).nullable().optional(),
   roomLabel: z.string().trim().min(1).max(120).nullable().optional(),
   sortOrder: z.number().int().min(0).max(1000).nullable().optional(),
+  description: z.string().trim().max(500).nullable().optional(),
+  caption: z.string().trim().max(500).nullable().optional(),
 }).passthrough();
 
 const customSlugSchema = z.preprocess(
@@ -197,9 +199,14 @@ export const bedItemSchema = z.object({
 export const roomSchema = z.object({
   id: z.string().min(1).max(80),
   name: z.string().trim().min(1).max(100),
-  type: z.enum(ROOM_TYPES).default("BEDROOM"),
+  type: z.string().trim().min(1).max(100).default("BEDROOM"),
   beds: z.array(bedItemSchema).default([]),
-});
+  amenities: z.array(z.string().trim()).default([]),
+  hasPrivateBathroom: z.boolean().optional(),
+  privacy: z.record(z.any()).optional(),
+  accessibilityFeatures: z.array(z.string().trim()).default([]),
+  accessibilityDetails: z.array(z.any()).default([]),
+}).passthrough();
 
 export const roomsSchema = z.array(roomSchema).max(50);
 export type RoomInput = z.infer<typeof roomSchema>;
