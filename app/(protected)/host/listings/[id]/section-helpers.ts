@@ -396,6 +396,7 @@ export interface HostListingData {
   approvedBy?: { id: string; name: string | null; email: string | null } | null;
   bookingCount?: number;
   reviewCount?: number;
+  licenseEligibilityStatus?: string | null;
 }
 
 export function serializeListingForEditor(
@@ -501,6 +502,7 @@ export function serializeListingForEditor(
     customSlug: listing.customSlug ?? null,
     requestedChanges: listing.requestedChanges || null,
     rejectionReason: listing.rejectionReason || null,
+    licenseEligibilityStatus: listing.licenseEligibilityStatus ?? null,
     submittedAt: listing.submittedAt
       ? typeof listing.submittedAt === "string"
         ? listing.submittedAt

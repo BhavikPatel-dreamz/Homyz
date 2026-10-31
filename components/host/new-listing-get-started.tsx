@@ -128,6 +128,7 @@ export function NewListingGetStarted({
 
   const [step, setStep] = useState<number>(getInitialStep);
   const [draftId, setDraftId] = useState<string | null>(initialDraftId || null);
+  const [listingStatus, setListingStatus] = useState<string>("DRAFT");
   const draftIdRef = useRef<string | null>(draftId);
   const [isSavingStep, setIsSavingStep] = useState<boolean>(false);
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
@@ -569,12 +570,14 @@ export function NewListingGetStarted({
         const errBody = await res.json().catch(() => null);
         throw new Error(errBody?.error || t("wizard_error_submit_title", "We couldn't submit your listing."));
       }
+      const data = await res.json().catch(() => null);
+      const newStatus = method === "automatic" ? "APPROVED" : "PENDING_REVIEW";
+      setListingStatus(newStatus);
       toast.success(
         method === "automatic"
           ? t("wizard_toast_approved_published", "Listing approved and published.")
           : t("wizard_toast_submitted_review", "Listing submitted for review.")
       );
-      router.push("/host/listings");
     } catch (error: unknown) {
       setWizardError({
         title: t("wizard_error_submit_title", "We couldn't submit your listing"),
@@ -690,6 +693,7 @@ export function NewListingGetStarted({
             : ["new_listing"];
 
         setDraftId(listing.id);
+        if (listing.status) setListingStatus(listing.status);
         setSelectedCategory(listing.propertyType ? RESTORED_PROPERTY_TYPE_LABELS[listing.propertyType] ?? "" : "");
         setSelectedPlaceType(listing.listingType ? listingTypeLabels[listing.listingType] ?? "" : "");
         setSelectedAmenities(listing.amenities ?? []);
@@ -782,7 +786,8 @@ export function NewListingGetStarted({
       try {
         const activeId = draftIdRef.current || draftId;
         if (activeId && !isFinalizingRef.current) {
-          await queueDraftPatch(activeId, buildDraftPayload(step));
+          const payload = buildDraftPayload(step);
+          await queueDraftPatch(activeId, payload);
           return;
         }
 
@@ -910,7 +915,7 @@ export function NewListingGetStarted({
     if (details) {
       const fullDisplay = details.formattedAddress || details.address || "";
       if (fullDisplay) {
-        setStreetAddress(fullDisplay);
+        setStreetAddress(details.address || fullDisplay);
         setSearchQuery(fullDisplay);
       }
       if (details.city) setCity(details.city);
@@ -924,9 +929,9 @@ export function NewListingGetStarted({
 
   // Pin drag handler for "Is the pin in the right spot?"
   // Keep the address fields aligned with the reverse-geocoded pin position.
-  const handlePinChange = useCallback((lat: number, lng: number, details?: LocationDetails) => {
+  const handlePinChange = (lat: number, lng: number, details?: LocationDetails) => {
     handleLocationChange(lat, lng, details);
-  }, [handleLocationChange]);
+  };
 
   // Location Autocomplete Selection
   const handleSelectSuggestion = (item: NominatimSuggestion) => {
@@ -1320,6 +1325,14 @@ export function NewListingGetStarted({
           city={city}
           price={price}
           photos={photos}
+          category={selectedCategory}
+          placeType={selectedPlaceType}
+          guests={guests}
+          bedrooms={bedrooms}
+          beds={beds}
+          bathrooms={bathrooms}
+          currency={currencySymbol}
+          listingStatus={listingStatus}
           onBack={() => goToStep(isSaudiArabia(country) ? 20 : 19)}
           onVerify={handleVerifySaudiLicense}
           onEditRegistration={() => goToStep(20)}

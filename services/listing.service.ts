@@ -32,6 +32,7 @@ import {
   generateFlexibleCandidateStays,
   type FlexibleDuration,
 } from "@/lib/search/flexible-stays";
+import { isSaudiArabia } from "@/lib/location/address-countries";
 
 import { auditService } from "./audit.service";
 import { qualificationService } from "./qualification.service";
@@ -132,11 +133,6 @@ function requiresReapproval(existing: Listing, input: UpdateListingInput): boole
     const current = (existing as unknown as Record<string, unknown>)[key];
     return !valuesMatchForReapproval(current, next);
   });
-}
-
-function isSaudiArabia(country: string | null | undefined): boolean {
-  const value = country?.trim().toUpperCase() ?? "";
-  return value === "SA" || value === "KSA" || value.includes("SAUDI");
 }
 
 export type ListingPublishReadiness = {
@@ -1897,8 +1893,10 @@ async function update(
 
   // A host changing reviewed material must not leave that revised content live.
   // The listing is held for the same Admin review that governs initial launch.
+  // Saudi listings are verified via government license, exempt from manual admin re-approval.
   const reapprovalRequired = actor.role !== Role.ADMIN
     && existing.status === ListingStatus.ACTIVE
+    && !isSaudiArabia(dataToUpdate.country ?? existing.country)
     && requiresReapproval(existing, dataToUpdate);
   if (reapprovalRequired) {
     dataToUpdate.status = ListingStatus.PENDING_REVIEW;

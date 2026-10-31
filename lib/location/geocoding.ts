@@ -116,7 +116,7 @@ function unifiedToStructured(u: UnifiedLocationSuggestion): StructuredAddress {
     district: u.locality || "",
     city: u.city,
     state: u.state,
-    postalCode: "",
+    postalCode: u.postalCode || "",
     country: u.country,
     countryCode: u.countryCode,
     latitude: u.latitude,

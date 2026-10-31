@@ -13,12 +13,13 @@ export const GET = apiHandler(async (req, ctx: Ctx) => {
   return ok(await saudiLicenseService.getLicenseManagement(actor, listingId));
 });
 
-/** Reuses the stored number, records a new verification history row, and returns verification details. */
+/** Reuses the stored number, records a new verification history row, and returns full management state. */
 export const POST = apiHandler(async (req, ctx: Ctx) => {
   const actor = await requireApiAuth(req);
   const { listingId } = await ctx.params;
   const result = await saudiLicenseService.reverifyForListing(actor, listingId);
-  return ok(result);
+  const management = await saudiLicenseService.getLicenseManagement(actor, listingId);
+  return ok(management ?? result);
 });
 
 /**

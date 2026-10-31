@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import { BackButton } from "@/components/ui/back-button";
 import { toast } from "@/components/ui/toast";
 import { useLanguage } from "@/lib/i18n/language-context";
@@ -12,7 +11,7 @@ import {
   publishListingAction,
 } from "@/actions/host/listings";
 import { isSaudiArabia } from "@/lib/location/address-countries";
-import type { HostListingData } from "../host-listing-editor-client";
+import type { HostListingData } from "../section-helpers";
 
 export interface MissingRequirement {
   key: string;
@@ -99,9 +98,6 @@ export function computeMissingRequirements(listing: Partial<HostListingData>): M
     });
   }
 
-  const rawDisclosures = Array.isArray(listing.safetyDisclosures) ? listing.safetyDisclosures : [];
-  // Safety disclosures are now optional - no validation required here
-  
   return missing;
 }
 
@@ -161,12 +157,11 @@ export function ListingStatusView({
   onUpdateListing,
   status: propStatus,
   setStatus: propSetStatus,
-  isSaving = false,
+  isSaving: parentIsSaving = false,
   handleSaveSection,
 }: ListingStatusViewProps) {
   const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [justSubmitted, setJustSubmitted] = useState(false);
   const [formattedDate, setFormattedDate] = useState<string | null>(null);
 
   const isSaudi = isSaudiArabia(listing?.country);
@@ -182,14 +177,19 @@ export function ListingStatusView({
     ? (missing.length === 0 || Boolean(listing?.published))
     : (displayState === "APPROVED" || displayState === "PUBLISHED" || Boolean(listing?.approvedAt));
 
-  const [localStatus, setLocalStatus] = useState<"listed" | "unlisted">(
-    listing?.published ? "listed" : propStatus || "unlisted",
+  // Determine actual backend visibility
+  const isPublished = Boolean(listing?.published);
+  const isLive = isPublished && listing?.status === "ACTIVE" && !listing?.isPaused;
+  const currentSavedVisibility: "listed" | "unlisted" = isLive ? "listed" : "unlisted";
+
+  // Local state for interactive visibility radio selection
+  const [selectedVisibility, setSelectedVisibility] = useState<"listed" | "unlisted">(
+    propStatus ?? currentSavedVisibility,
   );
 
-  // If unapproved, effective status is ALWAYS unlisted
-  const effectiveStatus: "listed" | "unlisted" = !isApproved
-    ? "unlisted"
-    : (propStatus ?? localStatus);
+  useEffect(() => {
+    setSelectedVisibility(propStatus ?? currentSavedVisibility);
+  }, [propStatus, currentSavedVisibility]);
 
   useEffect(() => {
     if (listing?.submittedAt) {
@@ -199,10 +199,8 @@ export function ListingStatusView({
           setFormattedDate(
             d.toLocaleDateString(undefined, {
               year: "numeric",
-              month: "long",
+              month: "short",
               day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
             }),
           );
         }
@@ -212,84 +210,100 @@ export function ListingStatusView({
     }
   }, [listing?.submittedAt]);
 
-  // Stepper definition: Saudi listings skip Admin Review & Approval
-  const steps = isSaudi
-    ? [
-        { id: "created", label: t("host_step_listing_created") },
-        { id: "completed", label: t("host_step_details_completed") },
-        { id: "ready", label: t("host_status_ready_to_publish") },
-        { id: "published", label: t("host_status_published_live") },
-      ]
-    : [
-        { id: "created", label: t("host_step_listing_created") },
-        { id: "completed", label: t("host_step_details_completed") },
-        { id: "submitted", label: t("host_step_submitted") },
-        { id: "review", label: t("host_step_admin_review") },
-        { id: "approved", label: t("host_status_approved") },
-        { id: "published", label: t("host_status_published_live") },
-      ];
+  const hasVisibilityChange = selectedVisibility !== currentSavedVisibility;
+  const isWorking = isSubmitting || parentIsSaving;
 
-  const getStepStatus = (stepId: string): "completed" | "current" | "upcoming" | "warning" => {
-    if (isSaudi) {
-      switch (displayState) {
-        case "DRAFT":
-          if (stepId === "created") return "completed";
-          if (stepId === "completed") return "current";
-          return "upcoming";
-        case "APPROVED":
-        case "READY_TO_SUBMIT":
-          if (stepId === "created" || stepId === "completed") return "completed";
-          if (stepId === "ready") return "current";
-          return "upcoming";
-        case "PUBLISHED":
-          return "completed";
-        case "REJECTED":
-          if (stepId === "created") return "completed";
-          return "warning";
+  // Saudi license verification guard
+  const isSaudiLicenseRestricted =
+    isSaudi &&
+    listing?.licenseEligibilityStatus &&
+    listing.licenseEligibilityStatus !== "ELIGIBLE";
+
+  // Setup progress steps (only shown during incomplete onboarding)
+  const setupSteps = [
+    { id: "created", label: t("host_step_listing_created", "Created") },
+    { id: "details", label: t("host_step_details_completed", "Details") },
+    {
+      id: "ready",
+      label: isSaudi
+        ? t("host_status_ready_to_publish", "Ready to publish")
+        : t("host_step_admin_review", "Review"),
+    },
+    { id: "live", label: t("host_status_published_live", "Live") },
+  ];
+
+  const getProgressIndex = (): number => {
+    if (isLive) return 3;
+    if (displayState === "APPROVED" || displayState === "PENDING_APPROVAL") return 2;
+    if (missing.length <= 2) return 1;
+    return 0;
+  };
+  const currentStepIndex = getProgressIndex();
+
+  // Handlers
+  const handleCancelVisibilityChange = () => {
+    setSelectedVisibility(currentSavedVisibility);
+    propSetStatus?.(currentSavedVisibility);
+  };
+
+  const handleSaveVisibility = async () => {
+    if (!listing) return;
+    setIsSubmitting(true);
+    try {
+      if (selectedVisibility === "listed") {
+        const res = await publishListingAction(listing.id);
+        setIsSubmitting(false);
+        if (res.ok && res.data) {
+          if (res.data.published || isSaudi) {
+            onUpdateListing?.({ published: true, status: "ACTIVE", isPaused: false });
+            propSetStatus?.("listed");
+            toast.success("Your listing is now listed and visible to guests.");
+          } else {
+            onUpdateListing?.({ published: false, status: "PENDING_REVIEW", isPaused: false });
+            propSetStatus?.("unlisted");
+            toast.success("Listing submitted for review.");
+          }
+        } else {
+          toast.error((res as any).error || "Failed to publish listing.");
+        }
+      } else {
+        const res = await unpublishListingAction(listing.id);
+        setIsSubmitting(false);
+        if (res.ok && res.data) {
+          onUpdateListing?.({ published: false, status: "DRAFT" });
+          propSetStatus?.("unlisted");
+          toast.success("Your listing is now unlisted and hidden from search.");
+        } else {
+          toast.error((res as any).error || "Failed to unpublish listing.");
+        }
       }
-    }
-    switch (displayState) {
-      case "DRAFT":
-        if (stepId === "created") return "completed";
-        if (stepId === "completed") return "current";
-        return "upcoming";
-      case "READY_TO_SUBMIT":
-        if (stepId === "created" || stepId === "completed") return "completed";
-        if (stepId === "submitted") return "current";
-        return "upcoming";
-      case "PENDING_APPROVAL":
-        if (stepId === "created" || stepId === "completed" || stepId === "submitted") return "completed";
-        if (stepId === "review") return "current";
-        return "upcoming";
-      case "REJECTED":
-        if (stepId === "created" || stepId === "completed" || stepId === "submitted") return "completed";
-        if (stepId === "review") return "warning";
-        return "upcoming";
-      case "APPROVED":
-        if (stepId === "published") return "upcoming";
-        return "completed";
-      case "PUBLISHED":
-        return "completed";
+    } catch (err: any) {
+      setIsSubmitting(false);
+      toast.error("Error updating visibility: " + (err?.message || "Unknown error"));
     }
   };
 
-  const handleSelectStatus = (target: "listed" | "unlisted") => {
-    if (target === "listed") {
-      if (isSaudi && missing.length > 0) {
-        toast.error("Please complete all required sections before changing to Listed status.");
-        return;
-      }
-      if (!isSaudi && !isApproved) {
-        toast.error(
-          "Admin approval required: Your listing must be reviewed and approved by an administrator before it can be listed publicly.",
-        );
-        return;
-      }
+  const handlePublishListing = async () => {
+    if (!listing) return;
+    if (isSaudiLicenseRestricted) {
+      toast.error("Your Saudi property license must be verified before publishing.");
+      setActiveSection("regulations");
+      return;
     }
-    if (propSetStatus) {
-      propSetStatus(target);
-    } else {
-      setLocalStatus(target);
+    setIsSubmitting(true);
+    try {
+      const res = await publishListingAction(listing.id);
+      setIsSubmitting(false);
+      if (res.ok && res.data) {
+        onUpdateListing?.({ published: true, status: "ACTIVE", isPaused: false });
+        propSetStatus?.("listed");
+        toast.success("Congratulations! Your listing is now published and live.");
+      } else {
+        toast.error((res as any).error || "Failed to publish listing.");
+      }
+    } catch (err: any) {
+      setIsSubmitting(false);
+      toast.error("Error publishing listing: " + (err?.message || "Unknown error"));
     }
   };
 
@@ -300,30 +314,28 @@ export function ListingStatusView({
       const res = await submitListingForReviewAction(listing.id);
       setIsSubmitting(false);
       if (res.ok && res.data) {
-        setJustSubmitted(true);
         onUpdateListing?.({
           status: "PENDING_REVIEW",
           published: false,
           submittedAt: new Date().toISOString(),
         });
-        toast.success("Listing submitted successfully for Admin review!");
+        toast.success("Listing submitted for review.");
       } else {
-        toast.error((res as any).error || "Failed to submit listing. Please ensure all required fields are complete.");
+        toast.error((res as any).error || "Failed to submit listing.");
       }
     } catch (err: any) {
       setIsSubmitting(false);
-      toast.error("Error submitting listing: " + err.message);
+      toast.error("Error submitting listing: " + (err?.message || "Unknown error"));
     }
   };
 
-  const handleResubmitForReview = async () => {
+  const handleResubmit = async () => {
     if (!listing) return;
     setIsSubmitting(true);
     try {
       const res = await resubmitListingForReviewAction(listing.id);
       setIsSubmitting(false);
       if (res.ok && res.data) {
-        setJustSubmitted(true);
         onUpdateListing?.({
           status: "PENDING_REVIEW",
           published: false,
@@ -331,407 +343,425 @@ export function ListingStatusView({
           requestedChanges: null,
           rejectionReason: null,
         });
-        toast.success("Listing resubmitted successfully for Admin review!");
+        toast.success("Listing resubmitted successfully for review.");
       } else {
         toast.error((res as any).error || "Failed to resubmit listing.");
       }
     } catch (err: any) {
       setIsSubmitting(false);
-      toast.error("Error resubmitting listing: " + err.message);
+      toast.error("Error resubmitting listing: " + (err?.message || "Unknown error"));
     }
   };
 
-  const handleSave = async () => {
-    if (!isApproved) {
-      toast.error(
-        isSaudi
-          ? "Please complete all required sections before changing to Listed status."
-          : "Admin approval required before changing to Listed status."
-      );
-      return;
-    }
-    if (handleSaveSection) {
-      await handleSaveSection("listing-status");
-      toast.success("Listing status updated successfully!");
-    } else if (listing) {
-      setIsSubmitting(true);
-      try {
-        if (effectiveStatus === "listed") {
-          const res = await publishListingAction(listing.id);
-          setIsSubmitting(false);
-          if (res.ok && res.data) {
-            onUpdateListing?.({ published: true, status: "ACTIVE" });
-            toast.success("Listing published successfully!");
-          } else {
-            toast.error((res as any).error || "Failed to publish listing.");
-          }
-        } else {
-          const res = await unpublishListingAction(listing.id);
-          setIsSubmitting(false);
-          if (res.ok && res.data) {
-            onUpdateListing?.({ published: false, status: "DRAFT" });
-            toast.success("Listing unpublished successfully.");
-          } else {
-            toast.error((res as any).error || "Failed to unpublish listing.");
-          }
-        }
-      } catch (err: any) {
-        setIsSubmitting(false);
-        toast.error("Error updating listing status: " + err.message);
-      }
+  const handleContinueSetup = () => {
+    const firstMissing = missing[0];
+    if (firstMissing?.section) {
+      setActiveSection(firstMissing.section);
+    } else {
+      setActiveSection("basics");
     }
   };
+
+  // Determine single current status attributes
+  const getCurrentStatusConfig = () => {
+    if (isLive) {
+      return {
+        label: t("host_status_listed_active", "Listed — Active"),
+        badge: t("host_active", "Active"),
+        dotColor: "bg-emerald-500",
+        description: t("host_status_visible_desc", "Your listing is visible to guests."),
+      };
+    }
+    if (isPublished && !isLive) {
+      return {
+        label: t("host_unlisted_title", "Unlisted"),
+        badge: t("host_hidden", "Hidden"),
+        dotColor: "bg-zinc-400",
+        description: t("host_status_hidden_desc", "Your listing is hidden from search."),
+      };
+    }
+    if (displayState === "APPROVED") {
+      return {
+        label: t("host_status_ready_to_publish", "Ready to publish"),
+        badge: t("host_ready_badge", "Ready"),
+        dotColor: "bg-emerald-500",
+        description: t("host_status_ready_desc", "Your listing is ready to go live."),
+      };
+    }
+    if (displayState === "PENDING_APPROVAL") {
+      return {
+        label: t("host_status_pending_review", "Pending review"),
+        badge: t("host_under_review", "Under review"),
+        dotColor: "bg-amber-500",
+        description: t("host_status_pending_desc", "Your listing is being reviewed."),
+      };
+    }
+    if (displayState === "REJECTED") {
+      return {
+        label: t("host_status_changes_requested", "Changes requested"),
+        badge: t("host_status_action_needed", "Action needed"),
+        dotColor: "bg-rose-500",
+        description: t("host_status_changes_desc", "Update your listing to continue."),
+      };
+    }
+    return {
+      label: t("host_draft_badge", "Draft"),
+      badge: t("host_incomplete", "Incomplete"),
+      dotColor: "bg-zinc-400",
+      description: t("host_status_draft_desc", "Complete your listing to publish."),
+    };
+  };
+
+  const currentStatus = getCurrentStatusConfig();
 
   return (
     <div className="space-y-6 animate-in fade-in max-w-2xl pb-12 font-sans">
-      {/* Header & Back Navigation */}
-      <div className="flex items-center gap-6">
-        <BackButton onClick={() => setActiveSection("propertyType")} />
-        <h1>{t("host_status_view_title")}</h1>
+      {/* Page Header */}
+      <div className="flex items-center gap-5">
+        <BackButton onClick={() => setActiveSection("arrival-guide")} />
+        <div>
+          <h1 className="text-2xl font-medium text-zinc-900 dark:text-zinc-100">
+            {t("host_status_view_title", "Listing status")}
+          </h1>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            Manage your listing's visibility.
+          </p>
+        </div>
       </div>
 
-      {/* Visual Approval Progress Timeline */}
-      <section aria-label="Approval and publishing progress" className="overflow-hidden rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs">
-        <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-700 px-5 py-4 sm:px-6">
-          <div>
-            <p className="text-sm font-normal text-[#727272] dark:text-[#727272]">{t("host_status_journey")}</p>
-            <p className="mt-0.5 text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_status_approval_progress")}</p>
+      {/* Optional Compact Setup Progress (Only for incomplete setup listings) */}
+      {!isLive && (
+        <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 dark:border-zinc-700 dark:bg-zinc-800">
+          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              {t("host_status_listing_progress", "Listing progress")}
+            </span>
+            <span>
+              {t("host_status_step_count", { current: currentStepIndex + 1, total: setupSteps.length }, `Step ${currentStepIndex + 1} of ${setupSteps.length}`)}
+            </span>
           </div>
-          <span className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide ${
-            displayState === "PUBLISHED" ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300" :
-            displayState === "REJECTED" ? "bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300" :
-            "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300"
-          }`}>
-            {displayState === "PUBLISHED" ? t("host_status_live") : displayState === "REJECTED" ? t("host_status_action_needed") : t("host_status_in_progress")}
-          </span>
-        </div>
-        <div className="overflow-x-auto px-5 py-6 sm:px-6">
-          <div className={`relative flex min-w-[560px] ${isSaudi ? "sm:min-w-0" : "lg:min-w-0"}`}>
-            <div className="absolute left-[8%] right-[8%] top-4 h-px bg-zinc-200 dark:bg-zinc-700" aria-hidden="true" />
-            {steps.map((step, idx) => {
-              const stepStatus = getStepStatus(step.id);
-              const isComplete = stepStatus === "completed";
-              const isCurrent = stepStatus === "current";
-              const isWarning = stepStatus === "warning";
+          <div className="grid grid-cols-4 gap-2">
+            {setupSteps.map((step, idx) => {
+              const isDone = idx < currentStepIndex;
+              const isCurrent = idx === currentStepIndex;
               return (
-                <div key={step.id} className="relative z-10 flex min-w-[112px] flex-1 flex-col items-center text-center">
-                  <span className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors ${
-                    isComplete ? "border-emerald-600 bg-emerald-600 text-white" :
-                    isCurrent ? "border-amber-400 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 ring-4 ring-amber-100 dark:ring-amber-900/40" :
-                    isWarning ? "border-rose-500 bg-rose-500 text-white" :
-                    "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[#727272] dark:text-[#727272]"
-                  }`}>
-                    {isComplete ? (
-                      <Image
-                        src="/images/icons/right-mark.svg"
-                        alt=""
-                        aria-hidden="true"
-                        width={11}
-                        height={11}
-                        className="brightness-0 invert"
-                      />
-                    ) : isWarning ? "!" : idx + 1}
-                  </span>
-                  <span className={`mt-3 max-w-[108px] text-xs font-normal ${
-                    isComplete ? "text-[#1f1f1f]" : isCurrent ? "text-zinc-950 dark:text-zinc-100" : isWarning ? "text-rose-800 dark:text-rose-400" : "text-[#727272] dark:text-[#727272]"
-                  }`}>
+                <div key={step.id} className="space-y-1.5">
+                  <div
+                    className={`h-1.5 rounded-full transition-all ${
+                      isDone
+                        ? "bg-zinc-900 dark:bg-zinc-100"
+                        : isCurrent
+                        ? "bg-amber-400"
+                        : "bg-zinc-100 dark:bg-zinc-700"
+                    }`}
+                  />
+                  <p
+                    className={`text-[11px] truncate ${
+                      isCurrent
+                        ? "font-medium text-zinc-900 dark:text-zinc-100"
+                        : "text-zinc-500 dark:text-zinc-400"
+                    }`}
+                  >
                     {step.label}
-                  </span>
-                  {isCurrent && <span className="mt-1 text-[10px] font-medium text-amber-700 dark:text-amber-400">{t("host_step_current")}</span>}
+                  </p>
                 </div>
               );
             })}
           </div>
         </div>
+      )}
+
+      {/* Current Status Card */}
+      <section className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-zinc-700 dark:bg-zinc-800 space-y-4 shadow-2xs">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2.5">
+              <span className={`size-2.5 rounded-full ${currentStatus.dotColor}`} />
+              <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
+                {currentStatus.label}
+              </h2>
+            </div>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 pl-5">
+              {currentStatus.description}
+            </p>
+          </div>
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 shrink-0">
+            {currentStatus.badge}
+          </span>
+        </div>
+
+        {/* Date indication when pending review */}
+        {displayState === "PENDING_APPROVAL" && formattedDate && (
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 pl-5">
+            {t("host_submitted_on", "Submitted on")} {formattedDate}
+          </p>
+        )}
+
+        {/* Rejection notice / feedback */}
+        {displayState === "REJECTED" && (
+          <div className="rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 p-4 text-xs text-rose-900 dark:text-rose-200 leading-relaxed font-normal">
+            <p className="font-medium mb-1">
+              {t("host_status_feedback_title", "Feedback from review team:")}
+            </p>
+            <p>{listing?.rejectionReason || listing?.requestedChanges || "Please review your listing details and resubmit."}</p>
+          </div>
+        )}
+
+        {/* Saudi license warning if incomplete */}
+        {isSaudi && displayState === "APPROVED" && isSaudiLicenseRestricted && (
+          <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 p-4 text-xs text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p className="font-medium">
+                {t("host_status_saudi_license_required", "License verification required")}
+              </p>
+              <p className="mt-0.5 text-amber-800 dark:text-amber-300">
+                {t("host_status_saudi_license_desc", "Your Saudi tourism license must be verified and eligible before publishing.")}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveSection("regulations")}
+              className="rounded-full bg-white dark:bg-zinc-800 border border-amber-300 dark:border-amber-700 px-4 py-1.5 text-xs font-medium text-amber-900 dark:text-amber-200 hover:bg-amber-100 transition-colors shrink-0 self-start sm:self-auto cursor-pointer"
+            >
+              {t("host_status_verify_license_btn", "Review license")}
+            </button>
+          </div>
+        )}
+
+        {/* Missing requirements summary if draft */}
+        {displayState === "DRAFT" && missing.length > 0 && (
+          <div className="space-y-2 pt-2 border-t border-zinc-100 dark:border-zinc-700">
+            <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+              {t("host_status_remaining_steps", { count: missing.length }, `${missing.length} step${missing.length > 1 ? "s" : ""} remaining:`)}
+            </p>
+            <div className="space-y-1.5">
+              {missing.map((req) => (
+                <div
+                  key={req.key}
+                  className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700 text-xs"
+                >
+                  <div className="min-w-0 pr-2">
+                    <span className="font-medium text-zinc-900 dark:text-zinc-100 block">
+                      {req.label}
+                    </span>
+                    <span className="text-zinc-500 dark:text-zinc-400 block truncate">
+                      {req.description}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection(req.section)}
+                    className="text-xs font-medium text-zinc-900 dark:text-zinc-100 hover:underline shrink-0 cursor-pointer ml-2"
+                  >
+                    {t("host_complete_btn", "Add")}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ================================================================= */}
-      {/* ADMIN APPROVAL REQUIRED MESSAGE & LIFECYCLE STATE NOTICE          */}
+      {/* LISTED / UNLISTED CONTROLS (Only for published listings)          */}
       {/* ================================================================= */}
-
-      {/* 1. STATE: PENDING_APPROVAL (Under Admin Review for non-Saudi) */}
-      {!isSaudi && (displayState === "PENDING_APPROVAL" || justSubmitted) && (
-        <div className="rounded-2xl border border-amber-300 dark:border-amber-700 bg-amber-50/80 dark:bg-amber-950/40 p-5 space-y-3 shadow-2xs animate-in fade-in">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
-              <h2 className="font-semibold text-amber-950 dark:text-amber-200 text-base">
-                {t("host_admin_approval_required")}
-              </h2>
-            </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 uppercase">
-              {t("host_under_review")}
-            </span>
-          </div>
-          <p className="text-xs text-amber-900 dark:text-amber-300 leading-relaxed">
-            {t("host_submitted_review_desc")}
-          </p>
-          <div className="p-3 rounded-xl bg-white/90 dark:bg-zinc-900/80 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-950 dark:text-amber-200 flex items-start gap-2.5">
-            <span className="text-sm">🔒</span>
-            <span className="leading-relaxed">
-              <strong>Do not show the listing as fully published until the admin has actually approved it.</strong> {t("host_listed_option_disabled")}
-            </span>
-          </div>
-          {formattedDate && (
-            <p className="text-[11px] text-amber-800 dark:text-amber-400 pt-1">
-              {t("host_submitted_on")} <span className="font-semibold">{formattedDate}</span>
+      {isPublished && (
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
+              {t("host_status_visibility_title", "Listing visibility")}
+            </h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              {t("host_status_visibility_subtitle", "Choose whether guests can find and book your place.")}
             </p>
-          )}
-        </div>
-      )}
+          </div>
 
-      {/* 2. STATE: REJECTED (Changes Required) */}
-      {displayState === "REJECTED" && !justSubmitted && (
-        <div className="rounded-2xl border border-rose-300 dark:border-rose-700 bg-rose-50/80 dark:bg-rose-950/40 p-5 space-y-3 shadow-2xs animate-in fade-in">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-              <h2 className="font-semibold text-rose-950 dark:text-rose-200 text-base">
-                {t("host_status_changes_required")}
-              </h2>
-            </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-200 dark:bg-rose-900/60 text-rose-900 dark:text-rose-200 uppercase">
-              {t("host_status_action_needed")}
-            </span>
-          </div>
-          <p className="text-xs text-rose-900 dark:text-rose-300 leading-relaxed">
-            {t("host_rejected_admin_desc")}
-          </p>
-          <div className="p-3.5 rounded-xl bg-white/95 dark:bg-zinc-900/80 border border-rose-200 dark:border-rose-800/60 text-xs text-rose-900 dark:text-rose-200 font-medium leading-relaxed">
-            {listing?.rejectionReason || listing?.requestedChanges || "Please review your listing details and resubmit."}
-          </div>
-          <div className="pt-1 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={handleResubmitForReview}
-              className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs px-6 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+          <div className="space-y-3">
+            {/* Option 1: Listed */}
+            <div
+              onClick={() => {
+                setSelectedVisibility("listed");
+                propSetStatus?.("listed");
+              }}
+              className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 ${
+                selectedVisibility === "listed"
+                  ? "border-zinc-900 ring-1 ring-zinc-900 bg-zinc-50/50 dark:border-zinc-100 dark:ring-zinc-100 dark:bg-zinc-800/80"
+                  : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600"
+              }`}
             >
-              {isSubmitting ? t("host_resubmitting") : t("host_resubmit_approval")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveSection("description")}
-              className="rounded-full bg-white dark:bg-zinc-800 border border-rose-300 dark:border-rose-700 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-900 dark:text-rose-200 font-semibold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer"
-            >
-              {t("host_edit_listing_details")}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 3. STATE: DRAFT (Incomplete Details) */}
-      {displayState === "DRAFT" && !justSubmitted && (
-        <div className="rounded-lg border border-[#72727] dark:border-zinc-700 bg-white dark:bg-zinc-800/60 p-5 space-y-3 shadow-2xs animate-in fade-in">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#727272] dark:bg-zinc-500" />
-              <h2 className="font-semibold text-[#1f1f1f] dark:text-zinc-100 text-base">
-                {t("host_complete_your_listing")}
-              </h2>
-            </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 uppercase">
-              {t("host_draft_badge")}
-            </span>
-          </div>
-          <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
-            {isSaudi
-              ? t("host_saudi_draft_desc")
-              : t("host_regular_draft_desc")}
-          </p>
-          <div className="space-y-2 pt-1">
-            {missing.map((req) => (
-              <div
-                key={req.key}
-                className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-zinc-800 border border-[#727272] dark:border-zinc-700 text-sm"
-              >
-                <div>
-                  <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{req.label}</span>
-                  <p className="text-sm text-[#727272] dark:text-[#727272] mt-0.5">{req.description}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveSection(req.section)}
-                  className="text-sm font-semibold text-[#1f1f1f] dark:text-amber-400 hover:text-[#727272] dark:hover:text-amber-300 hover:underline cursor-pointer shrink-0 ml-3 transition-all duration-300"
+              <div className="pt-0.5">
+                <div
+                  className={`size-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                    selectedVisibility === "listed"
+                      ? "border-zinc-900 bg-zinc-900 dark:border-zinc-100 dark:bg-zinc-100"
+                      : "border-zinc-300 bg-white dark:border-zinc-600 dark:bg-zinc-800"
+                  }`}
                 >
-                  {t("host_complete_btn")}
-                </button>
+                  {selectedVisibility === "listed" && (
+                    <div className="size-2 rounded-full bg-white dark:bg-zinc-900" />
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 4. STATE: APPROVED (ready for the host to publish) */}
-      {displayState === "APPROVED" && !justSubmitted && (
-        <div className="rounded-lg border border-emerald-500 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/40 p-5 space-y-2 shadow-2xs animate-in fade-in">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <h2 className="font-semibold text-emerald-950 dark:text-emerald-200 text-base">
-                {isSaudi ? t("host_status_ready_to_publish") : t("host_listing_approved")}
-              </h2>
+              <div className="space-y-0.5 flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-medium text-zinc-900 dark:text-zinc-100">
+                    {t("host_listed_title", "Listed")}
+                  </span>
+                  {isLive && selectedVisibility === "listed" && (
+                    <span className="size-2 rounded-full bg-emerald-500" />
+                  )}
+                </div>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed">
+                  {t("host_listed_card_desc", "Guests can find and book your place.")}
+                </p>
+              </div>
             </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 uppercase">
-              {isSaudi ? t("host_ready_badge") : t("host_status_approved")}
-            </span>
-          </div>
-          <p className="text-sm text-emerald-900 dark:text-emerald-300 leading-relaxed">
-            {isSaudi
-              ? t("host_saudi_approved_desc")
-              : t("host_approved_desc")}
-          </p>
-        </div>
-      )}
 
-      {/* 5. STATE: PUBLISHED (Live on Marketplace) */}
-      {displayState === "PUBLISHED" && (
-        <div className="rounded-lg border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/40 p-5 space-y-2 shadow-2xs animate-in fade-in">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <h2 className="font-semibold text-emerald-950 dark:text-emerald-200 text-base">
-                {t("host_listing_is_live")}
-              </h2>
+            {/* Option 2: Unlisted */}
+            <div
+              onClick={() => {
+                setSelectedVisibility("unlisted");
+                propSetStatus?.("unlisted");
+              }}
+              className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 ${
+                selectedVisibility === "unlisted"
+                  ? "border-zinc-900 ring-1 ring-zinc-900 bg-zinc-50/50 dark:border-zinc-100 dark:ring-zinc-100 dark:bg-zinc-800/80"
+                  : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600"
+              }`}
+            >
+              <div className="pt-0.5">
+                <div
+                  className={`size-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                    selectedVisibility === "unlisted"
+                      ? "border-zinc-900 bg-zinc-900 dark:border-zinc-100 dark:bg-zinc-100"
+                      : "border-zinc-300 bg-white dark:border-zinc-600 dark:bg-zinc-800"
+                  }`}
+                >
+                  {selectedVisibility === "unlisted" && (
+                    <div className="size-2 rounded-full bg-white dark:bg-zinc-900" />
+                  )}
+                </div>
+              </div>
+              <div className="space-y-0.5 flex-1 min-w-0">
+                <span className="text-base font-medium text-zinc-900 dark:text-zinc-100 block">
+                  {t("host_unlisted_title", "Unlisted")}
+                </span>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed">
+                  {t("host_unlisted_card_desc", "Hide your place from guests.")}
+                </p>
+              </div>
             </div>
-            <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-[#1f1f1f] dark:text-emerald-200">
-              {t("host_live_on_marketplace")}
-            </span>
           </div>
-          <p className="text-sm text-[#1f1f1f] dark:text-emerald-300 leading-relaxed">
-            {t("host_live_desc")}
-          </p>
-        </div>
+
+          {/* Visibility Action Buttons (Save / Cancel) */}
+          <div className="flex items-center gap-3 pt-2">
+            <button
+              type="button"
+              disabled={!hasVisibilityChange || isWorking}
+              onClick={handleSaveVisibility}
+              className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 text-white dark:text-zinc-900 px-6 py-2.5 text-sm font-medium hover:bg-black dark:hover:bg-white transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
+            >
+              {isWorking ? t("host_saving_btn", "Saving…") : t("host_save_changes", "Save changes")}
+            </button>
+            <button
+              type="button"
+              disabled={!hasVisibilityChange || isWorking}
+              onClick={handleCancelVisibilityChange}
+              className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 px-5 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {t("host_cancel_btn", "Cancel")}
+            </button>
+          </div>
+        </section>
       )}
 
       {/* ================================================================= */}
-      {/* FIGMA HOUSE ILLUSTRATION (Matches Figma 100%)                      */}
+      {/* ACTIONS FOR UNPUBLISHED LISTINGS                                  */}
       {/* ================================================================= */}
-      <div className="flex justify-center py-4 sm:py-6">
-        <svg className="w-56 h-44" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Main House Body */}
-          <rect x="60" y="60" width="75" height="75" rx="3" className="fill-slate-50 dark:fill-zinc-800 stroke-slate-800 dark:stroke-zinc-300" strokeWidth="2.5" />
-          {/* Slanted Roof */}
-          <polygon points="50,62 97.5,25 145,62" className="fill-yellow-300 dark:fill-amber-400 stroke-slate-800 dark:stroke-zinc-300" strokeWidth="2.5" />
-          {/* Windows */}
-          <rect x="72" y="72" width="18" height="24" rx="2" className="fill-blue-300 dark:fill-blue-900/80 stroke-slate-800 dark:stroke-zinc-300" strokeWidth="2" />
-          <line x1="81" y1="72" x2="81" y2="96" className="stroke-slate-800 dark:stroke-zinc-300" strokeWidth="1.5" />
-          <line x1="72" y1="84" x2="90" y2="84" className="stroke-slate-800 dark:stroke-zinc-300" strokeWidth="1.5" />
-          {/* Door */}
-          <rect x="102" y="95" width="20" height="40" rx="1" className="fill-slate-700 dark:fill-zinc-700 stroke-slate-800 dark:stroke-zinc-300" strokeWidth="2" />
-          <circle cx="106" cy="115" r="1.5" className="fill-yellow-300 dark:fill-amber-400" />
-          {/* Ground Line */}
-          <path d="M40 135 H160" className="stroke-green-700 dark:stroke-emerald-500" strokeWidth="4" strokeLinecap="round" />
-          {/* Tree Left */}
-          <ellipse cx="46" cy="120" rx="10" ry="16" className="fill-green-500 dark:fill-emerald-600 stroke-green-700 dark:stroke-emerald-500" strokeWidth="2" />
-          <line x1="46" y1="128" x2="46" y2="135" className="stroke-green-700 dark:stroke-emerald-500" strokeWidth="2.5" />
-          {/* Tree Right */}
-          <ellipse cx="152" cy="116" rx="12" ry="18" className="fill-green-600 dark:fill-emerald-700 stroke-green-700 dark:stroke-emerald-500" strokeWidth="2" />
-          <line x1="152" y1="126" x2="152" y2="135" className="stroke-green-700 dark:stroke-emerald-500" strokeWidth="2.5" />
-        </svg>
-      </div>
+      {!isPublished && (
+        <div className="pt-2">
+          {/* Case A: Ready to publish */}
+          {displayState === "APPROVED" && (
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                disabled={isWorking}
+                onClick={handlePublishListing}
+                className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] hover:text-white text-[#1F1F1F] px-6 py-2.5 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs"
+              >
+                {isWorking
+                  ? t("host_publishing_btn", "Publishing…")
+                  : t("host_publish_listing_btn", "Publish listing")}
+              </button>
+            </div>
+          )}
 
-      {/* ================================================================= */}
-      {/* SELECTABLE STATUS CARDS (Listed vs Unlisted)                       */}
-      {/* ================================================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Listed Card */}
-        <div
-          onClick={() => handleSelectStatus("listed")}
-          className={`p-5 rounded-lg border transition-all space-y-2 shadow-2xs relative ${
-            !isApproved
-              ? "opacity-60 cursor-not-allowed bg-zinc-50/70 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-700 select-none"
-              : effectiveStatus === "listed"
-              ? "bg-[#FEF9EC] dark:bg-amber-950/30 border-amber-300 dark:border-amber-500/80 ring-1 ring-amber-300/60 dark:ring-amber-500/40 shadow-2xs cursor-pointer"
-              : "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 cursor-pointer"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_listed_title")}</h3>
-            {!isApproved ? (
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 flex items-center gap-1">
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                {isSaudi ? t("host_incomplete") : t("host_locked")}
-              </span>
-            ) : effectiveStatus === "listed" ? (
-              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                {t("host_active")}
-              </span>
-            ) : null}
-          </div>
-          <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed">
-            {t("host_listed_card_desc")}
-          </p>
-          {!isApproved && (
-            <div className="pt-1 text-[10px] font-medium text-amber-800 dark:text-amber-400 flex items-center gap-1">
-              <span>●</span>
-              <span>
-                {isSaudi
-                  ? t("host_complete_before_publishing")
-                  : t("host_requires_admin_approval")}
-              </span>
+          {/* Case B: Ready to submit for admin review (Non-Saudi complete listings) */}
+          {displayState === "READY_TO_SUBMIT" && (
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                disabled={isWorking}
+                onClick={handleSubmitForReview}
+                className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] hover:text-white text-[#1F1F1F] px-6 py-2.5 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs"
+              >
+                {isWorking
+                  ? t("host_submitting_btn", "Submitting…")
+                  : t("host_submit_for_review_btn", "Submit for review")}
+              </button>
+            </div>
+          )}
+
+          {/* Case C: Draft (Incomplete setup) */}
+          {displayState === "DRAFT" && (
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleContinueSetup}
+                className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] hover:text-white text-[#1F1F1F] px-6 py-2.5 text-sm font-medium transition-colors cursor-pointer shadow-2xs"
+              >
+                {t("host_continue_setup_btn", "Continue setup")}
+              </button>
+            </div>
+          )}
+
+          {/* Case D: Changes requested (Rejected) */}
+          {displayState === "REJECTED" && (
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                disabled={isWorking}
+                onClick={handleResubmit}
+                className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 text-white dark:text-zinc-900 px-6 py-2.5 text-sm font-medium hover:bg-black dark:hover:bg-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs"
+              >
+                {isWorking
+                  ? t("host_resubmitting", "Resubmitting…")
+                  : t("host_resubmit_approval", "Resubmit for review")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSection("description")}
+                className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 px-5 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+              >
+                {t("host_edit_listing_details", "Edit details")}
+              </button>
+            </div>
+          )}
+
+          {/* Case E: Pending review */}
+          {displayState === "PENDING_APPROVAL" && (
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveSection("basics")}
+                className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 px-5 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+              >
+                {t("host_view_details_btn", "View listing details")}
+              </button>
             </div>
           )}
         </div>
-
-        {/* Unlisted Card */}
-        <div
-          onClick={() => handleSelectStatus("unlisted")}
-          className={`p-5 rounded-lg border transition-all cursor-pointer space-y-2 shadow-2xs ${
-            effectiveStatus === "unlisted"
-              ? "bg-[#FEF9EC] dark:bg-amber-950/30 border-amber-300 dark:border-amber-500/80 dark:ring-amber-500/40 shadow-2xs"
-              : "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_unlisted_title")}</h3>
-            {effectiveStatus === "unlisted" && (
-              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                {!isApproved ? (isSaudi ? t("host_unlisted_draft") : t("host_unlisted_awaiting")) : t("host_hidden")}
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed">
-            {t("host_unlisted_card_desc")}
-          </p>
-        </div>
-      </div>
-
-      {/* ================================================================= */}
-      {/* ACTION BUTTONS (Save & Cancel)                                    */}
-      {/* ================================================================= */}
-      <div className="flex items-center gap-3 pt-2">
-        <button
-          type="button"
-          disabled={isSaving || !isApproved}
-          onClick={handleSave}
-          className={`rounded-full font-medium text-sm px-5 py-2 shadow-2xs transition-all duration-300 ${
-            !isApproved
-              ? "bg-zinc-100 dark:bg-zinc-800 text-[#727272] dark:text-[#727272] cursor-not-allowed border border-zinc-200 dark:border-zinc-700"
-              : "bg-[#FCDF9C] hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white cursor-pointer"
-          }`}
-        >
-          {isSaving
-            ? t("host_saving_btn")
-            : !isApproved
-            ? isSaudi
-              ? `${t("host_save_btn")} (${t("host_complete_before_publishing")})`
-              : `${t("host_save_btn")} (${t("host_requires_admin_approval")})`
-            : t("host_save_btn")}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveSection("arrival-guide")}
-          className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-[#1f1f1f] hover:text-white dark:text-zinc-200 font-semibold text-sm px-5 py-2 shadow-2xs transition-all cursor-pointer  duration-300"
-        >
-          {t("host_cancel_btn")}
-        </button>
-      </div>
+      )}
     </div>
   );
 }
