@@ -1923,6 +1923,10 @@ export function PublicListingDetailClient({
                 key={listing.id}
                 photos={photos}
                 photoRoomAssignments={(listing as any).photoRoomAssignments || []}
+                rooms={(listing as any).rooms || []}
+                amenities={(listing as any).amenities || []}
+                listingId={listing.id}
+                listingSlug={listing.customSlug || undefined}
                 listingTitle={listing.title}
                 onShare={handleShare}
                 onSave={() => void handleSave()}

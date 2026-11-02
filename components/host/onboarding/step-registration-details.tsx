@@ -44,6 +44,7 @@ export function StepRegistrationDetails({
   }));
 
   const [errors, setErrors] = useState<Partial<Record<keyof SaudiRegistrationDetails, string>>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Sync state when initial details are loaded asynchronously from draft
   useEffect(() => {
@@ -79,13 +80,29 @@ export function StepRegistrationDetails({
     }
 
     setErrors(next);
+    setSubmitError(null);
     if (Object.keys(next).length) return;
 
-    await onContinue({
-      accommodationType: effectiveType,
-      licenseNumber: permit,
-      nationalId,
-    });
+    try {
+      await onContinue({
+        accommodationType: effectiveType,
+        licenseNumber: permit,
+        nationalId,
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error
+        ? error.message
+        : "We couldn't save your registration details. Please try again.";
+
+      // A duplicate or invalid permit belongs next to the permit field so the
+      // host knows exactly what to correct. Other server failures stay in a
+      // form-level alert without escaping to the Next.js error overlay.
+      if (/license|permit|associated with another host/i.test(message)) {
+        setErrors((current) => ({ ...current, licenseNumber: message }));
+      } else {
+        setSubmitError(message);
+      }
+    }
   };
 
   return (
@@ -103,6 +120,14 @@ export function StepRegistrationDetails({
         />
         <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-xs sm:p-8">
           <div className="space-y-6">
+            {submitError && (
+              <div
+                role="alert"
+                className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800"
+              >
+                {submitError}
+              </div>
+            )}
             <div>
               <label
                 htmlFor="accommodation-type"
@@ -162,6 +187,7 @@ export function StepRegistrationDetails({
                     ...current,
                     licenseNumber: val,
                   }));
+                  setSubmitError(null);
                   if (errors.licenseNumber) {
                     setErrors((prev) => ({ ...prev, licenseNumber: undefined }));
                   }

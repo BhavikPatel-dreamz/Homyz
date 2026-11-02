@@ -88,13 +88,36 @@ const stepIndexFromParam = (value?: string) => {
   return value ? STEP_SLUGS.indexOf(value.toLowerCase()) : -1;
 };
 
-async function readSaveError(response: Response) {
+async function readSaveError(
+  response: Response,
+  fallback = "We couldn't save your listing. Please try again.",
+) {
   const body: unknown = await response.json().catch(() => null);
-  if (body && typeof body === "object" && "error" in body) {
-    const error = (body as { error?: { message?: string } }).error;
-    if (error?.message) return error.message;
+  if (!body || typeof body !== "object") return fallback;
+
+  const envelope = body as {
+    error?: unknown;
+    message?: unknown;
+  };
+  if (typeof envelope.error === "string" && envelope.error.trim()) {
+    return envelope.error;
   }
-  return "We couldn't save your listing. Please try again.";
+  if (envelope.error && typeof envelope.error === "object") {
+    const error = envelope.error as {
+      message?: unknown;
+      details?: Array<{ message?: unknown }>;
+    };
+    if (typeof error.message === "string" && error.message.trim()) {
+      return error.message;
+    }
+    const detail = error.details?.find(
+      (item) => typeof item?.message === "string" && item.message.trim(),
+    );
+    if (typeof detail?.message === "string") return detail.message;
+  }
+  return typeof envelope.message === "string" && envelope.message.trim()
+    ? envelope.message
+    : fallback;
 }
 
 interface NewListingGetStartedProps {
@@ -514,8 +537,7 @@ export function NewListingGetStarted({
       body: JSON.stringify({ listingId: activeDraftId }),
     });
     if (!res.ok) {
-      const errBody = await res.json().catch(() => null);
-      throw new Error(errBody?.error || "We couldn't verify this license.");
+      throw new Error(await readSaveError(res, "We couldn't verify this license."));
     }
     const json = await res.json();
     if (!json?.data) {
@@ -535,8 +557,7 @@ export function NewListingGetStarted({
         body: JSON.stringify(details),
       });
       if (!res.ok) {
-        const errBody = await res.json().catch(() => null);
-        throw new Error(errBody?.error || "We couldn't save your registration details.");
+        throw new Error(await readSaveError(res, "We couldn't save your registration details."));
       }
       const json = await res.json();
       const savedData = json?.data || {};
@@ -567,8 +588,7 @@ export function NewListingGetStarted({
         body: JSON.stringify({ method }),
       });
       if (!res.ok) {
-        const errBody = await res.json().catch(() => null);
-        throw new Error(errBody?.error || t("wizard_error_submit_title", "We couldn't submit your listing."));
+        throw new Error(await readSaveError(res, t("wizard_error_submit_title", "We couldn't submit your listing.")));
       }
       const data = await res.json().catch(() => null);
       const newStatus = method === "automatic" ? "APPROVED" : "PENDING_REVIEW";
