@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import useWishlist from "@/hooks/useWishlist";
 import type { PhotoRoomAssignment } from "@/lib/listing/photo-room-assignments";
 import {
   buildPhotoTourViewModel,
@@ -27,6 +29,8 @@ export function ListingPhotosClient({
   listingId,
   listingSlug,
 }: ListingPhotosClientProps) {
+  const router = useRouter();
+  const wishlist = useWishlist();
   const viewModel = useMemo(
     () =>
       buildPhotoTourViewModel({
@@ -40,6 +44,30 @@ export function ListingPhotosClient({
   );
 
   const backHref = `/listings/${listingSlug || listingId}`;
+  const handleShare = useCallback(async () => {
+    const shareUrl = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: listingTitle || "Photo tour", url: shareUrl });
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
+      }
+    } catch (error) {
+      // Closing the native share sheet is not an application error.
+      if ((error as DOMException | undefined)?.name !== "AbortError") {
+        console.error("Unable to share photo tour", error);
+      }
+    }
+  }, [listingTitle]);
+
+  const handleReserve = useCallback(() => {
+    router.push(`${backHref}#availability-heading`);
+  }, [backHref, router]);
+
+  const handleSave = useCallback(async () => {
+    if (wishlist.has(listingId)) await wishlist.remove(listingId);
+    else await wishlist.add(listingId);
+  }, [listingId, wishlist]);
 
   return (
     <div className="w-full bg-white">
@@ -47,6 +75,11 @@ export function ListingPhotosClient({
         viewModel={viewModel}
         listingTitle={listingTitle}
         backHref={backHref}
+        onShare={handleShare}
+        onSave={() => void handleSave()}
+        isSaved={wishlist.has(listingId)}
+        saveDisabled={wishlist.adding.has(listingId) || wishlist.removeInFlight.has(listingId)}
+        onReserve={handleReserve}
       />
     </div>
   );

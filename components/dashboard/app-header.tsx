@@ -19,6 +19,7 @@ import {
   useUnreadNotificationCount,
 } from "@/lib/notifications/unread-count-store";
 import { HostNavigationDrawer } from "@/components/host/navigation/host-navigation-drawer";
+import { UnifiedGuestHeader } from "@/components/header/unified-guest-header";
 
 const BecomeHostModal = dynamic(
   () => import("@/components/host/become-host-modal").then((mod) => mod.BecomeHostModal),
@@ -237,6 +238,14 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   const isHost = role === "HOST" || role === "ADMIN";
   const isHosting = isHost && isHostRoute;
 
+  // Use the Unified Guest Header for all guest/traveler routes
+  if (!isHostRoute) {
+    // Reset the home-header scroll state when client navigation changes route.
+    // Without a remount, a compact search that was visible on a previous page
+    // can flash in the centre while the home loading skeleton is displayed.
+    return <UnifiedGuestHeader key={pathname ?? "guest"} showBottomBorder={hasHeaderDivider} />;
+  }
+
   return (
     <header className="header sticky top-0 lg:z-99 z-40 w-full bg-white text-[#1F1F1F]" suppressHydrationWarning>
       <Container>
@@ -416,14 +425,14 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               isHostRoute ? (
                 <Link
                   href="/"
-                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-3.5 py-2 md:px-4 md:py-2 lg:px-5 lg:py-2.5 text-xs sm:text-sm lg:text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
+                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-3.5 py-1.5 text-xs font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_traveling") || "Switch to traveling"}
                 </Link>
               ) : (
                 <Link
                   href="/host/today"
-                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-3.5 py-2 md:px-4 md:py-2 lg:px-5 lg:py-2.5 text-xs sm:text-sm lg:text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
+                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-3.5 py-1.5 text-xs font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_hosting") || "Switch to hosting"}
                 </Link>
@@ -433,14 +442,14 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                 type="button"
                 onClick={handleBecomeHost}
                 disabled={isConvertingRole}
-                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-2.75 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-3.5 py-1.5 text-xs font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
               >
                 {isConvertingRole ? (t("host_loading") || "Loading...") : (t("header_become_a_host") || "Become a host")}
               </button>
             ) : (
               <Link
                 href="/login?callbackUrl=/host/onboarding"
-                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-3.5 py-1.5 text-xs font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
               >
                 {t("header_become_a_host") || "Become a host"}
               </Link>
@@ -752,18 +761,33 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             )}
                           </Link>
 
-                          <Link
-                            href="/profile/tab/account_settings"
-                            prefetch={false}
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm font-normal rounded-xl transition-colors group duration-300 ${((pathname?.includes("account_settings") && !pathname?.startsWith("/host/account-settings")) || pathname === "/account-settings" || pathname === "/profile-management") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                              }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] border border-zinc-200/60 shadow-2xs">
-                              <Image src="/images/icons/setting.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                            </span>
-                            <span>{t("header_account_settings") || "Account settings"}</span>
-                          </Link>
+                          {isHosting ? (
+                            <Link
+                              href="/host/account-settings"
+                              prefetch={false}
+                              onClick={() => setMenuOpen(false)}
+                              className={`flex items-center gap-3.5 px-3 py-2 text-sm font-normal rounded-xl transition-colors group duration-300 ${pathname?.startsWith("/host/account-settings") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                                }`}
+                            >
+                              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] border border-zinc-200/60 shadow-2xs">
+                                <Image src="/images/icons/setting.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                              </span>
+                              <span>{t("header_account_settings") || "Account settings"}</span>
+                            </Link>
+                          ) : (
+                            <Link
+                              href="/profile/tab/account_settings"
+                              prefetch={false}
+                              onClick={() => setMenuOpen(false)}
+                              className={`flex items-center gap-3.5 px-3 py-2 text-sm font-normal rounded-xl transition-colors group duration-300 ${((pathname?.includes("account_settings") && !pathname?.startsWith("/host/account-settings")) || pathname === "/account-settings" || pathname === "/profile-management") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                                }`}
+                            >
+                              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white group-hover:bg-[#F3F4F5] border border-zinc-200/60 shadow-2xs">
+                                <Image src="/images/icons/setting.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                              </span>
+                              <span>{t("header_account_settings") || "Account settings"}</span>
+                            </Link>
+                          )}
 
                           <button
                             type="button"

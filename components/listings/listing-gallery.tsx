@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useCallback, useEffect } from "react";
+import React, { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import type { PhotoRoomAssignment } from "@/lib/listing/photo-room-assignments";
@@ -41,6 +41,7 @@ export function ListingGallery({
 }: ListingGalleryProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const tourHistoryEntryRef = useRef(false);
 
   // Mode A: Dedicated room-by-room photo tour
   const [isTourOpen, setIsTourOpen] = useState(() => {
@@ -65,7 +66,9 @@ export function ListingGallery({
     [photos, photoRoomAssignments, rooms, amenities, listingTitle],
   );
 
-  // Open Mode A (Photo Tour): route to /listings/[id]/photos if available, otherwise toggle view
+  // Small screens use the native-feeling overlay, so opening it preserves the
+  // detail page and its exact scroll position. Desktop keeps the established
+  // dedicated tour route.
   const handleOpenTour = useCallback(() => {
     const targetSlug = listingSlug || listingId;
     trackListingEvent({
@@ -73,12 +76,15 @@ export function ListingGallery({
       metadata: { totalPhotos: viewModel.totalPhotos, initialIndex: 0, mode: "tour" },
     });
 
-    if (targetSlug) {
+    const isMobileOrTablet = typeof window !== "undefined"
+      && window.matchMedia("(max-width: 1023px)").matches;
+    if (targetSlug && !isMobileOrTablet) {
       router.push(`/listings/${targetSlug}/photos`);
     } else {
       setIsTourOpen(true);
       if (typeof window !== "undefined") {
         window.history.pushState({ modal: "photo-tour" }, "", window.location.href);
+        tourHistoryEntryRef.current = true;
       }
     }
   }, [router, listingSlug, listingId, viewModel.totalPhotos]);
@@ -86,7 +92,19 @@ export function ListingGallery({
   // Close Mode A
   const handleCloseTour = useCallback(() => {
     setIsTourOpen(false);
+    if (tourHistoryEntryRef.current && typeof window !== "undefined") {
+      tourHistoryEntryRef.current = false;
+      window.history.back();
+    }
   }, []);
+
+  const handleReserveFromTour = useCallback(() => {
+    handleCloseTour();
+    window.setTimeout(() => {
+      document.getElementById("availability-heading")
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 380);
+  }, [handleCloseTour]);
 
   // Open Mode B (Fullscreen Viewer)
   const handleOpenFullscreen = useCallback(
@@ -138,6 +156,8 @@ export function ListingGallery({
           onSave={onSave}
           isSaved={isSaved}
           saveDisabled={saveDisabled}
+          onReserve={handleReserveFromTour}
+          reserveLabel="Reserve"
         />
       ) : (
         /* Otherwise show the 5-image hero collage on the listing page */

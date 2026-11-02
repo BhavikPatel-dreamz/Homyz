@@ -11,7 +11,7 @@ import hiMessages from "@/messages/hi.json";
 import arMessages from "@/messages/ar.json";
 
 export type SupportedLanguage = "en" | "es" | "fr" | "de" | "hi" | "ar";
-export type TranslationKey = keyof typeof enMessages;
+export type TranslationKey = (keyof typeof enMessages) | (string & {});
 
 export const MESSAGES: Record<SupportedLanguage, Record<string, string>> = {
   en: enMessages,

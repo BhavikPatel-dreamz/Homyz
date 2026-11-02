@@ -2,7 +2,10 @@ import type { NextConfig } from "next";
 
 function extraOrigins(): string[] {
   const hosts = new Set<string>([
+    "localhost",
     "localhost:3000",
+    "127.0.0.1",
+    "127.0.0.1:3000",
     "8.213.86.216:3000",
     "8.213.86.216",
     "dd-33.dynamicdreamz.net",

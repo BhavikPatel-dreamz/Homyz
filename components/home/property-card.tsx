@@ -123,9 +123,9 @@ function PropertyCardComponent({
   return (
     <Link
       href={targetHref}
-      className="group block cursor-pointer overflow-hidden md:rounded-[20px] rounded-[10px] border border-[#727272] bg-white transition-all duration-200 h-full"
+      className="group block h-full cursor-pointer bg-transparent transition-all duration-200"
     >
-      <div className="relative aspect-[233/246] w-full overflow-hidden bg-zinc-100">
+      <div className="relative aspect-square w-full overflow-hidden rounded-[16px] bg-zinc-100 sm:rounded-[20px]">
         {displayImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -147,9 +147,9 @@ function PropertyCardComponent({
 
         {/* Badges: Only rendered when qualified by backend formula */}
         {(showGuestFavorite || showSuperhost || showFeatured) && (
-          <div className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 z-20 flex flex-wrap items-center gap-1.5 max-w-[calc(100%-4.25rem)] pointer-events-none">
+          <div className="pointer-events-none absolute left-2 top-2 z-20 flex max-w-[calc(100%-3rem)] flex-wrap items-center gap-1 sm:left-3 sm:top-3">
             {showGuestFavorite && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#ECA7B0] px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-white shadow-xs backdrop-blur-md h-[26px]">
+              <span className="inline-flex h-7 items-center rounded-full bg-white/95 px-2.5 text-[10px] font-medium text-[#1F1F1F] shadow-xs backdrop-blur-sm sm:px-3 sm:text-xs">
                 {t("home_guest_favorite") || "Guest favorite"}
               </span>
             )}
@@ -173,27 +173,27 @@ function PropertyCardComponent({
 
 
         {/* Heart Favorite Button (reusable) */}
-        <WishlistButton listingId={id} className="right-2.5 top-2.5 sm:right-3 sm:top-3 h-6 w-6 sm:h-7 sm:w-7" />
+        <WishlistButton listingId={id} className="right-1.5 top-1.5 h-9 w-9 sm:right-2 sm:top-2" />
       </div>
 
-      <div className="px-3 py-2.5 sm:px-3.5 sm:py-3 text-[#1f1f1f]">
+      <div className="px-0.5 pt-2 text-[#1f1f1f] sm:px-1 sm:pt-2.5">
         {/* Clickable Property Name */}
-        <h3 className="truncate text-sm sm:text-base font-medium text-[#1f1f1f] leading-snug group-hover:text-amber-950 transition-colors">
+        <h3 className="truncate text-[13px] font-medium leading-[1.25] text-[#1f1f1f] transition-colors group-hover:text-amber-950 sm:text-sm">
           {name || "Untitled stay"}
         </h3>
         {alternativeDates ? (
-          <p className="truncate text-[10px] sm:text-xs font-normal text-amber-800 bg-amber-50/90 border border-amber-200/60 px-1.5 py-0.5 rounded-sm mt-0.5 sm:mt-1 inline-block">
+          <p className="mt-1 inline-block truncate rounded-sm border border-amber-200/60 bg-amber-50/90 px-1.5 py-0.5 text-[10px] font-normal text-amber-800 sm:text-xs">
             🗓️ {alternativeDates}
           </p>
         ) : (
-          <p className="truncate text-[10px] sm:text-xs font-normal text-[#1f1f1f] leading-normal mt-0.5 sm:mt-1">
+          <p className="mt-1 truncate text-[11px] font-normal leading-normal text-[#727272] sm:text-xs">
             {displaySubtitle}
           </p>
         )}
-        <div className="flex items-center flex-wrap justify-between gap-1 text-[10px] sm:text-xs font-normal text-[#1f1f1f] leading-normal mt-1 whitespace-nowrap truncate">
+        <div className="mt-1 min-w-0 text-[11px] font-normal leading-normal text-[#1f1f1f] sm:text-xs">
           {/* Price per night */}
           {cardPricing.hasDiscount && cardPricing.discountedDisplayPrice != null ? (
-            <span className="font-normal text-[#1F1F1F] flex items-baseline gap-1">
+            <span className="flex min-w-0 items-baseline gap-1 truncate font-normal text-[#1F1F1F]">
               <span className="line-through text-[#727272] font-normal text-[10px] sm:text-xs leading-4">
                 {formatPrice(cardPricing.baseDisplayPrice, currency)}
               </span>
@@ -201,7 +201,7 @@ function PropertyCardComponent({
               <span className="font-normal text-[#1f1f1f] text-[10px] sm:text-xs leading-4"> / night</span>
             </span>
           ) : (
-            <span className="font-normal text-[#1F1F1F]">
+            <span className="block truncate font-normal text-[#1F1F1F]">
               <span className="font-medium">{formattedPrice}</span>
               <span className="font-normal text-[#1f1f1f] text-[10px] sm:text-xs leading-4"> / night</span>
             </span>
@@ -210,7 +210,7 @@ function PropertyCardComponent({
 
           {/* Rating: Star icon + average rating + review count (zero fake ratings) */}
           {numericRating !== null ? (
-            <span className="inline-flex items-center sm:gap-1 text-[10px] sm:text-xs font-normal text-[#1f1f1f] shrink-0">
+            <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-normal text-[#1f1f1f] sm:text-xs">
               <svg
                 aria-hidden="true"
                 viewBox="0 0 24 24"
@@ -227,7 +227,7 @@ function PropertyCardComponent({
               </span>
             </span>
           ) : (
-            <span className="text-[10px] sm:text-xs text-[#1f1f1f] font-normal">
+            <span className="mt-1 block truncate text-[11px] font-normal text-[#727272] sm:text-xs">
               {guests ? t("home_up_to_guests", { count: guests }) : propertyType || "Stay"}
             </span>
           )}

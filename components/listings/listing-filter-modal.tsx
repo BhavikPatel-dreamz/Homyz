@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ComponentPropsWithoutRef } from "react";
+import { useEffect, useMemo, useRef, useState, type ComponentPropsWithoutRef, type RefObject } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { AmenityIcon } from "@/components/ui/amenity-icon";
 import { CANONICAL_AMENITIES, getAmenityTranslationKey } from "@/lib/constants/amenities";
@@ -130,6 +130,9 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
   const hasPriceRange = availableMax > availableMin;
   const closeRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const accessibilitySectionRef = useRef<HTMLDivElement>(null);
+  const languagesSectionRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const [draft, setDraft] = useState(() => copyFilters(initialFilters));
   const [showAllAmenities, setShowAllAmenities] = useState(false);
@@ -137,6 +140,30 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
   const [showLanguages, setShowLanguages] = useState(false);
   const [draftCount, setDraftCount] = useState<number | null>(null);
   const [isCounting, setIsCounting] = useState(false);
+
+  const scrollAccordionToTop = (sectionRef: RefObject<HTMLDivElement | null>) => {
+    window.requestAnimationFrame(() => {
+      const scrollArea = scrollAreaRef.current;
+      const section = sectionRef.current;
+      if (!scrollArea || !section) return;
+
+      const top = section.getBoundingClientRect().top - scrollArea.getBoundingClientRect().top + scrollArea.scrollTop;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      scrollArea.scrollTo({ top: Math.max(0, top - 12), behavior: reducedMotion ? "auto" : "smooth" });
+    });
+  };
+
+  const toggleAccessibility = () => {
+    const willOpen = !showAccessibility;
+    setShowAccessibility(willOpen);
+    if (willOpen) scrollAccordionToTop(accessibilitySectionRef);
+  };
+
+  const toggleLanguages = () => {
+    const willOpen = !showLanguages;
+    setShowLanguages(willOpen);
+    if (willOpen) scrollAccordionToTop(languagesSectionRef);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -320,7 +347,7 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
           </section>
         )}
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 sm:px-6">
+        <div ref={scrollAreaRef} className="min-h-0 flex-1 overflow-y-auto scroll-smooth px-5 pb-8 sm:px-6">
           <div className="border-b border-zinc-200 py-7">
             <h3 className="mb-4 text-lg font-medium text-[#1F1F1F]">{t("listings_type_of_place", "Type of place")}</h3>
             <div className="grid grid-cols-3 rounded-xl border border-zinc-300 p-1" role="radiogroup" aria-label="Type of place">
@@ -381,14 +408,14 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
             </div>
           </div>
 
-          <div className="border-b border-zinc-200 py-7">
-            <button type="button" onClick={() => setShowAccessibility((value) => !value)} aria-expanded={showAccessibility} className="flex w-full cursor-pointer items-center justify-between text-left text-lg font-medium text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_accessibility_features", "Accessibility features")} <ChevronIcon open={showAccessibility} /></button>
-            {showAccessibility && <div className="mt-3 grid gap-0 sm:grid-cols-2">{accessibilityAmenities.map((amenity) => <label key={amenity.id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-[#1f1f1f] font-normal"><input type="checkbox" checked={draft.accessibility.includes(amenity.id)} onChange={() => setDraft((previous) => ({ ...previous, accessibility: toggle(previous.accessibility, amenity.id) }))} className="size-5 rounded border-zinc-400 text-zinc-950 focus:ring-zinc-950 accent-[#1f1f1f]" />{getAccessibilityLabel(amenity.id, amenity.label)}</label>)}</div>}
+          <div ref={accessibilitySectionRef} className="border-b border-zinc-200 py-7">
+            <button type="button" onClick={toggleAccessibility} aria-expanded={showAccessibility} aria-controls="filter-accessibility-content" className="flex w-full cursor-pointer items-center justify-between text-left text-lg font-medium text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_accessibility_features", "Accessibility features")} <ChevronIcon open={showAccessibility} /></button>
+            {showAccessibility && <div id="filter-accessibility-content" className="mt-3 grid animate-in fade-in slide-in-from-top-1 duration-200 gap-0 sm:grid-cols-2">{accessibilityAmenities.map((amenity) => <label key={amenity.id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-[#1f1f1f] font-normal"><input type="checkbox" checked={draft.accessibility.includes(amenity.id)} onChange={() => setDraft((previous) => ({ ...previous, accessibility: toggle(previous.accessibility, amenity.id) }))} className="size-5 rounded border-zinc-400 text-zinc-950 focus:ring-zinc-950 accent-[#1f1f1f]" />{getAccessibilityLabel(amenity.id, amenity.label)}</label>)}</div>}
           </div>
 
-          <div className="border-b border-zinc-200 py-7">
-            <button type="button" onClick={() => setShowLanguages((value) => !value)} aria-expanded={showLanguages} className="flex w-full cursor-pointer items-center justify-between text-left text-lg font-medium text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_host_languages", "Host languages")} <ChevronIcon open={showLanguages} /></button>
-            {showLanguages && <div className="mt-3 grid max-h-72 overflow-y-auto pr-1 sm:grid-cols-2">{FILTER_LANGUAGE_OPTIONS.map((language) => <label key={language.id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-[#1f1f1f] font-normal"><input type="checkbox" checked={draft.languages.includes(language.id)} onChange={() => setDraft((previous) => ({ ...previous, languages: toggle(previous.languages, language.id) }))} className="size-5 rounded border-zinc-400 text-zinc-950 focus:ring-zinc-950 accent-[#1f1f1f]" />{language.nativeName && language.nativeName !== language.name ? `${language.name} (${language.nativeName})` : language.name}</label>)}</div>}
+          <div ref={languagesSectionRef} className="border-b border-zinc-200 py-7">
+            <button type="button" onClick={toggleLanguages} aria-expanded={showLanguages} aria-controls="filter-languages-content" className="flex w-full cursor-pointer items-center justify-between text-left text-lg font-medium text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_host_languages", "Host languages")} <ChevronIcon open={showLanguages} /></button>
+            {showLanguages && <div id="filter-languages-content" className="mt-3 grid max-h-72 animate-in fade-in slide-in-from-top-1 duration-200 overflow-y-auto pr-1 sm:grid-cols-2">{FILTER_LANGUAGE_OPTIONS.map((language) => <label key={language.id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-[#1f1f1f] font-normal"><input type="checkbox" checked={draft.languages.includes(language.id)} onChange={() => setDraft((previous) => ({ ...previous, languages: toggle(previous.languages, language.id) }))} className="size-5 rounded border-zinc-400 text-zinc-950 focus:ring-zinc-950 accent-[#1f1f1f]" />{language.nativeName && language.nativeName !== language.name ? `${language.name} (${language.nativeName})` : language.name}</label>)}</div>}
           </div>
         </div>
 

@@ -103,7 +103,9 @@ export default async function ListingPhotosPage({ params }: ListingPhotosPagePro
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
-      <AppHeader />
+      <div className="hidden lg:block">
+        <AppHeader />
+      </div>
       <main className="w-full flex-1">
         <ListingPhotosClient
           photos={photos}

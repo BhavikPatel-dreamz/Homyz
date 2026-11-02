@@ -877,7 +877,9 @@ export function BookingCheckoutClient({
   if (!isDraftReady) {
     return (
       <div className="flex min-h-screen flex-col bg-white font-sans text-zinc-900">
-        <AppHeader showBottomBorder={true} />
+        <div className="hidden lg:block">
+          <AppHeader showBottomBorder={true} />
+        </div>
         <main className="w-full flex-1 py-12 lg:py-24" aria-busy="true" aria-label="Loading checkout">
           <Container>
             <div className="mx-auto max-w-[1263px] animate-pulse">
@@ -900,13 +902,15 @@ export function BookingCheckoutClient({
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1F1F1F] antialiased selection:bg-amber-100">
-      <AppHeader showBottomBorder={true} />
+      <div className="hidden lg:block">
+        <AppHeader showBottomBorder={true} />
+      </div>
 
-      <main className="w-full flex-1 pt-8 pb-20 sm:py-12 lg:py-24">
+      <main className="w-full flex-1 pt-4 pb-20 sm:py-8 lg:py-24">
         <Container>
           <div className="mx-auto max-w-[1263px]">
             {/* Top Navigation Bar: Back Button & Page Title */}
-            <div className="mb-10 flex items-center gap-6 lg:mb-15 lg:-ml-15">
+            <div className="mb-6 flex items-center gap-4 sm:gap-6 lg:mb-15 lg:-ml-15">
               <button
                 type="button"
                 onClick={() => router.back()}

@@ -12,6 +12,7 @@ import { parsePublicListingSort } from "@/lib/listings/public-sort";
 import { cookies } from "next/headers";
 import { LAST_SEARCH_COOKIE, parseServerLastSearch } from "@/lib/storage/client-history";
 import { publicListingSearchFiltersSchema } from "@/lib/validation/public-listing-search";
+import { MobileBottomNav } from "@/components/home/mobile-bottom-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -279,10 +280,8 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
       <AppHeader />
 
-      <main className="w-full flex-1 lg:py-20 py-10">
-        <Container>          
-
-          {/* Interactive client section (<ListingCard /> rendered in grid) */}
+      <main className="w-full flex-1 pt-4 sm:pt-5 lg:pt-6 pb-28 sm:pb-32 lg:pb-16">
+        <Container>
           <Suspense
             fallback={
               <div className="flex flex-col lg:flex-row gap-6 items-start">
@@ -329,6 +328,8 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
           </Suspense>
         </Container>
       </main>
+
+      <MobileBottomNav />
 
       <Footer />
     </div>

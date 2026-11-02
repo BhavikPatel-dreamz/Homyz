@@ -6,9 +6,11 @@ import { Container } from "@/components/ui";
 export default function ListingDetailLoading() {
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
-      <AppHeader />
+      <div className="hidden lg:block">
+        <AppHeader />
+      </div>
 
-      <main className="w-full flex-1 pb-13 pt-5 sm:pt-10">
+      <main className="w-full flex-1 pb-13 pt-0 lg:pt-10">
         <Container>
           <div className="single-listing-page animate-pulse" aria-busy="true" aria-label="Loading property details">
             {/* Header Section: Title & Actions (Desktop) */}
