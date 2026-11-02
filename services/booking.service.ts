@@ -60,6 +60,7 @@ import {
   differenceInBookingNights,
   parseBookingDate,
 } from "@/lib/booking/booking-date";
+import { reservationSchedule, resolvePropertyTimeZone } from "@/lib/booking/property-timezone";
 import {
   parseCutoffHour,
   parseRequiredAdvanceDays,
@@ -594,6 +595,14 @@ async function create(
   }
   const bookingCheckIn = parseBookingDate(input.startDate);
   const bookingCheckOut = parseBookingDate(input.endDate);
+  const propertyTimeZone = resolvePropertyTimeZone(listing);
+  const schedule = reservationSchedule({
+    startDate: bookingCheckIn,
+    endDate: bookingCheckOut,
+    propertyTimeZone,
+    checkInTime: listing.checkInStart,
+    checkOutTime: listing.checkOutTime,
+  });
 
   // Check against listing.blockedDates
   if (Array.isArray(listing.blockedDates) && listing.blockedDates.length > 0) {
@@ -685,6 +694,12 @@ async function create(
       listingId: input.listingId,
       startDate: bookingCheckIn,
       endDate: bookingCheckOut,
+      propertyTimeZone,
+      checkInTime: listing.checkInStart || "15:00",
+      checkInEndTime: listing.checkInEnd || "22:00",
+      checkOutTime: listing.checkOutTime || "11:00",
+      scheduledCheckInAt: schedule.scheduledCheckInAt,
+      scheduledCheckOutAt: schedule.scheduledCheckOutAt,
       guests: quote.guests,
       totalPrice: quote.guestTotal,
       nightlyPrice: quote.baseNightlyPrice,
@@ -805,7 +820,13 @@ async function create(
   if (createdBookingCompletionEventId) {
     void enqueueAchievementEventProcessing(
       createdBookingCompletionEventId,
-      getEffectiveDateTime(booking.endDate, listing.checkOutTime, 11, 0),
+      getEffectiveDateTime(
+        booking.endDate,
+        booking.checkOutTime,
+        11,
+        0,
+        booking.propertyTimeZone,
+      ),
     ).catch((error) =>
       console.warn("[booking.service] Stay-completion event queued for reconciliation:", error),
     );
@@ -1119,6 +1140,9 @@ async function getRequestDetailsForHost(actor: AuthUser, id: string): Promise<Ho
     dbStatus: booking.status,
     startDate: booking.startDate,
     endDate: booking.endDate,
+    checkInStart: booking.checkInTime,
+    checkOutTime: booking.checkOutTime,
+    propertyTimeZone: booking.propertyTimeZone,
     createdAt: booking.createdAt,
     isExpired,
   });
@@ -1333,7 +1357,13 @@ async function acceptBookingRequest(
     acceptedBookingAchievementEventId = event.id;
     const completionEvent = await recordStayCompletionCandidateEvent(tx, updated);
     acceptedBookingCompletionEventId = completionEvent.id;
-    acceptedBookingCompletionRunAt = getEffectiveDateTime(updated.endDate, booking.listing.checkOutTime, 11, 0);
+    acceptedBookingCompletionRunAt = getEffectiveDateTime(
+      updated.endDate,
+      updated.checkOutTime,
+      11,
+      0,
+      updated.propertyTimeZone,
+    );
 
     return { ...updated, listing: booking.listing, user: booking.user };
   });
@@ -1987,7 +2017,8 @@ async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<Bookin
       isNonRefundable: Boolean(booking.isNonRefundable),
       nights,
       checkInDate: booking.startDate,
-      checkInTimeStr: booking.listing.checkInStart,
+      checkInTimeStr: booking.checkInTime,
+      propertyTimeZone: booking.propertyTimeZone,
       totalPrice: booking.totalPrice ?? 0,
       accommodationTotal,
       cleaningFee,
@@ -2519,6 +2550,9 @@ async function listForAdmin(actor: AuthUser, opts: AdminBookingListOptions = {})
         status: true,
         startDate: true,
         endDate: true,
+        propertyTimeZone: true,
+        checkInTime: true,
+        checkOutTime: true,
         guests: true,
         totalPrice: true,
         nightlyPrice: true,
@@ -2603,6 +2637,9 @@ async function listForAdmin(actor: AuthUser, opts: AdminBookingListOptions = {})
           status: true,
           startDate: true,
           endDate: true,
+          propertyTimeZone: true,
+          checkInTime: true,
+          checkOutTime: true,
           guests: true,
           totalPrice: true,
           nightlyPrice: true,
@@ -2640,6 +2677,9 @@ async function listForAdmin(actor: AuthUser, opts: AdminBookingListOptions = {})
       dbStatus: b.status,
       startDate: b.startDate,
       endDate: b.endDate,
+      checkInStart: b.checkInTime,
+      checkOutTime: b.checkOutTime,
+      propertyTimeZone: b.propertyTimeZone,
       createdAt: b.createdAt,
       rejectionReason: rejection.reason || cancellation.reason || null,
       rejectionBy: rejection.rejectedBy || cancellation.cancelledBy || null,
@@ -2736,8 +2776,9 @@ async function getAdminBookingDetails(actor: AuthUser, id: string) {
     dbStatus: b.status,
     startDate: b.startDate,
     endDate: b.endDate,
-    checkInStart: b.listing.checkInStart,
-    checkOutTime: b.listing.checkOutTime,
+    checkInStart: b.checkInTime,
+    checkOutTime: b.checkOutTime,
+    propertyTimeZone: b.propertyTimeZone,
     createdAt: b.createdAt,
     rejectionReason: rejection.reason || cancellation.reason || null,
     rejectionBy: rejection.rejectedBy || cancellation.cancelledBy || null,
@@ -3032,6 +3073,9 @@ async function getAdminRecentBookings(actor: AuthUser, limit = 8) {
     submissionId: true,
     startDate: true,
     endDate: true,
+    propertyTimeZone: true,
+    checkInTime: true,
+    checkOutTime: true,
     guests: true,
     totalPrice: true,
     currency: true,
@@ -3097,6 +3141,9 @@ async function getAdminRecentBookings(actor: AuthUser, limit = 8) {
       dbStatus: b.status,
       startDate: b.startDate,
       endDate: b.endDate,
+      checkInStart: b.checkInTime,
+      checkOutTime: b.checkOutTime,
+      propertyTimeZone: b.propertyTimeZone,
       createdAt: b.createdAt,
       rejectionReason: rejection.reason || cancellation.reason || null,
       rejectionBy: rejection.rejectedBy || cancellation.cancelledBy || null,
@@ -5061,8 +5108,9 @@ async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDe
     dbStatus: b.status,
     startDate: b.startDate,
     endDate: b.endDate,
-    checkInStart: b.listing.checkInStart,
-    checkOutTime: b.listing.checkOutTime,
+    checkInStart: b.checkInTime,
+    checkOutTime: b.checkOutTime,
+    propertyTimeZone: b.propertyTimeZone,
     createdAt: b.createdAt,
     rejectionReason: rejection.reason || cancellation.reason || null,
     rejectionBy: rejection.rejectedBy || cancellation.cancelledBy || null,
@@ -5073,8 +5121,9 @@ async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDe
     statusDetails,
     startDate: b.startDate,
     endDate: b.endDate,
-    checkInStart: b.listing.checkInStart,
-    checkOutTime: b.listing.checkOutTime,
+    checkInStart: b.checkInTime,
+    checkOutTime: b.checkOutTime,
+    propertyTimeZone: b.propertyTimeZone,
     hasReview,
     reviewId: existingReview?.id,
     isNonRefundable: b.isNonRefundable,
@@ -5169,9 +5218,10 @@ async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDe
       longitude: b.listing.longitude,
       showExactLocation: b.listing.showExactLocation,
       checkInMethod: b.listing.checkInMethod,
-      checkInStart: b.listing.checkInStart,
-      checkInEnd: b.listing.checkInEnd,
-      checkOutTime: b.listing.checkOutTime,
+      checkInStart: b.checkInTime,
+      checkInEnd: b.checkInEndTime,
+      checkOutTime: b.checkOutTime,
+      propertyTimeZone: b.propertyTimeZone,
       directions: b.listing.directions,
       parkingInstructions: b.listing.parkingInstructions,
       checkInInstructions: b.listing.checkInInstructions,
@@ -5309,6 +5359,9 @@ async function changeBookingReservationPreview(
     dbStatus: booking.status,
     startDate: booking.startDate,
     endDate: booking.endDate,
+    checkInStart: booking.checkInTime,
+    checkOutTime: booking.checkOutTime,
+    propertyTimeZone: booking.propertyTimeZone,
   });
   if (statusDetails.status !== "CONFIRMED") {
     throw AppError.badRequest("Only upcoming confirmed reservations can be modified.");
@@ -5398,7 +5451,12 @@ async function changeBookingReservation(
 
     const existingBooking = await tx.booking.findUnique({
       where: { id },
-      select: { priceBreakdown: true },
+      select: {
+        priceBreakdown: true,
+        propertyTimeZone: true,
+        checkInTime: true,
+        checkOutTime: true,
+      },
     });
     if (!existingBooking) throw AppError.notFound("Booking not found");
 
@@ -5447,12 +5505,21 @@ async function changeBookingReservation(
         },
       ],
     } as unknown as Prisma.InputJsonValue;
+    const updatedSchedule = reservationSchedule({
+      startDate: checkIn,
+      endDate: checkOut,
+      propertyTimeZone: existingBooking.propertyTimeZone,
+      checkInTime: existingBooking.checkInTime,
+      checkOutTime: existingBooking.checkOutTime,
+    });
 
     return tx.booking.update({
       where: { id },
       data: {
         startDate: checkIn,
         endDate: checkOut,
+        scheduledCheckInAt: updatedSchedule.scheduledCheckInAt,
+        scheduledCheckOutAt: updatedSchedule.scheduledCheckOutAt,
         guests: requestedGuests,
         totalPrice: preview.quote!.guestTotal,
         nightlyPrice: preview.quote!.baseNightlyPrice,

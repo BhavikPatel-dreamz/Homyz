@@ -15,6 +15,10 @@ type WorkspaceBooking = {
   status: string;
   startDate: Date;
   endDate: Date;
+  propertyTimeZone: string;
+  checkInTime: string;
+  checkInEndTime: string;
+  checkOutTime: string;
   guests: number;
   totalPrice: number | null;
   nightlyPrice: number | null;
@@ -76,6 +80,13 @@ export function buildHostReservationQuery({
   now: Date;
 }): ReservationQuery {
   const today = new Date(`${bookingDateKey(now)}T00:00:00.000Z`);
+  // A host can operate properties on opposite sides of the date line. Fetch
+  // the one-day UTC envelope and let the shared event builder apply each
+  // reservation's property-local "today" key.
+  const localTodayWindowStart = new Date(today);
+  localTodayWindowStart.setUTCDate(localTodayWindowStart.getUTCDate() - 1);
+  const localTodayWindowEnd = new Date(today);
+  localTodayWindowEnd.setUTCDate(localTodayWindowEnd.getUTCDate() + 1);
   const listingScope: Prisma.BookingWhereInput =
     propertyId && listingIds.includes(propertyId)
       ? { listingId: propertyId }
@@ -87,8 +98,8 @@ export function buildHostReservationQuery({
 
   if (tab === "today") {
     const todayScope: Prisma.BookingWhereInput = {
-      startDate: { lte: today },
-      endDate: { gte: today },
+        startDate: { lte: localTodayWindowEnd },
+        endDate: { gte: localTodayWindowStart },
     };
     return {
       where: {
@@ -217,6 +228,10 @@ export async function getHostWorkspace(
     status: true,
     startDate: true,
     endDate: true,
+    propertyTimeZone: true,
+    checkInTime: true,
+    checkInEndTime: true,
+    checkOutTime: true,
     guests: true,
     totalPrice: true,
     nightlyPrice: true,
@@ -334,6 +349,10 @@ function mapBooking(booking: WorkspaceBooking): HostReservation {
     status: booking.status,
     startDate: bookingDateKey(booking.startDate),
     endDate: bookingDateKey(booking.endDate),
+    propertyTimeZone: booking.propertyTimeZone,
+    checkInTime: booking.checkInTime,
+    checkInEndTime: booking.checkInEndTime,
+    checkOutTime: booking.checkOutTime,
     guests: booking.guests || 1,
     totalPrice: booking.totalPrice,
     nightlyPrice: booking.nightlyPrice,
@@ -359,9 +378,9 @@ function mapBooking(booking: WorkspaceBooking): HostReservation {
       district: booking.listing.district,
       country: booking.listing.country,
       photos: booking.listing.photos,
-      checkInStart: booking.listing.checkInStart || "15:00",
-      checkInEnd: booking.listing.checkInEnd || "22:00",
-      checkOutTime: booking.listing.checkOutTime || "11:00",
+      checkInStart: booking.checkInTime || "15:00",
+      checkInEnd: booking.checkInEndTime || "22:00",
+      checkOutTime: booking.checkOutTime || "11:00",
       price: booking.listing.price,
     },
   };

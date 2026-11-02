@@ -9,6 +9,7 @@ import {
   getCheckoutPriceRows,
   type CheckoutSummaryQuote,
 } from "@/lib/booking/checkout-summary";
+import { formatTime12h } from "@/lib/booking/booking-time";
 
 type BookingConfirmationProps = {
   bookingId: string;
@@ -21,6 +22,8 @@ type BookingConfirmationProps = {
   hostName: string;
   checkIn: string;
   checkOut: string;
+  checkInTime?: string | null;
+  checkOutTime?: string | null;
   guests: {
     adults: number;
     children: number;
@@ -41,6 +44,8 @@ export function BookingConfirmation({
   hostName,
   checkIn,
   checkOut,
+  checkInTime,
+  checkOutTime,
   guests,
   message,
   quote,
@@ -90,8 +95,8 @@ export function BookingConfirmation({
         <section className="py-5" aria-labelledby="confirmation-trip-heading">
           <h3 id="confirmation-trip-heading" className="text-sm font-medium text-zinc-950">{t("book_trip_details", "Trip details")}</h3>
           <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
-            <div><dt className="text-zinc-500">{t("book_check_in", "Check-in")}</dt><dd className="mt-1 font-medium text-zinc-900">{formatCheckoutDate(checkIn)}</dd></div>
-            <div><dt className="text-zinc-500">{t("book_check_out", "Check-out")}</dt><dd className="mt-1 font-medium text-zinc-900">{formatCheckoutDate(checkOut)}</dd></div>
+            <div><dt className="text-zinc-500">{t("book_check_in", "Check-in")}</dt><dd className="mt-1 font-medium text-zinc-900">{formatCheckoutDate(checkIn)} · {formatTime12h(checkInTime, "3:00 PM")}</dd></div>
+            <div><dt className="text-zinc-500">{t("book_check_out", "Check-out")}</dt><dd className="mt-1 font-medium text-zinc-900">{formatCheckoutDate(checkOut)} · {formatTime12h(checkOutTime, "11:00 AM")}</dd></div>
             <div><dt className="text-zinc-500">{t("book_number_of_nights", "Number of nights")}</dt><dd className="mt-1 font-medium text-zinc-900">{quote.nights}</dd></div>
             <div><dt className="text-zinc-500">{t("book_guests", "Guests")}</dt><dd className="mt-1 font-medium text-zinc-900">{formatCheckoutGuests(guests)}</dd></div>
             <div><dt className="text-zinc-500">{t("book_host", "Host")}</dt><dd className="mt-1 font-medium text-zinc-900">{hostName}</dd></div>

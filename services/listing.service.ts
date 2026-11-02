@@ -6,6 +6,7 @@ import { assertOwnership, authorize } from "@/lib/permissions/authorize";
 import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
 import { prisma } from "@/lib/db/prisma";
 import { bookingDateKey, parseBookingDate, shiftBookingDateKey } from "@/lib/booking/booking-date";
+import { resolvePropertyTimeZone } from "@/lib/booking/property-timezone";
 import {
   acquireCacheLease,
   deleteCache,
@@ -1663,6 +1664,7 @@ async function create(
       country: input.country || null,
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,
+      propertyTimeZone: resolvePropertyTimeZone(input),
       showExactLocation: input.showExactLocation ?? true,
       guests: input.guests ?? 1,
       bedrooms: input.bedrooms ?? 1,
@@ -1889,6 +1891,20 @@ async function update(
   }
   if (dataToUpdate.customSlug !== undefined) {
     dataToUpdate.customSlug = typeof dataToUpdate.customSlug === "string" ? normalizeSlug(dataToUpdate.customSlug) : null;
+  }
+  // The property timezone belongs to the verified listing location, not to the
+  // host's browser. Re-resolve it whenever location data changes. Existing
+  // reservations retain their own schedule/timezone snapshots.
+  if (
+    dataToUpdate.city !== undefined
+    || dataToUpdate.country !== undefined
+    || dataToUpdate.latitude !== undefined
+    || dataToUpdate.longitude !== undefined
+  ) {
+    (dataToUpdate as typeof dataToUpdate & { propertyTimeZone?: string }).propertyTimeZone = resolvePropertyTimeZone({
+      city: dataToUpdate.city ?? existing.city,
+      country: dataToUpdate.country ?? existing.country,
+    });
   }
 
   // A host changing reviewed material must not leave that revised content live.

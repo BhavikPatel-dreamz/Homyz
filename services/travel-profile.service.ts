@@ -97,6 +97,8 @@ export async function getTravelProfileStats(userId: string): Promise<TravelProfi
         status: true,
         startDate: true,
         endDate: true,
+        propertyTimeZone: true,
+        checkOutTime: true,
       },
     }),
     prisma.profileLike.count({
@@ -117,6 +119,8 @@ export async function getTravelProfileStats(userId: string): Promise<TravelProfi
       dbStatus: b.status,
       startDate: b.startDate,
       endDate: b.endDate,
+      checkOutTime: b.checkOutTime,
+      propertyTimeZone: b.propertyTimeZone,
     }),
   ).length;
 

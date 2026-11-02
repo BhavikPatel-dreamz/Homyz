@@ -345,7 +345,9 @@ export async function awardSystemTravelStamps(userId: string, now = new Date()):
         id: true,
         startDate: true,
         endDate: true,
-        listing: { select: { country: true, city: true, checkOutTime: true } },
+        propertyTimeZone: true,
+        checkOutTime: true,
+        listing: { select: { country: true, city: true } },
       },
     }),
     prisma.travelStamp.findMany({ where: { isActive: true, isCustom: false } }),
@@ -356,7 +358,8 @@ export async function awardSystemTravelStamps(userId: string, now = new Date()):
       dbStatus: "CONFIRMED",
       startDate: booking.startDate,
       endDate: booking.endDate,
-      checkOutTime: booking.listing.checkOutTime,
+      checkOutTime: booking.checkOutTime,
+      propertyTimeZone: booking.propertyTimeZone,
       now,
     })) return [];
     const country = normalizeCountry(booking.listing.country);

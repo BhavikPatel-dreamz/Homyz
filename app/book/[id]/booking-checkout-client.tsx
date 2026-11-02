@@ -1497,6 +1497,8 @@ export function BookingCheckoutClient({
                           hostName={hostName}
                           checkIn={checkIn}
                           checkOut={checkOut}
+                          checkInTime={listing.checkInStart}
+                          checkOutTime={listing.checkOutTime}
                           guests={{ adults: adultsCount, children: childrenCount, infants: infantsCount, pets: petsCount }}
                           message={hostMessage}
                           quote={quote}

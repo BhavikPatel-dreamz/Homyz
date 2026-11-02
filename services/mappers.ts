@@ -96,6 +96,7 @@ export function toListingDTO(l: Listing) {
     country: l.country,
     latitude: l.latitude,
     longitude: l.longitude,
+    propertyTimeZone: l.propertyTimeZone,
     showExactLocation: l.showExactLocation,
     guests: l.guests,
     bedrooms: l.bedrooms,
@@ -483,6 +484,10 @@ type BookingDTOInput = Pick<
   | "status"
   | "startDate"
   | "endDate"
+  | "propertyTimeZone"
+  | "checkInTime"
+  | "checkInEndTime"
+  | "checkOutTime"
   | "guests"
   | "totalPrice"
   | "nightlyPrice"
@@ -505,6 +510,7 @@ type BookingDTOInput = Pick<
     | "country"
     | "checkInStart"
     | "checkOutTime"
+    | "propertyTimeZone"
   > | null;
   user?: Pick<User, "id" | "name" | "email"> | null;
   reviews?: Array<Pick<Review, "status">>;
@@ -518,6 +524,10 @@ export function toBookingDTO(b: BookingDTOInput) {
     status: b.status,
     startDate: bookingDateKey(b.startDate),
     endDate: bookingDateKey(b.endDate),
+    propertyTimeZone: b.propertyTimeZone,
+    checkInTime: b.checkInTime,
+    checkInEndTime: b.checkInEndTime,
+    checkOutTime: b.checkOutTime,
     guests: b.guests,
     totalPrice: b.totalPrice,
     nightlyPrice: b.nightlyPrice,
@@ -538,8 +548,9 @@ export function toBookingDTO(b: BookingDTOInput) {
           price: b.listing.price,
           city: b.listing.city,
           country: b.listing.country,
-          checkInStart: b.listing.checkInStart,
-          checkOutTime: b.listing.checkOutTime,
+          checkInStart: b.checkInTime,
+          checkOutTime: b.checkOutTime,
+          propertyTimeZone: b.propertyTimeZone,
         }
       : null,
     user: b.user

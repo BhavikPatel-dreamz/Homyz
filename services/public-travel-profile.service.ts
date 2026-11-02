@@ -38,8 +38,16 @@ async function getPublicTravelProfile(
   const ownerId = profile.userId;
   const access = await canViewTravelProfile(viewerId, ownerId);
   const [completedStays, profileLikes, photoLikes, tripLikes, reviews, destinationStats, followCounts] = await Promise.all([
-    prisma.booking.findMany({ where: { userId: ownerId, status: "CONFIRMED" }, select: { status: true, startDate: true, endDate: true } })
-      .then((bookings) => bookings.filter((booking) => isCompletedConfirmedBooking({ dbStatus: booking.status, startDate: booking.startDate, endDate: booking.endDate })).length),
+    prisma.booking.findMany({
+      where: { userId: ownerId, status: "CONFIRMED" },
+      select: { status: true, startDate: true, endDate: true, propertyTimeZone: true, checkOutTime: true },
+    }).then((bookings) => bookings.filter((booking) => isCompletedConfirmedBooking({
+      dbStatus: booking.status,
+      startDate: booking.startDate,
+      endDate: booking.endDate,
+      checkOutTime: booking.checkOutTime,
+      propertyTimeZone: booking.propertyTimeZone,
+    })).length),
     prisma.profileLike.count({ where: { targetUserId: ownerId } }),
     prisma.travelPhotoLike.count({ where: { photo: { is: { userId: ownerId } } } }),
     prisma.travelTripLike.count({ where: { trip: { is: { userId: ownerId } } } }),

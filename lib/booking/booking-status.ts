@@ -1,4 +1,5 @@
-import { differenceInBookingNights, parseBookingDate } from "@/lib/booking/booking-date";
+import { differenceInBookingNights } from "@/lib/booking/booking-date";
+import { propertyLocalDateTimeToUtc } from "@/lib/booking/property-timezone";
 
 export type ComputedBookingStatus =
   | "PENDING"
@@ -67,16 +68,15 @@ export function parseTimeString(timeStr?: string | null, defaultHour = 15, defau
   return [defaultHour, defaultMinute];
 }
 
-/** Combines calendar date with local time string in UTC to prevent timezone skew. */
+/** Combines a property-local calendar date and clock time into one UTC instant. */
 export function getEffectiveDateTime(
   calendarDate: Date | string,
   timeStr?: string | null,
   defaultHour = 15,
   defaultMinute = 0,
+  propertyTimeZone?: string | null,
 ): Date {
-  const base = parseBookingDate(calendarDate);
-  const [hour, minute] = parseTimeString(timeStr, defaultHour, defaultMinute);
-  return new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate(), hour, minute, 0, 0));
+  return propertyLocalDateTimeToUtc(calendarDate, timeStr, propertyTimeZone, defaultHour, defaultMinute);
 }
 
 /**
@@ -89,11 +89,12 @@ export function isCompletedConfirmedBooking(opts: {
   startDate: Date | string;
   endDate: Date | string;
   checkOutTime?: string | null;
+  propertyTimeZone?: string | null;
   now?: Date;
 }): boolean {
   if (opts.dbStatus?.trim().toUpperCase() !== "CONFIRMED") return false;
 
-  const checkoutDateTime = getEffectiveDateTime(opts.endDate, opts.checkOutTime, 11, 0);
+  const checkoutDateTime = getEffectiveDateTime(opts.endDate, opts.checkOutTime, 11, 0, opts.propertyTimeZone);
   return (opts.now ?? new Date()).getTime() >= checkoutDateTime.getTime();
 }
 
@@ -121,6 +122,7 @@ export function computeBookingStatus(opts: {
   endDate: Date | string;
   checkInStart?: string | null;
   checkOutTime?: string | null;
+  propertyTimeZone?: string | null;
   now?: Date;
   createdAt?: Date | string;
   isExpired?: boolean;
@@ -128,8 +130,8 @@ export function computeBookingStatus(opts: {
   rejectionBy?: string | null;
 }): BookingStatusDetails {
   const now = opts.now ?? new Date();
-  const checkinDateTime = getEffectiveDateTime(opts.startDate, opts.checkInStart, 15, 0);
-  const checkoutDateTime = getEffectiveDateTime(opts.endDate, opts.checkOutTime, 11, 0);
+  const checkinDateTime = getEffectiveDateTime(opts.startDate, opts.checkInStart, 15, 0, opts.propertyTimeZone);
+  const checkoutDateTime = getEffectiveDateTime(opts.endDate, opts.checkOutTime, 11, 0, opts.propertyTimeZone);
 
   const dbStatusUpper = (opts.dbStatus || "").toUpperCase();
 
@@ -295,14 +297,15 @@ export function getBookingAvailableActions(opts: {
   endDate: Date | string;
   checkInStart?: string | null;
   checkOutTime?: string | null;
+  propertyTimeZone?: string | null;
   hasReview: boolean;
   reviewId?: string | null;
   isNonRefundable?: boolean;
   now?: Date;
 }): BookingAvailableActions {
   const now = opts.now ?? new Date();
-  const checkinDateTime = getEffectiveDateTime(opts.startDate, opts.checkInStart, 15, 0);
-  const checkoutDateTime = getEffectiveDateTime(opts.endDate, opts.checkOutTime, 11, 0);
+  const checkinDateTime = getEffectiveDateTime(opts.startDate, opts.checkInStart, 15, 0, opts.propertyTimeZone);
+  const checkoutDateTime = getEffectiveDateTime(opts.endDate, opts.checkOutTime, 11, 0, opts.propertyTimeZone);
 
   const { status, isCompleted, isCancelled, isCurrent } = opts.statusDetails;
 

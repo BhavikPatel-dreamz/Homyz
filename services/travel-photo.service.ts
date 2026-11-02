@@ -1501,7 +1501,9 @@ export async function getCountryHighlights(
             status: true,
             startDate: true,
             endDate: true,
-            listing: { select: { country: true, checkOutTime: true } },
+            propertyTimeZone: true,
+            checkOutTime: true,
+            listing: { select: { country: true } },
           },
         })
       : Promise.resolve([]),
@@ -1513,7 +1515,8 @@ export async function getCountryHighlights(
         dbStatus: booking.status,
         startDate: booking.startDate,
         endDate: booking.endDate,
-        checkOutTime: booking.listing.checkOutTime,
+        checkOutTime: booking.checkOutTime,
+        propertyTimeZone: booking.propertyTimeZone,
       })
     ) {
       return [];

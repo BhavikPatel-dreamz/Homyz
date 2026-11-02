@@ -1,3 +1,5 @@
+import { propertyLocalDateTimeToUtc } from "@/lib/booking/property-timezone";
+
 /**
  * Homyz Refund Policy Engine
  *
@@ -223,6 +225,7 @@ export function calculateHoursUntilCheckIn(
   checkInDate: Date | string,
   checkInTimeStr?: string | null,
   cancellationTime: Date = new Date(),
+  propertyTimeZone?: string | null,
 ): { hours: number; isPastCheckIn: boolean; checkInDateTime: Date } {
   const checkInBase = typeof checkInDate === "string" ? new Date(checkInDate) : checkInDate;
 
@@ -240,7 +243,12 @@ export function calculateHoursUntilCheckIn(
     if (!Number.isNaN(min) && min >= 0 && min <= 59) minute = min;
   }
 
-  const checkInDateTime = new Date(Date.UTC(y, m, d, hour, minute, 0));
+  const checkInDateTime = propertyLocalDateTimeToUtc(
+    `${String(y).padStart(4, "0")}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`,
+    `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+    propertyTimeZone,
+    15,
+  );
   const diffMs = checkInDateTime.getTime() - cancellationTime.getTime();
   const hours = diffMs / (3600 * 1000);
 
@@ -261,6 +269,7 @@ export interface RefundCalculationParams {
   nights: number;
   checkInDate: Date | string;
   checkInTimeStr?: string | null;
+  propertyTimeZone?: string | null;
 
   // Financial components (integer minor units / cents)
   totalPrice: number; // Stored booking total
@@ -326,6 +335,7 @@ export function calculateRefundEligibility(
     nights,
     checkInDate,
     checkInTimeStr,
+    propertyTimeZone,
     totalPrice,
     currency = "SAR",
     capturedAmount,
@@ -349,6 +359,7 @@ export function calculateRefundEligibility(
     checkInDate,
     checkInTimeStr,
     effectiveCancellationTime,
+    propertyTimeZone,
   );
 
   // Financial components decomposition

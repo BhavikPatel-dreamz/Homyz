@@ -66,6 +66,7 @@ type ListingEvaluationData = {
   guestFavoriteLastEvaluatedAt: Date | null;
   checkInStart: string | null;
   checkOutTime: string | null;
+  propertyTimeZone?: string | null;
   qualityIncidentCount?: number | null;
   reviews: Array<{
     rating: number;
@@ -80,6 +81,9 @@ type ListingEvaluationData = {
     status: BookingStatus;
     startDate: Date;
     endDate: Date;
+    propertyTimeZone: string;
+    checkInTime: string;
+    checkOutTime: string;
     priceBreakdown: unknown;
   }>;
 };
@@ -127,8 +131,9 @@ export function calculateGuestFavoriteProgress(data: ListingEvaluationData, asOf
       dbStatus: booking.status,
       startDate: booking.startDate,
       endDate: booking.endDate,
-      checkInStart: data.checkInStart,
-      checkOutTime: data.checkOutTime,
+      checkInStart: booking.checkInTime || data.checkInStart,
+      checkOutTime: booking.checkOutTime || data.checkOutTime,
+      propertyTimeZone: booking.propertyTimeZone || data.propertyTimeZone,
       now: asOf,
     });
     if (status.status === "COMPLETED") totalBookings++;
@@ -192,7 +197,15 @@ function getEvaluationInclude(asOf: Date) {
     },
     bookings: {
       where: { status: { in: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED] } },
-      select: { status: true, startDate: true, endDate: true, priceBreakdown: true },
+      select: {
+        status: true,
+        startDate: true,
+        endDate: true,
+        propertyTimeZone: true,
+        checkInTime: true,
+        checkOutTime: true,
+        priceBreakdown: true,
+      },
     },
   } satisfies Prisma.ListingInclude;
 }
@@ -208,6 +221,7 @@ async function loadListingEvaluationData(listingId: string, asOf: Date): Promise
       guestFavoriteLastEvaluatedAt: true,
       checkInStart: true,
       checkOutTime: true,
+      propertyTimeZone: true,
       ...getEvaluationInclude(asOf),
     },
   }) as Promise<ListingEvaluationData | null>;

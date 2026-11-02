@@ -1001,6 +1001,9 @@ model Listing {
   country                 String?
   latitude                Float?
   longitude               Float?
+  // IANA timezone derived from the verified property location. This is the
+  // authoritative timezone for calendar days and arrival/departure schedules.
+  propertyTimeZone        String        @default("UTC")
   showExactLocation       Boolean @default(true)
 
   guests    Int @default(1)
@@ -1403,6 +1406,14 @@ model Booking {
   status                      BookingStatus @default(PENDING)
   startDate                   DateTime      @db.Date
   endDate                     DateTime      @db.Date
+  // Immutable property-local schedule captured when this reservation is made.
+  // Listing defaults may change later, but never rewrite an existing stay.
+  propertyTimeZone            String        @default("UTC")
+  checkInTime                 String        @default("15:00")
+  checkInEndTime              String        @default("22:00")
+  checkOutTime                String        @default("11:00")
+  scheduledCheckInAt          DateTime?     @db.Timestamptz(3)
+  scheduledCheckOutAt         DateTime?     @db.Timestamptz(3)
   guests                      Int           @default(1)
   totalPrice                  Int? // Minor units / cents
   nightlyPrice                Int? // Minor units / cents

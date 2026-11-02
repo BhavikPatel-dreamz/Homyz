@@ -80,7 +80,8 @@ export async function getHostReviewContext(
     isHost: true,
     bookingStatus: booking.status,
     endDate: booking.endDate,
-    checkOutTime: booking.listing.checkOutTime,
+    checkOutTime: booking.checkOutTime,
+    propertyTimeZone: booking.propertyTimeZone,
     hasHostReview: Boolean(existingHostReview),
     hasGuestReview: Boolean(existingGuestReview),
   });
@@ -122,4 +123,3 @@ export async function getHostReviewContext(
     },
   };
 }
-

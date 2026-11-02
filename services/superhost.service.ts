@@ -96,13 +96,13 @@ async function calculateSuperhostProgress(
   // is an owner-level program, not a permission-derived listing badge.
   const listings = await prisma.listing.findMany({
     where: { hostId, deletedAt: null },
-    select: { id: true, hostingType: true, checkInStart: true, checkOutTime: true },
-  }) as Array<{ id: string; hostingType?: string | null; checkInStart: string | null; checkOutTime: string | null }>;
+    select: { id: true, hostingType: true, checkInStart: true, checkOutTime: true, propertyTimeZone: true },
+  }) as Array<{ id: string; hostingType?: string | null; checkInStart: string | null; checkOutTime: string | null; propertyTimeZone: string | null }>;
   // Superhost only evaluates owners of stay (HOME) listings; experience and
   // service hosts without home listings are excluded from Superhost evaluation.
   const eligibleHomeListings = listings.filter((l) => !l.hostingType || l.hostingType === "HOME");
   const listingIds = eligibleHomeListings.map((listing) => listing.id);
-  const listingSchedule = new Map<string, { id: string; checkInStart: string | null; checkOutTime: string | null }>(
+  const listingSchedule = new Map<string, { id: string; checkInStart: string | null; checkOutTime: string | null; propertyTimeZone: string | null }>(
     eligibleHomeListings.map((listing) => [listing.id, listing]),
   );
 
@@ -131,7 +131,17 @@ async function calculateSuperhostProgress(
           },
         ],
       },
-      select: { id: true, listingId: true, status: true, startDate: true, endDate: true, priceBreakdown: true },
+      select: {
+        id: true,
+        listingId: true,
+        status: true,
+        startDate: true,
+        endDate: true,
+        propertyTimeZone: true,
+        checkInTime: true,
+        checkOutTime: true,
+        priceBreakdown: true,
+      },
     }),
     prisma.review.aggregate({
       where: {
@@ -176,8 +186,9 @@ async function calculateSuperhostProgress(
       dbStatus: booking.status,
       startDate: booking.startDate,
       endDate: booking.endDate,
-      checkInStart: listing.checkInStart,
-      checkOutTime: listing.checkOutTime,
+      checkInStart: booking.checkInTime || listing.checkInStart,
+      checkOutTime: booking.checkOutTime || listing.checkOutTime,
+      propertyTimeZone: booking.propertyTimeZone || listing.propertyTimeZone,
       now: asOf,
     });
     if (status.status !== "COMPLETED") continue;

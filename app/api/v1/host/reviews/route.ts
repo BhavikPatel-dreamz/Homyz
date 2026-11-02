@@ -52,7 +52,8 @@ export const GET = apiHandler(async (req) => {
     isHost,
     bookingStatus: booking.status,
     endDate: booking.endDate,
-    checkOutTime: booking.listing?.checkOutTime,
+    checkOutTime: booking.checkOutTime,
+    propertyTimeZone: booking.propertyTimeZone,
     hasHostReview: Boolean(existingReview),
     hasGuestReview: Boolean(guestReview),
   });

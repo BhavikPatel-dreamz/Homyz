@@ -181,7 +181,7 @@ async function materializeBookingCandidateEvidence(event: {
   if (!event.bookingId) throw new Error("Candidate event is missing bookingId.");
   const booking = await prisma.booking.findUnique({
     where: { id: event.bookingId },
-    include: { listing: { select: { id: true, city: true, country: true, checkOutTime: true } } },
+    include: { listing: { select: { id: true, city: true, country: true } } },
   });
   if (!booking) throw new Error("Candidate event booking no longer exists.");
   if (!event.userId || event.userId !== booking.userId) {
@@ -198,7 +198,8 @@ async function materializeBookingCandidateEvidence(event: {
     dbStatus: booking.status,
     startDate: booking.startDate,
     endDate: booking.endDate,
-    checkOutTime: booking.listing.checkOutTime,
+    checkOutTime: booking.checkOutTime,
+    propertyTimeZone: booking.propertyTimeZone,
   });
   const status = booking.status !== BookingStatus.CONFIRMED
     ? BookingVisitEvidenceStatus.INVALIDATED

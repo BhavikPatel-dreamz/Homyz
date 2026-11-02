@@ -199,6 +199,8 @@ export async function verifyUserBookings(userId: string): Promise<{
       status: true,
       startDate: true,
       endDate: true,
+      propertyTimeZone: true,
+      checkOutTime: true,
       listing: {
         select: {
           id: true,
@@ -206,7 +208,6 @@ export async function verifyUserBookings(userId: string): Promise<{
           city: true,
           latitude: true,
           longitude: true,
-          checkOutTime: true,
         },
       },
     },
@@ -220,7 +221,8 @@ export async function verifyUserBookings(userId: string): Promise<{
       dbStatus: b.status,
       startDate: b.startDate,
       endDate: b.endDate,
-      checkOutTime: b.listing.checkOutTime,
+      checkOutTime: b.checkOutTime,
+      propertyTimeZone: b.propertyTimeZone,
       now,
     }),
   );
@@ -362,6 +364,8 @@ export async function getTravelerDestinationStats(userId: string): Promise<Trave
         status: true,
         startDate: true,
         endDate: true,
+        propertyTimeZone: true,
+        checkOutTime: true,
       },
     }),
   ]);
@@ -371,6 +375,8 @@ export async function getTravelerDestinationStats(userId: string): Promise<Trave
       dbStatus: b.status,
       startDate: b.startDate,
       endDate: b.endDate,
+      checkOutTime: b.checkOutTime,
+      propertyTimeZone: b.propertyTimeZone,
     }),
   ).length;
 
