@@ -328,7 +328,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               <nav
                 aria-label={t("header_aria_host_navigation" as TranslationKey, "Host primary navigation")}
                 onMouseLeave={() => setHoveredNavIndex(null)}
-                className="relative hidden md:flex shrink-0 items-center gap-0.5 sm:gap-1 lg:gap-2 py-1"
+                className="relative hidden md:flex shrink-0 items-center gap-0.5 sm:gap-1 lg:gap-1 py-1"
               >
                 {hostNavTabs.map((tab, index) => {
                   const isActive = tab.isActive;
@@ -337,7 +337,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                       <span
                         key={tab.id}
                         title={t("host_nav_insights_soon" as TranslationKey) || "Coming soon in next phase"}
-                        className="relative z-10 mx-2 py-1.5 md:mx-2.5 md:py-2 lg:mx-3 text-xs md:text-sm font-medium text-[#A0A0A0] cursor-not-allowed select-none rounded-lg inline-flex items-center gap-1 opacity-70"
+                        className="relative z-10 mx-1.5 py-1.5 md:mx-2 md:py-2 lg:mx-2 text-xs md:text-sm font-medium text-[#A0A0A0] cursor-not-allowed select-none rounded-lg inline-flex items-center gap-1 opacity-70"
                       >
                         {tab.label}
                         <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9px] font-medium text-zinc-500 uppercase tracking-wide">
@@ -367,7 +367,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                           });
                         }
                       }}
-                      className={`relative z-10 mx-2 py-1.5 md:mx-2.5 md:py-2 lg:mx-3 text-xs md:text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 rounded-lg ${isActive
+                      className={`relative z-10 mx-1.5 py-1.5 md:mx-2 md:py-2 lg:mx-2 text-xs md:text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 rounded-lg ${isActive
                           ? "font-medium text-[#1F1F1F] dark:text-zinc-100"
                           : "text-[#717171] hover:text-[#1F1F1F] dark:text-zinc-400 dark:hover:text-zinc-100"
                         }`}
@@ -415,7 +415,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
             </>
           )}
 
-          <div className={`${isHostRoute ? "flex-1 justify-end" : "ml-auto"} flex min-w-0 items-center gap-2 sm:gap-2.5 xl:gap-5`} ref={menuRef}>
+          <div className={`${isHostRoute ? "flex-1 justify-end" : "ml-auto"} flex min-w-0 items-center gap-2 sm:gap-2.5 xl:gap-3`} ref={menuRef}>
             {sessionLoading ? (
               <div
                 aria-label="Loading account"
