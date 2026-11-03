@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
 import {
   GUEST_NAV_ITEMS,
@@ -242,6 +243,7 @@ export function ProfileClient({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { t } = useLanguage();
+  const { data: session } = useSession();
 
   const [currentUser, setCurrentUser] = useState<ProfileData>(initial);
   const [failedProfileImageUrl, setFailedProfileImageUrl] = useState<string | null>(null);
@@ -322,6 +324,12 @@ export function ProfileClient({
   };
 
   const pub = currentUser.publicProfile || {};
+  // Keep the profile view in sync with the avatar already rendered in the
+  // shared header. The persisted profile image remains the fallback and is
+  // used exclusively when viewing another traveller's public profile.
+  const profileImage = isOwner
+    ? session?.user?.image || currentUser.image
+    : currentUser.image;
   const hostPrompts = pub.prompts || {};
   const hostHobbies = Array.isArray(hostPrompts.hobbies)
     ? hostPrompts.hobbies.filter((hobby): hobby is string => typeof hobby === "string")
@@ -359,7 +367,7 @@ export function ProfileClient({
         <GuestDashboardSidebar
           activeId={currentTab}
           onSelectTab={handleSelectTab}
-          avatarUrl={currentUser.image}
+          avatarUrl={profileImage}
         />
 
         <main className="order-1 flex w-full min-w-0 flex-col lg:order-2 lg:pt-0">
@@ -389,16 +397,16 @@ export function ProfileClient({
                   {/* 2. Profile Overview Card */}
                   <div className="mb-0 flex flex-row items-start gap-6 lg:mb-[30px]">
                     {/* Rounded rectangular profile image */}
-                    <div className="relative h-[124px] w-[124px] shrink-0 overflow-hidden rounded-xl border border-[#1F1F1F] bg-zinc-100 sm:h-[151px] sm:w-[233px] sm:rounded-2xl sm:border-2">
-                      {currentUser.image && currentUser.image !== failedProfileImageUrl ? (
+                    <div className="relative h-[124px] w-[124px] shrink-0 overflow-hidden rounded-xl bg-zinc-100 sm:h-[151px] sm:w-[233px] sm:rounded-2xl">
+                      {profileImage && profileImage !== failedProfileImageUrl ? (
                         <Image
-                          src={currentUser.image}
+                          src={profileImage}
                           alt={currentUser.name || "User profile image"}
                           fill
                           className="object-cover"
                           sizes="(max-width: 639px) 124px, 233px"
                           priority
-                          onError={() => setFailedProfileImageUrl(currentUser.image)}
+                          onError={() => setFailedProfileImageUrl(profileImage)}
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-[#727272]">

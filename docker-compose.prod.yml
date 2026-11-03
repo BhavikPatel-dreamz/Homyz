@@ -73,6 +73,8 @@ services:
     depends_on:
       media:
         condition: service_healthy
+    volumes:
+      - homyz_diagnostics:/app/logs
     healthcheck:
       test:
         [
@@ -94,3 +96,4 @@ services:
 # Never `docker compose down -v` — that deletes uploaded files.
 volumes:
   homyz_uploads:
+  homyz_diagnostics:

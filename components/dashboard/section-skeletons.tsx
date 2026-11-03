@@ -138,7 +138,7 @@ export function ProfileAboutSkeleton() {
       </div>
 
       <div className="mb-0 flex items-start gap-6 lg:mb-[30px]">
-        <div className="h-[124px] w-[124px] shrink-0 rounded-xl border border-[#1F1F1F] bg-zinc-100 sm:h-[151px] sm:w-[233px] sm:rounded-2xl sm:border-2" />
+        <div className="h-[124px] w-[124px] shrink-0 rounded-xl bg-zinc-100 sm:h-[151px] sm:w-[233px] sm:rounded-2xl" />
         <div className="flex min-h-[124px] min-w-0 flex-1 flex-col justify-center gap-3 sm:min-h-[151px] sm:w-[195px] sm:flex-none sm:gap-4">
           <div className="space-y-2">
             <div className="h-5 w-28 rounded bg-zinc-200" />

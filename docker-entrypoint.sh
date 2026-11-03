@@ -3,12 +3,13 @@
 set -eu
 
 mkdir -p \
+  /app/logs \
   /app/upload/listing-photos \
   /app/upload/stamp-icons \
   /app/upload/guidebook-photos \
   /app/upload/host-documents
 
-chown -R 999:999 /app/upload
+chown -R 999:999 /app/logs /app/upload
 mkdir -p /app/public
 ln -sfn /app/upload /app/public/uploads
 

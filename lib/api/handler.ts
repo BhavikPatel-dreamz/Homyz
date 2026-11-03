@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { ZodError } from "zod";
 
 import { AppError, ErrorCode, type ErrorDetail } from "./errors";
+import { recordPublicDiagnostic } from "@/lib/diagnostics/public-diagnostics";
 import { fail } from "./response";
 
 function zodToDetails(err: ZodError): ErrorDetail[] {
@@ -44,6 +45,11 @@ export function apiHandler<Args extends unknown[]>(
       }
       // Unexpected: log server-side only, never expose internals to the client.
       console.error("[api] unhandled error:", err);
+      await recordPublicDiagnostic({
+        source: "api-handler",
+        message: "Unhandled API route error.",
+        error: err,
+      });
       return fail(
         { code: ErrorCode.INTERNAL, message: "Something went wrong" },
         500,
