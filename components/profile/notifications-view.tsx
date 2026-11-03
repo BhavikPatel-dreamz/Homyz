@@ -367,7 +367,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between xl:mb-8">
         <div>
           <div className="flex items-center gap-3">
-            <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
+            <h2 className="profile-page-title text-[#1F1F1F]">
               {t("profile_notif_title", "Notifications")}
             </h2>
             {unreadCount > 0 && (

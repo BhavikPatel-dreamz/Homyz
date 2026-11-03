@@ -1181,7 +1181,7 @@ export function ProfileManagementClient({
         </div>
 
         <div className="flex-1 max-w-md xl:ml-15">
-          <h1 className="mb-4 sm:hidden">
+          <h1 className="profile-page-title mb-4 sm:hidden">
             {t("profile_mgmt_my_profile", "My profile")}
           </h1>
           <p className="text-base text-[#727272] leading-relaxed font-normal">

@@ -683,7 +683,7 @@ export function GuestCaseDetailPanel({
           <p className="font-mono text-xs font-medium text-zinc-500">
             Case #{caseData.caseNumber}
           </p>
-          <h2 className="text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">
+          <h2 className="profile-page-title text-zinc-950">
             {caseData.subject}
           </h2>
         </div>
@@ -2188,7 +2188,7 @@ export function SupportResolutionCenter() {
           <header className="flex flex-col gap-4 border-b border-zinc-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">
+                <h1 className="profile-page-title text-zinc-950">
                   Help &amp; Support
                 </h1>
                 {currentView === "direct" && (
@@ -2329,7 +2329,7 @@ export function SupportResolutionCenter() {
                     : "Total requests"}
                 </span>
               </div>
-              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">
+              <p className="profile-value mt-3 text-zinc-950">
                 {metrics.all}
               </p>
             </div>
@@ -2351,7 +2351,7 @@ export function SupportResolutionCenter() {
                 </span>
                 <span>Action needed</span>
               </div>
-              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">
+              <p className="profile-value mt-3 text-zinc-950">
                 {metrics.actionNeeded}
               </p>
             </div>
@@ -2374,7 +2374,7 @@ export function SupportResolutionCenter() {
                   {currentView === "direct" ? "In negotiation" : "Under review"}
                 </span>
               </div>
-              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">
+              <p className="profile-value mt-3 text-zinc-950">
                 {metrics.underReview}
               </p>
             </div>
@@ -2395,7 +2395,7 @@ export function SupportResolutionCenter() {
                 </span>
                 <span>Resolved</span>
               </div>
-              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">
+              <p className="profile-value mt-3 text-zinc-950">
                 {metrics.resolved}
               </p>
             </div>

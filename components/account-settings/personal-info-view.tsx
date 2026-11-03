@@ -1415,7 +1415,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
           <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl space-y-5 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between">
               <div>
-                <h3 id="identity-modal-title" className="text-2xl font-medium text-[#1F1F1F]">
+                <h3 id="identity-modal-title" className="profile-section-title text-[#1F1F1F]">
                   {t("personal_info_modal_id_title", "Identity Verification")}
                 </h3>
                 <p className="text-sm text-[#727272] mt-1 leading-relaxed">

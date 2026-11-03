@@ -248,7 +248,7 @@ export function ReservationDashboard({
         <div className="flex flex-col gap-10 sm:gap-12">
           {upcomingGroups.pending.length > 0 && (
             <section aria-labelledby="pending-requests-heading">
-              <h2 id="pending-requests-heading" className="mb-5 text-xl font-medium leading-7 text-[#1F1F1F] sm:text-2xl">
+              <h2 id="pending-requests-heading" className="profile-section-title mb-5 text-[#1F1F1F]">
                 {t("dashboard_pending_requests", { count: upcomingGroups.pending.length }, `Pending requests (${upcomingGroups.pending.length})`)}
               </h2>
               <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
@@ -261,7 +261,7 @@ export function ReservationDashboard({
 
           {upcomingGroups.confirmed.length > 0 && (
             <section aria-labelledby="confirmed-trips-heading">
-              <h2 id="confirmed-trips-heading" className="mb-5 text-xl font-medium leading-7 text-[#1F1F1F] sm:text-2xl">
+              <h2 id="confirmed-trips-heading" className="profile-section-title mb-5 text-[#1F1F1F]">
                 {t("dashboard_confirmed_trips", { count: upcomingGroups.confirmed.length }, `Confirmed trips (${upcomingGroups.confirmed.length})`)}
               </h2>
               <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
@@ -277,7 +277,7 @@ export function ReservationDashboard({
           <div className="flex flex-col gap-12 sm:gap-14">
             {pastYearGroups.map(({ year, items }) => (
               <section key={year} aria-labelledby={`bookings-year-${year}`}>
-                <h2 id={`bookings-year-${year}`} className="text-xl font-medium leading-7 text-[#1F1F1F] mb-5 sm:text-2xl">
+                <h2 id={`bookings-year-${year}`} className="profile-section-title mb-5 text-[#1F1F1F]">
                   {year}
                 </h2>
                 <div className={reservationGridClassName}>

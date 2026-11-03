@@ -33,7 +33,7 @@ export function FilterBar({
       {/* Title & View Filters Row matching Screenshots */}
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div>
-          <h1>
+          <h1 className="profile-page-title">
             {t(
               "dashboard_res_title",
               {
@@ -43,7 +43,7 @@ export function FilterBar({
               `You have ${totalCount} ${filters.tab === "upcoming" ? "upcoming " : ""}reservations`,
             )}
           </h1>
-          <p className="text-base text-muted-foreground mt-4 font-normal">
+          <p className="profile-secondary-text mt-2">
             {t("dashboard_res_subtitle", "Manage check-ins, guest stays, and property reservations.")}
           </p>
         </div>
@@ -55,7 +55,7 @@ export function FilterBar({
               key={tabItem.id}
               type="button"
               onClick={() => onChange({ tab: tabItem.id })}
-              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+              className={`profile-tab rounded-full px-4 py-1.5 transition-all ${
                 filters.tab === tabItem.id
                   ? "bg-[var(--primary)] text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-muted-foreground"
@@ -81,7 +81,7 @@ export function FilterBar({
             onChange={(e) => onChange({ search: e.target.value })}
             className={`w-full rounded-[30px] border border-[#ddd] bg-[white] pl-10 ${
               filters.search ? "pr-10" : "pr-4"
-            } py-2 text-sm font-normal text-[#1f1f1f] placeholder:text-[#727272] outline-none focus:border-[#1f1f1f] transition-colors min-h-[46px]`}
+            } py-2 text-base font-normal text-[#1f1f1f] placeholder:text-[#727272] outline-none focus:border-[#1f1f1f] transition-colors min-h-[46px]`}
           />
           {filters.search.trim().length > 0 && (
             <button
@@ -102,7 +102,7 @@ export function FilterBar({
           <select
             value={filters.status}
             onChange={(e) => onChange({ status: e.target.value })}
-            className="w-full sm:w-auto appearance-none rounded-[30px] border border-[#ddd] bg-white pl-4 pr-9 py-2 text-sm font-normal text-[#1f1f1f] outline-none focus:border-[#727272] transition-colors cursor-pointer min-h-[46px]"
+            className="w-full sm:w-auto appearance-none rounded-[30px] border border-[#ddd] bg-white pl-4 pr-9 py-2 text-base font-normal text-[#1f1f1f] outline-none focus:border-[#727272] transition-colors cursor-pointer min-h-[46px]"
           >
             <option value="ALL">{t("dashboard_status_all", "All Statuses")}</option>
             <option value="CONFIRMED">{t("dashboard_status_confirmed", "Confirmed")}</option>

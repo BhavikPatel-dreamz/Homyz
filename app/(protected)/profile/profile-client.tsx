@@ -32,6 +32,7 @@ import {
   ProfileManagementSkeleton,
   SupportChatSkeleton,
   InviteEarnSkeleton,
+  ProfileAboutSkeleton,
 } from "@/components/dashboard/section-skeletons";
 
 const ReservationDashboard = dynamic(
@@ -284,7 +285,11 @@ export function ProfileClient({
       setPendingTab(normalized);
     }
     const href = getProfileTabHref(normalized);
-    router.push(href, { scroll: false });
+    // Profile tabs reuse the same route shell, so explicitly reset the page
+    // before navigation rather than preserving the scroll position from the
+    // previously selected (potentially much longer) tab.
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    router.push(href, { scroll: true });
   };
 
   const currentTab = pendingTab || activeTab;
@@ -306,6 +311,8 @@ export function ProfileClient({
         return <LoyaltyWalletSkeleton />;
       case "invite":
         return <InviteEarnSkeleton />;
+      case "about_me":
+        return <ProfileAboutSkeleton />;
       case "today":
       case "upcoming":
       case "past":
@@ -331,7 +338,7 @@ export function ProfileClient({
   const years = initialStats.yearsOnHomyz || (currentUser.createdAt ? Math.max(1, new Date().getFullYear() - new Date(currentUser.createdAt).getFullYear()) : 1);
 
   return (
-    <div className="flex min-h-[85vh] w-full flex-col bg-white pb-14 sm:pt-5 font-sans lg:pb-12">
+    <div className="guest-profile flex min-h-[85vh] w-full flex-col bg-white pb-14 sm:pt-5 font-sans lg:pb-12">
       <div className="mb-5 flex items-center justify-between lg:hidden">
         <BackButton
           onClick={() => {
@@ -364,7 +371,7 @@ export function ProfileClient({
                 <div className="flex flex-col animate-in fade-in">
                   {/* 1. Header with Title & Yellow Edit Button */}
                   <div className="mb-3 flex items-center gap-[19px] lg:mb-8 xl:mb-10">
-                    <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
+                    <h2 className="profile-page-title text-[#1F1F1F]">
                       <span className="lg:hidden text-[20px] leading-7">{t("profile_nav_my_profile", "My profile")}</span>
                       <span className="hidden lg:inline">{t("profile_about_me", "About me")}</span>
                     </h2>
@@ -372,7 +379,7 @@ export function ProfileClient({
                       <button
                         type="button"
                         onClick={() => handleSelectTab("profile_management")}
-                        className="hidden h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] lg:flex cursor-pointer"
+                        className="profile-button profile-button--medium hidden rounded-full bg-[#FCDF9C] text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] lg:flex cursor-pointer"
                       >
                         {t("profile_edit_btn", "Edit")}
                       </button>
@@ -453,7 +460,7 @@ export function ProfileClient({
 
                   {hasHostProfileDetails && (
                     <section className="mt-6 space-y-4 border-b border-zinc-200/80 pb-6">
-                      <h3 className="text-xl font-semibold text-[#1F1F1F]">{t("profile_about_me", "About me")}</h3>
+                      <h3 className="profile-section-title text-[#1F1F1F]">{t("profile_about_me", "About me")}</h3>
                       {pub.bio && <p className="text-sm leading-6 text-zinc-700">{pub.bio}</p>}
                       <div className="space-y-3 text-sm text-zinc-700">
                         {hostPrompts.homeUnique && <p><span className="font-semibold">{t("profile_prompt_home_unique", "What makes my home unique")}: </span>{hostPrompts.homeUnique}</p>}

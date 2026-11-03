@@ -128,6 +128,80 @@ export function InviteEarnSkeleton() {
   );
 }
 
+/** Mirrors the Profile "About me" view during both route and tab transitions. */
+export function ProfileAboutSkeleton() {
+  return (
+    <div aria-label="Loading profile" role="status" className="flex w-full flex-col animate-pulse">
+      <div className="mb-3 flex items-center gap-5 lg:mb-8 xl:mb-10">
+        <div className="h-7 w-32 rounded-lg bg-zinc-200 sm:w-36 lg:h-8" />
+        <div className="hidden h-11 w-20 rounded-full bg-zinc-100 lg:block" />
+      </div>
+
+      <div className="mb-0 flex items-start gap-6 lg:mb-[30px]">
+        <div className="h-[124px] w-[124px] shrink-0 rounded-xl border border-[#1F1F1F] bg-zinc-100 sm:h-[151px] sm:w-[233px] sm:rounded-2xl sm:border-2" />
+        <div className="flex min-h-[124px] min-w-0 flex-1 flex-col justify-center gap-3 sm:min-h-[151px] sm:w-[195px] sm:flex-none sm:gap-4">
+          <div className="space-y-2">
+            <div className="h-5 w-28 rounded bg-zinc-200" />
+            <div className="h-4 w-40 max-w-full rounded bg-zinc-100" />
+          </div>
+          <div className="flex items-start justify-between gap-2 border-t border-zinc-200 pt-2 sm:gap-6 sm:pt-4">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="flex flex-col items-center gap-1.5">
+                <div className="h-6 w-6 rounded-full bg-zinc-200 sm:h-9 sm:w-9" />
+                <div className="h-3 w-9 rounded bg-zinc-100" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 hidden items-center gap-4 border-b border-zinc-200 pb-6 lg:flex">
+        <div className="h-8 w-8 rounded-full bg-zinc-100" />
+        <div className="h-4 w-52 rounded bg-zinc-100" />
+      </div>
+
+      <section className="mt-6 space-y-4 border-b border-zinc-200/80 pb-6">
+        <div className="h-7 w-28 rounded bg-zinc-200" />
+        <div className="space-y-2">
+          <div className="h-4 w-full max-w-3xl rounded bg-zinc-100" />
+          <div className="h-4 w-4/5 rounded bg-zinc-100" />
+        </div>
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <div className="h-4 w-36 shrink-0 rounded bg-zinc-200" />
+              <div className="h-4 flex-1 rounded bg-zinc-100" />
+            </div>
+          ))}
+        </div>
+        <div className="space-y-2">
+          <div className="h-4 w-16 rounded bg-zinc-200" />
+          <div className="flex flex-wrap gap-2">
+            {["w-24", "w-16", "w-20"].map((width, index) => (
+              <div key={index} className={`h-6 ${width} rounded-full bg-zinc-100`} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-8 border-t border-zinc-200/80 pt-6">
+        <div className="mb-5 h-6 w-28 rounded bg-zinc-200" />
+        <div className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="space-y-3">
+              <div className="h-15 w-15 rounded-full bg-zinc-200" />
+              <div className="h-4 w-24 rounded bg-zinc-200" />
+              <div className="h-12 w-full rounded bg-zinc-100" />
+              <div className="h-4 w-2/3 rounded bg-zinc-200" />
+              <div className="h-3 w-1/3 rounded bg-zinc-100" />
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export function ProfileManagementSkeleton() {
   return (
     <div aria-label="Loading profile management" role="status" className="space-y-8 animate-pulse">

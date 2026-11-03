@@ -153,7 +153,7 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between lg:flex-col lg:items-start 2xl:flex-row 2xl:items-start xl:mb-8">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
+            <h2 className="profile-page-title text-[#1F1F1F]">
               {t("profile_saved_title", "Wishlists")}
             </h2>
             {validItems.length > 0 && (

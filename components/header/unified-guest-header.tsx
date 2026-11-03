@@ -204,8 +204,8 @@ export function UnifiedGuestHeader({ showBottomBorder }: UnifiedGuestHeaderProps
             ? "h-[72px] sm:h-20"
             : usesCompactHomeHeader
             ? "min-h-[78px] pt-[env(safe-area-inset-top)] lg:h-20 lg:min-h-0 lg:pt-0"
-            : "h-20"
-        } ${showBottomBorder || isListingsPage ? "border-b border-zinc-200/80" : ""}`}
+            : "min-h-[96px]"
+        }`}
       >
         {usesCompactHomeHeader && (
           <div className="lg:hidden">
@@ -289,9 +289,13 @@ export function UnifiedGuestHeader({ showBottomBorder }: UnifiedGuestHeaderProps
 
         {/* Standard / Desktop Header Row */}
         <div
-          className={`max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 h-20 items-center justify-between ${
+          className={`mx-auto box-border w-full max-w-[1600px] items-center justify-between px-6 ${
             isListingsPage || usesCompactHomeHeader ? "hidden lg:flex" : "flex"
-          }`}
+          } ${
+            isListingsPage || usesCompactHomeHeader
+              ? "h-20"
+              : "min-h-[96px] py-0 md:min-h-0 md:py-4 lg:py-5"
+          } ${showBottomBorder || isListingsPage ? "md:border-b md:border-[#727272]/20" : ""}`}
         >
           {/* ── Left: Homyz Brand Logo ── */}
           <div className="flex items-center min-w-[140px] lg:min-w-[180px]">
@@ -305,7 +309,7 @@ export function UnifiedGuestHeader({ showBottomBorder }: UnifiedGuestHeaderProps
                 alt="Homyz"
                 width={140}
                 height={40}
-                className="h-auto w-[115px] sm:w-[130px] lg:w-[140px]"
+                className="h-auto w-[125px] md:w-[135px] lg:w-[145px]"
                 priority
                 unoptimized
               />
