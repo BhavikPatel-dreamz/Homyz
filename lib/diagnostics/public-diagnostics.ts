@@ -9,6 +9,7 @@ type PublicDiagnosticInput = {
   severity?: DiagnosticSeverity;
   error?: unknown;
   digest?: string | null;
+  metadata?: Record<string, string | number | boolean | null | undefined>;
 };
 
 const diagnosticsLogPath =
@@ -70,6 +71,15 @@ export async function recordPublicDiagnostic(input: PublicDiagnosticInput) {
       source: sanitize(input.source, 120) || "application",
       message: sanitize(input.message) || "An application issue was detected.",
       ...(input.digest ? { digest: sanitize(input.digest, 120) } : {}),
+      ...(input.metadata
+        ? {
+            metadata: Object.fromEntries(
+              Object.entries(input.metadata)
+                .filter(([, value]) => value !== null && value !== undefined)
+                .map(([key, value]) => [sanitize(key, 80), typeof value === "string" ? sanitize(value, 120) : value]),
+            ),
+          }
+        : {}),
       ...(error ? { error } : {}),
     };
 
@@ -94,7 +104,11 @@ export async function recordPublicRequest(method: string, pathname: string) {
     .split("?")[0]
     .split("/")
     .map((segment) => {
-      if (/^[0-9]+$/.test(segment) || /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(segment)) {
+      if (
+        /^[0-9]+$/.test(segment) ||
+        /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(segment) ||
+        /^[a-z0-9]{20,}$/i.test(segment)
+      ) {
         return "[id]";
       }
       return sanitize(segment, 80);
