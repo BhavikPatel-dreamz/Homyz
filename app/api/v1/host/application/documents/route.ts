@@ -9,10 +9,10 @@ export const POST = apiHandler(async (req) => {
   const actor = await requireApiAuth(req);
   const formData = await req.formData();
 
-  const file = formData.get("file") as File | null;
+  const file = formData.get("file");
   const documentType = formData.get("documentType") as string | null;
 
-  if (!file) {
+  if (!(file instanceof File)) {
     throw AppError.badRequest("No file uploaded.");
   }
   if (!documentType || !documentType.trim()) {
@@ -22,12 +22,16 @@ export const POST = apiHandler(async (req) => {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  const doc = await hostApplicationService.uploadDocument(actor, documentType.trim(), {
-    buffer,
-    fileName: file.name,
-    mimeType: file.type || "application/octet-stream",
-    fileSize: file.size,
-  });
+  const doc = await hostApplicationService.uploadDocument(
+    actor,
+    documentType.trim(),
+    {
+      buffer,
+      fileName: file.name,
+      mimeType: file.type || "application/octet-stream",
+      fileSize: file.size,
+    },
+  );
 
   return created(doc);
 });

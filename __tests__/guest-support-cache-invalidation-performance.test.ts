@@ -29,21 +29,21 @@ describe("Guest Support Cache Invalidation, Race-Condition Safety & Client Perfo
 
     // openCase sequencing check
     assert.match(file, /const reqSeq = \+\+caseDetailReqSeqRef\.current;/);
-    assert.match(file, /activeRequestIdRef\.current === id && reqSeq === caseDetailReqSeqRef\.current/);
+    assert.match(file, /activeRequestIdRef\.current === id\s*&&\s*reqSeq === caseDetailReqSeqRef\.current/);
   });
 
   test("optimistically prepends newly created cases and revalidates metrics & router cache immediately", () => {
     const file = source("components/profile/support-resolution-center.tsx");
 
     // Support request creation
-    assert.match(file, /setItems\(\(prev\) => \[createdCase,/);
+    assert.match(file, /setItems\(\(prev\) =>\s*\[\s*createdCase,/);
     assert.match(file, /await loadMetrics\(\)/);
     assert.match(file, /router\.refresh\(\)/);
     assert.match(file, /void loadCases\(1, true\)/);
 
     // Direct resolution creation
     assert.match(file, /handleCreateDirectResolution/);
-    assert.match(file, /\/api\/v1\/support\/cases\/\$\{encodeURIComponent\(result\.supportCaseId\)\}\?_t=\$\{Date\.now\(\)\}/);
+    assert.match(file, /\/api\/v1\/support\/cases\/\$\{encodeURIComponent\(\s*result\.supportCaseId,?\s*\)\}\?_t=\$\{Date\.now\(\)\}/);
   });
 
   test("notifies parent listing and metrics upon case mutations (messages, evidence, offers, mediation)", () => {
@@ -53,9 +53,9 @@ describe("Guest Support Cache Invalidation, Race-Condition Safety & Client Perfo
     assert.match(file, /onCaseMutated\?: \(updatedFields\?: Partial<Case>\) => void/);
 
     // Calling mutation callbacks
-    assert.ok(file.includes('onCaseMutated?.({ updatedAt: new Date().toISOString() })'));
-    assert.ok(file.includes('status: action === "ACCEPT" ? "RESOLVED" : caseData.status'));
-    assert.ok(file.includes('onCaseMutated?.({ status: "ESCALATED", updatedAt: new Date().toISOString() })'));
+    assert.match(file, /onCaseMutated\?\.\(\{\s*updatedAt: new Date\(\)\.toISOString\(\),?\s*\}\)/);
+    assert.match(file, /status:\s*action === "ACCEPT" \? "RESOLVED" : caseData\.status/);
+    assert.match(file, /onCaseMutated\?\.\(\{\s*status: "ESCALATED",\s*updatedAt: new Date\(\)\.toISOString\(\),?\s*\}\)/);
 
     // Parent handler updates state and server cache
     assert.match(file, /function handleCaseMutated\(updatedFields\?: Partial<Case>\)/);

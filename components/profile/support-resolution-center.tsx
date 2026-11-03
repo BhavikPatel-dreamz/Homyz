@@ -1,6 +1,13 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
@@ -19,7 +26,11 @@ type Status =
 type GuestCaseTab = "all" | "action_needed" | "under_review" | "resolved";
 
 function guestTab(value: string | null): GuestCaseTab {
-  return value === "action_needed" || value === "under_review" || value === "resolved" ? value : "all";
+  return value === "action_needed" ||
+    value === "under_review" ||
+    value === "resolved"
+    ? value
+    : "all";
 }
 
 function tabStatus(tab: GuestCaseTab): string {
@@ -54,6 +65,7 @@ type CaseEvidence = {
   sizeBytes: number;
   createdAt: string;
   scanStatus?: string;
+  metadata?: { messageId?: string } | null;
   uploader?: {
     id?: string;
     name?: string | null;
@@ -71,7 +83,12 @@ type CaseEvent = {
   } | null;
 };
 
-type OfferType = "MONETARY_COMPENSATION" | "PROPERTY_DAMAGE" | "NON_FINANCIAL" | "AMENITY_ISSUE" | "OTHER";
+type OfferType =
+  | "MONETARY_COMPENSATION"
+  | "PROPERTY_DAMAGE"
+  | "NON_FINANCIAL"
+  | "AMENITY_ISSUE"
+  | "OTHER";
 
 type Offer = {
   id: string;
@@ -97,7 +114,10 @@ const offerTypeLabels: Record<OfferType, string> = {
 
 function formatCurrency(amount: number | null, currency = "SAR") {
   if (amount === null || amount === undefined) return "Non-financial";
-  return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount / 100);
+  return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency,
+  }).format(amount / 100);
 }
 
 type Case = {
@@ -206,7 +226,9 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { cache: "no-store", ...init, headers });
   const payload = await response.json().catch(() => null);
   if (!response.ok || !payload?.success) {
-    throw new Error(payload?.error?.message || "Support service is temporarily unavailable.");
+    throw new Error(
+      payload?.error?.message || "Support service is temporarily unavailable.",
+    );
   }
   return payload.data as T;
 }
@@ -278,7 +300,10 @@ function humanEventDescription(eventType: string, description: string | null) {
     case "MEDIATION_REQUESTED":
       return "Support mediation requested";
     default:
-      return eventType.toLowerCase().replaceAll("_", " ").replace(/^\w/, (c) => c.toUpperCase());
+      return eventType
+        .toLowerCase()
+        .replaceAll("_", " ")
+        .replace(/^\w/, (c) => c.toUpperCase());
   }
 }
 
@@ -304,11 +329,18 @@ export function GuestCaseDetailPanel({
 }) {
   const isDirectResolution =
     isDirectView ||
-    Boolean(caseData.resolutionOffers && caseData.resolutionOffers.length > 0) ||
+    Boolean(
+      caseData.resolutionOffers && caseData.resolutionOffers.length > 0,
+    ) ||
     caseData.category === "DIRECT_RESOLUTION" ||
     caseData.category === "BOOKING_DISPUTE";
 
-  type DetailTab = "conversation" | "offers" | "evidence" | "activity" | "mediation";
+  type DetailTab =
+    | "conversation"
+    | "offers"
+    | "evidence"
+    | "activity"
+    | "mediation";
   const [detailTab, setDetailTab] = useState<DetailTab>("conversation");
   const [replyText, setReplyText] = useState("");
   const [stagedAttachment, setStagedAttachment] = useState<File | null>(null);
@@ -349,9 +381,13 @@ export function GuestCaseDetailPanel({
       if (caseData.status === "ESCALATED") {
         return "Mediation has been requested. StayElite Support is reviewing the negotiation and evidence.";
       }
-      const activePendingOffer = caseData.resolutionOffers?.find((o) => o.status === "PENDING");
+      const activePendingOffer = caseData.resolutionOffers?.find(
+        (o) => o.status === "PENDING",
+      );
       if (activePendingOffer) {
-        const isRecipient = caseData.viewer ? activePendingOffer.recipient.id === caseData.viewer.id : false;
+        const isRecipient = caseData.viewer
+          ? activePendingOffer.recipient.id === caseData.viewer.id
+          : false;
         if (isRecipient) {
           return `Action needed: ${activePendingOffer.proposer.name || "The host"} proposed a resolution offer for you to review.`;
         }
@@ -386,32 +422,38 @@ export function GuestCaseDetailPanel({
     setActionError(null);
     setSendingReply(true);
 
-    replyKey.current ??= globalThis.crypto?.randomUUID?.() || `reply-${Date.now()}-${Math.random()}`;
+    replyKey.current ??=
+      globalThis.crypto?.randomUUID?.() ||
+      `reply-${Date.now()}-${Math.random()}`;
 
     try {
-      if (stagedAttachment) {
-        const formData = new FormData();
-        formData.set("file", stagedAttachment);
-        await api(`/api/v1/support/cases/${caseData.id}/evidence/upload`, {
-          method: "POST",
-          body: formData,
-        });
-      }
-
       const content = stagedAttachment
         ? replyText.trim()
           ? `${replyText.trim()}\n\n[Attached: ${stagedAttachment.name}]`
           : `[Attached: ${stagedAttachment.name}]`
         : replyText.trim();
 
-      await api(`/api/v1/support/cases/${caseData.id}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content,
-          idempotencyKey: replyKey.current,
-        }),
-      });
+      const savedMessage = await api<{ id: string }>(
+        `/api/v1/support/cases/${caseData.id}/messages`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content,
+            idempotencyKey: replyKey.current,
+          }),
+        },
+      );
+
+      if (stagedAttachment) {
+        const formData = new FormData();
+        formData.set("file", stagedAttachment);
+        formData.set("messageId", savedMessage.id);
+        await api(`/api/v1/support/cases/${caseData.id}/evidence/upload`, {
+          method: "POST",
+          body: formData,
+        });
+      }
 
       replyKey.current = null;
       setReplyText("");
@@ -421,7 +463,9 @@ export function GuestCaseDetailPanel({
       onMessageSent?.();
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Unable to send message.");
+      setActionError(
+        err instanceof Error ? err.message : "Unable to send message.",
+      );
     } finally {
       setSendingReply(false);
     }
@@ -444,16 +488,33 @@ export function GuestCaseDetailPanel({
       await onRefresh();
       onCaseMutated?.({ updatedAt: new Date().toISOString() });
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Unable to upload evidence document.");
+      setActionError(
+        err instanceof Error
+          ? err.message
+          : "Unable to upload evidence document.",
+      );
     } finally {
       setUploadingEvidence(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
-  async function handleOfferAction(offer: Offer, action: "ACCEPT" | "REJECT" | "WITHDRAW") {
-    const actionVerb = action === "ACCEPT" ? "accept" : action === "REJECT" ? "reject" : "withdraw";
-    if (!window.confirm(`Are you sure you want to ${actionVerb} this resolution offer?`)) return;
+  async function handleOfferAction(
+    offer: Offer,
+    action: "ACCEPT" | "REJECT" | "WITHDRAW",
+  ) {
+    const actionVerb =
+      action === "ACCEPT"
+        ? "accept"
+        : action === "REJECT"
+          ? "reject"
+          : "withdraw";
+    if (
+      !window.confirm(
+        `Are you sure you want to ${actionVerb} this resolution offer?`,
+      )
+    )
+      return;
     setOfferActionLoading(true);
     setActionError(null);
     try {
@@ -468,7 +529,11 @@ export function GuestCaseDetailPanel({
         updatedAt: new Date().toISOString(),
       });
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : `Unable to ${actionVerb} resolution offer.`);
+      setActionError(
+        err instanceof Error
+          ? err.message
+          : `Unable to ${actionVerb} resolution offer.`,
+      );
     } finally {
       setOfferActionLoading(false);
     }
@@ -480,8 +545,13 @@ export function GuestCaseDetailPanel({
     setSubmittingOffer(true);
     setActionError(null);
     try {
-      const isMonetary = offerForm.offerType === "MONETARY_COMPENSATION" || offerForm.offerType === "PROPERTY_DAMAGE";
-      const amountMinor = isMonetary && offerForm.amount ? Math.round(Number(offerForm.amount) * 100) : undefined;
+      const isMonetary =
+        offerForm.offerType === "MONETARY_COMPENSATION" ||
+        offerForm.offerType === "PROPERTY_DAMAGE";
+      const amountMinor =
+        isMonetary && offerForm.amount
+          ? Math.round(Number(offerForm.amount) * 100)
+          : undefined;
       await api(`/api/v1/support/cases/${caseData.id}/resolution-offers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -491,15 +561,25 @@ export function GuestCaseDetailPanel({
           description: offerForm.description.trim(),
           expiresAt: offerForm.expiresAt || undefined,
           parentOfferId: counteringOffer?.id,
-          idempotencyKey: globalThis.crypto?.randomUUID?.() || `offer-${Date.now()}`,
+          idempotencyKey:
+            globalThis.crypto?.randomUUID?.() || `offer-${Date.now()}`,
         }),
       });
-      setOfferForm({ offerType: "MONETARY_COMPENSATION", amount: "", description: "", expiresAt: "" });
+      setOfferForm({
+        offerType: "MONETARY_COMPENSATION",
+        amount: "",
+        description: "",
+        expiresAt: "",
+      });
       setCounteringOffer(null);
       await onRefresh();
       onCaseMutated?.({ updatedAt: new Date().toISOString() });
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Unable to submit resolution offer.");
+      setActionError(
+        err instanceof Error
+          ? err.message
+          : "Unable to submit resolution offer.",
+      );
     } finally {
       setSubmittingOffer(false);
     }
@@ -521,9 +601,14 @@ export function GuestCaseDetailPanel({
       });
       setMediationReason("");
       await onRefresh();
-      onCaseMutated?.({ status: "ESCALATED", updatedAt: new Date().toISOString() });
+      onCaseMutated?.({
+        status: "ESCALATED",
+        updatedAt: new Date().toISOString(),
+      });
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Unable to request mediation.");
+      setActionError(
+        err instanceof Error ? err.message : "Unable to request mediation.",
+      );
     } finally {
       setRequestingMediation(false);
     }
@@ -532,10 +617,19 @@ export function GuestCaseDetailPanel({
   const events = caseData.events || [];
   const visibleEvents = events.slice(0, visibleEventsCount);
   const activeOffers = caseData.resolutionOffers || [];
-  const activePendingOffer = activeOffers.find((o) => o.status === "PENDING") || activeOffers.at(-1);
-  const isRecipient = caseData.viewer && activePendingOffer ? activePendingOffer.recipient.id === caseData.viewer.id : false;
-  const isProposer = caseData.viewer && activePendingOffer ? activePendingOffer.proposer.id === caseData.viewer.id : false;
-  const isMediationActive = caseData.status === "ESCALATED" || events.some((e) => e.eventType === "MEDIATION_REQUESTED");
+  const activePendingOffer =
+    activeOffers.find((o) => o.status === "PENDING") || activeOffers.at(-1);
+  const isRecipient =
+    caseData.viewer && activePendingOffer
+      ? activePendingOffer.recipient.id === caseData.viewer.id
+      : false;
+  const isProposer =
+    caseData.viewer && activePendingOffer
+      ? activePendingOffer.proposer.id === caseData.viewer.id
+      : false;
+  const isMediationActive =
+    caseData.status === "ESCALATED" ||
+    events.some((e) => e.eventType === "MEDIATION_REQUESTED");
 
   return (
     <article className="w-full space-y-6 animate-in fade-in duration-300">
@@ -546,10 +640,18 @@ export function GuestCaseDetailPanel({
           onClick={onBack}
           className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs sm:text-sm font-medium text-zinc-800 shadow-2xs hover:bg-zinc-50 transition-colors"
         >
-          <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            className="size-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          {isDirectResolution ? "Back to direct resolutions" : "Back to requests"}
+          {isDirectResolution
+            ? "Back to direct resolutions"
+            : "Back to requests"}
         </button>
 
         <div className="flex items-center gap-2">
@@ -558,14 +660,19 @@ export function GuestCaseDetailPanel({
               Direct resolution
             </span>
           )}
-          <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusBadge(caseData.status)}`}>
+          <span
+            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusBadge(caseData.status)}`}
+          >
             {labels[caseData.status] || caseData.status}
           </span>
         </div>
       </div>
 
       {actionError && (
-        <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs sm:text-sm font-normal text-red-800">
+        <div
+          role="alert"
+          className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs sm:text-sm font-normal text-red-800"
+        >
           {actionError}
         </div>
       )}
@@ -573,20 +680,32 @@ export function GuestCaseDetailPanel({
       {/* Case Header & Overview */}
       <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 sm:p-7 shadow-2xs space-y-5">
         <div className="space-y-1.5">
-          <p className="font-mono text-xs font-medium text-zinc-500">Case #{caseData.caseNumber}</p>
-          <h2 className="text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">{caseData.subject}</h2>
+          <p className="font-mono text-xs font-medium text-zinc-500">
+            Case #{caseData.caseNumber}
+          </p>
+          <h2 className="text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">
+            {caseData.subject}
+          </h2>
         </div>
 
         {/* What's Happening Next contextual box */}
         <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-4 text-xs sm:text-sm text-blue-900 flex items-start gap-3">
-          <svg className="size-5 shrink-0 text-blue-600 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            className="size-5 shrink-0 text-blue-600 mt-0.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="16" x2="12" y2="12" />
             <line x1="12" y1="8" x2="12.01" y2="8" />
           </svg>
           <div className="space-y-0.5">
             <p className="font-medium">What&apos;s happening next</p>
-            <p className="font-normal text-blue-800/90 leading-relaxed">{getNextActionMessage()}</p>
+            <p className="font-normal text-blue-800/90 leading-relaxed">
+              {getNextActionMessage()}
+            </p>
           </div>
         </div>
 
@@ -594,7 +713,9 @@ export function GuestCaseDetailPanel({
         {caseData.description && (
           <div className="space-y-1.5">
             <h3 className="text-xs font-medium text-zinc-500">
-              {isDirectResolution ? "Original dispute explanation" : "Original issue description"}
+              {isDirectResolution
+                ? "Original dispute explanation"
+                : "Original issue description"}
             </h3>
             <p className="whitespace-pre-wrap rounded-xl bg-zinc-50 p-4 text-xs sm:text-sm font-normal text-zinc-800 leading-relaxed border border-zinc-100">
               {caseData.description}
@@ -606,7 +727,13 @@ export function GuestCaseDetailPanel({
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 pt-1">
           <div className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3.5">
             <div className="flex items-center gap-1.5 text-xs font-normal text-zinc-500">
-              <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="size-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
                 <line x1="7" y1="7" x2="7.01" y2="7" />
               </svg>
@@ -614,13 +741,21 @@ export function GuestCaseDetailPanel({
             </div>
             <p className="mt-1 text-xs sm:text-sm font-medium text-zinc-900 truncate">
               {caseData.category.replaceAll("_", " ")}
-              {caseData.issueType ? ` · ${caseData.issueType.replaceAll("_", " ")}` : ""}
+              {caseData.issueType
+                ? ` · ${caseData.issueType.replaceAll("_", " ")}`
+                : ""}
             </p>
           </div>
 
           <div className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3.5">
             <div className="flex items-center gap-1.5 text-xs font-normal text-zinc-500">
-              <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="size-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                 <line x1="16" y1="2" x2="16" y2="6" />
                 <line x1="8" y1="2" x2="8" y2="6" />
@@ -631,7 +766,9 @@ export function GuestCaseDetailPanel({
             <p className="mt-1 text-xs sm:text-sm font-medium text-zinc-900 truncate">
               {caseData.booking?.id ? (
                 <span className="text-blue-600 inline-flex items-center gap-0.5">
-                  #{caseData.booking.submissionId || caseData.booking.id.slice(0, 10)}
+                  #
+                  {caseData.booking.submissionId ||
+                    caseData.booking.id.slice(0, 10)}
                 </span>
               ) : (
                 "Not linked to booking"
@@ -641,24 +778,40 @@ export function GuestCaseDetailPanel({
 
           <div className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3.5">
             <div className="flex items-center gap-1.5 text-xs font-normal text-zinc-500">
-              <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="size-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
               </svg>
               <span>Created</span>
             </div>
-            <p className="mt-1 text-xs sm:text-sm font-medium text-zinc-900 truncate">{formatCaseDate(caseData.createdAt)}</p>
+            <p className="mt-1 text-xs sm:text-sm font-medium text-zinc-900 truncate">
+              {formatCaseDate(caseData.createdAt)}
+            </p>
           </div>
 
           <div className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3.5">
             <div className="flex items-center gap-1.5 text-xs font-normal text-zinc-500">
-              <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="size-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 14 10" />
               </svg>
               <span>Last activity</span>
             </div>
-            <p className="mt-1 text-xs sm:text-sm font-medium text-zinc-900 truncate">{formatCaseDate(caseData.updatedAt)}</p>
+            <p className="mt-1 text-xs sm:text-sm font-medium text-zinc-900 truncate">
+              {formatCaseDate(caseData.updatedAt)}
+            </p>
           </div>
         </div>
       </div>
@@ -667,7 +820,11 @@ export function GuestCaseDetailPanel({
       <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-2xs overflow-hidden">
         {/* Tabs Row */}
         <div className="border-b border-zinc-200 px-5 sm:px-7 bg-zinc-50/50">
-          <nav role="tablist" aria-label="Support Case Detail Tabs" className="-mb-px flex flex-wrap gap-4 sm:gap-8 text-sm font-medium">
+          <nav
+            role="tablist"
+            aria-label="Support Case Detail Tabs"
+            className="-mb-px flex flex-wrap gap-4 sm:gap-8 text-sm font-medium"
+          >
             <button
               id="tab-conversation"
               type="button"
@@ -681,7 +838,13 @@ export function GuestCaseDetailPanel({
                   : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-800"
               }`}
             >
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
               Conversation ({caseData.messages?.length || 0})
@@ -701,7 +864,13 @@ export function GuestCaseDetailPanel({
                     : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-800"
                 }`}
               >
-                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <rect x="2" y="4" width="20" height="16" rx="2" />
                   <path d="M7 15h0M2 9.5h20" />
                 </svg>
@@ -722,7 +891,13 @@ export function GuestCaseDetailPanel({
                   : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-800"
               }`}
             >
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                 <polyline points="14 2 14 8 20 8" />
               </svg>
@@ -742,7 +917,13 @@ export function GuestCaseDetailPanel({
                   : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-800"
               }`}
             >
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 14 10" />
               </svg>
@@ -763,7 +944,13 @@ export function GuestCaseDetailPanel({
                     : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-800"
                 }`}
               >
-                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
                 Mediation
@@ -774,31 +961,57 @@ export function GuestCaseDetailPanel({
 
         {/* TAB 1: CONVERSATION */}
         {detailTab === "conversation" && (
-          <div id="tabpanel-conversation" role="tabpanel" aria-labelledby="tab-conversation" className="flex flex-col">
+          <div
+            id="tabpanel-conversation"
+            role="tabpanel"
+            aria-labelledby="tab-conversation"
+            className="flex flex-col"
+          >
             <div className="p-5 sm:p-7 space-y-4 min-h-[280px] max-h-[500px] overflow-y-auto">
               {caseData.messages && caseData.messages.length > 0 ? (
                 caseData.messages.map((msg) => {
-                  const isViewer = Boolean(caseData.viewer && msg.sender.id === caseData.viewer.id);
+                  const isViewer = Boolean(
+                    caseData.viewer && msg.sender.id === caseData.viewer.id,
+                  );
+                  const attachments =
+                    caseData.evidence?.filter(
+                      (entry) => entry.metadata?.messageId === msg.id,
+                    ) || [];
                   const roleLabel = msg.sender.role
                     ? msg.sender.role === "ADMIN"
                       ? "Support Specialist"
-                      : msg.sender.role.toLowerCase().replace(/^\w/, (c) => c.toUpperCase())
+                      : msg.sender.role
+                          .toLowerCase()
+                          .replace(/^\w/, (c) => c.toUpperCase())
                     : isViewer
                       ? "You"
                       : "Host / Participant";
 
                   return (
-                    <div key={msg.id} className={`flex items-start gap-3 ${isViewer ? "flex-row-reverse" : "flex-row"}`}>
+                    <div
+                      key={msg.id}
+                      className={`flex items-start gap-3 ${isViewer ? "flex-row-reverse" : "flex-row"}`}
+                    >
                       <div className="size-9 rounded-full bg-zinc-200 text-zinc-700 flex items-center justify-center text-xs font-medium shrink-0">
                         {getInitials(msg.sender?.name, isViewer ? "ME" : "U")}
                       </div>
-                      <div className={`max-w-[85%] sm:max-w-[75%] space-y-1.5 ${isViewer ? "items-end text-right" : "items-start text-left"}`}>
+                      <div
+                        className={`max-w-[85%] sm:max-w-[75%] space-y-1.5 ${isViewer ? "items-end text-right" : "items-start text-left"}`}
+                      >
                         <div className="flex items-center gap-2 text-xs text-zinc-500">
-                          <span className="font-medium text-zinc-900">{isViewer ? "You" : msg.sender?.name || "Participant"}</span>
+                          <span className="font-medium text-zinc-900">
+                            {isViewer
+                              ? "You"
+                              : msg.sender?.name || "Participant"}
+                          </span>
                           <span>·</span>
-                          <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-600 font-normal">{roleLabel}</span>
+                          <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-600 font-normal">
+                            {roleLabel}
+                          </span>
                           <span>·</span>
-                          <span className="font-normal">{formatCaseDate(msg.createdAt)}</span>
+                          <span className="font-normal">
+                            {formatCaseDate(msg.createdAt)}
+                          </span>
                         </div>
                         <div
                           className={`rounded-2xl p-4 text-xs sm:text-sm font-normal leading-relaxed whitespace-pre-wrap shadow-2xs ${
@@ -809,14 +1022,29 @@ export function GuestCaseDetailPanel({
                         >
                           {msg.content}
                         </div>
+                        {attachments.map((attachment) => (
+                          <a
+                            key={attachment.id}
+                            href={`/api/v1/support/cases/${caseData.id}/evidence/${attachment.id}?download=true`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`block rounded-lg border px-3 py-2 text-xs font-medium underline ${isViewer ? "border-zinc-700 text-zinc-100" : "border-zinc-200 text-zinc-700"}`}
+                          >
+                            Attachment: {attachment.originalName}
+                          </a>
+                        ))}
                       </div>
                     </div>
                   );
                 })
               ) : (
                 <div className="py-12 text-center space-y-2">
-                  <p className="text-sm font-medium text-zinc-700">No messages in this case yet.</p>
-                  <p className="text-xs text-zinc-500">Send a message below to communicate directly.</p>
+                  <p className="text-sm font-medium text-zinc-700">
+                    No messages in this case yet.
+                  </p>
+                  <p className="text-xs text-zinc-500">
+                    Send a message below to communicate directly.
+                  </p>
                 </div>
               )}
               <div ref={messagesEndRef} />
@@ -824,11 +1052,23 @@ export function GuestCaseDetailPanel({
 
             {/* Message Composer */}
             {isCaseMutable ? (
-              <form onSubmit={handleSendReply} className="border-t border-zinc-200 p-4 sm:p-5 bg-zinc-50/70 space-y-3">
+              <form
+                onSubmit={handleSendReply}
+                className="border-t border-zinc-200 p-4 sm:p-5 bg-zinc-50/70 space-y-3"
+              >
                 {stagedAttachment && (
                   <div className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-xs font-medium text-zinc-800">
-                    <span className="truncate">Attached: {stagedAttachment.name} ({formatBytes(stagedAttachment.size)})</span>
-                    <button type="button" onClick={() => setStagedAttachment(null)} className="text-zinc-400 hover:text-zinc-700 ml-2">✕</button>
+                    <span className="truncate">
+                      Attached: {stagedAttachment.name} (
+                      {formatBytes(stagedAttachment.size)})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setStagedAttachment(null)}
+                      className="text-zinc-400 hover:text-zinc-700 ml-2"
+                    >
+                      ✕
+                    </button>
                   </div>
                 )}
 
@@ -859,13 +1099,21 @@ export function GuestCaseDetailPanel({
                       onClick={() => composerFileInputRef.current?.click()}
                       className="size-8 rounded-full border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-100 flex items-center justify-center transition-colors"
                     >
-                      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg
+                        className="size-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
                         <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
                       </svg>
                     </button>
                     <button
                       type="submit"
-                      disabled={sendingReply || (!replyText.trim() && !stagedAttachment)}
+                      disabled={
+                        sendingReply || (!replyText.trim() && !stagedAttachment)
+                      }
                       className="rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-black transition-colors disabled:opacity-50"
                     >
                       {sendingReply ? "Sending..." : "Send"}
@@ -875,7 +1123,8 @@ export function GuestCaseDetailPanel({
               </form>
             ) : (
               <div className="border-t border-zinc-200 p-4 text-center text-xs text-zinc-500 bg-zinc-50">
-                This case has been resolved or closed. Replies can no longer be added.
+                This case has been resolved or closed. Replies can no longer be
+                added.
               </div>
             )}
           </div>
@@ -883,26 +1132,37 @@ export function GuestCaseDetailPanel({
 
         {/* TAB 2: OFFERS & NEGOTIATION (DIRECT RESOLUTION ONLY) */}
         {detailTab === "offers" && isDirectResolution && (
-          <div id="tabpanel-offers" role="tabpanel" aria-labelledby="tab-offers" className="p-5 sm:p-7 space-y-6">
+          <div
+            id="tabpanel-offers"
+            role="tabpanel"
+            aria-labelledby="tab-offers"
+            className="p-5 sm:p-7 space-y-6"
+          >
             {/* Active / Current Offer Card */}
             {activePendingOffer ? (
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-5 sm:p-6 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200/80 pb-3">
                   <div>
                     <span className="rounded-md border border-zinc-200 bg-white px-2 py-0.5 text-xs font-medium text-zinc-800">
-                      {offerTypeLabels[activePendingOffer.offerType] || activePendingOffer.offerType}
+                      {offerTypeLabels[activePendingOffer.offerType] ||
+                        activePendingOffer.offerType}
                     </span>
                     <h3 className="text-xl font-medium text-zinc-950 mt-1">
-                      {formatCurrency(activePendingOffer.amount, activePendingOffer.currency)}
+                      {formatCurrency(
+                        activePendingOffer.amount,
+                        activePendingOffer.currency,
+                      )}
                     </h3>
                   </div>
-                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${
-                    activePendingOffer.status === "PENDING"
-                      ? "bg-blue-50 text-blue-800 border border-blue-200"
-                      : activePendingOffer.status === "ACCEPTED"
-                        ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                        : "bg-zinc-100 text-zinc-700 border border-zinc-200"
-                  }`}>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${
+                      activePendingOffer.status === "PENDING"
+                        ? "bg-blue-50 text-blue-800 border border-blue-200"
+                        : activePendingOffer.status === "ACCEPTED"
+                          ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                          : "bg-zinc-100 text-zinc-700 border border-zinc-200"
+                    }`}
+                  >
                     {activePendingOffer.status}
                   </span>
                 </div>
@@ -910,7 +1170,8 @@ export function GuestCaseDetailPanel({
                 <div className="text-xs sm:text-sm text-zinc-600 space-y-1">
                   <p>
                     <span className="font-medium text-zinc-900">From: </span>
-                    {activePendingOffer.proposer.name || "Participant"} → <span className="font-medium text-zinc-900">To: </span>
+                    {activePendingOffer.proposer.name || "Participant"} →{" "}
+                    <span className="font-medium text-zinc-900">To: </span>
                     {activePendingOffer.recipient.name || "Participant"}
                   </p>
                   {activePendingOffer.expiresAt && (
@@ -932,7 +1193,9 @@ export function GuestCaseDetailPanel({
                         <button
                           type="button"
                           disabled={offerActionLoading}
-                          onClick={() => handleOfferAction(activePendingOffer, "ACCEPT")}
+                          onClick={() =>
+                            handleOfferAction(activePendingOffer, "ACCEPT")
+                          }
                           className="rounded-full bg-emerald-600 px-5 py-2 text-xs sm:text-sm font-medium text-white hover:bg-emerald-700 transition-colors disabled:opacity-50"
                         >
                           Accept offer
@@ -940,7 +1203,9 @@ export function GuestCaseDetailPanel({
                         <button
                           type="button"
                           disabled={offerActionLoading}
-                          onClick={() => handleOfferAction(activePendingOffer, "REJECT")}
+                          onClick={() =>
+                            handleOfferAction(activePendingOffer, "REJECT")
+                          }
                           className="rounded-full border border-rose-200 bg-rose-50 px-5 py-2 text-xs sm:text-sm font-medium text-rose-700 hover:bg-rose-100 transition-colors disabled:opacity-50"
                         >
                           Reject offer
@@ -952,7 +1217,9 @@ export function GuestCaseDetailPanel({
                             setCounteringOffer(activePendingOffer);
                             setOfferForm({
                               offerType: activePendingOffer.offerType,
-                              amount: activePendingOffer.amount ? String(activePendingOffer.amount / 100) : "",
+                              amount: activePendingOffer.amount
+                                ? String(activePendingOffer.amount / 100)
+                                : "",
                               description: "",
                               expiresAt: "",
                             });
@@ -967,7 +1234,9 @@ export function GuestCaseDetailPanel({
                       <button
                         type="button"
                         disabled={offerActionLoading}
-                        onClick={() => handleOfferAction(activePendingOffer, "WITHDRAW")}
+                        onClick={() =>
+                          handleOfferAction(activePendingOffer, "WITHDRAW")
+                        }
                         className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-xs sm:text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-50"
                       >
                         Withdraw offer
@@ -985,18 +1254,31 @@ export function GuestCaseDetailPanel({
             {/* Negotiation History */}
             {activeOffers.length > 1 && (
               <div className="space-y-3 pt-2">
-                <h4 className="text-sm font-medium text-zinc-950">Negotiation history ({activeOffers.length})</h4>
+                <h4 className="text-sm font-medium text-zinc-950">
+                  Negotiation history ({activeOffers.length})
+                </h4>
                 <div className="space-y-3">
                   {activeOffers.map((offer) => (
-                    <div key={offer.id} className="rounded-xl border border-zinc-200 bg-white p-4 space-y-2 text-xs sm:text-sm">
+                    <div
+                      key={offer.id}
+                      className="rounded-xl border border-zinc-200 bg-white p-4 space-y-2 text-xs sm:text-sm"
+                    >
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-zinc-900">{offerTypeLabels[offer.offerType] || offer.offerType} · {formatCurrency(offer.amount, offer.currency)}</span>
-                        <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs text-zinc-600 font-medium">{offer.status}</span>
+                        <span className="font-medium text-zinc-900">
+                          {offerTypeLabels[offer.offerType] || offer.offerType}{" "}
+                          · {formatCurrency(offer.amount, offer.currency)}
+                        </span>
+                        <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs text-zinc-600 font-medium">
+                          {offer.status}
+                        </span>
                       </div>
                       <p className="text-xs text-zinc-500 font-normal">
-                        {offer.proposer.name || "Participant"} → {offer.recipient.name || "Participant"}
+                        {offer.proposer.name || "Participant"} →{" "}
+                        {offer.recipient.name || "Participant"}
                       </p>
-                      <p className="text-zinc-700 font-normal">{offer.description}</p>
+                      <p className="text-zinc-700 font-normal">
+                        {offer.description}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -1004,85 +1286,134 @@ export function GuestCaseDetailPanel({
             )}
 
             {/* Propose a New Offer Form */}
-            {isCaseMutable && (!activePendingOffer || activePendingOffer.status !== "PENDING" || counteringOffer) && (
-              <form onSubmit={handleSubmitOffer} className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 space-y-4">
-                <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-                  <h4 className="text-base font-medium text-zinc-950">
-                    {counteringOffer ? "Submit a counteroffer" : "Propose a new resolution offer"}
-                  </h4>
-                  {counteringOffer && (
-                    <button type="button" onClick={() => setCounteringOffer(null)} className="text-xs font-medium text-zinc-500 hover:text-zinc-800 underline">
-                      Cancel counteroffer
-                    </button>
-                  )}
-                </div>
+            {isCaseMutable &&
+              (!activePendingOffer ||
+                activePendingOffer.status !== "PENDING" ||
+                counteringOffer) && (
+                <form
+                  onSubmit={handleSubmitOffer}
+                  className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 space-y-4"
+                >
+                  <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+                    <h4 className="text-base font-medium text-zinc-950">
+                      {counteringOffer
+                        ? "Submit a counteroffer"
+                        : "Propose a new resolution offer"}
+                    </h4>
+                    {counteringOffer && (
+                      <button
+                        type="button"
+                        onClick={() => setCounteringOffer(null)}
+                        className="text-xs font-medium text-zinc-500 hover:text-zinc-800 underline"
+                      >
+                        Cancel counteroffer
+                      </button>
+                    )}
+                  </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block text-xs font-medium text-zinc-800">
+                      Offer type
+                      <select
+                        value={offerForm.offerType}
+                        onChange={(e) =>
+                          setOfferForm({
+                            ...offerForm,
+                            offerType: e.target.value as OfferType,
+                          })
+                        }
+                        className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                      >
+                        <option value="MONETARY_COMPENSATION">
+                          Monetary compensation
+                        </option>
+                        <option value="PROPERTY_DAMAGE">
+                          Property damage compensation
+                        </option>
+                        <option value="NON_FINANCIAL">
+                          Non-financial agreement
+                        </option>
+                        <option value="AMENITY_ISSUE">
+                          Amenity issue resolution
+                        </option>
+                        <option value="OTHER">Other resolution</option>
+                      </select>
+                    </label>
+
+                    {(offerForm.offerType === "MONETARY_COMPENSATION" ||
+                      offerForm.offerType === "PROPERTY_DAMAGE") && (
+                      <label className="block text-xs font-medium text-zinc-800">
+                        Amount (SAR)
+                        <input
+                          type="number"
+                          min="1"
+                          step="any"
+                          required
+                          value={offerForm.amount}
+                          onChange={(e) =>
+                            setOfferForm({
+                              ...offerForm,
+                              amount: e.target.value,
+                            })
+                          }
+                          placeholder="e.g. 250"
+                          className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                        />
+                      </label>
+                    )}
+                  </div>
+
                   <label className="block text-xs font-medium text-zinc-800">
-                    Offer type
-                    <select
-                      value={offerForm.offerType}
-                      onChange={(e) => setOfferForm({ ...offerForm, offerType: e.target.value as OfferType })}
+                    Explanation / Settlement terms
+                    <textarea
+                      required
+                      rows={3}
+                      maxLength={4000}
+                      value={offerForm.description}
+                      onChange={(e) =>
+                        setOfferForm({
+                          ...offerForm,
+                          description: e.target.value,
+                        })
+                      }
+                      placeholder="Describe the terms you propose to resolve this dispute..."
                       className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
-                    >
-                      <option value="MONETARY_COMPENSATION">Monetary compensation</option>
-                      <option value="PROPERTY_DAMAGE">Property damage compensation</option>
-                      <option value="NON_FINANCIAL">Non-financial agreement</option>
-                      <option value="AMENITY_ISSUE">Amenity issue resolution</option>
-                      <option value="OTHER">Other resolution</option>
-                    </select>
+                    />
                   </label>
 
-                  {(offerForm.offerType === "MONETARY_COMPENSATION" || offerForm.offerType === "PROPERTY_DAMAGE") && (
-                    <label className="block text-xs font-medium text-zinc-800">
-                      Amount (SAR)
-                      <input
-                        type="number"
-                        min="1"
-                        step="any"
-                        required
-                        value={offerForm.amount}
-                        onChange={(e) => setOfferForm({ ...offerForm, amount: e.target.value })}
-                        placeholder="e.g. 250"
-                        className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
-                      />
-                    </label>
-                  )}
-                </div>
-
-                <label className="block text-xs font-medium text-zinc-800">
-                  Explanation / Settlement terms
-                  <textarea
-                    required
-                    rows={3}
-                    maxLength={4000}
-                    value={offerForm.description}
-                    onChange={(e) => setOfferForm({ ...offerForm, description: e.target.value })}
-                    placeholder="Describe the terms you propose to resolve this dispute..."
-                    className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
-                  />
-                </label>
-
-                <div className="flex items-center justify-end pt-2">
-                  <button
-                    type="submit"
-                    disabled={submittingOffer || !offerForm.description.trim()}
-                    className="rounded-full bg-zinc-900 px-5 py-2 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors disabled:opacity-50"
-                  >
-                    {submittingOffer ? "Submitting..." : counteringOffer ? "Send counteroffer" : "Send resolution offer"}
-                  </button>
-                </div>
-              </form>
-            )}
+                  <div className="flex items-center justify-end pt-2">
+                    <button
+                      type="submit"
+                      disabled={
+                        submittingOffer || !offerForm.description.trim()
+                      }
+                      className="rounded-full bg-zinc-900 px-5 py-2 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors disabled:opacity-50"
+                    >
+                      {submittingOffer
+                        ? "Submitting..."
+                        : counteringOffer
+                          ? "Send counteroffer"
+                          : "Send resolution offer"}
+                    </button>
+                  </div>
+                </form>
+              )}
           </div>
         )}
 
         {/* TAB 3: EVIDENCE & DOCUMENTS */}
         {detailTab === "evidence" && (
-          <div id="tabpanel-evidence" role="tabpanel" aria-labelledby="tab-evidence" className="p-5 sm:p-7 space-y-6">
+          <div
+            id="tabpanel-evidence"
+            role="tabpanel"
+            aria-labelledby="tab-evidence"
+            className="p-5 sm:p-7 space-y-6"
+          >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 pb-4">
               <div>
-                <h3 className="text-base font-medium text-zinc-950">Supporting evidence &amp; documents</h3>
+                <h3 className="text-base font-medium text-zinc-950">
+                  Supporting evidence &amp; documents
+                </h3>
                 <p className="text-xs text-zinc-500 font-normal">
                   JPG, PNG, WEBP, or PDF files. Maximum size: 15 MB per file.
                 </p>
@@ -1106,7 +1437,13 @@ export function GuestCaseDetailPanel({
                     onClick={() => fileInputRef.current?.click()}
                     className="inline-flex items-center gap-2 rounded-full bg-zinc-900 px-4 py-2 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors disabled:opacity-50"
                   >
-                    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg
+                      className="size-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                       <polyline points="17 8 12 3 7 8" />
                       <line x1="12" y1="3" x2="12" y2="15" />
@@ -1121,18 +1458,30 @@ export function GuestCaseDetailPanel({
             {caseData.evidence && caseData.evidence.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 {caseData.evidence.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between rounded-xl border border-zinc-200/90 bg-white p-3.5 shadow-2xs hover:border-zinc-300 transition-colors">
+                  <div
+                    key={entry.id}
+                    className="flex items-center justify-between rounded-xl border border-zinc-200/90 bg-white p-3.5 shadow-2xs hover:border-zinc-300 transition-colors"
+                  >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="size-10 rounded-lg bg-zinc-100 text-zinc-500 flex items-center justify-center shrink-0">
-                        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          className="size-5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                           <polyline points="14 2 14 8 20 8" />
                         </svg>
                       </div>
                       <div className="min-w-0">
-                        <p className="truncate text-xs sm:text-sm font-medium text-zinc-900">{entry.originalName}</p>
+                        <p className="truncate text-xs sm:text-sm font-medium text-zinc-900">
+                          {entry.originalName}
+                        </p>
                         <p className="text-[11px] text-zinc-500 font-normal">
-                          {formatBytes(entry.sizeBytes)} · {formatCaseDate(entry.createdAt)}
+                          {formatBytes(entry.sizeBytes)} ·{" "}
+                          {formatCaseDate(entry.createdAt)}
                         </p>
                       </div>
                     </div>
@@ -1143,7 +1492,13 @@ export function GuestCaseDetailPanel({
                       className="inline-flex size-8 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 hover:bg-zinc-100 transition-colors shrink-0 ml-2"
                       title="Download file"
                     >
-                      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg
+                        className="size-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                         <polyline points="7 10 12 15 17 10" />
                         <line x1="12" y1="15" x2="12" y2="3" />
@@ -1162,8 +1517,15 @@ export function GuestCaseDetailPanel({
 
         {/* TAB 4: CASE ACTIVITY */}
         {detailTab === "activity" && (
-          <div id="tabpanel-activity" role="tabpanel" aria-labelledby="tab-activity" className="p-5 sm:p-7 space-y-6">
-            <h3 className="text-base font-medium text-zinc-950">Activity timeline</h3>
+          <div
+            id="tabpanel-activity"
+            role="tabpanel"
+            aria-labelledby="tab-activity"
+            className="p-5 sm:p-7 space-y-6"
+          >
+            <h3 className="text-base font-medium text-zinc-950">
+              Activity timeline
+            </h3>
             {events.length > 0 ? (
               <div className="relative pl-6 space-y-6 border-l-2 border-zinc-200 ml-2">
                 {visibleEvents.map((evt) => (
@@ -1187,7 +1549,8 @@ export function GuestCaseDetailPanel({
                     onClick={() => setVisibleEventsCount((prev) => prev + 10)}
                     className="text-xs font-medium text-zinc-600 hover:text-zinc-900 underline"
                   >
-                    Show more events ({events.length - visibleEventsCount} remaining)
+                    Show more events ({events.length - visibleEventsCount}{" "}
+                    remaining)
                   </button>
                 )}
               </div>
@@ -1201,35 +1564,60 @@ export function GuestCaseDetailPanel({
 
         {/* TAB 5: MEDIATION (DIRECT RESOLUTION ONLY) */}
         {detailTab === "mediation" && isDirectResolution && (
-          <div id="tabpanel-mediation" role="tabpanel" aria-labelledby="tab-mediation" className="p-5 sm:p-7 space-y-6">
+          <div
+            id="tabpanel-mediation"
+            role="tabpanel"
+            aria-labelledby="tab-mediation"
+            className="p-5 sm:p-7 space-y-6"
+          >
             {isMediationActive ? (
               <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-6 space-y-3">
                 <div className="flex items-center gap-2.5">
                   <span className="flex size-8 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-                    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg
+                      className="size-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                     </svg>
                   </span>
-                  <h4 className="text-base font-medium text-amber-950">Mediation is active</h4>
+                  <h4 className="text-base font-medium text-amber-950">
+                    Mediation is active
+                  </h4>
                 </div>
                 <p className="text-xs sm:text-sm font-normal text-amber-900/90 leading-relaxed">
-                  StayElite Support has been notified and is currently reviewing this dispute. A neutral support specialist will review messages, offers, and evidence, and communicate with both parties here.
+                  StayElite Support has been notified and is currently reviewing
+                  this dispute. A neutral support specialist will review
+                  messages, offers, and evidence, and communicate with both
+                  parties here.
                 </p>
                 <p className="text-xs text-amber-800 font-normal">
-                  No duplicate mediation request is necessary. You will be notified as soon as an administrator responds.
+                  No duplicate mediation request is necessary. You will be
+                  notified as soon as an administrator responds.
                 </p>
               </div>
             ) : (
               <div className="space-y-5">
                 <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-5 space-y-2">
-                  <h4 className="text-sm font-medium text-zinc-950">Need neutral assistance?</h4>
+                  <h4 className="text-sm font-medium text-zinc-950">
+                    Need neutral assistance?
+                  </h4>
                   <p className="text-xs sm:text-sm font-normal text-zinc-600 leading-relaxed">
-                    If you and the host are unable to reach an agreement directly, you can request an authorized StayElite administrator to review the dispute. Both parties will be assisted through official support mediation.
+                    If you and the host are unable to reach an agreement
+                    directly, you can request an authorized StayElite
+                    administrator to review the dispute. Both parties will be
+                    assisted through official support mediation.
                   </p>
                 </div>
 
                 {isCaseMutable ? (
-                  <form onSubmit={handleRequestMediation} className="space-y-4 max-w-xl">
+                  <form
+                    onSubmit={handleRequestMediation}
+                    className="space-y-4 max-w-xl"
+                  >
                     <label className="block text-xs font-medium text-zinc-800">
                       Reason for requesting administrator mediation
                       <textarea
@@ -1247,11 +1635,16 @@ export function GuestCaseDetailPanel({
                       disabled={requestingMediation || !mediationReason.trim()}
                       className="rounded-full bg-zinc-900 px-5 py-2.5 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors disabled:opacity-50"
                     >
-                      {requestingMediation ? "Submitting request..." : "Request mediation"}
+                      {requestingMediation
+                        ? "Submitting request..."
+                        : "Request mediation"}
                     </button>
                   </form>
                 ) : (
-                  <p className="text-xs text-zinc-500">This case is resolved or closed; mediation is no longer available.</p>
+                  <p className="text-xs text-zinc-500">
+                    This case is resolved or closed; mediation is no longer
+                    available.
+                  </p>
                 )}
               </div>
             )}
@@ -1275,11 +1668,14 @@ export function SupportResolutionCenter() {
   const statusSelectId = useId();
   const searchInputId = useId();
 
-  const currentView = searchParams.get("view") === "direct" ? "direct" : "support";
+  const currentView =
+    searchParams.get("view") === "direct" ? "direct" : "support";
   const caseIdFromUrl = searchParams.get("caseId");
   const tabFromUrl = searchParams.get("tab");
 
-  const [activeTab, setActiveTab] = useState<GuestCaseTab>(() => guestTab(tabFromUrl));
+  const [activeTab, setActiveTab] = useState<GuestCaseTab>(() =>
+    guestTab(tabFromUrl),
+  );
   const [items, setItems] = useState<Case[]>([]);
   const [active, setActive] = useState<Case | null>(null);
   const [taxonomy, setTaxonomy] = useState<Taxonomy[]>([]);
@@ -1339,10 +1735,18 @@ export function SupportResolutionCenter() {
       const resOnly = currentView === "direct" ? "&resolutionOnly=true" : "";
       const t = `&_t=${Date.now()}`;
       const [allRes, actionRes, reviewRes, resolvedRes] = await Promise.all([
-        api<{ pagination: { total: number } }>(`/api/v1/support/cases?page=1&limit=1${resOnly}${t}`),
-        api<{ pagination: { total: number } }>(`/api/v1/support/cases?page=1&limit=1&status=WAITING_FOR_GUEST${resOnly}${t}`),
-        api<{ pagination: { total: number } }>(`/api/v1/support/cases?page=1&limit=1&status=IN_REVIEW${resOnly}${t}`),
-        api<{ pagination: { total: number } }>(`/api/v1/support/cases?page=1&limit=1&status=RESOLVED${resOnly}${t}`),
+        api<{ pagination: { total: number } }>(
+          `/api/v1/support/cases?page=1&limit=1${resOnly}${t}`,
+        ),
+        api<{ pagination: { total: number } }>(
+          `/api/v1/support/cases?page=1&limit=1&status=WAITING_FOR_GUEST${resOnly}${t}`,
+        ),
+        api<{ pagination: { total: number } }>(
+          `/api/v1/support/cases?page=1&limit=1&status=IN_REVIEW${resOnly}${t}`,
+        ),
+        api<{ pagination: { total: number } }>(
+          `/api/v1/support/cases?page=1&limit=1&status=RESOLVED${resOnly}${t}`,
+        ),
       ]);
 
       setMetrics({
@@ -1377,19 +1781,26 @@ export function SupportResolutionCenter() {
           params.set("_t", String(Date.now()));
         }
 
-        const data = await api<{ cases: Case[]; pagination: { page: number; total: number; totalPages: number } }>(
-          `/api/v1/support/cases?${params.toString()}`
-        );
+        const data = await api<{
+          cases: Case[];
+          pagination: { page: number; total: number; totalPages: number };
+        }>(`/api/v1/support/cases?${params.toString()}`);
 
         if (reqSeq !== casesReqSeqRef.current) {
           return;
         }
 
         setItems(data.cases || []);
-        setPages(data.pagination || { page: targetPage, total: 0, totalPages: 1 });
+        setPages(
+          data.pagination || { page: targetPage, total: 0, totalPages: 1 },
+        );
       } catch (err) {
         if (reqSeq !== casesReqSeqRef.current) return;
-        setMessage(err instanceof Error ? err.message : "Unable to load support requests.");
+        setMessage(
+          err instanceof Error
+            ? err.message
+            : "Unable to load support requests.",
+        );
         setItems([]);
       } finally {
         if (reqSeq === casesReqSeqRef.current) {
@@ -1397,7 +1808,7 @@ export function SupportResolutionCenter() {
         }
       }
     },
-    [currentView, filters]
+    [currentView, filters],
   );
 
   // Open a specific support case details
@@ -1413,17 +1824,32 @@ export function SupportResolutionCenter() {
     setMessage(null);
 
     try {
-      const caseDetails = await api<Case>(`/api/v1/support/cases/${encodeURIComponent(id)}?_t=${Date.now()}`);
-      if (activeRequestIdRef.current === id && reqSeq === caseDetailReqSeqRef.current) {
+      const caseDetails = await api<Case>(
+        `/api/v1/support/cases/${encodeURIComponent(id)}?_t=${Date.now()}`,
+      );
+      if (
+        activeRequestIdRef.current === id &&
+        reqSeq === caseDetailReqSeqRef.current
+      ) {
         setActive(caseDetails);
       }
     } catch (error) {
-      if (activeRequestIdRef.current === id && reqSeq === caseDetailReqSeqRef.current) {
-        setMessage(error instanceof Error ? error.message : "Unable to open this support request or you do not have permission.");
+      if (
+        activeRequestIdRef.current === id &&
+        reqSeq === caseDetailReqSeqRef.current
+      ) {
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to open this support request or you do not have permission.",
+        );
         setActive(null);
       }
     } finally {
-      if (activeRequestIdRef.current === id && reqSeq === caseDetailReqSeqRef.current) {
+      if (
+        activeRequestIdRef.current === id &&
+        reqSeq === caseDetailReqSeqRef.current
+      ) {
         setDetailLoading(false);
       }
     }
@@ -1484,7 +1910,10 @@ export function SupportResolutionCenter() {
     const query = new URLSearchParams(window.location.search);
     query.delete("caseId");
     const searchStr = query.toString();
-    router.push(searchStr ? `/profile/tab/support?${searchStr}` : "/profile/tab/support", { scroll: false });
+    router.push(
+      searchStr ? `/profile/tab/support?${searchStr}` : "/profile/tab/support",
+      { scroll: false },
+    );
     setActive(null);
     setMessage(null);
     void loadCases(page, true);
@@ -1496,7 +1925,9 @@ export function SupportResolutionCenter() {
     if (updatedFields && active) {
       setActive((prev) => (prev ? { ...prev, ...updatedFields } : null));
       setItems((prev) =>
-        prev.map((item) => (item.id === active.id ? { ...item, ...updatedFields } : item))
+        prev.map((item) =>
+          item.id === active.id ? { ...item, ...updatedFields } : item,
+        ),
       );
     }
     void loadMetrics();
@@ -1509,7 +1940,12 @@ export function SupportResolutionCenter() {
     if (view === "direct") {
       query.set("view", "direct");
     }
-    router.push(query.toString() ? `/profile/tab/support?${query.toString()}` : "/profile/tab/support", { scroll: false });
+    router.push(
+      query.toString()
+        ? `/profile/tab/support?${query.toString()}`
+        : "/profile/tab/support",
+      { scroll: false },
+    );
     activeRequestIdRef.current = null;
     setActive(null);
     setMessage(null);
@@ -1541,7 +1977,8 @@ export function SupportResolutionCenter() {
     setSubmitting(true);
     setMessage(null);
 
-    createKey.current ??= globalThis.crypto?.randomUUID?.() || `req-${Date.now()}-${Math.random()}`;
+    createKey.current ??=
+      globalThis.crypto?.randomUUID?.() || `req-${Date.now()}-${Math.random()}`;
 
     try {
       const createdCase = await api<Case>("/api/v1/support/cases", {
@@ -1560,7 +1997,13 @@ export function SupportResolutionCenter() {
 
       createKey.current = null;
       setShowCreateModal(false);
-      setForm({ category: "", issueType: "", bookingId: "", subject: "", description: "" });
+      setForm({
+        category: "",
+        issueType: "",
+        bookingId: "",
+        subject: "",
+        description: "",
+      });
 
       // Reset filters so the new case is visible immediately
       setActiveTab("all");
@@ -1568,7 +2011,10 @@ export function SupportResolutionCenter() {
       setPage(1);
 
       // Optimistically prepend to listing
-      setItems((prev) => [createdCase, ...prev.filter((c) => c.id !== createdCase.id)]);
+      setItems((prev) => [
+        createdCase,
+        ...prev.filter((c) => c.id !== createdCase.id),
+      ]);
       setPages((p) => ({ ...p, page: 1, total: p.total + 1 }));
 
       // Refresh metrics immediately
@@ -1583,7 +2029,11 @@ export function SupportResolutionCenter() {
       // Open new case
       handleSelectCase(createdCase.id, createdCase);
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Unable to create support request.");
+      setMessage(
+        err instanceof Error
+          ? err.message
+          : "Unable to create support request.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -1592,33 +2042,48 @@ export function SupportResolutionCenter() {
   // Handle Form Submission for Direct Resolution Request
   async function handleCreateDirectResolution(e: FormEvent) {
     e.preventDefault();
-    if (!directForm.bookingId || !directForm.subject.trim() || !directForm.description.trim()) {
-      setMessage("Please choose a booking and provide a subject and explanation.");
+    if (
+      !directForm.bookingId ||
+      !directForm.subject.trim() ||
+      !directForm.description.trim()
+    ) {
+      setMessage(
+        "Please choose a booking and provide a subject and explanation.",
+      );
       return;
     }
 
     setSubmittingDirect(true);
     setMessage(null);
 
-    const directKey = globalThis.crypto?.randomUUID?.() || `direct-res-${Date.now()}`;
+    const directKey =
+      globalThis.crypto?.randomUUID?.() || `direct-res-${Date.now()}`;
 
     try {
-      const isMonetary = directForm.offerType === "MONETARY_COMPENSATION" || directForm.offerType === "PROPERTY_DAMAGE";
-      const amountMinor = isMonetary && directForm.amount ? Math.round(Number(directForm.amount) * 100) : undefined;
+      const isMonetary =
+        directForm.offerType === "MONETARY_COMPENSATION" ||
+        directForm.offerType === "PROPERTY_DAMAGE";
+      const amountMinor =
+        isMonetary && directForm.amount
+          ? Math.round(Number(directForm.amount) * 100)
+          : undefined;
 
-      const result = await api<{ supportCaseId: string }>("/api/v1/support/resolutions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bookingId: directForm.bookingId,
-          subject: directForm.subject.trim(),
-          offerType: directForm.offerType,
-          amount: amountMinor,
-          description: directForm.description.trim(),
-          expiresAt: directForm.expiresAt || undefined,
-          idempotencyKey: directKey,
-        }),
-      });
+      const result = await api<{ supportCaseId: string }>(
+        "/api/v1/support/resolutions",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bookingId: directForm.bookingId,
+            subject: directForm.subject.trim(),
+            offerType: directForm.offerType,
+            amount: amountMinor,
+            description: directForm.description.trim(),
+            expiresAt: directForm.expiresAt || undefined,
+            idempotencyKey: directKey,
+          }),
+        },
+      );
 
       setShowDirectCreateModal(false);
       setDirectForm({
@@ -1635,7 +2100,9 @@ export function SupportResolutionCenter() {
         const query = new URLSearchParams();
         query.set("view", "direct");
         query.set("caseId", result.supportCaseId);
-        router.push(`/profile/tab/support?${query.toString()}`, { scroll: false });
+        router.push(`/profile/tab/support?${query.toString()}`, {
+          scroll: false,
+        });
       }
 
       // Reset filters so newly created direct resolution is visible
@@ -1644,8 +2111,13 @@ export function SupportResolutionCenter() {
       setPage(1);
 
       // Fetch the newly created case immediately to get full data and prepend to listing
-      const createdCase = await api<Case>(`/api/v1/support/cases/${encodeURIComponent(result.supportCaseId)}?_t=${Date.now()}`);
-      setItems((prev) => [createdCase, ...prev.filter((c) => c.id !== createdCase.id)]);
+      const createdCase = await api<Case>(
+        `/api/v1/support/cases/${encodeURIComponent(result.supportCaseId)}?_t=${Date.now()}`,
+      );
+      setItems((prev) => [
+        createdCase,
+        ...prev.filter((c) => c.id !== createdCase.id),
+      ]);
       setPages((p) => ({ ...p, page: 1, total: p.total + 1 }));
 
       // Refresh metrics from DB and server cache
@@ -1658,7 +2130,11 @@ export function SupportResolutionCenter() {
       // Select case
       handleSelectCase(result.supportCaseId, createdCase);
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Unable to create direct resolution request.");
+      setMessage(
+        err instanceof Error
+          ? err.message
+          : "Unable to create direct resolution request.",
+      );
     } finally {
       setSubmittingDirect(false);
     }
@@ -1669,7 +2145,11 @@ export function SupportResolutionCenter() {
   return (
     <section aria-label="Guest Help & Support Center" className="w-full">
       {detailLoading && !active ? (
-        <div aria-label="Loading selected support request" role="status" className="w-full space-y-6 animate-pulse">
+        <div
+          aria-label="Loading selected support request"
+          role="status"
+          className="w-full space-y-6 animate-pulse"
+        >
           <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
             <div className="h-9 w-40 rounded-full bg-zinc-200" />
             <div className="h-7 w-24 rounded-full bg-zinc-200" />
@@ -1708,7 +2188,9 @@ export function SupportResolutionCenter() {
           <header className="flex flex-col gap-4 border-b border-zinc-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">Help &amp; Support</h1>
+                <h1 className="text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">
+                  Help &amp; Support
+                </h1>
                 {currentView === "direct" && (
                   <span className="rounded-md border border-violet-200 bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-800">
                     Direct Resolutions
@@ -1740,7 +2222,13 @@ export function SupportResolutionCenter() {
                     }}
                     className="inline-flex min-h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-zinc-900 px-4 sm:px-5 text-xs sm:text-sm font-medium text-white shadow-2xs hover:bg-black transition-colors shrink-0"
                   >
-                    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <svg
+                      className="size-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
                       <line x1="12" y1="5" x2="12" y2="19" />
                       <line x1="5" y1="12" x2="19" y2="12" />
                     </svg>
@@ -1764,7 +2252,13 @@ export function SupportResolutionCenter() {
                     }}
                     className="inline-flex min-h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-zinc-900 px-4 sm:px-5 text-xs sm:text-sm font-medium text-white shadow-2xs hover:bg-black transition-colors shrink-0"
                   >
-                    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <svg
+                      className="size-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
                       <line x1="12" y1="5" x2="12" y2="19" />
                       <line x1="5" y1="12" x2="19" y2="12" />
                     </svg>
@@ -1776,7 +2270,10 @@ export function SupportResolutionCenter() {
           </header>
 
           {/* Primary View Switcher Tabs: Support Requests | Direct Resolutions */}
-          <nav aria-label="Support workspace views" className="flex items-center gap-2">
+          <nav
+            aria-label="Support workspace views"
+            className="flex items-center gap-2"
+          >
             <button
               type="button"
               onClick={() => switchPrimaryView("support")}
@@ -1802,7 +2299,10 @@ export function SupportResolutionCenter() {
           </nav>
 
           {message && (
-            <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs sm:text-sm font-normal text-red-800">
+            <div
+              role="alert"
+              className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs sm:text-sm font-normal text-red-800"
+            >
               {message}
             </div>
           )}
@@ -1812,20 +2312,38 @@ export function SupportResolutionCenter() {
             <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs">
               <div className="flex items-center gap-2 text-xs font-normal text-zinc-500">
                 <span className="flex size-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className="size-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
                   </svg>
                 </span>
-                <span>{currentView === "direct" ? "Total resolutions" : "Total requests"}</span>
+                <span>
+                  {currentView === "direct"
+                    ? "Total resolutions"
+                    : "Total requests"}
+                </span>
               </div>
-              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">{metrics.all}</p>
+              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">
+                {metrics.all}
+              </p>
             </div>
 
             <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs">
               <div className="flex items-center gap-2 text-xs font-normal text-zinc-500">
                 <span className="flex size-7 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
-                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className="size-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <circle cx="12" cy="12" r="10" />
                     <line x1="12" y1="8" x2="12" y2="12" />
                     <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -1833,33 +2351,53 @@ export function SupportResolutionCenter() {
                 </span>
                 <span>Action needed</span>
               </div>
-              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">{metrics.actionNeeded}</p>
+              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">
+                {metrics.actionNeeded}
+              </p>
             </div>
 
             <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs">
               <div className="flex items-center gap-2 text-xs font-normal text-zinc-500">
                 <span className="flex size-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
-                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className="size-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <circle cx="12" cy="12" r="10" />
                     <polyline points="12 6 12 12 14 10" />
                   </svg>
                 </span>
-                <span>{currentView === "direct" ? "In negotiation" : "Under review"}</span>
+                <span>
+                  {currentView === "direct" ? "In negotiation" : "Under review"}
+                </span>
               </div>
-              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">{metrics.underReview}</p>
+              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">
+                {metrics.underReview}
+              </p>
             </div>
 
             <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs">
               <div className="flex items-center gap-2 text-xs font-normal text-zinc-500">
                 <span className="flex size-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className="size-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
                 </span>
                 <span>Resolved</span>
               </div>
-              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">{metrics.resolved}</p>
+              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">
+                {metrics.resolved}
+              </p>
             </div>
           </div>
 
@@ -1874,7 +2412,8 @@ export function SupportResolutionCenter() {
                   : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
               }`}
             >
-              {currentView === "direct" ? "All resolutions" : "All requests"} ({metrics.all})
+              {currentView === "direct" ? "All resolutions" : "All requests"} (
+              {metrics.all})
             </button>
             <button
               type="button"
@@ -1896,7 +2435,8 @@ export function SupportResolutionCenter() {
                   : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
               }`}
             >
-              {currentView === "direct" ? "In negotiation" : "Under review"} ({metrics.underReview})
+              {currentView === "direct" ? "In negotiation" : "Under review"} (
+              {metrics.underReview})
             </button>
             <button
               type="button"
@@ -1914,11 +2454,19 @@ export function SupportResolutionCenter() {
           {/* Search and Filters Bar */}
           <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200/80 bg-white p-3.5 sm:flex-row sm:items-center sm:gap-4">
             <div className="relative flex-1">
-              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-zinc-400"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
-              <label htmlFor={searchInputId} className="sr-only">Search</label>
+              <label htmlFor={searchInputId} className="sr-only">
+                Search
+              </label>
               <input
                 id={searchInputId}
                 type="search"
@@ -1927,14 +2475,20 @@ export function SupportResolutionCenter() {
                   setFilters({ ...filters, search: e.target.value });
                   setPage(1);
                 }}
-                placeholder={currentView === "direct" ? "Search case #, subject, or property..." : "Search case #, subject, or booking..."}
+                placeholder={
+                  currentView === "direct"
+                    ? "Search case #, subject, or property..."
+                    : "Search case #, subject, or booking..."
+                }
                 className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 py-2 pl-9 pr-4 text-xs sm:text-sm font-normal text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-950 focus:bg-white focus:outline-none"
               />
             </div>
 
             {currentView !== "direct" && (
               <div className="w-full sm:w-48">
-                <label htmlFor={categorySelectId} className="sr-only">Filter by category</label>
+                <label htmlFor={categorySelectId} className="sr-only">
+                  Filter by category
+                </label>
                 <select
                   id={categorySelectId}
                   value={filters.category}
@@ -1946,14 +2500,18 @@ export function SupportResolutionCenter() {
                 >
                   <option value="">All categories</option>
                   {taxonomy.map((c) => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
                   ))}
                 </select>
               </div>
             )}
 
             <div className="w-full sm:w-44">
-              <label htmlFor={statusSelectId} className="sr-only">Filter by status</label>
+              <label htmlFor={statusSelectId} className="sr-only">
+                Filter by status
+              </label>
               <select
                 id={statusSelectId}
                 value={filters.status}
@@ -1977,7 +2535,11 @@ export function SupportResolutionCenter() {
 
           {/* Full-Width Case Listing */}
           {loading ? (
-            <div className="space-y-3" role="status" aria-label="Loading support cases">
+            <div
+              className="space-y-3"
+              role="status"
+              aria-label="Loading support cases"
+            >
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
@@ -2004,7 +2566,10 @@ export function SupportResolutionCenter() {
             <div className="space-y-3">
               {items.map((c) => {
                 const listingPhoto = c.listing?.photos?.[0];
-                const isDirectItem = currentView === "direct" || c.category === "DIRECT_RESOLUTION" || c.category === "BOOKING_DISPUTE";
+                const isDirectItem =
+                  currentView === "direct" ||
+                  c.category === "DIRECT_RESOLUTION" ||
+                  c.category === "BOOKING_DISPUTE";
 
                 return (
                   <button
@@ -2016,10 +2581,22 @@ export function SupportResolutionCenter() {
                     <div className="flex items-start gap-4 min-w-0">
                       <div className="relative size-14 sm:size-16 rounded-xl bg-zinc-100 border border-zinc-200/60 overflow-hidden shrink-0">
                         {listingPhoto ? (
-                          <Image src={listingPhoto} alt="" fill sizes="64px" className="object-cover" />
+                          <Image
+                            src={listingPhoto}
+                            alt=""
+                            fill
+                            sizes="64px"
+                            className="object-cover"
+                          />
                         ) : (
                           <div className="flex size-full items-center justify-center text-zinc-400">
-                            <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <svg
+                              className="size-6"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                            >
                               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                               <polyline points="9 22 9 12 15 12 15 22" />
                             </svg>
@@ -2029,7 +2606,9 @@ export function SupportResolutionCenter() {
 
                       <div className="space-y-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono text-xs font-medium text-zinc-500">#{c.caseNumber}</span>
+                          <span className="font-mono text-xs font-medium text-zinc-500">
+                            #{c.caseNumber}
+                          </span>
                           {isDirectItem && (
                             <span className="rounded-md border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium text-violet-800">
                               Direct resolution
@@ -2037,7 +2616,9 @@ export function SupportResolutionCenter() {
                           )}
                           {c.booking && (
                             <span className="text-xs text-blue-600 font-normal">
-                              Booking · {c.listing?.title || "Reservation"} #{c.booking.submissionId || c.booking.id.slice(0, 8)}
+                              Booking · {c.listing?.title || "Reservation"} #
+                              {c.booking.submissionId ||
+                                c.booking.id.slice(0, 8)}
                             </span>
                           )}
                         </div>
@@ -2045,7 +2626,8 @@ export function SupportResolutionCenter() {
                           {c.subject}
                         </h3>
                         <p className="text-xs font-normal text-zinc-500 truncate">
-                          Created {formatCaseDate(c.createdAt)} · Last activity {formatCaseDate(c.updatedAt)}
+                          Created {formatCaseDate(c.createdAt)} · Last activity{" "}
+                          {formatCaseDate(c.updatedAt)}
                         </p>
                       </div>
                     </div>
@@ -2056,10 +2638,18 @@ export function SupportResolutionCenter() {
                           {c.unreadCount}
                         </span>
                       )}
-                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusBadge(c.status)}`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusBadge(c.status)}`}
+                      >
                         {labels[c.status] || c.status}
                       </span>
-                      <svg className="size-4 text-zinc-400 group-hover:text-zinc-700 transition-colors hidden sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg
+                        className="size-4 text-zinc-400 group-hover:text-zinc-700 transition-colors hidden sm:block"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
                         <polyline points="9 18 15 12 9 6" />
                       </svg>
                     </div>
@@ -2070,7 +2660,9 @@ export function SupportResolutionCenter() {
           ) : (
             <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/50 p-12 text-center space-y-3">
               <p className="text-base font-medium text-zinc-800">
-                {currentView === "direct" ? "No direct resolution requests match these filters" : "No support requests match these filters"}
+                {currentView === "direct"
+                  ? "No direct resolution requests match these filters"
+                  : "No support requests match these filters"}
               </p>
               <p className="text-xs sm:text-sm text-zinc-500 max-w-md mx-auto">
                 {currentView === "direct"
@@ -2101,7 +2693,13 @@ export function SupportResolutionCenter() {
           {pages.totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-zinc-200 pt-4 text-xs sm:text-sm">
               <p className="text-zinc-500 font-normal">
-                Showing page <span className="font-medium text-zinc-900">{pages.page}</span> of <span className="font-medium text-zinc-900">{pages.totalPages}</span> ({pages.total} total)
+                Showing page{" "}
+                <span className="font-medium text-zinc-900">{pages.page}</span>{" "}
+                of{" "}
+                <span className="font-medium text-zinc-900">
+                  {pages.totalPages}
+                </span>{" "}
+                ({pages.total} total)
               </p>
               <div className="flex items-center gap-2">
                 <button
@@ -2115,7 +2713,9 @@ export function SupportResolutionCenter() {
                 <button
                   type="button"
                   disabled={pages.page >= pages.totalPages}
-                  onClick={() => setPage((p) => Math.min(pages.totalPages, p + 1))}
+                  onClick={() =>
+                    setPage((p) => Math.min(pages.totalPages, p + 1))
+                  }
                   className="rounded-full border border-zinc-200 bg-white px-4 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-40"
                 >
                   Next
@@ -2141,9 +2741,15 @@ export function SupportResolutionCenter() {
           >
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
-                <h2 id="create-support-modal-title" className="text-lg font-medium text-zinc-950">Create support request</h2>
+                <h2
+                  id="create-support-modal-title"
+                  className="text-lg font-medium text-zinc-950"
+                >
+                  Create support request
+                </h2>
                 <p className="text-xs font-normal text-zinc-500">
-                  Connect with StayElite Support regarding a booking, payment, account, or general question.
+                  Connect with StayElite Support regarding a booking, payment,
+                  account, or general question.
                 </p>
               </div>
               <button
@@ -2152,7 +2758,13 @@ export function SupportResolutionCenter() {
                 className="size-8 rounded-full flex items-center justify-center text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors"
                 aria-label="Close modal"
               >
-                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -2166,12 +2778,20 @@ export function SupportResolutionCenter() {
                   <select
                     required
                     value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value, issueType: "" })}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        category: e.target.value,
+                        issueType: "",
+                      })
+                    }
                     className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
                   >
                     <option value="">Choose a category</option>
                     {taxonomy.map((entry) => (
-                      <option key={entry.value} value={entry.value}>{entry.label}</option>
+                      <option key={entry.value} value={entry.value}>
+                        {entry.label}
+                      </option>
                     ))}
                   </select>
                 </label>
@@ -2182,28 +2802,37 @@ export function SupportResolutionCenter() {
                     required
                     disabled={!selectedCategoryObj}
                     value={form.issueType}
-                    onChange={(e) => setForm({ ...form, issueType: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, issueType: e.target.value })
+                    }
                     className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none disabled:bg-zinc-100 disabled:text-zinc-400"
                   >
                     <option value="">Choose an issue type</option>
                     {selectedCategoryObj?.issueTypes.map((entry) => (
-                      <option key={entry.value} value={entry.value}>{entry.label}</option>
+                      <option key={entry.value} value={entry.value}>
+                        {entry.label}
+                      </option>
                     ))}
                   </select>
                 </label>
               </div>
 
               <label className="block text-xs font-medium text-zinc-800">
-                Related booking <span className="font-normal text-zinc-500">(optional)</span>
+                Related booking{" "}
+                <span className="font-normal text-zinc-500">(optional)</span>
                 <select
                   value={form.bookingId}
-                  onChange={(e) => setForm({ ...form, bookingId: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, bookingId: e.target.value })
+                  }
                   className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
                 >
                   <option value="">No related booking</option>
                   {bookings.map((b) => (
                     <option key={b.id} value={b.id}>
-                      {b.listing?.title || "Reservation"} · {new Date(b.startDate).toLocaleDateString()}–{new Date(b.endDate).toLocaleDateString()}
+                      {b.listing?.title || "Reservation"} ·{" "}
+                      {new Date(b.startDate).toLocaleDateString()}–
+                      {new Date(b.endDate).toLocaleDateString()}
                     </option>
                   ))}
                 </select>
@@ -2215,7 +2844,9 @@ export function SupportResolutionCenter() {
                   required
                   maxLength={160}
                   value={form.subject}
-                  onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, subject: e.target.value })
+                  }
                   placeholder="Brief summary of the issue..."
                   className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
                 />
@@ -2228,7 +2859,9 @@ export function SupportResolutionCenter() {
                   maxLength={10000}
                   rows={4}
                   value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
                   placeholder="Share relevant details. Do not include passwords or payment-card details."
                   className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
                 />
@@ -2270,9 +2903,15 @@ export function SupportResolutionCenter() {
           >
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
-                <h2 id="create-direct-modal-title" className="text-lg font-medium text-zinc-950">New resolution request</h2>
+                <h2
+                  id="create-direct-modal-title"
+                  className="text-lg font-medium text-zinc-950"
+                >
+                  New resolution request
+                </h2>
                 <p className="text-xs font-normal text-zinc-500">
-                  Negotiate directly with the host to settle booking, property, or amenity issues.
+                  Negotiate directly with the host to settle booking, property,
+                  or amenity issues.
                 </p>
               </div>
               <button
@@ -2281,7 +2920,13 @@ export function SupportResolutionCenter() {
                 className="size-8 rounded-full flex items-center justify-center text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors"
                 aria-label="Close modal"
               >
-                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -2294,13 +2939,17 @@ export function SupportResolutionCenter() {
                 <select
                   required
                   value={directForm.bookingId}
-                  onChange={(e) => setDirectForm({ ...directForm, bookingId: e.target.value })}
+                  onChange={(e) =>
+                    setDirectForm({ ...directForm, bookingId: e.target.value })
+                  }
                   className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
                 >
                   <option value="">Choose your reservation</option>
                   {bookings.map((b) => (
                     <option key={b.id} value={b.id}>
-                      {b.listing?.title || "Reservation"} · {new Date(b.startDate).toLocaleDateString()}–{new Date(b.endDate).toLocaleDateString()}
+                      {b.listing?.title || "Reservation"} ·{" "}
+                      {new Date(b.startDate).toLocaleDateString()}–
+                      {new Date(b.endDate).toLocaleDateString()}
                     </option>
                   ))}
                 </select>
@@ -2311,18 +2960,32 @@ export function SupportResolutionCenter() {
                   Initial offer type
                   <select
                     value={directForm.offerType}
-                    onChange={(e) => setDirectForm({ ...directForm, offerType: e.target.value as OfferType })}
+                    onChange={(e) =>
+                      setDirectForm({
+                        ...directForm,
+                        offerType: e.target.value as OfferType,
+                      })
+                    }
                     className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
                   >
-                    <option value="MONETARY_COMPENSATION">Monetary compensation</option>
-                    <option value="PROPERTY_DAMAGE">Property damage compensation</option>
-                    <option value="NON_FINANCIAL">Non-financial agreement</option>
-                    <option value="AMENITY_ISSUE">Amenity issue resolution</option>
+                    <option value="MONETARY_COMPENSATION">
+                      Monetary compensation
+                    </option>
+                    <option value="PROPERTY_DAMAGE">
+                      Property damage compensation
+                    </option>
+                    <option value="NON_FINANCIAL">
+                      Non-financial agreement
+                    </option>
+                    <option value="AMENITY_ISSUE">
+                      Amenity issue resolution
+                    </option>
                     <option value="OTHER">Other resolution</option>
                   </select>
                 </label>
 
-                {(directForm.offerType === "MONETARY_COMPENSATION" || directForm.offerType === "PROPERTY_DAMAGE") && (
+                {(directForm.offerType === "MONETARY_COMPENSATION" ||
+                  directForm.offerType === "PROPERTY_DAMAGE") && (
                   <label className="block text-xs font-medium text-zinc-800">
                     Amount (SAR)
                     <input
@@ -2331,7 +2994,9 @@ export function SupportResolutionCenter() {
                       step="any"
                       required
                       value={directForm.amount}
-                      onChange={(e) => setDirectForm({ ...directForm, amount: e.target.value })}
+                      onChange={(e) =>
+                        setDirectForm({ ...directForm, amount: e.target.value })
+                      }
                       placeholder="e.g. 300"
                       className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
                     />
@@ -2345,7 +3010,9 @@ export function SupportResolutionCenter() {
                   required
                   maxLength={160}
                   value={directForm.subject}
-                  onChange={(e) => setDirectForm({ ...directForm, subject: e.target.value })}
+                  onChange={(e) =>
+                    setDirectForm({ ...directForm, subject: e.target.value })
+                  }
                   placeholder="Summary of dispute (e.g. Broken AC compensation)..."
                   className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
                 />
@@ -2358,7 +3025,12 @@ export function SupportResolutionCenter() {
                   maxLength={4000}
                   rows={4}
                   value={directForm.description}
-                  onChange={(e) => setDirectForm({ ...directForm, description: e.target.value })}
+                  onChange={(e) =>
+                    setDirectForm({
+                      ...directForm,
+                      description: e.target.value,
+                    })
+                  }
                   placeholder="Explain what occurred and how you propose to settle this issue..."
                   className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
                 />
@@ -2377,7 +3049,9 @@ export function SupportResolutionCenter() {
                   disabled={submittingDirect}
                   className="rounded-full bg-zinc-900 px-5 py-2 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors disabled:opacity-50"
                 >
-                  {submittingDirect ? "Submitting..." : "Send resolution request"}
+                  {submittingDirect
+                    ? "Submitting..."
+                    : "Send resolution request"}
                 </button>
               </div>
             </form>

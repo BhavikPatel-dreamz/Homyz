@@ -4,19 +4,11 @@ import { ok } from "@/lib/api/response";
 import { AppError } from "@/lib/api/errors";
 import { requireApiAuth } from "@/lib/permissions/guards";
 import { personalInfoService } from "@/services/personal-info.service";
-import { savePrivateMedia } from "@/lib/storage/media";
+import { deletePrivateMedia, savePrivateMedia } from "@/lib/storage/media";
 import { validateDocumentUpload } from "@/lib/media/document-validation";
 
 export const dynamic = "force-dynamic";
 
-const ALLOWED_MIME_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "application/pdf",
-]);
-
-const MAX_DOC_SIZE = 15 * 1024 * 1024; // 15MB
 const IDENTITY_DOCUMENT_TYPES = ["passport", "license", "national_id"] as const;
 type IdentityDocumentType = (typeof IDENTITY_DOCUMENT_TYPES)[number];
 
@@ -37,7 +29,9 @@ export const POST = apiHandler(async (req) => {
 
   const docType = (rawDocType || "passport").toLowerCase();
   if (!isIdentityDocumentType(docType)) {
-    throw AppError.badRequest("Invalid document type. Allowed types: passport, license, national_id.");
+    throw AppError.badRequest(
+      "Invalid document type. Allowed types: passport, license, national_id.",
+    );
   }
 
   const uploadedExtension = path.extname(file.name).toLowerCase();
@@ -47,7 +41,8 @@ export const POST = apiHandler(async (req) => {
     "image/webp": ".webp",
     "application/pdf": ".pdf",
   };
-  const cleanExt = extensionByMimeType[file.type] || uploadedExtension || ".jpg";
+  const cleanExt =
+    extensionByMimeType[file.type] || uploadedExtension || ".jpg";
   const safeBaseName = `id_${actor.id}_${docType}_${Date.now()}${cleanExt}`;
 
   const arrayBuffer = await file.arrayBuffer();
@@ -70,11 +65,20 @@ export const POST = apiHandler(async (req) => {
     contentType: file.type || "application/octet-stream",
   });
 
-  const updated = await personalInfoService.uploadIdentityDocument(actor.id, {
-    documentType: docType,
-    fileName: file.name,
-    fileUrl: `/api/v1/users/personal-info/identity-document/file/${saved.storagePath}`,
-  });
+  let updated;
+  try {
+    updated = await personalInfoService.uploadIdentityDocument(actor.id, {
+      documentType: docType,
+      fileName: file.name,
+      fileUrl: `/api/v1/users/personal-info/identity-document/file/${saved.storagePath}`,
+    });
+  } catch (error) {
+    await deletePrivateMedia({
+      kind: "host-documents",
+      fileName: saved.storagePath,
+    }).catch(() => undefined);
+    throw error;
+  }
 
   return ok(updated);
 });

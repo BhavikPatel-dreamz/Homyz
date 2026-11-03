@@ -18,7 +18,11 @@ import type { Prisma } from "@/generated/prisma/client";
 import { AppError } from "@/lib/api/errors";
 import type { AuthUser } from "@/lib/auth/types";
 import { notificationService } from "./notification.service";
-import { savePrivateMedia, readPrivateMedia, deletePrivateMedia } from "@/lib/storage/media";
+import {
+  savePrivateMedia,
+  readPrivateMedia,
+  deletePrivateMedia,
+} from "@/lib/storage/media";
 import { HOST_MESSAGE_MAX_LENGTH } from "@/lib/booking/host-message";
 import { bookingDateKey, parseBookingDate } from "@/lib/booking/booking-date";
 import { moderationService } from "./moderation.service";
@@ -154,9 +158,11 @@ function toMessageDTO(m: any, currentUserId: string): MessageDTO {
   let content = m.content;
   if (metadata?.isModerated) {
     if (metadata.moderatedAction === "REMOVE") {
-      content = "[This message was removed by Trust & Safety for violating community guidelines]";
+      content =
+        "[This message was removed by Trust & Safety for violating community guidelines]";
     } else if (metadata.moderatedAction === "HIDE") {
-      content = "[This message has been hidden pending moderation investigation]";
+      content =
+        "[This message has been hidden pending moderation investigation]";
     }
   }
 
@@ -188,7 +194,10 @@ function toMessageDTO(m: any, currentUserId: string): MessageDTO {
           mimeType: a.mimeType,
           fileSize: a.fileSize,
           fileUrl: a.fileUrl || `/api/v1/messages/attachments/${a.id}`,
-          createdAt: a.createdAt instanceof Date ? a.createdAt.toISOString() : a.createdAt,
+          createdAt:
+            a.createdAt instanceof Date
+              ? a.createdAt.toISOString()
+              : a.createdAt,
         }))
       : [],
   };
@@ -238,8 +247,10 @@ export function classifyReservationContext(
   bookings: Array<ConversationBookingDTO | null | undefined>,
   today = bookingDateKey(new Date()),
 ): ReservationContextDTO {
-  const confirmed = bookings
-    .filter((booking): booking is ConversationBookingDTO => Boolean(booking && booking.status === BookingStatus.CONFIRMED));
+  const confirmed = bookings.filter(
+    (booking): booking is ConversationBookingDTO =>
+      Boolean(booking && booking.status === BookingStatus.CONFIRMED),
+  );
   const active = confirmed
     .filter((booking) => booking.endDate >= today)
     .sort((left, right) => {
@@ -264,17 +275,22 @@ function toConversationDTO(
   unreadCount = 0,
   reservationContext?: ReservationContextDTO,
 ): ConversationDTO {
-  const latestMessage = Array.isArray(c.messages) && c.messages.length > 0 ? c.messages[0] : null;
+  const latestMessage =
+    Array.isArray(c.messages) && c.messages.length > 0 ? c.messages[0] : null;
   const isAlreadyBooked = Boolean(
-    c.booking && c.booking.status === BookingStatus.CONFIRMED
+    c.booking && c.booking.status === BookingStatus.CONFIRMED,
   );
-  const activeOffer = !isAlreadyBooked && Array.isArray(c.specialOffers) && c.specialOffers.length > 0
-    ? c.specialOffers.find(
-        (so: any) =>
-          (so.status === SpecialOfferStatus.PENDING || so.status === SpecialOfferStatus.ACCEPTED) &&
-          (!so.expiresAt || new Date(so.expiresAt) > new Date())
-      )
-    : null;
+  const activeOffer =
+    !isAlreadyBooked &&
+    Array.isArray(c.specialOffers) &&
+    c.specialOffers.length > 0
+      ? c.specialOffers.find(
+          (so: any) =>
+            (so.status === SpecialOfferStatus.PENDING ||
+              so.status === SpecialOfferStatus.ACCEPTED) &&
+            (!so.expiresAt || new Date(so.expiresAt) > new Date()),
+        )
+      : null;
   const specialOffersList = Array.isArray(c.specialOffers)
     ? c.specialOffers.map(toSpecialOfferDTO)
     : [];
@@ -287,7 +303,9 @@ function toConversationDTO(
     bookingId: c.bookingId,
     type: c.type,
     status: c.status,
-    lastMessageAt: c.lastMessageAt ? c.lastMessageAt.toISOString() : c.createdAt.toISOString(),
+    lastMessageAt: c.lastMessageAt
+      ? c.lastMessageAt.toISOString()
+      : c.createdAt.toISOString(),
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
     unreadCount,
@@ -296,12 +314,14 @@ function toConversationDTO(
       name: c.guest.name,
       image: c.guest.image,
       email: c.guest.email ?? null,
-      createdAt: c.guest.createdAt ? c.guest.createdAt.toISOString() : new Date().toISOString(),
+      createdAt: c.guest.createdAt
+        ? c.guest.createdAt.toISOString()
+        : new Date().toISOString(),
       phone: c.guest.phone || null,
       emailVerified: Boolean(c.guest.emailVerified),
       identityVerified: Boolean(
         c.guest.personalInfo?.identityStatus === "VERIFIED" ||
-        c.guest.personalInfo?.identityVerified
+          c.guest.personalInfo?.identityVerified,
       ),
     },
     host: {
@@ -309,7 +329,9 @@ function toConversationDTO(
       name: c.host.name,
       image: c.host.image,
       email: c.host.email ?? null,
-      createdAt: c.host.createdAt ? c.host.createdAt.toISOString() : new Date().toISOString(),
+      createdAt: c.host.createdAt
+        ? c.host.createdAt.toISOString()
+        : new Date().toISOString(),
     },
     listing: {
       id: c.listing.id,
@@ -326,10 +348,14 @@ function toConversationDTO(
       cancellationPolicy: c.listing.cancellationPolicy || null,
     },
     booking: c.booking ? toConversationBookingDTO(c.booking) : null,
-    reservationContext: reservationContext ?? classifyReservationContext(
-      c.booking ? [toConversationBookingDTO(c.booking)] : [],
-    ),
-    lastMessage: latestMessage ? toMessageDTO(latestMessage, currentUserId) : null,
+    reservationContext:
+      reservationContext ??
+      classifyReservationContext(
+        c.booking ? [toConversationBookingDTO(c.booking)] : [],
+      ),
+    lastMessage: latestMessage
+      ? toMessageDTO(latestMessage, currentUserId)
+      : null,
     activeSpecialOffer: activeOffer ? toSpecialOfferDTO(activeOffer) : null,
     specialOffers: specialOffersList,
   };
@@ -346,15 +372,19 @@ async function listConversationsForUser(
     search?: string;
     skip?: number;
     take?: number;
-  } = {}
-): Promise<{ conversations: ConversationDTO[]; total: number; unreadTotal: number }> {
+  } = {},
+): Promise<{
+  conversations: ConversationDTO[];
+  total: number;
+  unreadTotal: number;
+}> {
   const roleFilter = params.role || "all";
   const userCondition: Prisma.ConversationWhereInput =
     roleFilter === "guest"
       ? { guestId: actor.id }
       : roleFilter === "host"
-      ? { hostId: actor.id }
-      : { OR: [{ guestId: actor.id }, { hostId: actor.id }] };
+        ? { hostId: actor.id }
+        : { OR: [{ guestId: actor.id }, { hostId: actor.id }] };
 
   let searchCondition: Prisma.ConversationWhereInput = {};
   if (params.search && params.search.trim()) {
@@ -398,8 +428,12 @@ async function listConversationsForUser(
         // A list row needs identity, title, reservation state, and a preview only.
         // The full participant/listing/offer payload remains available through the
         // single-conversation endpoint when its detail pane is opened.
-        guest: { select: { id: true, name: true, image: true, createdAt: true } },
-        host: { select: { id: true, name: true, image: true, createdAt: true } },
+        guest: {
+          select: { id: true, name: true, image: true, createdAt: true },
+        },
+        host: {
+          select: { id: true, name: true, image: true, createdAt: true },
+        },
         listing: {
           select: {
             id: true,
@@ -444,7 +478,9 @@ async function listConversationsForUser(
         },
         specialOffers: {
           where: {
-            status: { in: [SpecialOfferStatus.PENDING, SpecialOfferStatus.ACCEPTED] },
+            status: {
+              in: [SpecialOfferStatus.PENDING, SpecialOfferStatus.ACCEPTED],
+            },
             OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
           },
           orderBy: { createdAt: "desc" },
@@ -457,48 +493,60 @@ async function listConversationsForUser(
 
   // Compute unread counts per conversation in batch
   const conversationIds = conversations.map((c: any) => c.id);
-  const unreadCounts = conversationIds.length > 0
-    ? await prisma.message.groupBy({
-        by: ["conversationId"],
-        where: {
-          conversationId: { in: conversationIds },
-          readAt: null,
-          // Null senderIds are booking/system events, not participant messages.
-          senderId: { not: actor.id },
-        },
-        _count: { id: true },
-      })
-    : [];
+  const unreadCounts =
+    conversationIds.length > 0
+      ? await prisma.message.groupBy({
+          by: ["conversationId"],
+          where: {
+            conversationId: { in: conversationIds },
+            readAt: null,
+            // Null senderIds are booking/system events, not participant messages.
+            senderId: { not: actor.id },
+          },
+          _count: { id: true },
+        })
+      : [];
 
   const unreadMap = new Map<string, number>();
-  unreadCounts.forEach((u: any) => unreadMap.set(u.conversationId, u._count.id));
+  unreadCounts.forEach((u: any) =>
+    unreadMap.set(u.conversationId, u._count.id),
+  );
 
   // Inquiry conversations do not always have a bookingId. Resolve reservation
   // context in one scoped query using the exact guest/listing pairs shown to the
   // authenticated host, rather than looking at unrelated guest reservations.
   const unlinkedConversationPairs = conversations
     .filter((conversation: any) => !conversation.bookingId)
-    .map((conversation: any) => ({ userId: conversation.guestId, listingId: conversation.listingId }));
-  const uniqueUnlinkedConversationPairs = [...new Map(
-    unlinkedConversationPairs.map((pair) => [`${pair.userId}:${pair.listingId}`, pair]),
-  ).values()];
-  const contextBookings = uniqueUnlinkedConversationPairs.length > 0
-    ? await prisma.booking.findMany({
-        where: {
-          status: BookingStatus.CONFIRMED,
-          OR: uniqueUnlinkedConversationPairs,
-        },
-        select: {
-          id: true,
-          status: true,
-          startDate: true,
-          endDate: true,
-          guests: true,
-          userId: true,
-          listingId: true,
-        },
-      })
-    : [];
+    .map((conversation: any) => ({
+      userId: conversation.guestId,
+      listingId: conversation.listingId,
+    }));
+  const uniqueUnlinkedConversationPairs = [
+    ...new Map(
+      unlinkedConversationPairs.map((pair) => [
+        `${pair.userId}:${pair.listingId}`,
+        pair,
+      ]),
+    ).values(),
+  ];
+  const contextBookings =
+    uniqueUnlinkedConversationPairs.length > 0
+      ? await prisma.booking.findMany({
+          where: {
+            status: BookingStatus.CONFIRMED,
+            OR: uniqueUnlinkedConversationPairs,
+          },
+          select: {
+            id: true,
+            status: true,
+            startDate: true,
+            endDate: true,
+            guests: true,
+            userId: true,
+            listingId: true,
+          },
+        })
+      : [];
   const contextBookingsByPair = new Map<string, ConversationBookingDTO[]>();
   for (const booking of contextBookings) {
     const key = `${booking.userId}:${booking.listingId}`;
@@ -543,13 +591,32 @@ async function listConversationsForUser(
  */
 async function getConversationById(
   actor: AuthUser,
-  conversationId: string
+  conversationId: string,
 ): Promise<ConversationDTO> {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
     include: {
-      guest: { select: { id: true, name: true, image: true, email: true, emailVerified: true, personalInfo: true, createdAt: true, phone: true } },
-      host: { select: { id: true, name: true, image: true, email: true, createdAt: true } },
+      guest: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          email: true,
+          emailVerified: true,
+          personalInfo: true,
+          createdAt: true,
+          phone: true,
+        },
+      },
+      host: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          email: true,
+          createdAt: true,
+        },
+      },
       listing: {
         select: {
           id: true,
@@ -608,7 +675,9 @@ async function getConversationById(
     actor.role === Role.ADMIN;
 
   if (!isParticipant) {
-    throw AppError.forbidden("You do not have permission to access this conversation");
+    throw AppError.forbidden(
+      "You do not have permission to access this conversation",
+    );
   }
 
   const unreadCount = await prisma.message.count({
@@ -621,27 +690,29 @@ async function getConversationById(
 
   const contextBookings = conversation.booking
     ? [toConversationBookingDTO(conversation.booking)]
-    : (await prisma.booking.findMany({
-        where: {
-          userId: conversation.guestId,
-          listingId: conversation.listingId,
-          status: BookingStatus.CONFIRMED,
-        },
-        select: {
-          id: true,
-          status: true,
-          startDate: true,
-          endDate: true,
-          guests: true,
-          totalPrice: true,
-          nightlyPrice: true,
-          currency: true,
-          cancellationPolicy: true,
-          isNonRefundable: true,
-          priceBreakdown: true,
-          createdAt: true,
-        },
-      })).map(toConversationBookingDTO);
+    : (
+        await prisma.booking.findMany({
+          where: {
+            userId: conversation.guestId,
+            listingId: conversation.listingId,
+            status: BookingStatus.CONFIRMED,
+          },
+          select: {
+            id: true,
+            status: true,
+            startDate: true,
+            endDate: true,
+            guests: true,
+            totalPrice: true,
+            nightlyPrice: true,
+            currency: true,
+            cancellationPolicy: true,
+            isNonRefundable: true,
+            priceBreakdown: true,
+            createdAt: true,
+          },
+        })
+      ).map(toConversationBookingDTO);
 
   return toConversationDTO(
     conversation,
@@ -657,8 +728,18 @@ async function getConversationById(
 async function getConversationMessages(
   actor: AuthUser,
   conversationId: string,
-  params: { cursor?: string; skip?: number; take?: number; includeTotal?: boolean } = {}
-): Promise<{ messages: MessageDTO[]; total?: number; nextCursor: string | null; hasMore: boolean }> {
+  params: {
+    cursor?: string;
+    skip?: number;
+    take?: number;
+    includeTotal?: boolean;
+  } = {},
+): Promise<{
+  messages: MessageDTO[];
+  total?: number;
+  nextCursor: string | null;
+  hasMore: boolean;
+}> {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
     select: { id: true, guestId: true, hostId: true },
@@ -673,7 +754,9 @@ async function getConversationMessages(
     conversation.hostId !== actor.id &&
     actor.role !== Role.ADMIN
   ) {
-    throw AppError.forbidden("You do not have permission to view messages in this conversation");
+    throw AppError.forbidden(
+      "You do not have permission to view messages in this conversation",
+    );
   }
 
   const take = Math.min(100, Math.max(1, Math.trunc(params.take ?? 40)));
@@ -708,16 +791,14 @@ async function getConversationMessages(
   let cursorWhere: Prisma.MessageWhereInput = {};
   if (params.cursor) {
     const separator = params.cursor.indexOf("::");
-    const createdAt = separator > 0 ? new Date(params.cursor.slice(0, separator)) : null;
+    const createdAt =
+      separator > 0 ? new Date(params.cursor.slice(0, separator)) : null;
     const id = separator > 0 ? params.cursor.slice(separator + 2) : "";
     if (!createdAt || Number.isNaN(createdAt.getTime()) || !id) {
       throw AppError.badRequest("Invalid message cursor");
     }
     cursorWhere = {
-      OR: [
-        { createdAt: { lt: createdAt } },
-        { createdAt, id: { lt: id } },
-      ],
+      OR: [{ createdAt: { lt: createdAt } }, { createdAt, id: { lt: id } }],
     };
   }
 
@@ -729,7 +810,9 @@ async function getConversationMessages(
   });
   const [newestFirst, total] = await Promise.all([
     query,
-    params.includeTotal === false ? Promise.resolve(undefined) : prisma.message.count({ where: { conversationId } }),
+    params.includeTotal === false
+      ? Promise.resolve(undefined)
+      : prisma.message.count({ where: { conversationId } }),
   ]);
   const hasMore = newestFirst.length > take;
   const page = hasMore ? newestFirst.slice(0, take) : newestFirst;
@@ -740,19 +823,33 @@ async function getConversationMessages(
     // page chronologically so its existing message layout remains unchanged.
     messages: [...page].reverse().map((m: any) => toMessageDTO(m, actor.id)),
     ...(total === undefined ? {} : { total }),
-    nextCursor: hasMore && oldest ? `${oldest.createdAt.toISOString()}::${oldest.id}` : null,
+    nextCursor:
+      hasMore && oldest
+        ? `${oldest.createdAt.toISOString()}::${oldest.id}`
+        : null,
     hasMore,
   };
 }
 
-const ALLOWED_ATTACHMENT_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".pdf"]);
-const ALLOWED_ATTACHMENT_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
+const ALLOWED_ATTACHMENT_EXTENSIONS = new Set([
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".pdf",
+]);
+const ALLOWED_ATTACHMENT_MIMES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+]);
 const MAX_ATTACHMENT_SIZE = 15 * 1024 * 1024; // 15MB
 
 function validateAttachmentBuffer(
   buffer: Buffer,
   clientMime: string,
-  originalName: string
+  originalName: string,
 ): {
   fileType: "IMAGE" | "DOCUMENT";
   mimeType: string;
@@ -763,24 +860,30 @@ function validateAttachmentBuffer(
   }
 
   if (buffer.length > MAX_ATTACHMENT_SIZE) {
-    throw AppError.badRequest("Attachment exceeds the maximum allowed size of 15MB");
+    throw AppError.badRequest(
+      "Attachment exceeds the maximum allowed size of 15MB",
+    );
   }
 
   const rawExt = path.extname(originalName).toLowerCase();
   if (!ALLOWED_ATTACHMENT_EXTENSIONS.has(rawExt)) {
     throw AppError.badRequest(
-      "Unsupported file format. Only JPG, JPEG, PNG, WEBP images and PDF documents are allowed."
+      "Unsupported file format. Only JPG, JPEG, PNG, WEBP images and PDF documents are allowed.",
     );
   }
 
   if (clientMime && !ALLOWED_ATTACHMENT_MIMES.has(clientMime)) {
     throw AppError.badRequest(
-      "Unsupported file type. Only JPG, JPEG, PNG, WEBP images and PDF documents are allowed."
+      "Unsupported file type. Only JPG, JPEG, PNG, WEBP images and PDF documents are allowed.",
     );
   }
 
   // Magic bytes inspection
-  const isJpeg = buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+  const isJpeg =
+    buffer.length >= 3 &&
+    buffer[0] === 0xff &&
+    buffer[1] === 0xd8 &&
+    buffer[2] === 0xff;
   const isPng =
     buffer.length >= 8 &&
     buffer[0] === 0x89 &&
@@ -795,10 +898,15 @@ function validateAttachmentBuffer(
     buffer.length >= 12 &&
     buffer.toString("ascii", 0, 4) === "RIFF" &&
     buffer.toString("ascii", 8, 12) === "WEBP";
-  const isPdf = buffer.length >= 5 && buffer.toString("ascii", 0, 5) === "%PDF-";
+  const isPdf =
+    buffer.length >= 5 && buffer.toString("ascii", 0, 5) === "%PDF-";
 
   if (isJpeg) {
-    return { fileType: "IMAGE", mimeType: "image/jpeg", cleanExt: rawExt === ".jpeg" ? ".jpeg" : ".jpg" };
+    return {
+      fileType: "IMAGE",
+      mimeType: "image/jpeg",
+      cleanExt: rawExt === ".jpeg" ? ".jpeg" : ".jpg",
+    };
   }
   if (isPng) {
     return { fileType: "IMAGE", mimeType: "image/png", cleanExt: ".png" };
@@ -807,10 +915,16 @@ function validateAttachmentBuffer(
     return { fileType: "IMAGE", mimeType: "image/webp", cleanExt: ".webp" };
   }
   if (isPdf) {
-    return { fileType: "DOCUMENT", mimeType: "application/pdf", cleanExt: ".pdf" };
+    return {
+      fileType: "DOCUMENT",
+      mimeType: "application/pdf",
+      cleanExt: ".pdf",
+    };
   }
 
-  throw AppError.badRequest("File content does not match allowed image (JPG, PNG, WEBP) or document (PDF) formats.");
+  throw AppError.badRequest(
+    "File content does not match allowed image (JPG, PNG, WEBP) or document (PDF) formats.",
+  );
 }
 
 /**
@@ -823,7 +937,7 @@ async function uploadAttachment(
     fileName: string;
     mimeType: string;
     buffer: Buffer;
-  }
+  },
 ): Promise<MessageAttachmentDTO> {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
@@ -840,14 +954,22 @@ async function uploadAttachment(
     actor.role === Role.ADMIN;
 
   if (!isParticipant) {
-    throw AppError.forbidden("You do not have permission to upload attachments to this conversation");
+    throw AppError.forbidden(
+      "You do not have permission to upload attachments to this conversation",
+    );
   }
 
-  const validated = validateAttachmentBuffer(file.buffer, file.mimeType, file.fileName);
+  const validated = validateAttachmentBuffer(
+    file.buffer,
+    file.mimeType,
+    file.fileName,
+  );
 
   // Sanitize original filename for display
   const baseRaw = path.basename(file.fileName, path.extname(file.fileName));
-  const safeName = (baseRaw.replace(/[^a-zA-Z0-9._\- ]/g, "_").slice(0, 80) || "file") + validated.cleanExt;
+  const safeName =
+    (baseRaw.replace(/[^a-zA-Z0-9._\- ]/g, "_").slice(0, 80) || "file") +
+    validated.cleanExt;
 
   // Server-controlled random storage filename
   const storageFileName = `att_${conversationId}_${Date.now()}_${crypto.randomBytes(8).toString("hex")}${validated.cleanExt}`;
@@ -859,24 +981,33 @@ async function uploadAttachment(
     contentType: validated.mimeType,
   });
 
-  const attachment = await prisma.messageAttachment.create({
-    data: {
-      conversationId,
-      messageId: null,
-      fileName: safeName,
-      fileType: validated.fileType,
-      mimeType: validated.mimeType,
-      fileSize: file.buffer.length,
-      storagePath: saved.storagePath,
-      fileUrl: "",
-    },
-  });
-
-  const fileUrl = `/api/v1/messages/attachments/${attachment.id}`;
-  const updated = await prisma.messageAttachment.update({
-    where: { id: attachment.id },
-    data: { fileUrl },
-  });
+  let updated;
+  try {
+    updated = await prisma.$transaction(async (tx) => {
+      const attachment = await tx.messageAttachment.create({
+        data: {
+          conversationId,
+          messageId: null,
+          fileName: safeName,
+          fileType: validated.fileType,
+          mimeType: validated.mimeType,
+          fileSize: file.buffer.length,
+          storagePath: saved.storagePath,
+          fileUrl: "",
+        },
+      });
+      return tx.messageAttachment.update({
+        where: { id: attachment.id },
+        data: { fileUrl: `/api/v1/messages/attachments/${attachment.id}` },
+      });
+    });
+  } catch (error) {
+    await deletePrivateMedia({
+      kind: "message-attachments",
+      fileName: saved.storagePath,
+    }).catch(() => undefined);
+    throw error;
+  }
 
   return {
     id: updated.id,
@@ -897,7 +1028,7 @@ async function uploadAttachment(
 async function removeStagedAttachment(
   actor: AuthUser,
   conversationId: string,
-  attachmentId: string
+  attachmentId: string,
 ): Promise<{ success: boolean }> {
   const attachment = await prisma.messageAttachment.findUnique({
     where: { id: attachmentId },
@@ -916,11 +1047,15 @@ async function removeStagedAttachment(
     actor.role === Role.ADMIN;
 
   if (!isParticipant) {
-    throw AppError.forbidden("You do not have permission to remove this attachment");
+    throw AppError.forbidden(
+      "You do not have permission to remove this attachment",
+    );
   }
 
   if (attachment.messageId) {
-    throw AppError.badRequest("Cannot remove an attachment that has already been sent");
+    throw AppError.badRequest(
+      "Cannot remove an attachment that has already been sent",
+    );
   }
 
   try {
@@ -944,7 +1079,7 @@ async function removeStagedAttachment(
  */
 async function getAttachmentFile(
   actor: AuthUser,
-  attachmentId: string
+  attachmentId: string,
 ): Promise<{
   attachment: {
     id: string;
@@ -974,12 +1109,17 @@ async function getAttachmentFile(
     actor.role === Role.ADMIN;
 
   if (!isParticipant) {
-    throw AppError.forbidden("You do not have permission to access this attachment");
+    throw AppError.forbidden(
+      "You do not have permission to access this attachment",
+    );
   }
 
   let buffer: Buffer;
   try {
-    buffer = await readPrivateMedia("message-attachments", attachment.storagePath);
+    buffer = await readPrivateMedia(
+      "message-attachments",
+      attachment.storagePath,
+    );
   } catch {
     throw AppError.notFound("Attachment file not found in storage");
   }
@@ -1009,10 +1149,11 @@ async function sendMessage(
     type?: MessageType;
     metadata?: Record<string, unknown>;
     attachmentIds?: string[];
-  }
+  },
 ): Promise<MessageDTO> {
   const trimmed = input.content ? input.content.trim() : "";
-  const hasAttachments = Array.isArray(input.attachmentIds) && input.attachmentIds.length > 0;
+  const hasAttachments =
+    Array.isArray(input.attachmentIds) && input.attachmentIds.length > 0;
 
   if (
     !trimmed &&
@@ -1020,10 +1161,15 @@ async function sendMessage(
     input.type !== MessageType.PRE_APPROVAL &&
     input.type !== MessageType.DECLINE
   ) {
-    throw AppError.badRequest("Message must contain either text or an attachment");
+    throw AppError.badRequest(
+      "Message must contain either text or an attachment",
+    );
   }
 
-  await moderationService.assertUserNotRestricted(actor.id, "RESTRICT_MESSAGING");
+  await moderationService.assertUserNotRestricted(
+    actor.id,
+    "RESTRICT_MESSAGING",
+  );
 
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
@@ -1041,11 +1187,17 @@ async function sendMessage(
   const isHost = conversation.hostId === actor.id;
 
   if (!isGuest && !isHost && actor.role !== Role.ADMIN) {
-    throw AppError.forbidden("You do not have permission to send messages in this conversation");
+    throw AppError.forbidden(
+      "You do not have permission to send messages in this conversation",
+    );
   }
 
   // If attachments are provided, verify they are staged and belong to this conversation
-  let verifiedAttachments: Array<{ id: string; fileType: string; fileName: string }> = [];
+  let verifiedAttachments: Array<{
+    id: string;
+    fileType: string;
+    fileName: string;
+  }> = [];
   if (hasAttachments) {
     verifiedAttachments = await prisma.messageAttachment.findMany({
       where: {
@@ -1057,7 +1209,9 @@ async function sendMessage(
     });
 
     if (verifiedAttachments.length !== input.attachmentIds!.length) {
-      throw AppError.badRequest("One or more attachments are invalid, already sent, or not found");
+      throw AppError.badRequest(
+        "One or more attachments are invalid, already sent, or not found",
+      );
     }
   }
 
@@ -1097,9 +1251,11 @@ async function sendMessage(
   if (!messagePreview && hasAttachments) {
     const hasImage = verifiedAttachments.some((a) => a.fileType === "IMAGE");
     if (hasImage) {
-      messagePreview = verifiedAttachments.length > 1 ? "Sent photos" : "Sent a photo";
+      messagePreview =
+        verifiedAttachments.length > 1 ? "Sent photos" : "Sent a photo";
     } else {
-      messagePreview = verifiedAttachments.length > 1 ? "Sent files" : "Sent a file";
+      messagePreview =
+        verifiedAttachments.length > 1 ? "Sent files" : "Sent a file";
     }
   }
 
@@ -1136,7 +1292,7 @@ async function sendMessage(
  */
 async function markConversationRead(
   actor: AuthUser,
-  conversationId: string
+  conversationId: string,
 ): Promise<{ markedRead: number }> {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
@@ -1152,7 +1308,9 @@ async function markConversationRead(
     conversation.hostId !== actor.id &&
     actor.role !== Role.ADMIN
   ) {
-    throw AppError.forbidden("You do not have permission to modify this conversation");
+    throw AppError.forbidden(
+      "You do not have permission to modify this conversation",
+    );
   }
 
   const now = new Date();
@@ -1198,7 +1356,7 @@ async function createInquiryConversation(
     startDate?: string;
     endDate?: string;
     guests?: number;
-  }
+  },
 ): Promise<{ conversation: ConversationDTO; message: MessageDTO }> {
   const trimmed = input.message.trim();
   if (!trimmed) {
@@ -1207,15 +1365,27 @@ async function createInquiryConversation(
 
   const listing = await prisma.listing.findUnique({
     where: { id: input.listingId },
-    select: { id: true, hostId: true, title: true, status: true, published: true },
+    select: {
+      id: true,
+      hostId: true,
+      title: true,
+      status: true,
+      published: true,
+    },
   });
 
-  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE) {
+  if (
+    !listing ||
+    !listing.published ||
+    listing.status !== ListingStatus.ACTIVE
+  ) {
     throw AppError.notFound("Listing is not available or does not exist");
   }
 
   if (listing.hostId === actor.id) {
-    throw AppError.badRequest("Hosts cannot message themselves regarding their own listing");
+    throw AppError.badRequest(
+      "Hosts cannot message themselves regarding their own listing",
+    );
   }
 
   const now = new Date();
@@ -1319,7 +1489,9 @@ async function getOrCreateBookingConversation(params: {
   const db = params.db ?? prisma;
   const checkoutMessage = params.messageContent?.trim();
   if (checkoutMessage && checkoutMessage.length > HOST_MESSAGE_MAX_LENGTH) {
-    throw AppError.badRequest(`Message cannot exceed ${HOST_MESSAGE_MAX_LENGTH} characters`);
+    throw AppError.badRequest(
+      `Message cannot exceed ${HOST_MESSAGE_MAX_LENGTH} characters`,
+    );
   }
 
   // Look for conversation with this bookingId first
@@ -1344,8 +1516,12 @@ async function getOrCreateBookingConversation(params: {
         where: { id: conversation.id },
         data: {
           bookingId: params.bookingId,
-          type: params.isConfirmed ? ConversationType.BOOKING : ConversationType.BOOKING_REQUEST,
-          status: params.isConfirmed ? ConversationStatus.CONFIRMED : ConversationStatus.ACTIVE,
+          type: params.isConfirmed
+            ? ConversationType.BOOKING
+            : ConversationType.BOOKING_REQUEST,
+          status: params.isConfirmed
+            ? ConversationStatus.CONFIRMED
+            : ConversationStatus.ACTIVE,
           lastMessageAt: now,
         },
       });
@@ -1356,8 +1532,12 @@ async function getOrCreateBookingConversation(params: {
           hostId: params.hostId,
           listingId: params.listingId,
           bookingId: params.bookingId,
-          type: params.isConfirmed ? ConversationType.BOOKING : ConversationType.BOOKING_REQUEST,
-          status: params.isConfirmed ? ConversationStatus.CONFIRMED : ConversationStatus.ACTIVE,
+          type: params.isConfirmed
+            ? ConversationType.BOOKING
+            : ConversationType.BOOKING_REQUEST,
+          status: params.isConfirmed
+            ? ConversationStatus.CONFIRMED
+            : ConversationStatus.ACTIVE,
           lastMessageAt: now,
         },
       });
@@ -1420,7 +1600,9 @@ async function getOrCreateBookingConversation(params: {
         metadata: {
           bookingId: params.bookingId,
           bookingEvent,
-          status: params.isConfirmed ? BookingStatus.CONFIRMED : BookingStatus.PENDING,
+          status: params.isConfirmed
+            ? BookingStatus.CONFIRMED
+            : BookingStatus.PENDING,
           checkIn: params.startDate ? bookingDateKey(params.startDate) : null,
           checkOut: params.endDate ? bookingDateKey(params.endDate) : null,
           guests: params.guests ?? null,
@@ -1464,7 +1646,12 @@ async function recordBookingStatusMessage(params: {
       type: MessageType.BOOKING_STATUS,
       AND: [
         { metadata: { path: ["bookingId"], equals: params.bookingId } },
-        { metadata: { path: ["bookingEvent"], equals: "BOOKING_STATUS_CHANGED" } },
+        {
+          metadata: {
+            path: ["bookingEvent"],
+            equals: "BOOKING_STATUS_CHANGED",
+          },
+        },
         { metadata: { path: ["status"], equals: params.newBookingStatus } },
       ],
     },
@@ -1492,7 +1679,13 @@ async function recordBookingStatusMessage(params: {
   await prisma.conversation.update({
     where: { id: conversation.id },
     data: {
-      status: params.conversationStatus || (params.newBookingStatus === BookingStatus.CONFIRMED ? ConversationStatus.CONFIRMED : params.newBookingStatus === BookingStatus.CANCELLED ? ConversationStatus.CANCELLED : ConversationStatus.ACTIVE),
+      status:
+        params.conversationStatus ||
+        (params.newBookingStatus === BookingStatus.CONFIRMED
+          ? ConversationStatus.CONFIRMED
+          : params.newBookingStatus === BookingStatus.CANCELLED
+            ? ConversationStatus.CANCELLED
+            : ConversationStatus.ACTIVE),
       ...(existingStatusEvent ? {} : { lastMessageAt: now }),
     },
   });
@@ -1504,7 +1697,7 @@ async function recordBookingStatusMessage(params: {
 async function preApproveInquiry(
   actor: AuthUser,
   conversationId: string,
-  input?: { messageText?: string }
+  input?: { messageText?: string },
 ): Promise<ConversationDTO> {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
@@ -1521,7 +1714,8 @@ async function preApproveInquiry(
 
   const now = new Date();
   const defaultText = `Good news! I have pre-approved your reservation inquiry for ${conversation.listing.title}. You can now complete your booking.`;
-  const content = (input?.messageText && input.messageText.trim()) || defaultText;
+  const content =
+    (input?.messageText && input.messageText.trim()) || defaultText;
 
   await prisma.message.create({
     data: {
@@ -1574,12 +1768,11 @@ async function sendSpecialOffer(
     currency?: string;
     messageText?: string;
     listingId?: string;
-  }
+  },
 ): Promise<{ specialOffer: SpecialOfferDTO; message: MessageDTO }> {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
     include: { listing: { select: { title: true } } },
-
   });
 
   if (!conversation) {
@@ -1591,7 +1784,9 @@ async function sendSpecialOffer(
   }
 
   if (input.subtotalPrice <= 0) {
-    throw AppError.badRequest("Special offer subtotal price must be greater than 0");
+    throw AppError.badRequest(
+      "Special offer subtotal price must be greater than 0",
+    );
   }
 
   const start = parseBookingDate(input.startDate);
@@ -1696,7 +1891,7 @@ async function sendSpecialOffer(
 async function acceptSpecialOffer(
   actor: AuthUser,
   conversationId: string,
-  specialOfferId: string
+  specialOfferId: string,
 ): Promise<{ specialOffer: SpecialOfferDTO; checkoutUrl: string }> {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
@@ -1739,7 +1934,9 @@ async function acceptSpecialOffer(
   }
 
   if (offer.status !== SpecialOfferStatus.PENDING) {
-    throw AppError.badRequest(`This special offer is already ${offer.status.toLowerCase()}`);
+    throw AppError.badRequest(
+      `This special offer is already ${offer.status.toLowerCase()}`,
+    );
   }
 
   const updatedOffer = await prisma.specialOffer.update({
@@ -1782,7 +1979,7 @@ async function acceptSpecialOffer(
 async function declineInquiry(
   actor: AuthUser,
   conversationId: string,
-  input?: { reason?: string; messageText?: string }
+  input?: { reason?: string; messageText?: string },
 ): Promise<ConversationDTO> {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
@@ -1892,8 +2089,16 @@ async function getHostResponseRateTrend(
   input: { endingAt: Date; listingId?: string },
 ): Promise<HostResponseTrendPoint[]> {
   const endingAt = input.endingAt > new Date() ? new Date() : input.endingAt;
-  const firstMonth = new Date(Date.UTC(endingAt.getUTCFullYear(), endingAt.getUTCMonth() - 11, 1));
-  const endExclusive = new Date(Date.UTC(endingAt.getUTCFullYear(), endingAt.getUTCMonth(), endingAt.getUTCDate() + 1));
+  const firstMonth = new Date(
+    Date.UTC(endingAt.getUTCFullYear(), endingAt.getUTCMonth() - 11, 1),
+  );
+  const endExclusive = new Date(
+    Date.UTC(
+      endingAt.getUTCFullYear(),
+      endingAt.getUTCMonth(),
+      endingAt.getUTCDate() + 1,
+    ),
+  );
   const conversations = await prisma.conversation.findMany({
     where: {
       hostId,
@@ -1911,31 +2116,52 @@ async function getHostResponseRateTrend(
   const dayMs = 24 * 60 * 60 * 1000;
   for (const conversation of conversations) {
     const firstGuestMessage = conversation.messages.find(
-      (message) => message.senderId === conversation.guestId && message.type !== "SYSTEM",
+      (message) =>
+        message.senderId === conversation.guestId && message.type !== "SYSTEM",
     );
     if (!firstGuestMessage) continue;
     const monthKey = `${firstGuestMessage.createdAt.getUTCFullYear()}-${String(firstGuestMessage.createdAt.getUTCMonth() + 1).padStart(2, "0")}`;
     const bucket = buckets.get(monthKey) ?? { total: 0, within24: 0 };
     bucket.total++;
     const firstHostReply = conversation.messages.find(
-      (message) => message.senderId === hostId && message.createdAt > firstGuestMessage.createdAt,
+      (message) =>
+        message.senderId === hostId &&
+        message.createdAt > firstGuestMessage.createdAt,
     );
-    if (firstHostReply && firstHostReply.createdAt.getTime() - firstGuestMessage.createdAt.getTime() <= dayMs) {
+    if (
+      firstHostReply &&
+      firstHostReply.createdAt.getTime() -
+        firstGuestMessage.createdAt.getTime() <=
+        dayMs
+    ) {
       bucket.within24++;
     }
     buckets.set(monthKey, bucket);
   }
 
   return Array.from({ length: 12 }, (_, index) => {
-    const month = new Date(Date.UTC(firstMonth.getUTCFullYear(), firstMonth.getUTCMonth() + index, 1));
+    const month = new Date(
+      Date.UTC(
+        firstMonth.getUTCFullYear(),
+        firstMonth.getUTCMonth() + index,
+        1,
+      ),
+    );
     const monthKey = `${month.getUTCFullYear()}-${String(month.getUTCMonth() + 1).padStart(2, "0")}`;
     const bucket = buckets.get(monthKey) ?? { total: 0, within24: 0 };
     return {
       monthKey,
-      label: new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric", timeZone: "UTC" }).format(month),
+      label: new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC",
+      }).format(month),
       totalGuestInquiries: bucket.total,
       respondedWithin24hCount: bucket.within24,
-      responseRatePercentage: bucket.total > 0 ? Math.round((bucket.within24 / bucket.total) * 100) : null,
+      responseRatePercentage:
+        bucket.total > 0
+          ? Math.round((bucket.within24 / bucket.total) * 100)
+          : null,
     };
   });
 }

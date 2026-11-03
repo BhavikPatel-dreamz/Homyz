@@ -284,6 +284,7 @@ export function HomeView({
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
       body: JSON.stringify({
+        eventType: "SEARCH_SUBMITTED",
         destination: params.destination || params.city || params.placeName || null,
         destinationType: params.locationType || null,
         city: params.city || null,

@@ -9,9 +9,11 @@ import {
   parseServerRecentSearches,
   LAST_SEARCH_COOKIE,
   RECENT_SEARCHES_COOKIE,
-  type StoredSearchContext,
 } from "@/lib/storage/client-history";
-import { getUserRecentSearches } from "@/services/search-analytics.service";
+import {
+  getUserPrimarySearchInterest,
+  getUserRecentSearches,
+} from "@/services/search-analytics.service";
 
 export const dynamic = "force-dynamic";
 
@@ -119,18 +121,53 @@ export default async function HomePage({
       : resolvedContext?.longitude ?? null;
 
     // Concurrently fetch homepage discovery and recent search sections in parallel
-    const resolveRecentSearches = async (): Promise<Array<SearchContext | StoredSearchContext>> => {
-      if (isExplicitClear) return [];
+    const resolveRecentSearches = async () => {
+      if (isExplicitClear) return { searches: [], primaryLocationQuery: null };
       if (user?.id) {
-        const userRecent = await getUserRecentSearches(user.id);
-        if (userRecent.length) return userRecent;
+        const [userRecent, primaryInterest] = await Promise.all([
+          getUserRecentSearches(user.id),
+          getUserPrimarySearchInterest(user.id),
+        ]);
+        const primaryLocationQuery = primaryInterest
+          ? (
+            primaryInterest.city ||
+            primaryInterest.displayName ||
+            primaryInterest.query ||
+            ""
+          ).trim() || null
+          : null;
+        if (userRecent.length) {
+          // Place the strongest decayed interest first while retaining the
+          // existing recency-ordered history for the rest of discovery.
+          const primaryKey = primaryLocationQuery?.toLowerCase();
+          return {
+            primaryLocationQuery,
+            searches: primaryKey
+              ? [
+                ...userRecent.filter((item) =>
+                  (item.city || item.displayName || item.query || "").trim().toLowerCase() === primaryKey,
+                ),
+                ...userRecent.filter((item) =>
+                  (item.city || item.displayName || item.query || "").trim().toLowerCase() !== primaryKey,
+                ),
+              ]
+              : userRecent,
+          };
+        }
       }
       const cookieStore = await cookies();
       const recentCookie = cookieStore.get(RECENT_SEARCHES_COOKIE)?.value;
-      return parseServerRecentSearches(recentCookie);
+      const searches = parseServerRecentSearches(recentCookie);
+      const primary = searches[0];
+      return {
+        searches,
+        primaryLocationQuery: primary
+          ? (primary.city || primary.displayName || primary.query || "").trim() || null
+          : null,
+      };
     };
 
-    const recentSearchesPromise = resolveRecentSearches().then(async (searches) => {
+    const recentSearchesPromise = resolveRecentSearches().then(async ({ searches, primaryLocationQuery }) => {
       if (!searches.length) return [];
       return homepageService.getRecentSearchSections({
         searches,
@@ -138,6 +175,7 @@ export default async function HomePage({
         currentLocationQuery: hasSearch
           ? (resolvedContext?.city || resolvedContext?.displayName || undefined)
           : undefined,
+        primaryLocationQuery: hasSearch ? undefined : primaryLocationQuery,
         limit: 4,
       });
     });

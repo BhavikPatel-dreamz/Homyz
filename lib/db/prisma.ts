@@ -7,12 +7,31 @@ import { PrismaClient } from "@/generated/prisma/client";
 // instance below is shared through `globalThis` in development. Trying to
 // validate the generated client via its private DMMF internals caused a fresh
 // client (and therefore a new PostgreSQL pool) on every hot reload.
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
   throw new Error(
     "DATABASE_URL is not set. Copy .env.example to .env and configure it.",
   );
 }
+
+/**
+ * pg-connection-string v2 treats these legacy modes as verify-full, but warns
+ * because its next major release will adopt libpq's weaker semantics. Preserve
+ * the current secure behaviour explicitly without requiring every deployment
+ * to update its existing DATABASE_URL immediately.
+ */
+function useExplicitSslMode(connectionString: string): string {
+  const url = new URL(connectionString);
+  const sslMode = url.searchParams.get("sslmode");
+
+  if (sslMode === "prefer" || sslMode === "require" || sslMode === "verify-ca") {
+    url.searchParams.set("sslmode", "verify-full");
+  }
+
+  return url.toString();
+}
+
+const connectionString = useExplicitSslMode(databaseUrl);
 
 function getPoolSize(): number {
   const configuredSize = Number.parseInt(process.env.DATABASE_POOL_MAX ?? "5", 10);

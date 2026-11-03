@@ -22,8 +22,8 @@ describe("Support Case Evidence Upload and Storage", () => {
 
   test("getSupportCaseEvidenceForParticipant allows participants to download verified clean evidence", () => {
     const service = source("services/support-case.service.ts");
-    assert.match(service, /if\s*\(!access\.admin && evidence\.scanStatus !== SupportCaseEvidenceScanStatus\.CLEAN\)/);
-    assert.match(service, /buffer = await readPrivateMedia\("support-case-evidence", evidence\.storageKey\);/);
+    assert.match(service, /if\s*\(\s*!access\.admin\s*&&\s*evidence\.scanStatus !== SupportCaseEvidenceScanStatus\.CLEAN\s*\)/);
+    assert.match(service, /buffer = await readPrivateMedia\(\s*"support-case-evidence",\s*evidence\.storageKey,?\s*\);/);
   });
 
   test("media-server/storage.mjs retains support-case-evidence in MEDIA_KINDS for forward compatibility", () => {
@@ -31,4 +31,3 @@ describe("Support Case Evidence Upload and Storage", () => {
     assert.match(storageMjs, /"support-case-evidence"/);
   });
 });
-

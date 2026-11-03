@@ -17,7 +17,7 @@ describe("Phase 4 — guest support and resolution center", () => {
   test("case creation validates the server taxonomy and preserves request idempotency", () => {
     const service = source("services/support-case.service.ts");
     assert.match(service, /isSupportedGuestSupportRequest\(category, issueType\)/);
-    assert.match(service, /findUnique\(\{ where: \{ idempotencyKey: input\.idempotencyKey \} \}\)/);
+    assert.match(service, /findUnique\(\{\s*where: \{ idempotencyKey: input\.idempotencyKey \},?\s*\}\)/);
   });
 
   test("guest case details omit storage keys and filter restricted content", () => {
@@ -35,7 +35,7 @@ describe("Phase 4 — guest support and resolution center", () => {
     const downloadRoute = source("app/api/v1/support/cases/[id]/evidence/[evidenceId]/route.ts");
     assert.match(service, /kind: "support-case-evidence"/);
     assert.match(service, /validateEvidenceFile/);
-    assert.match(service, /readPrivateMedia\("support-case-evidence"/);
+    assert.match(service, /readPrivateMedia\(\s*"support-case-evidence"/);
     assert.match(uploadRoute, /requireApiAuth/);
     assert.match(downloadRoute, /Cache-Control": "private, no-store"/);
     assert.match(downloadRoute, /X-Content-Type-Options": "nosniff"/);

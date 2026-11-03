@@ -109,22 +109,31 @@ class CmsMediaService {
     const resolvedKey = parsed?.fileName || storageFileName;
 
     // Create CmsMediaAsset in database
-    const mediaAsset = await prisma.cmsMediaAsset.create({
-      data: {
-        key: resolvedKey,
-        url: saved.url,
-        originalFilename: params.fileName,
-        mimeType: params.mimeType,
-        size: params.size,
-        title: params.title || params.fileName,
-        altText: params.altText || "",
-        uploaderId: actor.id,
-        status: "READY",
-      },
-      include: {
-        uploader: { select: { id: true, name: true, email: true } },
-      },
-    });
+    let mediaAsset;
+    try {
+      mediaAsset = await prisma.cmsMediaAsset.create({
+        data: {
+          key: resolvedKey,
+          url: saved.url,
+          originalFilename: params.fileName,
+          mimeType: params.mimeType,
+          size: params.size,
+          title: params.title || params.fileName,
+          altText: params.altText || "",
+          uploaderId: actor.id,
+          status: "READY",
+        },
+        include: {
+          uploader: { select: { id: true, name: true, email: true } },
+        },
+      });
+    } catch (error) {
+      await deletePublicMedia({
+        kind: "cms-media",
+        fileName: resolvedKey,
+      }).catch(() => undefined);
+      throw error;
+    }
 
     // Create standard responsive variants metadata
     await prisma.cmsMediaVariant.createMany({
@@ -181,7 +190,13 @@ class CmsMediaService {
    * List media library items with pagination, search, filters, and usage count
    */
   async listMedia(options: ListMediaOptions = {}) {
-    const { page = 1, limit = 24, search, mimeType, status = "READY" } = options;
+    const {
+      page = 1,
+      limit = 24,
+      search,
+      mimeType,
+      status = "READY",
+    } = options;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -260,10 +275,15 @@ class CmsMediaService {
     for (const ref of asset.references) {
       const v = ref.version;
       const c = v.content;
-      const isLivePublished = c.publishedVersionId === v.id && c.status === CmsContentStatus.PUBLISHED;
+      const isLivePublished =
+        c.publishedVersionId === v.id &&
+        c.status === CmsContentStatus.PUBLISHED;
       const isCurrentDraft = c.draftVersionId === v.id;
       const isHistorical = !isLivePublished && !isCurrentDraft;
-      const isScheduled = c.scheduledActions?.some((a: { versionId: string | null }) => a.versionId === v.id) ?? false;
+      const isScheduled =
+        c.scheduledActions?.some(
+          (a: { versionId: string | null }) => a.versionId === v.id,
+        ) ?? false;
 
       referencesMap.set(`${c.id}_${v.id}`, {
         contentId: c.id,
@@ -309,10 +329,15 @@ class CmsMediaService {
           payloadStr.includes(urlNeedle) ||
           (keyNeedle && payloadStr.includes(keyNeedle))
         ) {
-          const isLivePublished = content.publishedVersionId === version.id && content.status === CmsContentStatus.PUBLISHED;
+          const isLivePublished =
+            content.publishedVersionId === version.id &&
+            content.status === CmsContentStatus.PUBLISHED;
           const isCurrentDraft = content.draftVersionId === version.id;
           const isHistorical = !isLivePublished && !isCurrentDraft;
-          const isScheduled = content.scheduledActions?.some((a: { versionId: string | null }) => a.versionId === version.id) ?? false;
+          const isScheduled =
+            content.scheduledActions?.some(
+              (a: { versionId: string | null }) => a.versionId === version.id,
+            ) ?? false;
 
           referencesMap.set(`${content.id}_${version.id}`, {
             contentId: content.id,
@@ -331,7 +356,9 @@ class CmsMediaService {
     }
 
     const references = Array.from(referencesMap.values());
-    const livePublishedCount = references.filter((r) => r.isLivePublished).length;
+    const livePublishedCount = references.filter(
+      (r) => r.isLivePublished,
+    ).length;
     const currentDraftCount = references.filter((r) => r.isCurrentDraft).length;
     const historicalCount = references.filter((r) => r.isHistorical).length;
     const scheduledCount = references.filter((r) => r.isScheduled).length;
@@ -347,7 +374,11 @@ class CmsMediaService {
       historicalCount,
       scheduledCount,
       canPermanentlyDelete: totalReferences === 0,
-      canArchive: totalReferences > 0 && livePublishedCount === 0 && currentDraftCount === 0 && scheduledCount === 0,
+      canArchive:
+        totalReferences > 0 &&
+        livePublishedCount === 0 &&
+        currentDraftCount === 0 &&
+        scheduledCount === 0,
       references,
     };
   }
@@ -382,7 +413,11 @@ class CmsMediaService {
   async updateMediaMetadata(
     actor: AuthUser,
     id: string,
-    data: { title?: string; altText?: string; altTexts?: Record<string, string> }
+    data: {
+      title?: string;
+      altText?: string;
+      altTexts?: Record<string, string>;
+    },
   ) {
     const asset = await prisma.cmsMediaAsset.findUnique({ where: { id } });
     if (!asset) {
@@ -456,30 +491,42 @@ class CmsMediaService {
     const parsedNew = parseManagedMediaUrl(saved.url);
     const newResolvedKey = parsedNew?.fileName || newStorageFileName;
 
-    // Remove old physical file from storage safely
+    // Point the database at the new object before removing the old object.
+    // If persistence fails, compensate by removing the newly stored object so
+    // an existing asset never becomes a dangling database reference.
+    let updated;
     try {
-      const parsedOld = parseManagedMediaUrl(asset.url);
-      const oldStorageFileName = parsedOld?.fileName || asset.key;
+      updated = await prisma.cmsMediaAsset.update({
+        where: { id },
+        data: {
+          key: newResolvedKey,
+          url: saved.url,
+          originalFilename: params.fileName,
+          mimeType: params.mimeType,
+          size: params.size,
+          updatedAt: new Date(),
+        },
+      });
+    } catch (error) {
       await deletePublicMedia({
         kind: "cms-media",
-        fileName: oldStorageFileName,
-      });
-    } catch (err) {
-      console.warn(`[CMS MEDIA] Warning cleaning up replaced file for ${asset.id}:`, err);
+        fileName: newResolvedKey,
+      }).catch(() => undefined);
+      throw error;
     }
 
-    // Update CmsMediaAsset
-    const updated = await prisma.cmsMediaAsset.update({
-      where: { id },
-      data: {
-        key: newResolvedKey,
-        url: saved.url,
-        originalFilename: params.fileName,
-        mimeType: params.mimeType,
-        size: params.size,
-        updatedAt: new Date(),
-      },
-    });
+    try {
+      const parsedOld = parseManagedMediaUrl(asset.url);
+      await deletePublicMedia({
+        kind: "cms-media",
+        fileName: parsedOld?.fileName || asset.key,
+      });
+    } catch (err) {
+      console.warn(
+        `[CMS MEDIA] Warning cleaning up replaced file for ${asset.id}:`,
+        err,
+      );
+    }
 
     // Update variants
     await prisma.cmsMediaVariant.deleteMany({ where: { mediaAssetId: id } });
@@ -525,7 +572,11 @@ class CmsMediaService {
   /**
    * Safe single delete: checks active references across draft, published, and historical content
    */
-  async deleteMedia(actor: AuthUser, id: string, options?: { forceArchive?: boolean }) {
+  async deleteMedia(
+    actor: AuthUser,
+    id: string,
+    options?: { forceArchive?: boolean },
+  ) {
     const usage = await this.getMediaUsage(id);
     const asset = await prisma.cmsMediaAsset.findUnique({ where: { id } });
 
@@ -534,15 +585,22 @@ class CmsMediaService {
     }
 
     // 1. Guard against active live or draft usage
-    if (usage.livePublishedCount > 0 || usage.currentDraftCount > 0 || usage.scheduledCount > 0) {
+    if (
+      usage.livePublishedCount > 0 ||
+      usage.currentDraftCount > 0 ||
+      usage.scheduledCount > 0
+    ) {
       const activeTitles = usage.references
         .filter((r) => r.isLivePublished || r.isCurrentDraft || r.isScheduled)
-        .map((r) => `"${r.contentTitle}" (${r.isLivePublished ? "LIVE PUBLISHED" : r.isCurrentDraft ? "CURRENT DRAFT" : "SCHEDULED"})`)
+        .map(
+          (r) =>
+            `"${r.contentTitle}" (${r.isLivePublished ? "LIVE PUBLISHED" : r.isCurrentDraft ? "CURRENT DRAFT" : "SCHEDULED"})`,
+        )
         .slice(0, 3)
         .join(", ");
 
       throw AppError.conflict(
-        `This image is currently used by ${usage.livePublishedCount + usage.currentDraftCount + usage.scheduledCount} active CMS item(s), including ${activeTitles}. Replace or remove those references before deleting it.`
+        `This image is currently used by ${usage.livePublishedCount + usage.currentDraftCount + usage.scheduledCount} active CMS item(s), including ${activeTitles}. Replace or remove those references before deleting it.`,
       );
     }
 
@@ -550,7 +608,7 @@ class CmsMediaService {
     if (usage.historicalCount > 0) {
       if (!options?.forceArchive) {
         throw AppError.conflict(
-          `This image is referenced by ${usage.historicalCount} historical CMS revision(s). It cannot be permanently deleted without breaking rollback and historical previews. You may archive it instead.`
+          `This image is referenced by ${usage.historicalCount} historical CMS revision(s). It cannot be permanently deleted without breaking rollback and historical previews. You may archive it instead.`,
         );
       }
 
@@ -585,7 +643,10 @@ class CmsMediaService {
         fileName: targetFileName,
       });
     } catch (storageErr) {
-      console.warn(`[CMS MEDIA] Physical storage cleanup warning for ${asset.id}:`, storageErr);
+      console.warn(
+        `[CMS MEDIA] Physical storage cleanup warning for ${asset.id}:`,
+        storageErr,
+      );
     }
 
     // Clean up variants and DB record
@@ -611,7 +672,11 @@ class CmsMediaService {
   /**
    * Bulk delete media assets with per-file usage validation and partial failure isolation
    */
-  async bulkDeleteMedia(actor: AuthUser, ids: string[], options?: { forceArchive?: boolean }): Promise<BulkDeleteResult> {
+  async bulkDeleteMedia(
+    actor: AuthUser,
+    ids: string[],
+    options?: { forceArchive?: boolean },
+  ): Promise<BulkDeleteResult> {
     const deleted: string[] = [];
     const blocked: BulkDeleteResult["blocked"] = [];
     const failed: BulkDeleteResult["failed"] = [];
@@ -627,7 +692,11 @@ class CmsMediaService {
         }
 
         // Active references block deletion
-        if (usage.livePublishedCount > 0 || usage.currentDraftCount > 0 || usage.scheduledCount > 0) {
+        if (
+          usage.livePublishedCount > 0 ||
+          usage.currentDraftCount > 0 ||
+          usage.scheduledCount > 0
+        ) {
           blocked.push({
             id,
             originalFilename: asset.originalFilename,
@@ -667,10 +736,15 @@ class CmsMediaService {
             fileName: targetFileName,
           });
         } catch (storageErr) {
-          console.warn(`[CMS MEDIA] Storage delete error for ${id}:`, storageErr);
+          console.warn(
+            `[CMS MEDIA] Storage delete error for ${id}:`,
+            storageErr,
+          );
         }
 
-        await prisma.cmsMediaVariant.deleteMany({ where: { mediaAssetId: id } });
+        await prisma.cmsMediaVariant.deleteMany({
+          where: { mediaAssetId: id },
+        });
         await prisma.cmsMediaAsset.delete({ where: { id } });
         deleted.push(id);
       } catch (err: any) {
@@ -685,7 +759,11 @@ class CmsMediaService {
       resourceType: "CMS_MEDIA",
       resourceId: "bulk",
       description: `Bulk delete executed: ${deleted.length} deleted, ${blocked.length} blocked by usage, ${failed.length} failed.`,
-      metadata: { deletedCount: deleted.length, blockedCount: blocked.length, failedCount: failed.length },
+      metadata: {
+        deletedCount: deleted.length,
+        blockedCount: blocked.length,
+        failedCount: failed.length,
+      },
     });
 
     return {
@@ -699,7 +777,10 @@ class CmsMediaService {
   /**
    * Scan payload for image URLs and sync CmsMediaReference records for version
    */
-  async syncVersionMediaReferences(versionId: string, payload: Record<string, unknown>) {
+  async syncVersionMediaReferences(
+    versionId: string,
+    payload: Record<string, unknown>,
+  ) {
     const payloadStr = JSON.stringify(payload);
     const assets = await prisma.cmsMediaAsset.findMany({
       select: { id: true, url: true, key: true },

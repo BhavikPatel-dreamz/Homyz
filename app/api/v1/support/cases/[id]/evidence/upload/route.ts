@@ -13,18 +13,35 @@ type Context = { params: Promise<{ id: string }> };
 
 export const POST = apiHandler(async (req: NextRequest, context: Context) => {
   const actor = await requireApiAuth(req);
-  if (actor.role === Role.ADMIN) await requireApiPermission(req, PERMISSIONS.DISPUTES_MANAGE);
+  if (actor.role === Role.ADMIN)
+    await requireApiPermission(req, PERMISSIONS.DISPUTES_MANAGE);
   if (!req.headers.get("content-type")?.includes("multipart/form-data")) {
     throw AppError.badRequest("Evidence upload requires multipart/form-data.");
   }
   const formData = await req.formData();
   const file = formData.get("file");
+  const messageId = formData.get("messageId");
   if (!file || typeof file === "string" || !(file instanceof Blob)) {
     throw AppError.badRequest("Missing evidence file.");
   }
+  if (
+    messageId !== null &&
+    (typeof messageId !== "string" ||
+      !messageId.trim() ||
+      messageId.length > 100)
+  ) {
+    throw AppError.badRequest("Invalid message attachment reference.");
+  }
   const { id } = await context.params;
-  return created(await supportCaseService.uploadSupportCaseEvidence(actor, id, {
-    fileName: (file as File).name || "evidence",
-    buffer: Buffer.from(await file.arrayBuffer()),
-  }));
+  return created(
+    await supportCaseService.uploadSupportCaseEvidence(
+      actor,
+      id,
+      {
+        fileName: (file as File).name || "evidence",
+        buffer: Buffer.from(await file.arrayBuffer()),
+      },
+      messageId ? { messageId } : undefined,
+    ),
+  );
 });

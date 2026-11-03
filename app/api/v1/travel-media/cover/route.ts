@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { getAuthContext } from "@/lib/auth/context";
 import { checkRateLimitAsync } from "@/lib/services/rate-limit";
 import { validatePublicImageUpload } from "@/lib/media/public-image-validation";
-import { savePublicMedia } from "@/lib/storage/media";
+import { deleteManagedMediaUrl, savePublicMedia } from "@/lib/storage/media";
 import { updateTravelProfile } from "@/services/travel-profile.service";
 
 const COVER_RATE_LIMIT = 20;
@@ -26,19 +26,25 @@ export async function POST(req: NextRequest) {
     const rateLimit = await checkRateLimitAsync(
       `travel-cover-upload:${actor.id}`,
       COVER_RATE_LIMIT,
-      COVER_RATE_WINDOW_SECONDS
+      COVER_RATE_WINDOW_SECONDS,
     );
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: "Too many cover image uploads. Please wait and try again." },
-        { status: 429, headers: { "Retry-After": String(rateLimit.retryAfter) } }
+        {
+          status: 429,
+          headers: { "Retry-After": String(rateLimit.retryAfter) },
+        },
       );
     }
 
     const formData = await req.formData();
     const file = formData.get("file");
     if (!(file instanceof File)) {
-      return NextResponse.json({ error: "No cover image was provided." }, { status: 400 });
+      return NextResponse.json(
+        { error: "No cover image was provided." },
+        { status: 400 },
+      );
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -49,7 +55,10 @@ export async function POST(req: NextRequest) {
       buffer,
     });
     if (validation) {
-      return NextResponse.json({ error: validation.message }, { status: validation.status });
+      return NextResponse.json(
+        { error: validation.message },
+        { status: validation.status },
+      );
     }
 
     const extension = EXTENSION_BY_MIME_TYPE[file.type] || ".jpg";
@@ -61,9 +70,15 @@ export async function POST(req: NextRequest) {
       contentType: file.type,
     });
 
-    const updatedProfile = await updateTravelProfile(actor.id, {
-      coverUrl: saved.url,
-    });
+    let updatedProfile;
+    try {
+      updatedProfile = await updateTravelProfile(actor.id, {
+        coverUrl: saved.url,
+      });
+    } catch (error) {
+      await deleteManagedMediaUrl(saved.url).catch(() => {});
+      throw error;
+    }
 
     return NextResponse.json({
       success: true,
@@ -72,6 +87,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error("[travel-media] cover upload failed", err);
-    return NextResponse.json({ error: "Failed to upload cover banner." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to upload cover banner." },
+      { status: 500 },
+    );
   }
 }
