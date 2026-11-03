@@ -200,7 +200,8 @@ async function getRefundQuote(
     isNonRefundable: Boolean(booking.isNonRefundable),
     nights,
     checkInDate: booking.startDate,
-    checkInTimeStr: booking.listing.checkInStart,
+    checkInTimeStr: booking.checkInTime,
+    propertyTimeZone: booking.propertyTimeZone,
     totalPrice,
     accommodationTotal,
     cleaningFee,
@@ -282,6 +283,21 @@ async function createRefundRequest(
       const existing = await tx.bookingRefund.findUnique({ where: { idempotencyKey } });
       if (existing) return { refund: existing, booking };
     }
+
+    // The earlier check is only an optimization. Re-check after acquiring the
+    // payment lock so simultaneous requests with different client keys cannot
+    // both create active reservations for this booking.
+    const lockedActiveRefund = await tx.bookingRefund.findFirst({
+      where: {
+        bookingId: booking.id,
+        status: { in: [RefundStatus.PENDING, RefundStatus.PROCESSING] },
+      },
+      select: { id: true },
+    });
+    if (lockedActiveRefund) {
+      throw AppError.conflict("A refund request is already pending or processing for this reservation.");
+    }
+
     if (
       lockedPayment.status !== PaymentStatus.CAPTURED &&
       lockedPayment.status !== PaymentStatus.PARTIALLY_REFUNDED &&
@@ -738,8 +754,8 @@ async function rejectRefund(
 
   if (!refund) throw AppError.notFound("Refund not found");
 
-  if (refund.status === RefundStatus.SUCCEEDED) {
-    throw AppError.conflict("Cannot reject a refund that has already succeeded.");
+  if (refund.status !== RefundStatus.PENDING) {
+    throw AppError.conflict("Only a pending refund can be rejected.");
   }
 
   const updated = await prisma.bookingRefund.update({
@@ -791,160 +807,197 @@ async function processRefund(
 ): Promise<any> {
   assertRole(actor, [Role.ADMIN]);
 
-  const refund = await prisma.bookingRefund.findUnique({
-    where: { id: refundId },
-    include: {
-      payment: true,
-      booking: {
-        include: { listing: { select: { title: true } } },
-      },
-    },
-  });
-
-  if (!refund) throw AppError.notFound("Refund not found");
-
-  if (refund.status === RefundStatus.SUCCEEDED) {
-    return refund;
-  }
-
   const now = new Date();
 
-  // Pre-gateway verification
-  const paymentRecord = refund.payment || (await prisma.bookingPayment.findUnique({ where: { id: refund.paymentId || "" } }));
-  if (!paymentRecord) throw AppError.notFound("Associated payment record not found.");
-
-  if (
-    paymentRecord.status !== PaymentStatus.CAPTURED &&
-    paymentRecord.status !== PaymentStatus.PARTIALLY_REFUNDED
-  ) {
-    throw AppError.badRequest("Refunds require a verified captured payment.");
-  }
-
-  const availableBalance = paymentRecord.capturedAmount - paymentRecord.refundedAmount;
-  if (refund.amount > availableBalance) {
-    throw AppError.badRequest(
-      `Refund amount (${refund.amount} cents) exceeds remaining captured balance (${availableBalance} cents).`,
-    );
-  }
-
-  // Gateway dispatch. A successful API response only proves the request was
-  // accepted; balances remain unchanged until a verified provider webhook.
-  if (
-    paymentRecord.provider !== PaymentProvider.MOYASAR ||
-    !process.env.MOYASAR_API_KEY ||
-    !paymentRecord.providerPaymentId
-  ) {
-    throw AppError.serviceUnavailable(
-      "Refund execution is unavailable because this payment has no configured provider refund path. The request remains approved and has not been settled.",
-    );
-  }
-
-  let providerRefundId: string | null = null;
-  let providerFailed = false;
-  let providerErrorMessage: string | null = null;
-
-  try {
-    const gwRes = await moyasarAdapter.createRefund({
-      bookingId: refund.bookingId,
-      providerPaymentId: paymentRecord.providerPaymentId,
-      amount: refund.amount,
-      currency: refund.currency,
-      reason: refund.reason || "Booking refund",
+  // Claim the approved request *before* contacting the provider. This is the
+  // durable local idempotency boundary: a second admin click, retry, or worker
+  // cannot issue another gateway refund once the row is PROCESSING.
+  const claimed = await prisma.$transaction(async (tx: any) => {
+    const refund = await tx.bookingRefund.findUnique({
+      where: { id: refundId },
+      include: { payment: true },
     });
-    if (!gwRes.success) {
-      providerFailed = true;
-      providerErrorMessage = gwRes.errorMessage || "Provider rejected refund request.";
-    } else {
-      providerRefundId = gwRes.providerRefundId || null;
+    if (!refund) throw AppError.notFound("Refund not found");
+    if (refund.status === RefundStatus.SUCCEEDED) return { refund, completed: true };
+    if (refund.status === RefundStatus.PROCESSING) {
+      throw AppError.conflict("Refund dispatch is already in progress and must be reconciled before any retry.");
     }
-  } catch (err: any) {
-    providerFailed = true;
-    providerErrorMessage = err.message || "Failed to communicate with payment gateway.";
-  }
+    if (refund.status !== RefundStatus.PENDING || !refund.approvedById) {
+      throw AppError.conflict("Only an approved pending refund can be processed.");
+    }
 
-  if (providerFailed) {
-    // Mark refund as FAILED without altering captured balances
-    const failedRefund = await prisma.bookingRefund.update({
-      where: { id: refund.id },
+    const payment = refund.payment || (await tx.bookingPayment.findUnique({ where: { id: refund.paymentId || "" } }));
+    if (!payment) throw AppError.notFound("Associated payment record not found.");
+    if (
+      payment.provider !== PaymentProvider.MOYASAR ||
+      !process.env.MOYASAR_API_KEY ||
+      !payment.providerPaymentId
+    ) {
+      throw AppError.serviceUnavailable(
+        "Refund execution is unavailable because this payment has no configured provider refund path. The request remains approved and has not been settled.",
+      );
+    }
+
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${payment.id}))`;
+    const freshPayment = await tx.bookingPayment.findUnique({ where: { id: payment.id } });
+    if (!freshPayment) throw AppError.notFound("Associated payment record not found.");
+    if (
+      freshPayment.status !== PaymentStatus.CAPTURED &&
+      freshPayment.status !== PaymentStatus.PARTIALLY_REFUNDED
+    ) {
+      throw AppError.badRequest("Refunds require a verified captured payment.");
+    }
+
+    const otherReserved = await tx.bookingRefund.aggregate({
+      where: {
+        paymentId: freshPayment.id,
+        id: { not: refund.id },
+        status: { in: [RefundStatus.PENDING, RefundStatus.PROCESSING] },
+      },
+      _sum: { amount: true },
+    });
+    const available = freshPayment.capturedAmount - freshPayment.refundedAmount - (otherReserved._sum.amount || 0);
+    if (refund.amount > available) {
+      throw AppError.badRequest(
+        `Refund amount (${refund.amount} cents) exceeds remaining captured balance (${available} cents).`,
+      );
+    }
+
+    // Moyasar documents request deduplication for payment creation, not its
+    // refund endpoint. Keep the operation ID local and never automatically
+    // resend a refund whose gateway outcome is unknown.
+    const metadata = (refund.metadata as Record<string, any>) || {};
+    const gatewayOperationId = String(metadata.gatewayOperationId || `refund_${refund.id}`);
+    const claim = await tx.bookingRefund.updateMany({
+      where: { id: refund.id, status: RefundStatus.PENDING, approvedById: { not: null } },
       data: {
-        status: RefundStatus.FAILED,
-        failedAt: now,
-        failureReason: providerErrorMessage,
+        status: RefundStatus.PROCESSING,
+        processedAt: now,
+        failureReason: null,
         metadata: {
-          ...((refund.metadata as Record<string, any>) || {}),
-          failedAt: now.toISOString(),
-          failureReason: providerErrorMessage,
+          ...metadata,
+          gatewayOperationId,
+          gatewayIdempotencySupported: false,
+          dispatchRequestedByEmail: actor.email,
+          processingRequestId: idempotencyKey ?? null,
+          dispatchClaimedAt: now.toISOString(),
+          settlementStatus: "DISPATCHING",
         },
       },
     });
+    if (claim.count !== 1) {
+      throw AppError.conflict("Refund state changed before dispatch; refresh and reconcile the request.");
+    }
+
+    return {
+      completed: false,
+      refund: { ...refund, status: RefundStatus.PROCESSING },
+      payment: freshPayment,
+      gatewayOperationId,
+    };
+  });
+
+  if (claimed.completed) return claimed.refund;
+
+  const { refund, payment, gatewayOperationId } = claimed;
+  let gatewayResult;
+  try {
+    gatewayResult = await moyasarAdapter.createRefund({
+      bookingId: refund.bookingId,
+      providerPaymentId: payment.providerPaymentId!,
+      amount: refund.amount,
+      currency: refund.currency,
+      reason: refund.reason || "Booking refund",
+      idempotencyKey: gatewayOperationId,
+    });
+  } catch (error) {
+    // Treat all thrown transport errors as ambiguous. Do not convert this to
+    // FAILED or resend automatically: the provider may have accepted it.
+    gatewayResult = {
+      success: false,
+      providerRefundId: "",
+      providerPaymentId: payment.providerPaymentId!,
+      amount: refund.amount,
+      currency: refund.currency,
+      status: RefundStatus.PROCESSING,
+      providerOutcome: "UNKNOWN" as const,
+      errorMessage: error instanceof Error ? error.message : "Refund outcome could not be verified.",
+    };
+  }
+
+  const dispatchAt = new Date();
+  const priorMetadata = (refund.metadata as Record<string, any>) || {};
+  if (!gatewayResult.success) {
+    const ambiguous = gatewayResult.providerOutcome === "UNKNOWN";
+    const failureReason = gatewayResult.errorMessage || (ambiguous
+      ? "Refund outcome could not be verified with the provider."
+      : "Provider rejected refund request.");
+    const updated = await prisma.bookingRefund.updateMany({
+      where: { id: refund.id, status: RefundStatus.PROCESSING },
+      data: ambiguous
+        ? {
+            failureReason,
+            metadata: {
+              ...priorMetadata,
+              gatewayOperationId,
+              settlementStatus: "OUTCOME_UNKNOWN",
+              outcomeUnknownAt: dispatchAt.toISOString(),
+              providerError: failureReason,
+            },
+          }
+        : {
+            status: RefundStatus.FAILED,
+            failedAt: dispatchAt,
+            failureReason,
+            metadata: {
+              ...priorMetadata,
+              gatewayOperationId,
+              settlementStatus: "REJECTED",
+              failedAt: dispatchAt.toISOString(),
+              providerError: failureReason,
+            },
+          },
+    });
+    if (updated.count !== 1) {
+      throw AppError.conflict("Refund state changed while recording the provider outcome; reconciliation is required.");
+    }
 
     await auditService.record({
       actorId: actor.id,
       actorEmail: actor.email,
-      action: "REFUND_FAILED",
+      action: ambiguous ? "REFUND_OUTCOME_UNKNOWN" : "REFUND_FAILED",
       resourceType: "BOOKING",
       resourceId: refund.bookingId,
-      description: `Refund ${refund.refundReference || refund.id} failed at provider: ${providerErrorMessage}`,
+      description: ambiguous
+        ? `Refund ${refund.refundReference || refund.id} has an unknown provider outcome and requires reconciliation.`
+        : `Refund ${refund.refundReference || refund.id} was rejected by the provider: ${failureReason}`,
       status: "FAILURE",
-      metadata: {
-        refundId: refund.id,
-        amount: refund.amount,
-        failureReason: providerErrorMessage,
-      },
+      metadata: { refundId: refund.id, gatewayOperationId, amount: refund.amount, failureReason },
     });
 
-    return failedRefund;
-  }
-
-  const submitted = await prisma.$transaction(async (tx: any) => {
-    const lockedRefund = await tx.bookingRefund.findUnique({
-      where: { id: refund.id },
-    });
-    if (!lockedRefund) throw AppError.notFound("Refund not found");
-    if (lockedRefund.status === RefundStatus.SUCCEEDED || lockedRefund.status === RefundStatus.PROCESSING) {
-      return { updatedRefund: lockedRefund, alreadySubmitted: true };
-    }
-    if (lockedRefund.status !== RefundStatus.PENDING || !lockedRefund.approvedById) {
-      throw AppError.conflict("Only an approved pending refund can be processed.");
-    }
-
-    const lockedPayment = await tx.bookingPayment.findUnique({ where: { id: paymentRecord.id } });
-    if (!lockedPayment) throw AppError.notFound("Associated payment record not found.");
-
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${lockedPayment.id}))`;
-    const freshPayment = await tx.bookingPayment.findUnique({ where: { id: lockedPayment.id } });
-    if (!freshPayment) throw AppError.notFound("Associated payment record not found.");
-
-    const available = freshPayment.capturedAmount - freshPayment.refundedAmount;
-    if (lockedRefund.amount > available) {
-      throw AppError.badRequest(
-        `Refund amount (${lockedRefund.amount} cents) exceeds remaining captured balance (${available} cents).`,
+    if (ambiguous) {
+      throw AppError.serviceUnavailable(
+        "Refund outcome could not be verified. It remains processing and must be reconciled before any retry.",
       );
     }
+    return prisma.bookingRefund.findUniqueOrThrow({ where: { id: refund.id } });
+  }
 
-    // Keep the local payment balance untouched until the provider's signed
-    // completion event confirms settlement.
-    const updatedRefund = await tx.bookingRefund.update({
-      where: { id: lockedRefund.id },
-      data: {
-        status: RefundStatus.PROCESSING,
-        providerRefundId,
-        processedAt: now,
-        metadata: {
-          ...((lockedRefund.metadata as Record<string, any>) || {}),
-          processedByEmail: actor.email,
-          providerRefundId,
-          processingIdempotencyKey: idempotencyKey ?? null,
-          settlementStatus: "SUBMITTED",
-        },
+  // A response only establishes submission. The signed provider webhook is
+  // still the authority for balances and final SUCCEEDED status.
+  await prisma.bookingRefund.updateMany({
+    where: { id: refund.id, status: RefundStatus.PROCESSING },
+    data: {
+      metadata: {
+        ...priorMetadata,
+        gatewayOperationId,
+        settlementStatus: "SUBMITTED",
+        providerAcceptedAt: dispatchAt.toISOString(),
       },
-    });
-    return { updatedRefund, alreadySubmitted: false };
+    },
   });
+  const submitted = await prisma.bookingRefund.findUniqueOrThrow({ where: { id: refund.id } });
 
-  if (submitted.alreadySubmitted) return submitted.updatedRefund;
-
-  // Audit Log
   try {
     await auditService.record({
       actorId: actor.id,
@@ -952,21 +1005,15 @@ async function processRefund(
       action: "REFUND_SUBMITTED",
       resourceType: "BOOKING",
       resourceId: refund.bookingId,
-      description: `Refund ${submitted.updatedRefund.refundReference} for ${(refund.amount / 100).toFixed(2)} ${refund.currency} was submitted to the provider and is awaiting verification.`,
+      description: `Refund ${submitted.refundReference} for ${(refund.amount / 100).toFixed(2)} ${refund.currency} was submitted to the provider and is awaiting verification.`,
       status: "SUCCESS",
-      metadata: {
-        refundId: submitted.updatedRefund.id,
-        refundReference: submitted.updatedRefund.refundReference,
-        providerRefundId: submitted.updatedRefund.providerRefundId,
-        amount: refund.amount,
-        currency: refund.currency,
-      },
+      metadata: { refundId: submitted.id, refundReference: submitted.refundReference, gatewayOperationId, amount: refund.amount, currency: refund.currency },
     });
   } catch (err) {
     console.warn("[refund.service] Failed to record audit log for processed refund:", err);
   }
 
-  return submitted.updatedRefund;
+  return submitted;
 }
 
 /**
@@ -983,6 +1030,13 @@ async function reconcileRefundForAdmin(actor: AuthUser, refundId: string): Promi
   if (!refund) throw AppError.notFound("Refund not found");
 
   const issues: string[] = [];
+  let providerVerification: {
+    attempted: boolean;
+    verified?: boolean;
+    refundedAmount?: number;
+    status?: PaymentStatus;
+    error?: string;
+  } = { attempted: false };
 
   if (!refund.payment) {
     issues.push("Refund has no associated payment record.");
@@ -992,6 +1046,43 @@ async function reconcileRefundForAdmin(actor: AuthUser, refundId: string): Promi
     }
     if (refund.status === RefundStatus.SUCCEEDED && refund.payment.refundedAmount < refund.amount) {
       issues.push(`Payment refunded balance (${refund.payment.refundedAmount}) is less than succeeded refund amount (${refund.amount}).`);
+    }
+
+    const metadata = (refund.metadata as Record<string, any>) || {};
+    if (metadata.settlementStatus === "OUTCOME_UNKNOWN") {
+      if (
+        refund.payment.provider === PaymentProvider.MOYASAR &&
+        refund.payment.providerPaymentId &&
+        process.env.MOYASAR_API_KEY
+      ) {
+        providerVerification.attempted = true;
+        try {
+          const verified = await moyasarAdapter.verifyPayment(refund.payment.providerPaymentId);
+          providerVerification = {
+            attempted: true,
+            verified: verified.verified,
+            refundedAmount: verified.refundedAmount,
+            status: verified.status,
+          };
+          if (verified.refundedAmount < refund.payment.refundedAmount + refund.amount) {
+            issues.push(
+              "The provider does not yet show enough refunded value to confirm this ambiguous refund; do not retry automatically.",
+            );
+          } else {
+            issues.push(
+              "The provider shows a possible refund, but only a signed webhook or documented provider evidence may finalize this request.",
+            );
+          }
+        } catch (error) {
+          providerVerification = {
+            attempted: true,
+            error: error instanceof Error ? error.message : "Provider reconciliation request failed.",
+          };
+          issues.push("The provider outcome could not be verified; manual reconciliation is required before any retry.");
+        }
+      } else {
+        issues.push("Refund has an unknown provider outcome but no configured provider reconciliation path.");
+      }
     }
   }
 
@@ -1007,6 +1098,7 @@ async function reconcileRefundForAdmin(actor: AuthUser, refundId: string): Promi
     metadata: {
       refundId: refund.id,
       issues,
+      providerVerification,
     },
   });
 
@@ -1018,6 +1110,7 @@ async function reconcileRefundForAdmin(actor: AuthUser, refundId: string): Promi
     currency: refund.currency,
     reconciled: issues.length === 0,
     issues,
+    providerVerification,
   };
 }
 

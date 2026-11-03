@@ -558,7 +558,7 @@ export const reviewService = {
 
     const now = new Date();
     const effectiveListingId = input.listingId || booking.listingId;
-    const reviewDeadline = computeReviewDeadline(booking.endDate, booking.listing?.checkOutTime);
+    const reviewDeadline = computeReviewDeadline(booking.endDate, booking.checkOutTime, booking.propertyTimeZone);
 
     // Existing review in this direction check
     const existing = await prisma.review.findFirst({
@@ -575,7 +575,8 @@ export const reviewService = {
         isGuest: booking.userId === input.authorId,
         bookingStatus: booking.status,
         endDate: booking.endDate,
-        checkOutTime: booking.listing?.checkOutTime,
+        checkOutTime: booking.checkOutTime,
+        propertyTimeZone: booking.propertyTimeZone,
         hasGuestReview: Boolean(existing),
         now,
       });
@@ -590,7 +591,8 @@ export const reviewService = {
         isHost,
         bookingStatus: booking.status,
         endDate: booking.endDate,
-        checkOutTime: booking.listing?.checkOutTime,
+        checkOutTime: booking.checkOutTime,
+        propertyTimeZone: booking.propertyTimeZone,
         hasHostReview: Boolean(existing),
         now,
       });

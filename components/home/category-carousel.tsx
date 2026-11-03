@@ -288,15 +288,15 @@ function HomePropertySectionComponent({
 
   return (
     <section data-purpose="category-carousel">
-      <div className="mb-4 sm:mb-6 flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between sm:mb-5">
         <div className="flex items-center gap-3">
-          <h2 className="text-[20px] sm:text-[22px] font-medium leading-7 sm:leading-8 tracking-[-.35px] text-[#1f1f1f]">
+          <h2 className="max-w-[calc(100vw-7rem)] truncate text-[18px] font-semibold leading-6 tracking-[-.25px] text-[#1f1f1f] sm:max-w-none sm:text-[22px] sm:leading-8 sm:font-medium">
             {displayTitle}
           </h2>
           {seeAllHref && (
             <Link
               href={seeAllHref}
-              className="hidden sm:flex justify-center items-center bg-[#F3F4F5] hover:bg-[#FCDF9C] text-[#1f1f1f] transition-colors ml-1 w-8 h-8 rounded-full"
+              className="flex size-7 items-center justify-center rounded-full bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#FCDF9C] sm:ml-1 sm:size-8"
             >
               {/* <span>{t("home_see_all")}</span> */}
               <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -355,7 +355,7 @@ function HomePropertySectionComponent({
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="no-scrollbar grid snap-x snap-mandatory grid-flow-col gap-2 overflow-x-auto overscroll-x-contain auto-cols-[calc((100%-0.75rem)/2.16)] sm:gap-4 sm:auto-cols-[calc((100%-2rem)/3)] md:gap-4 md:auto-cols-[calc((100%-2rem)/3)] lg:gap-4 lg:auto-cols-[calc((100%-3rem)/4)] xl:gap-5 xl:auto-cols-[calc((100%-5rem)/5)] 2xl:gap-6 2xl:auto-cols-[calc((100%-7.5rem)/6)]"
+        className="no-scrollbar grid snap-x snap-mandatory grid-flow-col gap-2.5 overflow-x-auto overscroll-x-contain auto-cols-[calc((100%-0.75rem)/2.16)] sm:gap-3 sm:auto-cols-[calc((100%-2rem)/3)] md:gap-4 md:auto-cols-[calc((100%-2rem)/3)] lg:gap-4 lg:auto-cols-[calc((100%-3rem)/4)] xl:gap-5 xl:auto-cols-[calc((100%-5rem)/5)] 2xl:gap-6 2xl:auto-cols-[calc((100%-7.5rem)/6)]"
       >
         {displayCards.map((card) => (
           <div key={card.id} className="min-w-0 snap-start">
@@ -385,7 +385,7 @@ function HomePropertySectionComponent({
 
       {/* Carousel Pagination Indicator */}
       {pageCount > 1 && (
-        <div className="mt-7 flex items-center justify-center gap-2">
+        <div className="mt-4 flex items-center justify-center gap-1.5 sm:mt-7 sm:gap-2">
           {Array.from({ length: pageCount }).map((_, idx) => (
             <button
               key={idx}
@@ -394,8 +394,8 @@ function HomePropertySectionComponent({
               aria-current={idx === activeIndex ? "true" : undefined}
               onClick={() => goToPage(idx)}
               className={`cursor-pointer transition-all duration-300 ${idx === activeIndex
-                  ? "h-7 w-2 rounded-full bg-[#EBA900]"
-                : "h-5 w-2 rounded-full bg-[#ddddde] hover:bg-[#EBA900]"
+                  ? "h-5 w-1.5 rounded-full bg-[#EBA900] sm:h-7 sm:w-2"
+                : "h-3.5 w-1.5 rounded-full bg-[#ddddde] hover:bg-[#EBA900] sm:h-5 sm:w-2"
                 }`}
             />
           ))}

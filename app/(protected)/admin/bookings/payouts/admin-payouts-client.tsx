@@ -191,6 +191,38 @@ export function AdminPayoutsClient({
     document.body.removeChild(link);
   };
 
+  const handleBatchSettlementExport = async () => {
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const response = await fetch("/api/v1/admin/bookings/payouts/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error?.message || "Failed to create settlement export.");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `SARIE_Host_Payouts_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setActionSuccess("SARIE settlement batch exported.");
+      fetchPayouts(pagination.page);
+    } catch (err: any) {
+      setActionError(err.message || String(err));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleHoldPayout = async () => {
     if (!selectedPayout || !holdReason.trim()) return;
     setActionLoading(true);
@@ -265,13 +297,14 @@ export function AdminPayoutsClient({
           >
             <span>Refunds</span>
           </Link>
-          <a
-            href="/api/v1/admin/bookings/payouts/export"
-            download
+          <button
+            type="button"
+            onClick={handleBatchSettlementExport}
+            disabled={actionLoading}
             className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
           >
             <span>SARIE Batch Export</span>
-          </a>
+          </button>
           <button
             type="button"
             onClick={exportCSV}

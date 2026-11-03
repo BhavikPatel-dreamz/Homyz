@@ -2,6 +2,7 @@ import { apiHandler } from "@/lib/api/handler";
 import { ok } from "@/lib/api/response";
 import { requireApiAuth } from "@/lib/permissions/guards";
 import { bookingService } from "@/services/booking.service";
+import { revalidateBookingPaths } from "@/lib/booking/booking-cache-revalidate";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -15,6 +16,6 @@ export const POST = apiHandler(async (req, ctx: Ctx) => {
     endDate: body.endDate,
     guests: body.guests ? Number(body.guests) : undefined,
   });
+  revalidateBookingPaths(id);
   return ok(updated);
 });
-

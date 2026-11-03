@@ -58,6 +58,9 @@ export interface HostEarningsAnalyticsData {
     averageRealizedNightlyRateCents: number | null;
     previousNetHostEarningsCents: number;
     previousAccommodationRevenueCents: number;
+    previousQualifyingBookingsCount: number;
+    previousRevenuePerBookingCents: number | null;
+    previousNetPerBookingCents: number | null;
   };
   revpan: {
     valueCents: number | null;
@@ -66,6 +69,7 @@ export interface HostEarningsAnalyticsData {
     availableNights: number;
     bookableNights: number;
     occupancyRatePercentage: number;
+    previousOccupancyRatePercentage: number;
   };
   costs: {
     status: "AVAILABLE" | "NO_EXPENSES_RECORDED";
@@ -73,6 +77,8 @@ export interface HostEarningsAnalyticsData {
     totalRecordedOperatingCostsCents: number;
     costPerCompletedStayCents: number | null;
     costPerOccupiedNightCents: number | null;
+    previousTotalRecordedOperatingCostsCents: number;
+    previousCostPerCompletedStayCents: number | null;
     categoryBreakdown: Array<{ category: string; amountCents: number }>;
     expenseCoverage: "NO_EXPENSES_RECORDED" | "PARTIAL_RECORDED_COSTS" | "RECORDED_COSTS";
     expenseHistory: Array<{ id: string; listingId: string; category: string; amountCents: number; currency: string; expenseDate: string; description: string | null }>;
@@ -115,6 +121,8 @@ export interface HostEarningsAnalyticsData {
     bookedNights: number;
     occupancyRatePercentage: number;
     averageRealizedNightlyRateCents: number | null;
+    coverPhotoUrl?: string | null;
+    location?: string | null;
   }>;
   propertyPagination: { page: number; pageSize: number; total: number; totalPages: number };
   propertySummary: {
@@ -164,7 +172,18 @@ export const hostEarningsAnalyticsService = {
       : null;
     const listings = await prisma.listing.findMany({
       where: accessibleHostListingWhere(actor),
-      select: { id: true, title: true, published: true, status: true, isPaused: true, blockedDates: true },
+      select: {
+        id: true,
+        title: true,
+        published: true,
+        status: true,
+        isPaused: true,
+        blockedDates: true,
+        photos: true,
+        city: true,
+        district: true,
+        country: true,
+      },
       orderBy: { title: "asc" },
     });
     if (query.listingId && !listings.some((listing) => listing.id === query.listingId)) {
@@ -181,11 +200,14 @@ export const hostEarningsAnalyticsService = {
     const firstDate = comparisonStartDate < reportingPeriod.startDate
       ? comparisonStartDate
       : reportingPeriod.startDate;
+    const lastDate = comparisonEndDate > reportingPeriod.endDate
+      ? comparisonEndDate
+      : reportingPeriod.endDate;
     const bookings = listingIds.length ? await prisma.booking.findMany({
       where: {
         listingId: { in: listingIds },
         status: BookingStatus.CONFIRMED,
-        endDate: { gte: firstDate, lte: reportingPeriod.endDate },
+        endDate: { gte: firstDate, lte: lastDate },
       },
       select: {
         listingId: true,
@@ -280,6 +302,9 @@ export const hostEarningsAnalyticsService = {
         startDateKey: reportingPeriod.startDateKey,
         endDateKeyExclusive: shiftBookingDateKey(reportingPeriod.endDateKey, 1),
       });
+      const location = listing.district && listing.city
+        ? `${listing.district}, ${listing.city}`
+        : listing.city || listing.country || null;
       return {
         listingId: listing.id,
         title: listing.title,
@@ -291,6 +316,8 @@ export const hostEarningsAnalyticsService = {
         bookedNights: listingInventory.bookedNights,
         occupancyRatePercentage: listingInventory.ratePercentage,
         averageRealizedNightlyRateCents: moneyPer(totals.accommodation, totals.nights),
+        coverPhotoUrl: listing.photos?.[0] || null,
+        location,
       };
     });
 
@@ -298,19 +325,33 @@ export const hostEarningsAnalyticsService = {
       where: {
         listingId: { in: listingIds },
         status: OperatingExpenseStatus.ACTIVE,
-        expenseDate: { gte: reportingPeriod.startDate, lte: reportingPeriod.endDate },
+        expenseDate: { gte: firstDate, lte: lastDate },
         currency: selectedCurrency,
       },
       select: { id: true, listingId: true, category: true, amountCents: true, currency: true, expenseDate: true, description: true, bookingId: true },
       take: 1000,
     }) : [];
-    const expenseTotal = expenses.reduce((sum, expense) => sum + expense.amountCents, 0);
+    const currentExpenses = expenses.filter(
+      (expense) =>
+        expense.expenseDate >= reportingPeriod.startDate &&
+        expense.expenseDate <= reportingPeriod.endDate,
+    );
+    const previousExpenses = expenses.filter(
+      (expense) =>
+        expense.expenseDate >= comparisonStartDate &&
+        expense.expenseDate <= comparisonEndDate,
+    );
+    const expenseTotal = currentExpenses.reduce((sum, expense) => sum + expense.amountCents, 0);
+    const previousExpenseTotal = previousExpenses.reduce(
+      (sum, expense) => sum + expense.amountCents,
+      0,
+    );
     const expenseByCategory = new Map<string, number>();
-    for (const expense of expenses) expenseByCategory.set(expense.category, (expenseByCategory.get(expense.category) ?? 0) + expense.amountCents);
-    const costsStatus = expenses.length ? "AVAILABLE" as const : "NO_EXPENSES_RECORDED" as const;
+    for (const expense of currentExpenses) expenseByCategory.set(expense.category, (expenseByCategory.get(expense.category) ?? 0) + expense.amountCents);
+    const costsStatus = currentExpenses.length ? "AVAILABLE" as const : "NO_EXPENSES_RECORDED" as const;
     const qualifyingCompletedStays = current.bookings;
-    const costCoverage = expenses.length === 0 ? "NO_EXPENSES_RECORDED" as const : "PARTIAL_RECORDED_COSTS" as const;
-    const estimatedProfit = expenses.length ? current.net - expenseTotal : null;
+    const costCoverage = currentExpenses.length === 0 ? "NO_EXPENSES_RECORDED" as const : "PARTIAL_RECORDED_COSTS" as const;
+    const estimatedProfit = currentExpenses.length ? current.net - expenseTotal : null;
     const propertySearch = query.propertySearch?.trim().toLocaleLowerCase();
     const propertyStatus = query.propertyStatus ?? "all";
     const propertySort = query.propertySort ?? "net";
@@ -362,6 +403,9 @@ export const hostEarningsAnalyticsService = {
         averageRealizedNightlyRateCents: moneyPer(current.accommodation, current.nights),
         previousNetHostEarningsCents: previous.net,
         previousAccommodationRevenueCents: previous.accommodation,
+        previousQualifyingBookingsCount: previous.bookings,
+        previousRevenuePerBookingCents: moneyPer(previous.accommodation, previous.bookings),
+        previousNetPerBookingCents: moneyPer(previous.net, previous.bookings),
       },
       revpan: {
         valueCents: moneyPer(current.accommodation, inventory.bookableNights),
@@ -370,22 +414,27 @@ export const hostEarningsAnalyticsService = {
         availableNights: inventory.availableNights,
         bookableNights: inventory.bookableNights,
         occupancyRatePercentage: inventory.ratePercentage,
+        previousOccupancyRatePercentage: previousInventory.ratePercentage,
       },
       costs: {
         status: costsStatus,
-        message: expenses.length
+        message: currentExpenses.length
           ? "Recorded operating costs are shown by expense date. Costs without a booking link are not allocated across stays."
           : "No operating expenses have been recorded for this period. This does not mean operating costs were zero.",
         totalRecordedOperatingCostsCents: expenseTotal,
-        costPerCompletedStayCents: expenses.length ? moneyPer(expenseTotal, qualifyingCompletedStays) : null,
-        costPerOccupiedNightCents: expenses.length ? moneyPer(expenseTotal, current.nights) : null,
+        costPerCompletedStayCents: currentExpenses.length ? moneyPer(expenseTotal, qualifyingCompletedStays) : null,
+        costPerOccupiedNightCents: currentExpenses.length ? moneyPer(expenseTotal, current.nights) : null,
+        previousTotalRecordedOperatingCostsCents: previousExpenseTotal,
+        previousCostPerCompletedStayCents: previousExpenses.length
+          ? moneyPer(previousExpenseTotal, previous.bookings)
+          : null,
         categoryBreakdown: Array.from(expenseByCategory.entries()).map(([category, amountCents]) => ({ category, amountCents })).sort((left, right) => right.amountCents - left.amountCents),
         expenseCoverage: costCoverage,
-        expenseHistory: expenses.slice(0, 12).map((expense) => ({ id: expense.id, listingId: expense.listingId, category: expense.category, amountCents: expense.amountCents, currency: expense.currency, expenseDate: expense.expenseDate.toISOString(), description: expense.description })),
+        expenseHistory: currentExpenses.slice(0, 12).map((expense) => ({ id: expense.id, listingId: expense.listingId, category: expense.category, amountCents: expense.amountCents, currency: expense.currency, expenseDate: expense.expenseDate.toISOString(), description: expense.description })),
       },
       profit: {
         status: costsStatus,
-        message: expenses.length
+        message: currentExpenses.length
           ? "Estimated Profit Based on Recorded Costs. It is not a complete accounting profit statement."
           : "Estimated profit is unavailable until recorded operating costs exist for this period.",
         estimatedOperatingProfitCents: estimatedProfit,

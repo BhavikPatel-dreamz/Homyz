@@ -2350,6 +2350,46 @@ export interface HostEarningsChartPoint {
   secondaryStaysCount?: number;
 }
 
+export interface EarningsSourceBreakdown {
+  bookings: number;
+  cleaningFees: number;
+  serviceFees: number;
+  other: number;
+  total: number;
+  bookingsPercentage: number;
+  cleaningPercentage: number;
+  servicePercentage: number;
+  otherPercentage: number;
+}
+
+export interface EarningsListingTypeItem {
+  type: string;
+  amount: number;
+  percentage: number;
+  color?: string;
+}
+
+export interface EarningsPayoutStatusItem {
+  status: "paid" | "pending" | "cancelled";
+  label: string;
+  amount: number;
+  percentage: number;
+  color?: string;
+}
+
+export interface EarningsPerformanceMetrics {
+  totalEarnings: number;
+  totalEarningsDelta: number | null;
+  bookingsCount: number;
+  bookingsDelta: number | null;
+  averagePerBooking: number;
+  averagePerBookingDelta: number | null;
+  hostCommission: number;
+  hostCommissionDelta: number | null;
+  totalGuests: number;
+  totalGuestsDelta: number | null;
+}
+
 export interface HostEarningsReportingData {
   timeframe?: TimeframeGranularity;
   timeframeLabel?: string;
@@ -2378,6 +2418,10 @@ export interface HostEarningsReportingData {
     currency: string;
     amount: number;
   }>;
+  sourceBreakdown?: EarningsSourceBreakdown;
+  listingTypeBreakdown?: EarningsListingTypeItem[];
+  payoutStatusBreakdown?: EarningsPayoutStatusItem[];
+  performanceMetrics?: EarningsPerformanceMetrics;
   dataBasis: "COMPLETED_STAY_NET_HOST_PAYOUT";
   unavailableSnapshotCount: number;
 }
@@ -2404,7 +2448,16 @@ const earningsBookingSelect = {
   checkInInstructionsViewedAt: true,
   createdAt: true,
   updatedAt: true,
-  listing: { select: { id: true, title: true, photos: true } },
+  listing: {
+    select: {
+      id: true,
+      title: true,
+      photos: true,
+      listingType: true,
+      propertyType: true,
+      placeCategory: true,
+    },
+  },
   payments: { select: { id: true, status: true, capturedAmount: true } },
   refunds: { select: { id: true, status: true, amount: true } },
   qualityIncidents: { select: { id: true, status: true } },
@@ -3103,11 +3156,17 @@ export async function getHostEarningsOverview(
     compBounds.label = timeframeBounds.comparisonLabel;
   }
 
-  const ytdEnd =
-    selectedYear === currentYear
-      ? now
-      : new Date(Date.UTC(selectedYear, 11, 31, 23, 59, 59, 999));
-  const yearStart = new Date(Date.UTC(selectedYear, 0, 1));
+  // "Year to date" is anchored to the selected reporting period, not to the
+  // present day. This makes a historical month view reproducible after a
+  // refresh and prevents later bookings leaking into an earlier selection.
+  const ytdYear = timeframeBounds.endDate.getUTCFullYear();
+  const yearStart = new Date(Date.UTC(ytdYear, 0, 1));
+  const yearEnd = new Date(Date.UTC(ytdYear, 11, 31, 23, 59, 59, 999));
+  const ytdEnd = new Date(Math.min(
+    timeframeBounds.endDate.getTime(),
+    yearEnd.getTime(),
+    ytdYear === currentYear ? now.getTime() : yearEnd.getTime(),
+  ));
   const reportingCurrency = normalizeSettlementCurrency(query.currency);
   const bookingScope = {
     listingId: { in: scopedListingIds },
@@ -3149,6 +3208,13 @@ export async function getHostEarningsOverview(
   // reuse it instead of issuing a second unbounded booking query.
   const upcomingBookings = payoutCandidateBookings;
   const recentBookings = payoutCandidateBookings;
+  // Adjustments are persisted on the host record, so explicitly associate them
+  // with the host's currently scoped bookings before exposing them in a
+  // listing-filtered financial total.
+  const scopedBookingIds = new Set([
+    ...reportingBookings.map((booking) => booking.id),
+    ...payoutCandidateBookings.map((booking) => booking.id),
+  ]);
 
   let totalPaidVolume = 0;
   let totalPaidCount = 0;
@@ -3411,15 +3477,6 @@ export async function getHostEarningsOverview(
     bucket.ytdGross += calc.grossEarnings;
     bucket.ytdPlatformFee += calc.platformFee;
     bucket.ytdNet += calc.netPayout;
-    totalGrossVolume += calc.grossEarnings;
-    totalPlatformCommission += calc.platformFee;
-    if (calc.status === "PAID") {
-      totalPaidVolume += calc.netPayout;
-      totalPaidCount++;
-    } else {
-      eligibleSettlementVolume += calc.netPayout;
-      eligibleSettlementCount++;
-    }
 
     // Recognize in active timeframe
     if (
@@ -3427,8 +3484,29 @@ export async function getHostEarningsOverview(
       b.endDate <= timeframeBounds.endDate
     ) {
       bucket.monthlyRecognized += calc.netPayout;
+      totalGrossVolume += calc.grossEarnings;
+      totalPlatformCommission += calc.platformFee;
+      if (calc.status === "PAID") {
+        totalPaidVolume += calc.netPayout;
+        totalPaidCount++;
+      } else {
+        eligibleSettlementVolume += calc.netPayout;
+        eligibleSettlementCount++;
+      }
     }
   }
+
+  // Payout activity follows payout dates rather than stay-completion dates:
+  // scheduled records use their scheduled payout date and paid records use the
+  // execution date. This keeps the dashboard's global period filter truthful
+  // without affecting financial-recognition calculations above.
+  const isWithinReportingPayoutPeriod = (value: string | null | undefined) => {
+    if (!value) return false;
+    const date = new Date(value);
+    return !Number.isNaN(date.getTime()) &&
+      date >= timeframeBounds.startDate &&
+      date <= timeframeBounds.endDate;
+  };
 
   for (const b of upcomingBookings) {
     const calc = calculateBookingPayout(b, {
@@ -3442,6 +3520,7 @@ export async function getHostEarningsOverview(
       continue;
     if (reportingCurrency && calc.currency !== reportingCurrency) continue;
     const item = toPayoutPreview(b, calc);
+    if (!isWithinReportingPayoutPeriod(item.scheduledPayoutDate)) continue;
     upcomingPayouts.push(item);
     getTotals(calc.currency).upcomingPayout += calc.netPayout;
     if (calc.status === "SCHEDULED") {
@@ -3457,7 +3536,9 @@ export async function getHostEarningsOverview(
     });
     if (calc.status !== "PAID") continue;
     if (reportingCurrency && calc.currency !== reportingCurrency) continue;
-    completedPayouts.push(toPayoutPreview(b, calc));
+    const item = toPayoutPreview(b, calc);
+    if (!isWithinReportingPayoutPeriod(item.executionDetails?.executedAt)) continue;
+    completedPayouts.push(item);
   }
   completedPayouts.sort((left, right) => {
     const leftDate = new Date(left.executionDetails?.executedAt || left.endDate).getTime();
@@ -3474,6 +3555,7 @@ export async function getHostEarningsOverview(
     const createdAt = new Date(adjustment.createdAt);
     if (
       adjustment.status !== "DEDUCTED" ||
+      !scopedBookingIds.has(adjustment.bookingId) ||
       createdAt < yearStart ||
       createdAt > ytdEnd
     )
@@ -3517,6 +3599,21 @@ export async function getHostEarningsOverview(
     point.secondaryStaysCount = 0;
   }
 
+  let srcBookings = 0;
+  let srcCleaning = 0;
+  let srcFees = 0;
+  let srcOther = 0;
+  let lTypeEntire = 0;
+  let lTypePrivate = 0;
+  let lTypeShared = 0;
+  let lTypeExperience = 0;
+  let statusPaid = 0;
+  let statusPending = 0;
+  let statusCancelled = 0;
+  let periodBookingsCount = 0;
+  let periodGuestsCount = 0;
+  let compGuestsCount = 0;
+
   for (const b of reportingBookings) {
     const calc = calculateBookingPayout(b, {
       now,
@@ -3535,6 +3632,43 @@ export async function getHostEarningsOverview(
       b.endDate >= timeframeBounds.startDate &&
       b.endDate <= timeframeBounds.endDate
     ) {
+      periodBookingsCount++;
+      periodGuestsCount += (b.guests || 1);
+
+      // Source breakdown
+      const nights = Math.max(1, Math.round((b.endDate.getTime() - b.startDate.getTime()) / (24 * 60 * 60 * 1000)));
+      const cleaningPart = b.cleaningFee || 0;
+      const feePart = calc.platformFee || 0;
+      const roomPart = b.nightlyPrice ? b.nightlyPrice * nights : Math.max(0, calc.grossEarnings - cleaningPart);
+      const otherPart = Math.max(0, calc.grossEarnings - roomPart - cleaningPart);
+
+      srcBookings += roomPart;
+      srcCleaning += cleaningPart;
+      srcFees += feePart;
+      srcOther += otherPart;
+
+      // Listing type breakdown
+      const listingObj = b.listing as { listingType?: string | null; propertyType?: string | null } | null;
+      const rawType = (listingObj?.listingType || listingObj?.propertyType || "").toLowerCase();
+      if (rawType.includes("private")) {
+        lTypePrivate += calc.netPayout;
+      } else if (rawType.includes("shared")) {
+        lTypeShared += calc.netPayout;
+      } else if (rawType.includes("experience")) {
+        lTypeExperience += calc.netPayout;
+      } else {
+        lTypeEntire += calc.netPayout;
+      }
+
+      // Payout status breakdown
+      if (calc.status === "PAID") {
+        statusPaid += calc.netPayout;
+      } else if (["SCHEDULED", "ELIGIBLE_SETTLEMENT", "PROCESSING"].includes(calc.status)) {
+        statusPending += calc.netPayout;
+      } else {
+        statusCancelled += calc.netPayout;
+      }
+
       const pt = findActivePoint(b.endDate);
       if (pt) {
         pt.amount += calc.netPayout;
@@ -3594,6 +3728,7 @@ export async function getHostEarningsOverview(
       compGrossEarnings += calc.grossEarnings;
       compPlatformFee += calc.platformFee;
       compCompletedStaysCount++;
+      compGuestsCount += (b.guests || 1);
 
       const compPt = findCompActivePoint(b.endDate);
       if (compPt) {
@@ -3622,6 +3757,55 @@ export async function getHostEarningsOverview(
   const selectedBucket = totals.get(chartCurrency) || { monthlyRecognized: 0 };
   const primaryTimeframeNet = selectedBucket.monthlyRecognized;
   const deltaInfo = calculateDelta(primaryTimeframeNet, compNetEarnings);
+
+  const srcTotal = srcBookings + srcCleaning + srcFees + srcOther || primaryTimeframeNet || 1;
+  const sourceBreakdown: EarningsSourceBreakdown = {
+    bookings: srcBookings,
+    cleaningFees: srcCleaning,
+    serviceFees: srcFees,
+    other: srcOther,
+    total: primaryTimeframeNet,
+    bookingsPercentage: Math.round((srcBookings / srcTotal) * 100),
+    cleaningPercentage: Math.round((srcCleaning / srcTotal) * 100),
+    servicePercentage: Math.round((srcFees / srcTotal) * 100),
+    otherPercentage: Math.max(0, 100 - Math.round((srcBookings / srcTotal) * 100) - Math.round((srcCleaning / srcTotal) * 100) - Math.round((srcFees / srcTotal) * 100)),
+  };
+
+  const lTypeTotal = lTypeEntire + lTypePrivate + lTypeShared + lTypeExperience || primaryTimeframeNet || 1;
+  const listingTypeBreakdown: EarningsListingTypeItem[] = [
+    { type: "Entire home", amount: lTypeEntire, percentage: Math.round((lTypeEntire / lTypeTotal) * 100), color: "#D97706" },
+    { type: "Private room", amount: lTypePrivate, percentage: Math.round((lTypePrivate / lTypeTotal) * 100), color: "#FCD34D" },
+    { type: "Shared room", amount: lTypeShared, percentage: Math.round((lTypeShared / lTypeTotal) * 100), color: "#CBD5E1" },
+    { type: "Experience", amount: lTypeExperience, percentage: Math.max(0, 100 - Math.round((lTypeEntire / lTypeTotal) * 100) - Math.round((lTypePrivate / lTypeTotal) * 100) - Math.round((lTypeShared / lTypeTotal) * 100)), color: "#1E293B" },
+  ];
+
+  const pStatusTotal = statusPaid + statusPending + statusCancelled || primaryTimeframeNet || 1;
+  const payoutStatusBreakdown: EarningsPayoutStatusItem[] = [
+    { status: "paid", label: "Paid", amount: statusPaid, percentage: Math.round((statusPaid / pStatusTotal) * 100), color: "#D97706" },
+    { status: "pending", label: "Pending", amount: statusPending, percentage: Math.round((statusPending / pStatusTotal) * 100), color: "#FCD34D" },
+    { status: "cancelled", label: "Cancelled", amount: statusCancelled, percentage: Math.max(0, 100 - Math.round((statusPaid / pStatusTotal) * 100) - Math.round((statusPending / pStatusTotal) * 100)), color: "#CBD5E1" },
+  ];
+
+  const calcDeltaPct = (curr: number, prev: number) => {
+    if (prev <= 0) return curr > 0 ? 100 : 0;
+    return Math.round(((curr - prev) / prev) * 100);
+  };
+
+  const avgPerBooking = periodBookingsCount > 0 ? Math.round(primaryTimeframeNet / periodBookingsCount) : 0;
+  const prevAvg = compCompletedStaysCount > 0 ? Math.round(compNetEarnings / compCompletedStaysCount) : 0;
+
+  const performanceMetrics: EarningsPerformanceMetrics = {
+    totalEarnings: primaryTimeframeNet,
+    totalEarningsDelta: deltaInfo.deltaPercentage,
+    bookingsCount: periodBookingsCount,
+    bookingsDelta: hasComparison ? calcDeltaPct(periodBookingsCount, compCompletedStaysCount) : null,
+    averagePerBooking: avgPerBooking,
+    averagePerBookingDelta: hasComparison ? calcDeltaPct(avgPerBooking, prevAvg) : null,
+    hostCommission: totalPlatformCommission,
+    hostCommissionDelta: hasComparison ? calcDeltaPct(totalPlatformCommission, compPlatformFee) : null,
+    totalGuests: periodGuestsCount,
+    totalGuestsDelta: hasComparison ? calcDeltaPct(periodGuestsCount, compGuestsCount) : null,
+  };
 
   const comparisonData: EarningsComparisonData | null = hasComparison
     ? {
@@ -3690,6 +3874,10 @@ export async function getHostEarningsOverview(
       },
       comparison: comparisonData,
       reports,
+      sourceBreakdown,
+      listingTypeBreakdown,
+      payoutStatusBreakdown,
+      performanceMetrics,
       dataBasis: "COMPLETED_STAY_NET_HOST_PAYOUT",
       unavailableSnapshotCount,
     },

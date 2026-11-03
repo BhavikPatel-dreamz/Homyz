@@ -121,12 +121,12 @@ describe("Host Listings Optimization - Architecture and Contracts", () => {
       "Skeleton should default to 12 cards",
     );
     assert.ok(
-      skeletonContent.includes("aspect-[375/352] sm:aspect-[490/514]"),
+      skeletonContent.includes("aspect-[4/3]"),
       "Skeleton must match the card image aspect ratio contract",
     );
     assert.ok(
-      skeletonContent.includes("sm:grid-cols-2 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4"),
-      "Skeleton must mirror the responsive grid columns",
+      skeletonContent.includes("grid-cols-[repeat(auto-fill,minmax(min(100%,260px),min(100%,298px)))] gap-x-5"),
+      "Skeleton must mirror the compact auto-filled grid tracks",
     );
     assert.ok(
       skeletonContent.includes("Status Tabs Pill Skeleton"),
@@ -152,6 +152,18 @@ describe("Host Listings Optimization - Architecture and Contracts", () => {
     assert.ok(
       workspaceContent.includes("abortControllerRef = useRef"),
       "Workspace must track AbortController for cancelling stale requests",
+    );
+    assert.ok(
+      workspaceContent.includes("max-w-[1600px] px-4 sm:px-6 lg:px-8"),
+      "Listings content must align to the shared header container and responsive gutters",
+    );
+    assert.ok(
+      workspaceContent.includes("sm:max-w-[298px]") && workspaceContent.includes("aspect-[4/3]"),
+      "Listing cards must remain compact with consistent 4:3 imagery",
+    );
+    assert.ok(
+      workspaceContent.includes("grid-cols-[repeat(auto-fill,minmax(min(100%,260px),min(100%,298px)))] gap-x-5"),
+      "Listing cards must use compact auto-filled grid tracks with consistent spacing",
     );
 
     // 300ms debounce

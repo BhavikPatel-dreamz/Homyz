@@ -9,6 +9,7 @@ console.log("==================================================================\
 const appHeaderPath = path.resolve("./components/dashboard/app-header.tsx");
 const hostHeaderPath = path.resolve("./components/host/host-header.tsx");
 const hostSubNavPath = path.resolve("./components/host/host-sub-nav.tsx");
+const hostLayoutPath = path.resolve("./app/(protected)/host/layout.tsx");
 
 const hostTodayPagePath = path.resolve("./app/(protected)/host/today/page.tsx");
 const hostCalendarPagePath = path.resolve("./app/(protected)/host/calendar/page.tsx");
@@ -17,10 +18,12 @@ const hostMessagesPagePath = path.resolve("./app/(protected)/host/messages/page.
 const hostBookingsPagePath = path.resolve("./app/(protected)/host/bookings/page.tsx");
 const hostBookingDetailPagePath = path.resolve("./app/(protected)/host/bookings/[id]/page.tsx");
 const hostListingEditorPath = path.resolve("./app/(protected)/host/listings/[id]/host-listing-editor-client.tsx");
+const hostMessagesWorkspacePath = path.resolve("./components/host/messages/host-messages-workspace.tsx");
 
 const appHeaderCode = fs.readFileSync(appHeaderPath, "utf-8");
 const hostHeaderCode = fs.readFileSync(hostHeaderPath, "utf-8");
 const hostSubNavCode = fs.readFileSync(hostSubNavPath, "utf-8");
+const hostLayoutCode = fs.readFileSync(hostLayoutPath, "utf-8");
 const hostTodayPageCode = fs.readFileSync(hostTodayPagePath, "utf-8");
 const hostCalendarPageCode = fs.readFileSync(hostCalendarPagePath, "utf-8");
 const hostListingsPageCode = fs.readFileSync(hostListingsPagePath, "utf-8");
@@ -28,6 +31,7 @@ const hostMessagesPageCode = fs.readFileSync(hostMessagesPagePath, "utf-8");
 const hostBookingsPageCode = fs.readFileSync(hostBookingsPagePath, "utf-8");
 const hostBookingDetailPageCode = fs.readFileSync(hostBookingDetailPagePath, "utf-8");
 const hostListingEditorCode = fs.readFileSync(hostListingEditorPath, "utf-8");
+const hostMessagesWorkspaceCode = fs.readFileSync(hostMessagesWorkspacePath, "utf-8");
 
 let passed = 0;
 let total = 0;
@@ -61,6 +65,47 @@ runTest("HostHeader integrates with AppHeader and forwards user and divider prop
   assert.ok(hostHeaderCode.includes("AppHeader"), "HostHeader must render AppHeader");
   assert.ok(hostHeaderCode.includes("user={user}"), "HostHeader must forward user prop to AppHeader");
   assert.ok(hostHeaderCode.includes("showBottomBorder={showBottomBorder}"), "HostHeader must forward showBottomBorder");
+});
+
+runTest("Host layout keeps one shared header mounted across route changes", () => {
+  assert.ok(
+    hostLayoutCode.includes("<HostLayoutShell>{children}</HostLayoutShell>"),
+    "Host layout must own the persistent shared header shell"
+  );
+  assert.ok(
+    hostHeaderCode.includes("<AppHeader />"),
+    "The shared Host layout must render one AppHeader"
+  );
+  assert.ok(
+    hostHeaderCode.includes("if (isManagedByLayout) return null;"),
+    "Page-level HostHeader calls must not duplicate the layout header"
+  );
+});
+
+runTest("Shared Host header keeps a stable height and exposes primary navigation on mobile", () => {
+  assert.ok(
+    appHeaderCode.includes("h-20 w-full items-center justify-between border-b-0 py-0 md:h-[88px] lg:h-[96px]"),
+    "Host header height must remain fixed at each responsive breakpoint"
+  );
+  assert.ok(
+    appHeaderCode.includes('className="grid h-11 grid-cols-4 border-t border-zinc-100 md:hidden"'),
+    "Mobile Host navigation must keep four routes aligned in a fixed-height row"
+  );
+  assert.ok(
+    appHeaderCode.includes("aria-current={tab.isActive ? \"page\" : undefined}"),
+    "Mobile navigation must expose the active route accessibly"
+  );
+});
+
+runTest("Messages workspace avoids a duplicate inbox title below the main Host navigation", () => {
+  assert.ok(
+    !hostMessagesWorkspaceCode.includes("messages_column_title"),
+    "Messages inbox must not repeat the active primary navigation label as a header"
+  );
+  assert.ok(
+    hostMessagesWorkspaceCode.includes("h-[calc(100dvh-124px)]"),
+    "Mobile messages panel height must account for the shared two-row Host header"
+  );
 });
 
 // -----------------------------------------------------------------------------

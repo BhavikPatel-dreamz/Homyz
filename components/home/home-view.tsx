@@ -27,6 +27,7 @@ import { Container } from "../ui";
 import { ContinueSearchingBar } from "./continue-searching-bar";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { getPrimaryListingBadge } from "@/lib/listings/card-badge";
+import { MobileBottomNav } from "./mobile-bottom-nav";
 
 export interface HomeViewProps {
   sections?: HomepageSection[];
@@ -283,6 +284,7 @@ export function HomeView({
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
       body: JSON.stringify({
+        eventType: "SEARCH_SUBMITTED",
         destination: params.destination || params.city || params.placeName || null,
         destinationType: params.locationType || null,
         city: params.city || null,
@@ -486,7 +488,7 @@ export function HomeView({
       <AppHeader />
 
       {/* Main Content */}
-      <main className="homepage-main sm:mt-5 w-full flex-1 pb-16 sm:pb-[150px]">
+      <main className="homepage-main w-full flex-1 pb-[calc(5.75rem+env(safe-area-inset-bottom))] sm:mt-5 sm:pb-[150px] lg:pb-[150px]">
         <Container>
           {/* Hero Section */}
           <HeroSection onSearch={handleSearch} isSearching={isNavigatingSearch} />
@@ -505,7 +507,7 @@ export function HomeView({
 
           {/* Recently Viewed Client Section */}
           {recentlyViewedCards.length > 0 && !propertySections.some((s) => s.id === "recently-viewed") && (
-            <section className="mt-8 sm:mt-[92px]">
+            <section className="mt-8 sm:mt-[72px]">
               <HomePropertySection
                 title={t("home_recently_viewed", "Recently viewed")}
                 cards={recentlyViewedCards}
@@ -521,7 +523,7 @@ export function HomeView({
           {isNavigatingSearch ? (
             <HomepageLoadingState />
           ) : (
-            <div className="mt-8 sm:mt-[92px] space-y-10 sm:space-y-[78px]">
+            <div className="mt-8 sm:mt-[72px] space-y-8 sm:space-y-10 lg:space-y-[78px]">
               {propertySections.length === 0 ? (
                 <div className="py-16 text-center space-y-4 max-w-lg mx-auto bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] rounded-3xl border border-white p-8">
                   <div className="w-14 h-14 bg-amber-100/70 rounded-full flex items-center justify-center mx-auto text-2xl">
@@ -638,7 +640,7 @@ export function HomeView({
           {/* Trending Locations Destination Cards */}
           {trendingLocations.length > 0 && (
             <LazySection priority={false}>
-              <section className="mt-8 sm:mt-[92px]">
+              <section className="mt-8 sm:mt-[72px]">
                 <div className="mb-4 sm:mb-6 flex items-center justify-between gap-3">
                   <h2 className="text-[20px] sm:text-[22px] font-medium leading-7 sm:leading-8 tracking-[-.35px] text-[#1f1f1f]">
                     {t("home_trending_destinations", "Trending destinations")}
@@ -675,6 +677,8 @@ export function HomeView({
 
         </Container>
       </main>
+
+      <MobileBottomNav />
 
       {/* Footer */}
       <Footer />

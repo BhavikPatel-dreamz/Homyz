@@ -1,15 +1,15 @@
 import { NextRequest } from "next/server";
 import { apiHandler } from "@/lib/api/handler";
 import { ok } from "@/lib/api/response";
-import { requireApiRole } from "@/lib/permissions/guards";
-import { Role } from "@/generated/prisma/enums";
+import { requireApiPermission } from "@/lib/permissions/guards";
+import { PERMISSIONS } from "@/lib/permissions/permissions";
 import { AppError } from "@/lib/api/errors";
 import { payoutRoutingService } from "@/services/payout-routing.service";
 
 export const dynamic = "force-dynamic";
 
 export const POST = apiHandler(async (req: NextRequest) => {
-  const actor = await requireApiRole(req, [Role.ADMIN]);
+  const actor = await requireApiPermission(req, PERMISSIONS.PAYOUTS_MANAGE);
   const body = await req.json();
 
   if (!body.batchReference || !body.status) {
@@ -29,4 +29,3 @@ export const POST = apiHandler(async (req: NextRequest) => {
 
   return ok(result);
 });
-

@@ -215,7 +215,7 @@ export function GenerateReportModal({
         <form onSubmit={handleGenerate} className="mt-5 space-y-6">
           {/* Period Selection */}
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-zinc-600">
+            <label className="text-xs font-medium uppercase tracking-wider text-zinc-600">
               Reporting period
             </label>
             <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
@@ -224,7 +224,7 @@ export function GenerateReportModal({
                   key={item.id}
                   type="button"
                   onClick={() => setPeriod(item.id)}
-                  className={`rounded-xl border px-3 py-2 text-xs font-semibold transition-colors ${
+                  className={`rounded-xl border px-3 py-2 text-xs font-medium transition-colors ${
                     period === item.id
                       ? "border-zinc-950 bg-zinc-950 text-white"
                       : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400"
@@ -264,7 +264,7 @@ export function GenerateReportModal({
           {/* Listings & Currency */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-600">
+              <label className="text-xs font-medium uppercase tracking-wider text-zinc-600">
                 Listing / Property
               </label>
               <select
@@ -282,7 +282,7 @@ export function GenerateReportModal({
             </div>
 
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-600">
+              <label className="text-xs font-medium uppercase tracking-wider text-zinc-600">
                 Settlement Currency
               </label>
               <select
@@ -302,7 +302,7 @@ export function GenerateReportModal({
           {/* Earnings Type & Payout Status */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-600">
+              <label className="text-xs font-medium uppercase tracking-wider text-zinc-600">
                 Earnings Type
               </label>
               <select
@@ -317,7 +317,7 @@ export function GenerateReportModal({
             </div>
 
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-600">
+              <label className="text-xs font-medium uppercase tracking-wider text-zinc-600">
                 Payout Status
               </label>
               <select
@@ -334,7 +334,7 @@ export function GenerateReportModal({
 
           {/* Export Format */}
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-zinc-600">
+            <label className="text-xs font-medium uppercase tracking-wider text-zinc-600">
               Report Format
             </label>
             <div className="mt-2 flex gap-4">
@@ -367,12 +367,12 @@ export function GenerateReportModal({
           <div className="rounded-2xl border border-zinc-200 bg-zinc-50/50 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 pb-3">
               <div>
-                <p className="text-sm font-semibold text-zinc-900">Include report columns</p>
+                <p className="text-sm font-medium text-zinc-900">Include report columns</p>
                 <p className="text-xs text-zinc-500">
                   {selectedFields.length} columns selected
                 </p>
               </div>
-              <div className="flex gap-2 text-xs font-semibold">
+              <div className="flex gap-2 text-xs font-medium">
                 <button
                   type="button"
                   onClick={selectAllFields}
@@ -402,7 +402,7 @@ export function GenerateReportModal({
             <div className="mt-4 space-y-4">
               {FIELD_GROUPS.map((group) => (
                 <div key={group.title}>
-                  <p className="text-xs font-semibold text-zinc-500">{group.title}</p>
+                  <p className="text-xs font-medium text-zinc-500">{group.title}</p>
                   <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {group.fields.map((field) => (
                       <label
@@ -429,7 +429,7 @@ export function GenerateReportModal({
             <button
               type="button"
               onClick={resetToDefault}
-              className="text-xs font-semibold text-zinc-600 underline underline-offset-4 hover:text-zinc-950"
+              className="text-xs font-medium text-zinc-600 underline underline-offset-4 hover:text-zinc-950"
             >
               Reset filters
             </button>
@@ -437,14 +437,14 @@ export function GenerateReportModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
+                className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isGenerating}
-                className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-zinc-800 disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-5 py-2 text-sm font-medium text-white shadow-xs hover:bg-zinc-800 disabled:opacity-50"
               >
                 {isGenerating ? (
                   <>

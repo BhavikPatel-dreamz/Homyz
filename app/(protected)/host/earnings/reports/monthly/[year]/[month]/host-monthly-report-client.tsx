@@ -105,17 +105,17 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
       <header className="border-b border-zinc-200 pb-6">
         <Link
           href={returnToReportsHref}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 transition-colors hover:text-zinc-950"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 transition-colors hover:text-zinc-950"
         >
           ← Back to all reports
         </Link>
 
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
               Monthly Earnings Report
             </p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
+            <h1 className="mt-1 text-3xl font-medium tracking-tight text-zinc-950 sm:text-4xl">
               {data.monthLabel}
             </h1>
             <p className="mt-1 text-sm text-zinc-600">
@@ -129,7 +129,7 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
               type="button"
               disabled={downloadingType !== null}
               onClick={() => handleDownload("csv")}
-              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 px-4 py-2 text-xs font-semibold text-zinc-800 transition-colors hover:border-zinc-900 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 px-4 py-2 text-xs font-medium text-zinc-800 transition-colors hover:border-zinc-900 disabled:opacity-50"
             >
               {downloadingType === "csv" ? "Exporting…" : "Download CSV"}
             </button>
@@ -137,7 +137,7 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
               type="button"
               disabled={downloadingType !== null}
               onClick={() => handleDownload("pdf")}
-              className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-zinc-800 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-4 py-2 text-xs font-medium text-white shadow-xs transition-colors hover:bg-zinc-800 disabled:opacity-50"
             >
               {downloadingType === "pdf" ? "Exporting…" : "Download PDF"}
             </button>
@@ -147,14 +147,14 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
 
       {/* Financial Summary */}
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+        <h2 className="text-sm font-medium uppercase tracking-wider text-zinc-500">
           Financial Summary
         </h2>
 
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
             <p className="text-xs text-zinc-500">Gross earnings</p>
-            <p className="mt-1 text-xl font-bold text-zinc-900">
+            <p className="mt-1 text-xl font-medium text-zinc-900">
               {formatNative(summary.grossEarnings, currency)}
             </p>
             <p className="mt-0.5 text-[11px] text-zinc-400">Before deductions</p>
@@ -162,7 +162,7 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
 
           <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
             <p className="text-xs text-zinc-500">Host service fee</p>
-            <p className="mt-1 text-xl font-bold text-zinc-700">
+            <p className="mt-1 text-xl font-medium text-zinc-700">
               −{formatNative(summary.platformFee, currency)}
             </p>
             <p className="mt-0.5 text-[11px] text-zinc-400">Platform commission</p>
@@ -170,7 +170,7 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
 
           <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
             <p className="text-xs text-zinc-500">Adjustments</p>
-            <p className="mt-1 text-xl font-bold text-zinc-700">
+            <p className="mt-1 text-xl font-medium text-zinc-700">
               {summary.adjustments < 0 ? "−" : ""}
               {formatNative(Math.abs(summary.adjustments), currency)}
             </p>
@@ -179,7 +179,7 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
 
           <div className="rounded-2xl border border-zinc-900 bg-zinc-950 p-4 text-white">
             <p className="text-xs text-zinc-400">Net earnings</p>
-            <p className="mt-1 text-xl font-bold text-white">
+            <p className="mt-1 text-xl font-medium text-white">
               {formatNative(summary.netEarnings, currency)}
             </p>
             <p className="mt-0.5 text-[11px] text-zinc-400">Recognized host payout</p>
@@ -189,19 +189,19 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
         <div className="mt-6 flex flex-wrap gap-8 border-t border-zinc-200 pt-6">
           <div>
             <p className="text-xs text-zinc-500">Paid disbursements</p>
-            <p className="mt-1 text-base font-semibold text-emerald-700">
+            <p className="mt-1 text-base font-medium text-emerald-700">
               {formatNative(summary.paidPayouts, currency)}
             </p>
           </div>
           <div>
             <p className="text-xs text-zinc-500">Upcoming payouts</p>
-            <p className="mt-1 text-base font-semibold text-zinc-900">
+            <p className="mt-1 text-base font-medium text-zinc-900">
               {formatNative(summary.upcomingPayouts, currency)}
             </p>
           </div>
           <div>
             <p className="text-xs text-zinc-500">Taxes withheld</p>
-            <p className="mt-1 text-base font-semibold text-zinc-700">
+            <p className="mt-1 text-base font-medium text-zinc-700">
               {formatNative(summary.taxesWithheld, currency)}
             </p>
           </div>
@@ -213,12 +213,12 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
         {/* Earnings by Property */}
         <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-zinc-950">Earnings by property</h2>
+            <h2 className="text-lg font-medium text-zinc-950">Earnings by property</h2>
             {selectedPropertyFilter && (
               <button
                 type="button"
                 onClick={() => setSelectedPropertyFilter(null)}
-                className="text-xs font-semibold text-zinc-600 underline hover:text-zinc-950"
+                className="text-xs font-medium text-zinc-600 underline hover:text-zinc-950"
               >
                 Clear filter
               </button>
@@ -242,14 +242,14 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
                     }`}
                   >
                     <div>
-                      <p className="text-sm font-semibold text-zinc-900">{p.listingTitle}</p>
+                      <p className="text-sm font-medium text-zinc-900">{p.listingTitle}</p>
                       <p className="text-xs text-zinc-500">
                         {p.transactionsCount} {p.transactionsCount === 1 ? "booking" : "bookings"} · Gross:{" "}
                         {formatNative(p.grossEarnings, currency)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-zinc-950">
+                      <p className="text-sm font-medium text-zinc-950">
                         {formatNative(p.netEarnings, currency)}
                       </p>
                       <span className="text-[11px] text-zinc-400">
@@ -269,36 +269,36 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
         <section className="space-y-6">
           {/* Earnings by Type */}
           <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs">
-            <h2 className="text-lg font-bold text-zinc-950">Earnings by category</h2>
+            <h2 className="text-lg font-medium text-zinc-950">Earnings by category</h2>
             <div className="mt-4 divide-y divide-zinc-100 text-sm">
               <div className="flex justify-between py-2.5">
                 <span className="text-zinc-600">Nightly accommodation</span>
-                <span className="font-semibold text-zinc-900">
+                <span className="font-medium text-zinc-900">
                   {formatNative(data.earningsTypeBreakdown.accommodation, currency)}
                 </span>
               </div>
               <div className="flex justify-between py-2.5">
                 <span className="text-zinc-600">Cleaning fees</span>
-                <span className="font-semibold text-zinc-900">
+                <span className="font-medium text-zinc-900">
                   {formatNative(data.earningsTypeBreakdown.cleaningFee, currency)}
                 </span>
               </div>
               <div className="flex justify-between py-2.5">
                 <span className="text-zinc-600">Additional guest fees</span>
-                <span className="font-semibold text-zinc-900">
+                <span className="font-medium text-zinc-900">
                   {formatNative(data.earningsTypeBreakdown.extraGuestFee, currency)}
                 </span>
               </div>
               <div className="flex justify-between py-2.5">
                 <span className="text-zinc-600">Pet fees</span>
-                <span className="font-semibold text-zinc-900">
+                <span className="font-medium text-zinc-900">
                   {formatNative(data.earningsTypeBreakdown.petFee, currency)}
                 </span>
               </div>
               {data.earningsTypeBreakdown.adjustments !== 0 && (
                 <div className="flex justify-between py-2.5">
                   <span className="text-zinc-600">Recorded adjustments</span>
-                  <span className="font-semibold text-zinc-900">
+                  <span className="font-medium text-zinc-900">
                     {formatNative(data.earningsTypeBreakdown.adjustments, currency)}
                   </span>
                 </div>
@@ -308,7 +308,7 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
 
           {/* Payout Methods Used */}
           <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs">
-            <h2 className="text-lg font-bold text-zinc-950">Payout destination</h2>
+            <h2 className="text-lg font-medium text-zinc-950">Payout destination</h2>
             <div className="mt-3 divide-y divide-zinc-100">
               {data.payoutMethodBreakdown.length > 0 ? (
                 data.payoutMethodBreakdown.map((m, idx) => (
@@ -318,7 +318,7 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
                       <p className="font-mono text-xs text-zinc-500">{m.ibanMasked}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-zinc-900">{formatNative(m.amount, currency)}</p>
+                      <p className="font-medium text-zinc-900">{formatNative(m.amount, currency)}</p>
                       <p className="text-xs text-zinc-400">{m.count} payouts</p>
                     </div>
                   </div>
@@ -337,7 +337,7 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-zinc-950">Reservation transactions</h2>
+            <h2 className="text-xl font-medium text-zinc-950">Reservation transactions</h2>
             <p className="text-xs text-zinc-500">
               {filteredTransactions.length} transaction
               {filteredTransactions.length === 1 ? "" : "s"} in this reporting scope
@@ -348,7 +348,7 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
             <button
               type="button"
               onClick={() => setSelectedPropertyFilter(null)}
-              className="text-xs font-semibold text-zinc-600 underline hover:text-zinc-950"
+              className="text-xs font-medium text-zinc-600 underline hover:text-zinc-950"
             >
               Show all properties
             </button>
@@ -357,7 +357,7 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
 
         <div className="mt-6 overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-zinc-200 text-xs font-semibold uppercase text-zinc-500">
+            <thead className="border-b border-zinc-200 text-xs font-medium uppercase text-zinc-500">
               <tr>
                 <th className="pb-3">Reference / Property</th>
                 <th className="pb-3">Guest & Dates</th>
@@ -378,7 +378,7 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
                   return (
                     <tr key={tx.bookingId} className="group hover:bg-zinc-50/60">
                       <td className="py-3.5 pr-4">
-                        <Link href={txDetailHref} className="font-semibold text-zinc-900 hover:underline">
+                        <Link href={txDetailHref} className="font-medium text-zinc-900 hover:underline">
                           {tx.listingTitle}
                         </Link>
                         <p className="font-mono text-xs text-zinc-400">
@@ -393,7 +393,7 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
                       </td>
                       <td className="py-3.5 pr-4">
                         <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${statusStyle(
+                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle(
                             tx.status,
                           )}`}
                         >
@@ -406,13 +406,13 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
                       <td className="py-3.5 pr-4 text-right text-zinc-600">
                         −{formatNative(tx.platformFee, tx.currency)}
                       </td>
-                      <td className="py-3.5 pr-4 text-right font-bold text-zinc-950">
+                      <td className="py-3.5 pr-4 text-right font-medium text-zinc-950">
                         {formatNative(tx.netPayout, tx.currency)}
                       </td>
                       <td className="py-3.5 text-right">
                         <Link
                           href={txDetailHref}
-                          className="text-xs font-semibold text-zinc-900 underline underline-offset-2 hover:text-zinc-600"
+                          className="text-xs font-medium text-zinc-900 underline underline-offset-2 hover:text-zinc-600"
                         >
                           Details →
                         </Link>
@@ -435,7 +435,7 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
       {/* Refunds and Adjustments (if any) */}
       {data.adjustmentsList.length > 0 && (
         <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
-          <h2 className="text-xl font-bold text-zinc-950">Recorded adjustments</h2>
+          <h2 className="text-xl font-medium text-zinc-950">Recorded adjustments</h2>
           <p className="mt-1 text-xs text-zinc-500">
             Deductions, dispute offsets or compensation credits applied this month
           </p>
@@ -444,11 +444,11 @@ export function HostMonthlyReportClient({ initialData }: HostMonthlyReportClient
             {data.adjustmentsList.map((adj) => (
               <div key={adj.id} className="flex justify-between py-3 text-sm">
                 <div>
-                  <p className="font-semibold text-zinc-900">{adj.type.replaceAll("_", " ")}</p>
+                  <p className="font-medium text-zinc-900">{adj.type.replaceAll("_", " ")}</p>
                   <p className="text-xs text-zinc-500">{adj.reason} · {formatDate(adj.createdAt)}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-zinc-900">
+                  <p className="font-medium text-zinc-900">
                     {formatNative(adj.amount, adj.currency)}
                   </p>
                   <span className="text-xs text-zinc-400">{adj.status}</span>

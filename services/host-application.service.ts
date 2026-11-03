@@ -5,7 +5,11 @@ import { auditService } from "./audit.service";
 import type { AuthUser } from "@/lib/auth/types";
 import { Role } from "@/generated/prisma/enums";
 import { sendHostApplicationSubmittedEmail } from "@/lib/services/email";
-import { deleteManagedMediaUrl, readPrivateMedia, savePrivateMedia } from "@/lib/storage/media";
+import {
+  deleteManagedMediaUrl,
+  readPrivateMedia,
+  savePrivateMedia,
+} from "@/lib/storage/media";
 import { validateDocumentUpload } from "@/lib/media/document-validation";
 
 export const REQUIRED_HOST_DOCUMENT_TYPES = [
@@ -15,7 +19,10 @@ export const REQUIRED_HOST_DOCUMENT_TYPES = [
   "PROPERTY_DEED",
 ] as const;
 
-export type HostDocumentType = (typeof REQUIRED_HOST_DOCUMENT_TYPES)[number] | "TAX_CERTIFICATE" | "OTHER";
+export type HostDocumentType =
+  | (typeof REQUIRED_HOST_DOCUMENT_TYPES)[number]
+  | "TAX_CERTIFICATE"
+  | "OTHER";
 
 export interface SaveHostDraftInput {
   applicantName?: string;
@@ -39,7 +46,6 @@ export interface SubmitHostApplicationInput {
   notes?: string;
 }
 
-
 export class HostApplicationService {
   /**
    * Helper: Calculates completion sections out of 6 total standard sections
@@ -48,17 +54,27 @@ export class HostApplicationService {
     let completedSections = 0;
     const totalSections = 6;
 
-    if (req.applicantName && req.applicantName.trim().length > 0) completedSections++;
-    if (req.applicantEmail && req.applicantPhone && req.applicantPhone.trim().length > 0) completedSections++;
+    if (req.applicantName && req.applicantName.trim().length > 0)
+      completedSections++;
+    if (
+      req.applicantEmail &&
+      req.applicantPhone &&
+      req.applicantPhone.trim().length > 0
+    )
+      completedSections++;
     if (req.registrationType) completedSections++;
-    if (req.location && req.location.trim().length > 0 && req.propertyCount > 0) completedSections++;
+    if (req.location && req.location.trim().length > 0 && req.propertyCount > 0)
+      completedSections++;
 
     const docs: any[] = (req as any).documents || [];
     const hasGovId = docs.some((d: any) => d.documentType === "GOVERNMENT_ID");
-    const hasAddress = docs.some((d: any) => d.documentType === "PROOF_OF_ADDRESS");
+    const hasAddress = docs.some(
+      (d: any) => d.documentType === "PROOF_OF_ADDRESS",
+    );
     if (hasGovId && hasAddress) completedSections++;
 
-    if (req.status !== "DRAFT" && req.onboardingStage !== "DRAFT") completedSections = 6;
+    if (req.status !== "DRAFT" && req.onboardingStage !== "DRAFT")
+      completedSections = 6;
 
     return {
       completedSections,
@@ -77,7 +93,10 @@ export class HostApplicationService {
     if (user.role === Role.HOST) {
       const activeHostReq = await prisma.hostRegistrationRequest.findFirst({
         where: {
-          OR: [{ hostId: user.id }, ...(userEmail ? [{ applicantEmail: userEmail }] : [])],
+          OR: [
+            { hostId: user.id },
+            ...(userEmail ? [{ applicantEmail: userEmail }] : []),
+          ],
         },
         include: { documents: true, infoRequests: true },
         orderBy: { createdAt: "desc" },
@@ -97,7 +116,10 @@ export class HostApplicationService {
     // 2. Look for existing host registration request for this user by hostId or email
     let req = await prisma.hostRegistrationRequest.findFirst({
       where: {
-        OR: [{ hostId: user.id }, ...(userEmail ? [{ applicantEmail: userEmail }] : [])],
+        OR: [
+          { hostId: user.id },
+          ...(userEmail ? [{ applicantEmail: userEmail }] : []),
+        ],
       },
       include: {
         documents: { orderBy: { uploadedAt: "desc" } },
@@ -144,13 +166,17 @@ export class HostApplicationService {
       const updateData: Record<string, any> = {};
       if (!req.hostId) updateData.hostId = user.id;
       if (!req.applicantName && user.name) updateData.applicantName = user.name;
-      if (!req.applicantPhone && (user as any).phone) updateData.applicantPhone = (user as any).phone;
+      if (!req.applicantPhone && (user as any).phone)
+        updateData.applicantPhone = (user as any).phone;
 
       if (Object.keys(updateData).length > 0) {
         req = await prisma.hostRegistrationRequest.update({
           where: { id: req.id },
           data: updateData,
-          include: { documents: { orderBy: { uploadedAt: "desc" } }, infoRequests: true },
+          include: {
+            documents: { orderBy: { uploadedAt: "desc" } },
+            infoRequests: true,
+          },
         });
       }
     }
@@ -158,7 +184,13 @@ export class HostApplicationService {
     const progress = this.calculateProgress(req);
 
     // Determine account/application state for host UI
-    let accountState: "DRAFT" | "SUBMITTED" | "IN_REVIEW" | "ACTION_REQUIRED" | "APPROVED" | "REJECTED" = "DRAFT";
+    let accountState:
+      | "DRAFT"
+      | "SUBMITTED"
+      | "IN_REVIEW"
+      | "ACTION_REQUIRED"
+      | "APPROVED"
+      | "REJECTED" = "DRAFT";
 
     const docs: any[] = (req as any).documents || [];
     const reqInfo: any[] = (req as any).infoRequests || [];
@@ -170,11 +202,16 @@ export class HostApplicationService {
     } else if (
       req.status === "WAITING_FOR_DOCUMENTS" ||
       req.onboardingStage === "ACTION_REQUIRED" ||
-      docs.some((d: any) => d.status === "REJECTED" || d.resubmissionRequested) ||
+      docs.some(
+        (d: any) => d.status === "REJECTED" || d.resubmissionRequested,
+      ) ||
       reqInfo.some((i: any) => i.status === "PENDING")
     ) {
       accountState = "ACTION_REQUIRED";
-    } else if (req.status === "IN_REVIEW" || req.status === "DOCUMENTS_UNDER_REVIEW") {
+    } else if (
+      req.status === "IN_REVIEW" ||
+      req.status === "DOCUMENTS_UNDER_REVIEW"
+    ) {
       accountState = "IN_REVIEW";
     } else if (req.status === "PENDING" && req.onboardingStage !== "DRAFT") {
       accountState = "SUBMITTED";
@@ -188,14 +225,14 @@ export class HostApplicationService {
         accountState === "DRAFT"
           ? "Complete your host application to submit for review."
           : accountState === "SUBMITTED"
-          ? "Your application has been submitted and is in queue."
-          : accountState === "IN_REVIEW"
-          ? "Our administrative team is reviewing your application."
-          : accountState === "ACTION_REQUIRED"
-          ? "Action required: Please update requested documents or details."
-          : accountState === "APPROVED"
-          ? "Your application is approved! You are an active Host."
-          : `Application rejected: ${req.rejectionReason || "Criteria not met."}`,
+            ? "Your application has been submitted and is in queue."
+            : accountState === "IN_REVIEW"
+              ? "Our administrative team is reviewing your application."
+              : accountState === "ACTION_REQUIRED"
+                ? "Action required: Please update requested documents or details."
+                : accountState === "APPROVED"
+                  ? "Your application is approved! You are an active Host."
+                  : `Application rejected: ${req.rejectionReason || "Criteria not met."}`,
     };
   }
 
@@ -212,15 +249,32 @@ export class HostApplicationService {
     const updated = await prisma.hostRegistrationRequest.update({
       where: { id: req.id },
       data: {
-        ...(input.applicantName !== undefined && { applicantName: input.applicantName.trim() }),
-        ...(input.applicantEmail !== undefined && { applicantEmail: input.applicantEmail.trim().toLowerCase() }),
-        ...(input.applicantPhone !== undefined && { applicantPhone: input.applicantPhone.trim() }),
-        ...(input.registrationType !== undefined && { registrationType: input.registrationType }),
-        ...(input.businessName !== undefined && { businessName: input.businessName.trim() }),
-        ...(input.propertyCount !== undefined && { propertyCount: Number(input.propertyCount) || 1 }),
-        ...(input.location !== undefined && { location: input.location.trim() }),
+        ...(input.applicantName !== undefined && {
+          applicantName: input.applicantName.trim(),
+        }),
+        ...(input.applicantEmail !== undefined && {
+          applicantEmail: input.applicantEmail.trim().toLowerCase(),
+        }),
+        ...(input.applicantPhone !== undefined && {
+          applicantPhone: input.applicantPhone.trim(),
+        }),
+        ...(input.registrationType !== undefined && {
+          registrationType: input.registrationType,
+        }),
+        ...(input.businessName !== undefined && {
+          businessName: input.businessName.trim(),
+        }),
+        ...(input.propertyCount !== undefined && {
+          propertyCount: Number(input.propertyCount) || 1,
+        }),
+        ...(input.location !== undefined && {
+          location: input.location.trim(),
+        }),
         ...(input.notes !== undefined && { notes: input.notes.trim() }),
-        onboardingStage: req.status === "PENDING" && req.onboardingStage === "DRAFT" ? "DRAFT" : req.onboardingStage,
+        onboardingStage:
+          req.status === "PENDING" && req.onboardingStage === "DRAFT"
+            ? "DRAFT"
+            : req.onboardingStage,
         hostId: user.id,
       },
       include: {
@@ -253,8 +307,13 @@ export class HostApplicationService {
     if (req.status === "APPROVED") {
       throw AppError.badRequest("Application is already approved.");
     }
-    if (req.status === "IN_REVIEW" || (req.status === "PENDING" && req.onboardingStage !== "DRAFT")) {
-      throw AppError.badRequest("Application has already been submitted and is currently in review.");
+    if (
+      req.status === "IN_REVIEW" ||
+      (req.status === "PENDING" && req.onboardingStage !== "DRAFT")
+    ) {
+      throw AppError.badRequest(
+        "Application has already been submitted and is currently in review.",
+      );
     }
 
     // 1. Strict Validation of required fields
@@ -263,7 +322,11 @@ export class HostApplicationService {
     if (!input.applicantName || !input.applicantName.trim()) {
       errors.applicantName = "Full name is required.";
     }
-    if (!input.applicantEmail || !input.applicantEmail.trim() || !input.applicantEmail.includes("@")) {
+    if (
+      !input.applicantEmail ||
+      !input.applicantEmail.trim() ||
+      !input.applicantEmail.includes("@")
+    ) {
       errors.applicantEmail = "Valid email address is required.";
     }
     if (!input.applicantPhone || !input.applicantPhone.trim()) {
@@ -279,17 +342,23 @@ export class HostApplicationService {
     // 2. Validate required documents present
     const docs: any[] = (req as any).documents || [];
     const hasGovId = docs.some((d: any) => d.documentType === "GOVERNMENT_ID");
-    const hasAddress = docs.some((d: any) => d.documentType === "PROOF_OF_ADDRESS");
+    const hasAddress = docs.some(
+      (d: any) => d.documentType === "PROOF_OF_ADDRESS",
+    );
 
     if (!hasGovId) {
-      errors.governmentId = "Government ID document is required for submission.";
+      errors.governmentId =
+        "Government ID document is required for submission.";
     }
     if (!hasAddress) {
-      errors.proofOfAddress = "Proof of Address document is required for submission.";
+      errors.proofOfAddress =
+        "Proof of Address document is required for submission.";
     }
 
     if (Object.keys(errors).length > 0) {
-      throw AppError.badRequest(`Application validation failed: ${Object.values(errors).join(" ")}`);
+      throw AppError.badRequest(
+        `Application validation failed: ${Object.values(errors).join(" ")}`,
+      );
     }
 
     // 3. Update state to Submitted (PENDING status, REGISTRATION_SUBMITTED stage)
@@ -343,12 +412,19 @@ export class HostApplicationService {
   async uploadDocument(
     user: AuthUser,
     documentType: string,
-    file: { buffer: Buffer; fileName: string; mimeType: string; fileSize: number }
+    file: {
+      buffer: Buffer;
+      fileName: string;
+      mimeType: string;
+      fileSize: number;
+    },
   ) {
     const { application: req } = await this.getApplicationForUser(user);
 
     if (req.status === "APPROVED") {
-      throw AppError.badRequest("Cannot upload documents to an already approved application.");
+      throw AppError.badRequest(
+        "Cannot upload documents to an already approved application.",
+      );
     }
 
     const validation = validateDocumentUpload({
@@ -361,7 +437,9 @@ export class HostApplicationService {
       throw AppError.badRequest(validation.message);
     }
 
-    const fileExt = path.extname(file.fileName) || (file.mimeType === "application/pdf" ? ".pdf" : ".jpg");
+    const fileExt =
+      path.extname(file.fileName) ||
+      (file.mimeType === "application/pdf" ? ".pdf" : ".jpg");
     const safeBaseName = `${req.applicationId}_${documentType.toLowerCase()}_${Date.now()}${fileExt}`;
     const saved = await savePrivateMedia({
       kind: "host-documents",
@@ -381,58 +459,53 @@ export class HostApplicationService {
     });
 
     let doc;
-    if (existingDoc) {
-      const previousFileUrl = existingDoc.fileUrl;
-      doc = await prisma.hostRegistrationDocument.update({
-        where: { id: existingDoc.id },
-        data: {
-          fileName: file.fileName,
-          fileUrl: relativeUrl,
-          mimeType: file.mimeType,
-          fileSize: file.fileSize,
-          status: "PENDING",
-          uploadedAt: new Date(),
-          rejectedById: null,
-          rejectedAt: null,
-          rejectionReason: null,
-          resubmissionRequested: false,
-          version: existingDoc.version + 1,
-        },
-      });
-
-      await auditService.record({
-        actorId: user.id,
-        actorEmail: user.email || "",
-        action: "HOST_DOCUMENT_REPLACED",
-        resourceType: "HostRegistrationDocument",
-        resourceId: doc.id,
-        description: `Replaced host document ${documentType} (${file.fileName}) for application ${req.applicationId}`,
-      });
-      if (previousFileUrl && previousFileUrl !== relativeUrl) {
-        await deleteManagedMediaUrl(previousFileUrl);
+    try {
+      if (existingDoc) {
+        doc = await prisma.hostRegistrationDocument.update({
+          where: { id: existingDoc.id },
+          data: {
+            fileName: file.fileName,
+            fileUrl: relativeUrl,
+            mimeType: file.mimeType,
+            fileSize: file.fileSize,
+            status: "PENDING",
+            uploadedAt: new Date(),
+            rejectedById: null,
+            rejectedAt: null,
+            rejectionReason: null,
+            resubmissionRequested: false,
+            version: existingDoc.version + 1,
+          },
+        });
+      } else {
+        doc = await prisma.hostRegistrationDocument.create({
+          data: {
+            requestId: req.id,
+            documentType,
+            fileName: file.fileName,
+            fileUrl: relativeUrl,
+            mimeType: file.mimeType,
+            fileSize: file.fileSize,
+            status: "PENDING",
+            uploadedAt: new Date(),
+          },
+        });
       }
-    } else {
-      doc = await prisma.hostRegistrationDocument.create({
-        data: {
-          requestId: req.id,
-          documentType,
-          fileName: file.fileName,
-          fileUrl: relativeUrl,
-          mimeType: file.mimeType,
-          fileSize: file.fileSize,
-          status: "PENDING",
-          uploadedAt: new Date(),
-        },
-      });
+    } catch (error) {
+      await deleteManagedMediaUrl(relativeUrl).catch(() => {});
+      throw error;
+    }
 
-      await auditService.record({
-        actorId: user.id,
-        actorEmail: user.email || "",
-        action: "HOST_DOCUMENT_UPLOADED",
-        resourceType: "HostRegistrationDocument",
-        resourceId: doc.id,
-        description: `Uploaded host document ${documentType} (${file.fileName}) for application ${req.applicationId}`,
-      });
+    await auditService.record({
+      actorId: user.id,
+      actorEmail: user.email || "",
+      action: existingDoc ? "HOST_DOCUMENT_REPLACED" : "HOST_DOCUMENT_UPLOADED",
+      resourceType: "HostRegistrationDocument",
+      resourceId: doc.id,
+      description: `${existingDoc ? "Replaced" : "Uploaded"} host document ${documentType} (${file.fileName}) for application ${req.applicationId}`,
+    });
+    if (existingDoc?.fileUrl && existingDoc.fileUrl !== relativeUrl) {
+      await deleteManagedMediaUrl(existingDoc.fileUrl).catch(() => {});
     }
 
     return doc;
@@ -452,12 +525,20 @@ export class HostApplicationService {
     }
 
     // Ownership check
-    if (doc.request.hostId !== user.id && doc.request.applicantEmail !== user.email && user.role !== Role.ADMIN) {
-      throw AppError.forbidden("You do not have permission to remove this document.");
+    if (
+      doc.request.hostId !== user.id &&
+      doc.request.applicantEmail !== user.email &&
+      user.role !== Role.ADMIN
+    ) {
+      throw AppError.forbidden(
+        "You do not have permission to remove this document.",
+      );
     }
 
     if (doc.request.status === "APPROVED") {
-      throw AppError.badRequest("Cannot remove documents from an approved application.");
+      throw AppError.badRequest(
+        "Cannot remove documents from an approved application.",
+      );
     }
 
     await prisma.hostRegistrationDocument.delete({
@@ -489,10 +570,12 @@ export class HostApplicationService {
 
     // Check that there are no unresolved rejected documents
     const docs: any[] = (req as any).documents || [];
-    const rejectedDocs = docs.filter((d: any) => d.status === "REJECTED" || d.resubmissionRequested);
+    const rejectedDocs = docs.filter(
+      (d: any) => d.status === "REJECTED" || d.resubmissionRequested,
+    );
     if (rejectedDocs.length > 0) {
       throw AppError.badRequest(
-        `Please replace all rejected documents (${rejectedDocs.map((d: any) => d.documentType).join(", ")}) before resubmitting.`
+        `Please replace all rejected documents (${rejectedDocs.map((d: any) => d.documentType).join(", ")}) before resubmitting.`,
       );
     }
 
@@ -536,11 +619,15 @@ export class HostApplicationService {
       throw AppError.notFound("Requested document record not found.");
     }
 
-    const isOwner = doc.request.hostId === user.id || doc.request.applicantEmail === user.email;
+    const isOwner =
+      doc.request.hostId === user.id ||
+      doc.request.applicantEmail === user.email;
     const isAdmin = user.role === Role.ADMIN;
 
     if (!isOwner && !isAdmin) {
-      throw AppError.forbidden("Access denied: You are not authorized to view this document.");
+      throw AppError.forbidden(
+        "Access denied: You are not authorized to view this document.",
+      );
     }
 
     let fileBuffer: Buffer;
@@ -578,7 +665,10 @@ export class HostApplicationService {
     // 2. Find or create host registration request and mark APPROVED
     let req = await prisma.hostRegistrationRequest.findFirst({
       where: {
-        OR: [{ hostId: user.id }, ...(user.email ? [{ applicantEmail: user.email }] : [])],
+        OR: [
+          { hostId: user.id },
+          ...(user.email ? [{ applicantEmail: user.email }] : []),
+        ],
       },
     });
 
@@ -628,7 +718,8 @@ export class HostApplicationService {
     return {
       success: true,
       user: updatedUser,
-      message: "Congratulations! Your account has been converted to a Host account.",
+      message:
+        "Congratulations! Your account has been converted to a Host account.",
     };
   }
 }

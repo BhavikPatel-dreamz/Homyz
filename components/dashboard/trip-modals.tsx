@@ -69,6 +69,9 @@ export function CancelBookingModal({
       }
 
       onCancelled(booking.id);
+      try {
+        window.dispatchEvent(new CustomEvent("homyz:reservations-updated", { detail: { bookingId: booking.id } }));
+      } catch {}
       onClose();
     } catch (err) {
       setError(

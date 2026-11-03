@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { formatBookingDate } from "@/lib/booking/booking-date";
+import { formatTime12h } from "@/lib/booking/booking-time";
 
 interface BookingStayInfoProps {
   bookingId: string;
@@ -53,6 +54,7 @@ export function BookingStayInfo({
   description,
 }: BookingStayInfoProps) {
   const { t } = useLanguage();
+  void location;
   const listingHref = `/listings/${listingSlug || listingId}`;
   const bookingCode = bookingId.slice(-8).toUpperCase();
 
@@ -91,7 +93,7 @@ export function BookingStayInfo({
           <dd className="mt-1 font-medium text-[#1F1F1F]">{formatBookingDate(startDate, { weekday: true })}</dd>
           <p className="text-sm text-[#727272] font-normal mt-0.5 ">
             {checkInStart
-              ? t("booking_details_check_in_from", { time: checkInStart }, `From ${checkInStart}`)
+              ? t("booking_details_check_in_from", { time: formatTime12h(checkInStart, "3:00 PM") }, `From ${formatTime12h(checkInStart, "3:00 PM")}`)
               : t("booking_details_check_in_default", "Check-in from 3:00 PM")}
           </p>
         </div>
@@ -101,7 +103,7 @@ export function BookingStayInfo({
           <dd className="mt-1 font-medium text-[#1F1F1F]">{formatBookingDate(endDate, { weekday: true })}</dd>
           <p className="text-sm text-[#727272] font-normal mt-0.5 ">
             {checkOutTime
-              ? t("booking_details_check_out_by", { time: checkOutTime }, `By ${checkOutTime}`)
+              ? t("booking_details_check_out_by", { time: formatTime12h(checkOutTime, "11:00 AM") }, `By ${formatTime12h(checkOutTime, "11:00 AM")}`)
               : t("booking_details_check_out_default", "Check-out by 11:00 AM")}
           </p>
         </div>

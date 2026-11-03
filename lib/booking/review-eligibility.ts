@@ -24,8 +24,9 @@ export interface ReviewEligibilityResult {
 export function computeReviewDeadline(
   endDate: Date | string,
   checkOutTime?: string | null,
+  propertyTimeZone?: string | null,
 ): Date {
-  const checkoutAt = getEffectiveDateTime(endDate, checkOutTime, 11, 0);
+  const checkoutAt = getEffectiveDateTime(endDate, checkOutTime, 11, 0, propertyTimeZone);
   return new Date(checkoutAt.getTime() + REVIEW_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 }
 
@@ -37,13 +38,14 @@ export function evaluateGuestReviewEligibility(input: {
   bookingStatus: string;
   endDate: Date | string;
   checkOutTime?: string | null;
+  propertyTimeZone?: string | null;
   hasGuestReview: boolean;
   hasHostReview?: boolean;
   now?: Date;
 }): ReviewEligibilityResult {
   const now = input.now ?? new Date();
-  const checkoutAt = getEffectiveDateTime(input.endDate, input.checkOutTime, 11, 0);
-  const reviewDeadline = computeReviewDeadline(input.endDate, input.checkOutTime);
+  const checkoutAt = getEffectiveDateTime(input.endDate, input.checkOutTime, 11, 0, input.propertyTimeZone);
+  const reviewDeadline = computeReviewDeadline(input.endDate, input.checkOutTime, input.propertyTimeZone);
 
   if (!input.isGuest) {
     return {
@@ -117,13 +119,14 @@ export function evaluateHostReviewEligibility(input: {
   bookingStatus: string;
   endDate: Date | string;
   checkOutTime?: string | null;
+  propertyTimeZone?: string | null;
   hasHostReview: boolean;
   hasGuestReview?: boolean;
   now?: Date;
 }): ReviewEligibilityResult {
   const now = input.now ?? new Date();
-  const checkoutAt = getEffectiveDateTime(input.endDate, input.checkOutTime, 11, 0);
-  const reviewDeadline = computeReviewDeadline(input.endDate, input.checkOutTime);
+  const checkoutAt = getEffectiveDateTime(input.endDate, input.checkOutTime, 11, 0, input.propertyTimeZone);
+  const reviewDeadline = computeReviewDeadline(input.endDate, input.checkOutTime, input.propertyTimeZone);
 
   if (!input.isHost) {
     return {
@@ -188,4 +191,3 @@ export function evaluateHostReviewEligibility(input: {
     reciprocalSubmitted: Boolean(input.hasGuestReview),
   };
 }
-

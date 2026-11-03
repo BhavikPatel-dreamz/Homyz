@@ -739,6 +739,7 @@ export function TravelPhotoUploadModal({
                     <input
                       type="date"
                       id="newTripStartDate"
+                      aria-label="Trip start date"
                       value={newTripStartDate}
                       onChange={(e) => { setNewTripStartDate(e.target.value); setDateError(null); }}
                       className="w-full min-w-0 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
@@ -749,6 +750,7 @@ export function TravelPhotoUploadModal({
                     <input
                       type="date"
                       id="newTripEndDate"
+                      aria-label="Trip end date"
                       value={newTripEndDate}
                       onChange={(e) => { setNewTripEndDate(e.target.value); setDateError(null); }}
                       className="w-full min-w-0 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
@@ -1097,7 +1099,7 @@ export function TravelPhotoUploadModal({
                   fill="transparent"
                 />
               </svg>
-              <span className="absolute text-xl sm:text-2xl font-extrabold text-zinc-900">
+              <span className="absolute text-xl sm:text-2xl font-medium text-zinc-900">
                 {overallPercent}%
               </span>
             </div>

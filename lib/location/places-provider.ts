@@ -36,6 +36,7 @@ export interface UnifiedLocationSuggestion {
   country: string;
   countryCode?: string;
   locality?: string;
+  postalCode?: string;
   latitude: number;
   longitude: number;
   locationType: LocationType;
@@ -150,6 +151,7 @@ function parseNominatimFeature(item: any, userQuery: string): UnifiedLocationSug
     "";
 
   const state = addr.state || addr.region || addr.province || addr.state_district || addr.county || "";
+  const postalCode = addr.postcode || addr["postal_code"] || "";
   const country = addr.country || "";
   const countryCode = addr.country_code ? String(addr.country_code).toUpperCase() : undefined;
   const displayName = item?.display_name || "";
@@ -280,6 +282,7 @@ function parseNominatimFeature(item: any, userQuery: string): UnifiedLocationSug
     country,
     countryCode,
     locality: district || undefined,
+    postalCode: postalCode || undefined,
     latitude: !isNaN(lat) ? lat : 0,
     longitude: !isNaN(lon) ? lon : 0,
     locationType,
@@ -637,6 +640,7 @@ export async function reverseGeocodeCoords(
           city: f.context?.find((c: any) => c.id.startsWith("place"))?.text || "",
           state: f.context?.find((c: any) => c.id.startsWith("region"))?.text || "",
           country: f.context?.find((c: any) => c.id.startsWith("country"))?.text || "",
+          postalCode: f.context?.find((c: any) => c.id.startsWith("postcode"))?.text || undefined,
           latitude: lat,
           longitude: lng,
           locationType: "address",

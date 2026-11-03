@@ -87,7 +87,7 @@ export default async function NotificationsHelpPage() {
                       </p>
                     </div>
                     <Link
-                      href="/host/resolution-center"
+                      href="/host/support"
                       className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-zinc-950 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition-colors shrink-0"
                     >
                       <span>Resolution Center</span>
@@ -104,7 +104,7 @@ export default async function NotificationsHelpPage() {
               title="Need Host Support or Assistance?"
               description="Our host support specialists are available 24/7 to assist with reservation disputes, quality incidents, or SAMA banking verification inquiries."
               links={[
-                { label: "Host Resolution Center", href: "/host/resolution-center" },
+                { label: "Host Help & Resolution Center", href: "/host/support" },
                 { label: "Earnings Hub & Transaction Details", href: "/host/earnings" },
               ]}
               icon={<HelpCircleIcon size={20} />}
@@ -115,4 +115,3 @@ export default async function NotificationsHelpPage() {
     </Container>
   );
 }
-

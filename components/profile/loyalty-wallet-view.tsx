@@ -122,7 +122,7 @@ export function LoyaltyWalletView() {
     <div className="flex flex-col animate-in fade-in duration-300">
       {/* Title Header */}
       <div className="mb-6 lg:mb-8">
-        <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
+        <h2 className="profile-page-title text-[#1F1F1F]">
           {t("profile_loyalty_title", "Loyalty Points Wallet")}
         </h2>
         <p className="mt-1 text-sm leading-5 text-[#727272] sm:text-base sm:leading-6">
@@ -144,7 +144,7 @@ export function LoyaltyWalletView() {
               {t("profile_loyalty_current_balance", "Current Balance")}
             </span>
             <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-semibold tracking-tight text-[#1F1F1F] sm:text-5xl">
+              <span className="profile-value profile-value--hero text-[#1F1F1F]">
                 {balance.toLocaleString()}
               </span>
               <span className="text-base font-medium text-[#727272] sm:text-lg">
@@ -206,7 +206,7 @@ export function LoyaltyWalletView() {
 
       {/* Available Rewards Grid */}
       <div className="mb-10">
-        <h3 className="mb-4 text-lg font-semibold text-[#1F1F1F] sm:text-xl">
+        <h3 className="profile-section-title mb-4 text-[#1F1F1F]">
           {t("profile_loyalty_redeem_rewards_heading", "Redeem Rewards")}
         </h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -253,7 +253,7 @@ export function LoyaltyWalletView() {
 
       {/* Points History */}
       <div>
-        <h3 className="mb-4 text-lg font-semibold text-[#1F1F1F] sm:text-xl">
+        <h3 className="profile-section-title mb-4 text-[#1F1F1F]">
           {t("profile_loyalty_points_activity_heading", "Points Activity")}
         </h3>
         <div className="divide-y divide-[#E5E5E5] xl:rounded-2xl rounded-lg border border-[#E5E5E5] bg-white">

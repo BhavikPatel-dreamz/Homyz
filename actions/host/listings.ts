@@ -14,6 +14,7 @@ import {
 } from "@/lib/validation/listing";
 import { listingService } from "@/services/listing.service";
 import { saudiLicenseService } from "@/services/saudi-license.service";
+import type { SaudiRegistrationDetailsInput } from "@/lib/validation/saudi-license-registration";
 import { Role } from "@/generated/prisma/enums";
 
 export async function createListingAction(input: unknown) {
@@ -138,11 +139,30 @@ export async function resubmitListingForReviewAction(id: string) {
   });
 }
 
-export async function verifySaudiLicenseAction(listingId: string, licenseNumber: string) {
+export async function getSaudiRegistrationDetailsAction(listingId: string) {
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized();
-    const result = await saudiLicenseService.verifyForListing(actor, listingId, licenseNumber);
+    return saudiLicenseService.getRegistrationDetails(actor, listingId);
+  });
+}
+
+export async function saveSaudiRegistrationDetailsAction(listingId: string, input: SaudiRegistrationDetailsInput) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const result = await saudiLicenseService.saveRegistrationDetails(actor, listingId, input);
+    revalidatePath(`/host/listings/${listingId}`);
+    return result;
+  });
+}
+
+/** Runs Phase 2 verification using the encrypted registration already saved in Phase 1. */
+export async function verifySaudiLicenseAction(listingId: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const result = await saudiLicenseService.reverifyForListing(actor, listingId);
     revalidatePath(`/host/listings/${listingId}`);
     return result;
   });

@@ -496,6 +496,7 @@ export function PublicTravelProfileClient({
                 displayOrder: 0,
                 isPublic: stamp.isPublic,
                 isManual: stamp.isManual,
+                isSystemAwarded: stamp.isSystemAwarded,
                 visitDate: null,
                 personalDescription: null,
               }))}

@@ -95,7 +95,7 @@ export default async function HostAccountSettingsPage() {
           links={[
             { label: "Go to Your Listings", href: "/host/listings" },
             { label: "Switch to Traveling Profile", href: "/profile" },
-            { label: "Visit Host Help & Resolution Center", href: "/host/resolution-center" },
+            { label: "Visit Host Help & Resolution Center", href: "/host/support" },
           ]}
         />
       </div>

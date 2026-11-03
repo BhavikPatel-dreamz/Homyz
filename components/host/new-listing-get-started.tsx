@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, startTransition } from "react";
 import Image from "next/image";
 import type AOS from "aos";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/toast";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
-import { formatAddressCountry } from "@/lib/location/address-countries";
+import { formatAddressCountry, isSaudiArabia } from "@/lib/location/address-countries";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { useLanguage } from "@/lib/i18n/language-context";
 
@@ -34,11 +34,12 @@ import { StepWeekendPrice } from "./onboarding/step-weekend-price";
 import { StepDiscounts } from "./onboarding/step-discounts";
 import { StepSafety } from "./onboarding/step-safety";
 import { StepLicenseApproval } from "./onboarding/step-license-approval";
+import { StepRegistrationDetails, type SaudiRegistrationDetails } from "./onboarding/step-registration-details";
 import { OnboardingHeader } from "./onboarding/onboarding-header";
 import { WIZARD_STEPS } from "./onboarding/wizard-steps";
 import type { BookingMode } from "@/lib/booking/booking-mode";
 import type { ListingDTO } from "@/services/mappers";
-import { submitListingFinalApprovalAction, verifySaudiLicenseAction } from "@/actions/host/listings";
+import type { LicenseResult } from "./onboarding/step-license-approval";
 
 type HostingType = "HOME" | "EXPERIENCE" | "SERVICE";
 
@@ -82,14 +83,41 @@ const RESTORED_PROPERTY_TYPE_LABELS: Record<string, string> = {
 
 // Step Slugs for URL query parameter mapping derived from centralized config
 const STEP_SLUGS = WIZARD_STEPS.map((s) => s.slug);
+const stepIndexFromParam = (value?: string) => {
+  if (value?.toLowerCase() === "license-approval") return 20;
+  return value ? STEP_SLUGS.indexOf(value.toLowerCase()) : -1;
+};
 
-async function readSaveError(response: Response) {
+async function readSaveError(
+  response: Response,
+  fallback = "We couldn't save your listing. Please try again.",
+) {
   const body: unknown = await response.json().catch(() => null);
-  if (body && typeof body === "object" && "error" in body) {
-    const error = (body as { error?: { message?: string } }).error;
-    if (error?.message) return error.message;
+  if (!body || typeof body !== "object") return fallback;
+
+  const envelope = body as {
+    error?: unknown;
+    message?: unknown;
+  };
+  if (typeof envelope.error === "string" && envelope.error.trim()) {
+    return envelope.error;
   }
-  return "We couldn't save your listing. Please try again.";
+  if (envelope.error && typeof envelope.error === "object") {
+    const error = envelope.error as {
+      message?: unknown;
+      details?: Array<{ message?: unknown }>;
+    };
+    if (typeof error.message === "string" && error.message.trim()) {
+      return error.message;
+    }
+    const detail = error.details?.find(
+      (item) => typeof item?.message === "string" && item.message.trim(),
+    );
+    if (typeof detail?.message === "string") return detail.message;
+  }
+  return typeof envelope.message === "string" && envelope.message.trim()
+    ? envelope.message
+    : fallback;
 }
 
 interface NewListingGetStartedProps {
@@ -114,7 +142,7 @@ export function NewListingGetStarted({
   // Determine initial step based on URL query parameter (?step=category or ?step=2)
   const getInitialStep = (): number => {
     if (!initialStepParam) return 0;
-    const slugIdx = STEP_SLUGS.indexOf(initialStepParam.toLowerCase());
+    const slugIdx = stepIndexFromParam(initialStepParam);
     if (slugIdx !== -1) return slugIdx;
     const num = parseInt(initialStepParam, 10);
     if (!isNaN(num) && num >= 0 && num < STEP_SLUGS.length) return num;
@@ -123,10 +151,14 @@ export function NewListingGetStarted({
 
   const [step, setStep] = useState<number>(getInitialStep);
   const [draftId, setDraftId] = useState<string | null>(initialDraftId || null);
+  const [listingStatus, setListingStatus] = useState<string>("DRAFT");
   const draftIdRef = useRef<string | null>(draftId);
   const [isSavingStep, setIsSavingStep] = useState<boolean>(false);
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [isSavingAndExiting, setIsSavingAndExiting] = useState<boolean>(false);
+  const [isHydratingDraft, setIsHydratingDraft] = useState(Boolean(initialDraftId));
+  const [isSavingRegistration, setIsSavingRegistration] = useState(false);
+  const [registrationDetails, setRegistrationDetails] = useState<SaudiRegistrationDetails | null>(null);
   const [wizardError, setWizardError] = useState<WizardError | null>(null);
   const hydratedDraftRef = useRef(false);
   // A double-click or a slow network response must never create two listing
@@ -243,7 +275,7 @@ export function NewListingGetStarted({
       const sp = new URLSearchParams(window.location.search);
       const st = sp.get("step");
       if (st) {
-        const idx = STEP_SLUGS.indexOf(st.toLowerCase());
+        const idx = stepIndexFromParam(st);
         if (idx !== -1) setStep(idx);
       }
       const vw = sp.get("view");
@@ -496,12 +528,45 @@ export function NewListingGetStarted({
     setWizardError(null);
   };
 
-  const handleVerifySaudiLicense = async (licenseNumber: string) => {
+  const handleVerifySaudiLicense = async (): Promise<LicenseResult> => {
     const activeDraftId = draftIdRef.current || draftId;
     if (!activeDraftId) throw new Error("Save your listing before verifying a license.");
-    const result = await verifySaudiLicenseAction(activeDraftId, licenseNumber);
-    if (!result.ok) throw new Error(result.error || "We couldn't verify this license.");
-    return result.data;
+    const res = await fetch("/api/v1/host/licenses/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ listingId: activeDraftId }),
+    });
+    if (!res.ok) {
+      throw new Error(await readSaveError(res, "We couldn't verify this license."));
+    }
+    const json = await res.json();
+    if (!json?.data) {
+      throw new Error(json?.error || "No verification result returned.");
+    }
+    return json.data as LicenseResult;
+  };
+
+  const handleSaveRegistrationAndContinue = async (details: SaudiRegistrationDetails) => {
+    const activeDraftId = draftIdRef.current || draftId;
+    if (!activeDraftId) throw new Error("Save your listing before adding registration details.");
+    setIsSavingRegistration(true);
+    try {
+      const res = await fetch(`/api/v1/host/licenses/${activeDraftId}/registration`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(details),
+      });
+      if (!res.ok) {
+        throw new Error(await readSaveError(res, "We couldn't save your registration details."));
+      }
+      const json = await res.json();
+      const savedData = json?.data || {};
+      setRegistrationDetails({ ...details, ...savedData, complete: true });
+      const saved = await saveDraftAndGoToStep(21);
+      if (!saved) throw new Error("We couldn't save your listing progress.");
+    } finally {
+      setIsSavingRegistration(false);
+    }
   };
 
   const handleFinalLicenseSubmission = async (method: "automatic" | "manual") => {
@@ -517,14 +582,22 @@ export function NewListingGetStarted({
     setIsPublishing(true);
     try {
       await saveQueueRef.current.catch(() => undefined);
-      const result = await submitListingFinalApprovalAction(activeDraftId, method);
-      if (!result.ok) throw new Error(result.error || t("wizard_error_submit_title", "We couldn't submit your listing."));
+      const res = await fetch(`/api/v1/host/licenses/${activeDraftId}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ method }),
+      });
+      if (!res.ok) {
+        throw new Error(await readSaveError(res, t("wizard_error_submit_title", "We couldn't submit your listing.")));
+      }
+      const data = await res.json().catch(() => null);
+      const newStatus = method === "automatic" ? "APPROVED" : "PENDING_REVIEW";
+      setListingStatus(newStatus);
       toast.success(
         method === "automatic"
           ? t("wizard_toast_approved_published", "Listing approved and published.")
           : t("wizard_toast_submitted_review", "Listing submitted for review.")
       );
-      router.push("/host/listings");
     } catch (error: unknown) {
       setWizardError({
         title: t("wizard_error_submit_title", "We couldn't submit your listing"),
@@ -640,6 +713,7 @@ export function NewListingGetStarted({
             : ["new_listing"];
 
         setDraftId(listing.id);
+        if (listing.status) setListingStatus(listing.status);
         setSelectedCategory(listing.propertyType ? RESTORED_PROPERTY_TYPE_LABELS[listing.propertyType] ?? "" : "");
         setSelectedPlaceType(listing.listingType ? listingTypeLabels[listing.listingType] ?? "" : "");
         setSelectedAmenities(listing.amenities ?? []);
@@ -668,7 +742,29 @@ export function NewListingGetStarted({
         setBeds(listing.beds ?? 1);
         setBathrooms(listing.bathrooms ?? 0);
 
-        const resumeStep = Math.max(0, Math.min(STEP_SLUGS.length - 1, (listing.currentStep || 1) - 1));
+        let loadedRegistration: SaudiRegistrationDetails | null = null;
+        const draftIsSaudi = isSaudiArabia(listing.country);
+        if (draftIsSaudi) {
+          try {
+            const regRes = await fetch(`/api/v1/host/licenses/${listing.id}/registration`);
+            if (regRes.ok) {
+              const regJson = await regRes.json();
+              if (regJson?.data) {
+                loadedRegistration = regJson.data;
+                setRegistrationDetails(loadedRegistration);
+              }
+            }
+          } catch {
+            // Non-blocking: host can input or update registration details on Step 20
+          }
+        }
+        const savedStep = Math.max(0, Math.min(STEP_SLUGS.length - 1, (listing.currentStep || 1) - 1));
+        const requestedStep = initialStepParam?.toLowerCase();
+        const requestedRegistration = requestedStep === "registration-details" || requestedStep === "license-approval";
+        const requestedPublish = requestedStep === "publish";
+        const resumeStep = draftIsSaudi
+          ? (requestedPublish && loadedRegistration?.complete ? 21 : requestedRegistration ? 20 : savedStep >= 21 && loadedRegistration?.complete ? 21 : savedStep >= 20 ? 20 : savedStep)
+          : (savedStep === 20 ? 21 : savedStep);
         setStep(resumeStep);
         if (initialAddressView) {
           setAddressView("pin");
@@ -688,18 +784,20 @@ export function NewListingGetStarted({
           title: t("wizard_error_load_draft_title", "We couldn't load your draft"),
           messages: [error instanceof Error ? error.message : t("wizard_error_retry", "Please try again.")],
         });
+      } finally {
+        setIsHydratingDraft(false);
       }
     };
 
     void loadDraft();
     return () => controller.abort();
-  }, [hostingType, initialAddressView, initialDraftId, t]);
+  }, [hostingType, initialAddressView, initialDraftId, initialStepParam, t]);
 
   // Every editable value on an existing draft is write-through autosaved. The
   // first POST is deliberately reserved for the explicit Next action above so
   // abandoned category selections never create empty listings.
   useEffect(() => {
-    if (!hydratedDraftRef.current || isSavingStep || isFinalizingRef.current || step === 20) return;
+    if (!hydratedDraftRef.current || isSavingStep || isFinalizingRef.current || step >= 20) return;
 
     // Do not auto-create draft on steps before category selection (step < 2 or no category chosen yet)
     if (!draftIdRef.current && (step < 2 || !selectedCategory)) return;
@@ -708,7 +806,8 @@ export function NewListingGetStarted({
       try {
         const activeId = draftIdRef.current || draftId;
         if (activeId && !isFinalizingRef.current) {
-          await queueDraftPatch(activeId, buildDraftPayload(step));
+          const payload = buildDraftPayload(step);
+          await queueDraftPatch(activeId, payload);
           return;
         }
 
@@ -836,7 +935,7 @@ export function NewListingGetStarted({
     if (details) {
       const fullDisplay = details.formattedAddress || details.address || "";
       if (fullDisplay) {
-        setStreetAddress(fullDisplay);
+        setStreetAddress(details.address || fullDisplay);
         setSearchQuery(fullDisplay);
       }
       if (details.city) setCity(details.city);
@@ -850,9 +949,9 @@ export function NewListingGetStarted({
 
   // Pin drag handler for "Is the pin in the right spot?"
   // Keep the address fields aligned with the reverse-geocoded pin position.
-  const handlePinChange = useCallback((lat: number, lng: number, details?: LocationDetails) => {
+  const handlePinChange = (lat: number, lng: number, details?: LocationDetails) => {
     handleLocationChange(lat, lng, details);
-  }, [handleLocationChange]);
+  };
 
   // Location Autocomplete Selection
   const handleSelectSuggestion = (item: NominatimSuggestion) => {
@@ -1221,13 +1320,24 @@ export function NewListingGetStarted({
           selectedSafety={selectedSafety}
           onAnswerSafety={handleAnswerSafety}
           onBack={() => goToStep(18)}
-          onNext={() => saveDraftAndGoToStep(20)}
+          onNext={() => saveDraftAndGoToStep(isSaudiArabia(country) ? 20 : 21)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 20: Final preview, license verification and submission */}
-      {step === 20 && (
+      {/* Step 20: Saudi registration details */}
+      {step === 20 && isSaudiArabia(country) && (
+        <StepRegistrationDetails
+          draftId={draftId}
+          initialDetails={registrationDetails}
+          onBack={() => goToStep(19)}
+          onContinue={handleSaveRegistrationAndContinue}
+          isSaving={isSavingRegistration || isSavingStep}
+        />
+      )}
+
+      {/* Step 21: Final preview, automatic verification and submission */}
+      {step === 21 && !isHydratingDraft && (
         <StepLicenseApproval
           draftId={draftId}
           country={country}
@@ -1235,10 +1345,21 @@ export function NewListingGetStarted({
           city={city}
           price={price}
           photos={photos}
-          onBack={() => goToStep(19)}
+          category={selectedCategory}
+          placeType={selectedPlaceType}
+          guests={guests}
+          bedrooms={bedrooms}
+          beds={beds}
+          bathrooms={bathrooms}
+          currency={currencySymbol}
+          listingStatus={listingStatus}
+          onBack={() => goToStep(isSaudiArabia(country) ? 20 : 19)}
           onVerify={handleVerifySaudiLicense}
+          onEditRegistration={() => goToStep(20)}
           onSubmit={handleFinalLicenseSubmission}
+          onSaveDraft={handleSaveAndExit}
           isPublishing={isPublishing}
+          isSavingDraft={isSavingAndExiting}
         />
       )}
 
@@ -1253,7 +1374,7 @@ export function NewListingGetStarted({
             <div className="mb-5 flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-100 text-lg text-rose-700">!</div>
               <div className="min-w-0 flex-1">
-                <h2 id="wizard-error-title" className="text-lg font-semibold text-[#1F1F1F]">
+                <h2 id="wizard-error-title" className="text-lg font-medium text-[#1F1F1F]">
                   {wizardError.title}
                 </h2>
                 <div className="mt-2 space-y-1.5 text-sm leading-6 text-zinc-600">
@@ -1282,7 +1403,7 @@ export function NewListingGetStarted({
                     setWizardError(null);
                     goToStep(errorFixStep);
                   }}
-                  className="rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-semibold text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white duration-300"
+                  className="rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-medium text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white duration-300"
                 >
                   {t("wizard_btn_fix_now", "Fix now")}
                 </button>

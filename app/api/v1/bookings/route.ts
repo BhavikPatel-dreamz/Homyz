@@ -12,6 +12,10 @@ import {
   readAnalyticsSessionId,
   recordConfirmedBookingAnalyticsEvent,
 } from "@/services/listing-analytics.service";
+import { revalidateBookingPaths } from "@/lib/booking/booking-cache-revalidate";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // GET /api/v1/bookings — the caller's own bookings (paginated).
 export const GET = apiHandler(async (req) => {
@@ -23,7 +27,9 @@ export const GET = apiHandler(async (req) => {
     take,
     view,
   });
-  return paginated(items, buildPagination(page, limit, total));
+  const res = paginated(items, buildPagination(page, limit, total));
+  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  return res;
 });
 
 // POST /api/v1/bookings — create a booking for the caller.
@@ -36,6 +42,10 @@ export const POST = apiHandler(async (req) => {
   }
   const body = createBookingSchema.parse(await req.json());
   const booking = await bookingService.create(actor, body);
+
+  // Invalidate all server caches so upcoming, past, and dashboard views reflect new booking instantly
+  revalidateBookingPaths(booking.id);
+
   // Attribution is supplemental telemetry; booking success never depends on it.
   void recordConfirmedBookingAnalyticsEvent({
     bookingId: booking.id,

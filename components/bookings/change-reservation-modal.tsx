@@ -140,6 +140,9 @@ export function ChangeReservationModal({
       }
 
       onClose();
+      try {
+        window.dispatchEvent(new CustomEvent("homyz:reservations-updated", { detail: { bookingId } }));
+      } catch {}
       router.refresh();
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : t("booking_details_failed_update", "Failed to update reservation."));

@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/db/prisma";
 import { AppError } from "@/lib/api/errors";
 import type { AuthUser } from "@/lib/auth/types";
-import { Role, ListingStatus, ListingCoHostStatus } from "@/generated/prisma/enums";
+import {
+  Role,
+  ListingStatus,
+  ListingCoHostStatus,
+} from "@/generated/prisma/enums";
 import {
   savePublicMedia,
   deleteManagedMediaUrl,
@@ -76,7 +80,9 @@ export class ListingMediaService {
     });
 
     if (!coHost) {
-      throw AppError.forbidden("You do not have permission to manage media for this listing.");
+      throw AppError.forbidden(
+        "You do not have permission to manage media for this listing.",
+      );
     }
 
     return listing;
@@ -100,7 +106,8 @@ export class ListingMediaService {
       throw AppError.badRequest(validation.message);
     }
 
-    let listing: Awaited<ReturnType<typeof this.assertListingAccess>> | null = null;
+    let listing: Awaited<ReturnType<typeof this.assertListingAccess>> | null =
+      null;
     if (listingId) {
       listing = await this.assertListingAccess(actor, listingId);
     } else {
@@ -130,21 +137,31 @@ export class ListingMediaService {
     // If listingId is provided, atomically persist to listing.photos and update assignments
     if (listing && listingId) {
       const nextPhotos = [...listing.photos, saved.url];
-      let nextAssignments: PhotoRoomAssignment[] = Array.isArray(listing.photoRoomAssignments)
+      let nextAssignments: PhotoRoomAssignment[] = Array.isArray(
+        listing.photoRoomAssignments,
+      )
         ? (listing.photoRoomAssignments as unknown as PhotoRoomAssignment[])
         : [];
 
       if (autoAssignRoom) {
-        nextAssignments = [...nextAssignments, { url: saved.url, roomType: autoAssignRoom }];
+        nextAssignments = [
+          ...nextAssignments,
+          { url: saved.url, roomType: autoAssignRoom },
+        ];
       }
 
-      await prisma.listing.update({
-        where: { id: listingId },
-        data: {
-          photos: nextPhotos,
-          photoRoomAssignments: JSON.parse(JSON.stringify(nextAssignments)),
-        },
-      });
+      try {
+        await prisma.listing.update({
+          where: { id: listingId },
+          data: {
+            photos: nextPhotos,
+            photoRoomAssignments: JSON.parse(JSON.stringify(nextAssignments)),
+          },
+        });
+      } catch (error) {
+        await deleteManagedMediaUrl(saved.url).catch(() => {});
+        throw error;
+      }
 
       await invalidateListingCache(listingId, listing.hostId);
 
@@ -216,7 +233,9 @@ export class ListingMediaService {
 
     const index = listing.photos.indexOf(photoUrl);
     if (index === -1) {
-      throw AppError.badRequest("Selected photo does not exist in this listing gallery.");
+      throw AppError.badRequest(
+        "Selected photo does not exist in this listing gallery.",
+      );
     }
 
     if (index === 0) {
@@ -266,7 +285,9 @@ export class ListingMediaService {
       throw AppError.badRequest("Photo does not belong to this listing.");
     }
 
-    const existingAssignments: PhotoRoomAssignment[] = Array.isArray(listing.photoRoomAssignments)
+    const existingAssignments: PhotoRoomAssignment[] = Array.isArray(
+      listing.photoRoomAssignments,
+    )
       ? (listing.photoRoomAssignments as unknown as PhotoRoomAssignment[])
       : [];
 
@@ -279,7 +300,9 @@ export class ListingMediaService {
 
     await prisma.listing.update({
       where: { id: listingId },
-      data: { photoRoomAssignments: JSON.parse(JSON.stringify(nextAssignments)) },
+      data: {
+        photoRoomAssignments: JSON.parse(JSON.stringify(nextAssignments)),
+      },
     });
 
     await invalidateListingCache(listingId, listing.hostId);
@@ -302,9 +325,13 @@ export class ListingMediaService {
     roomType: PhotoRoomType | null,
   ) {
     const listing = await this.assertListingAccess(actor, listingId);
-    const targetSet = new Set(photoUrls.filter((url) => listing.photos.includes(url)));
+    const targetSet = new Set(
+      photoUrls.filter((url) => listing.photos.includes(url)),
+    );
 
-    const existingAssignments: PhotoRoomAssignment[] = Array.isArray(listing.photoRoomAssignments)
+    const existingAssignments: PhotoRoomAssignment[] = Array.isArray(
+      listing.photoRoomAssignments,
+    )
       ? (listing.photoRoomAssignments as unknown as PhotoRoomAssignment[])
       : [];
 
@@ -319,7 +346,9 @@ export class ListingMediaService {
 
     await prisma.listing.update({
       where: { id: listingId },
-      data: { photoRoomAssignments: JSON.parse(JSON.stringify(nextAssignments)) },
+      data: {
+        photoRoomAssignments: JSON.parse(JSON.stringify(nextAssignments)),
+      },
     });
 
     await invalidateListingCache(listingId, listing.hostId);
@@ -345,7 +374,9 @@ export class ListingMediaService {
     const index = listing.photos.indexOf(oldPhotoUrl);
 
     if (index === -1) {
-      throw AppError.badRequest("Photo to replace does not exist in this listing.");
+      throw AppError.badRequest(
+        "Photo to replace does not exist in this listing.",
+      );
     }
 
     const validation = validatePublicImageUpload({
@@ -377,21 +408,30 @@ export class ListingMediaService {
     const nextPhotos = [...listing.photos];
     nextPhotos[index] = saved.url;
 
-    const existingAssignments: PhotoRoomAssignment[] = Array.isArray(listing.photoRoomAssignments)
+    const existingAssignments: PhotoRoomAssignment[] = Array.isArray(
+      listing.photoRoomAssignments,
+    )
       ? (listing.photoRoomAssignments as unknown as PhotoRoomAssignment[])
       : [];
 
     const nextAssignments = existingAssignments.map((assignment) =>
-      assignment.url === oldPhotoUrl ? { ...assignment, url: saved.url } : assignment,
+      assignment.url === oldPhotoUrl
+        ? { ...assignment, url: saved.url }
+        : assignment,
     );
 
-    await prisma.listing.update({
-      where: { id: listingId },
-      data: {
-        photos: nextPhotos,
-        photoRoomAssignments: JSON.parse(JSON.stringify(nextAssignments)),
-      },
-    });
+    try {
+      await prisma.listing.update({
+        where: { id: listingId },
+        data: {
+          photos: nextPhotos,
+          photoRoomAssignments: JSON.parse(JSON.stringify(nextAssignments)),
+        },
+      });
+    } catch (error) {
+      await deleteManagedMediaUrl(saved.url).catch(() => {});
+      throw error;
+    }
 
     await invalidateListingCache(listingId, listing.hostId);
 
@@ -434,7 +474,11 @@ export class ListingMediaService {
     const nextPhotos = listing.photos.filter((p: string) => p !== photoUrl);
 
     // Publication safety: An active published listing must not drop below 5 photos
-    if (listing.published && listing.status === ListingStatus.ACTIVE && nextPhotos.length < 5) {
+    if (
+      listing.published &&
+      listing.status === ListingStatus.ACTIVE &&
+      nextPhotos.length < 5
+    ) {
       if (actor.role !== Role.ADMIN && !options?.force) {
         throw AppError.badRequest(
           "Cannot remove photo: Active published listings require at least 5 photos. Upload replacement photos first, or unpublish your listing.",
@@ -442,10 +486,14 @@ export class ListingMediaService {
       }
     }
 
-    const existingAssignments: PhotoRoomAssignment[] = Array.isArray(listing.photoRoomAssignments)
+    const existingAssignments: PhotoRoomAssignment[] = Array.isArray(
+      listing.photoRoomAssignments,
+    )
       ? (listing.photoRoomAssignments as unknown as PhotoRoomAssignment[])
       : [];
-    const nextAssignments = existingAssignments.filter((a) => a.url !== photoUrl);
+    const nextAssignments = existingAssignments.filter(
+      (a) => a.url !== photoUrl,
+    );
 
     await prisma.listing.update({
       where: { id: listingId },
@@ -482,15 +530,22 @@ export class ListingMediaService {
   /**
    * Retrieve structured gallery and photo tour metadata.
    */
-  async getListingGallery(actor: AuthUser, listingId: string): Promise<ListingGalleryResponse> {
+  async getListingGallery(
+    actor: AuthUser,
+    listingId: string,
+  ): Promise<ListingGalleryResponse> {
     const listing = await this.assertListingAccess(actor, listingId);
 
-    const assignments: PhotoRoomAssignment[] = Array.isArray(listing.photoRoomAssignments)
+    const assignments: PhotoRoomAssignment[] = Array.isArray(
+      listing.photoRoomAssignments,
+    )
       ? (listing.photoRoomAssignments as unknown as PhotoRoomAssignment[])
       : [];
 
     const assignedUrls = new Set(assignments.map((a) => a.url));
-    const assignedCount = listing.photos.filter((p: string) => assignedUrls.has(p)).length;
+    const assignedCount = listing.photos.filter((p: string) =>
+      assignedUrls.has(p),
+    ).length;
 
     return {
       listingId,
@@ -508,7 +563,10 @@ export class ListingMediaService {
   /**
    * Helper to verify if a photo URL is still referenced across listings, guidebooks, or CMS before deleting.
    */
-  private async cleanupMediaUrlIfUnreferenced(url: string, excludeListingId?: string) {
+  private async cleanupMediaUrlIfUnreferenced(
+    url: string,
+    excludeListingId?: string,
+  ) {
     try {
       const parsed = parseManagedMediaUrl(url);
       if (!parsed) return;

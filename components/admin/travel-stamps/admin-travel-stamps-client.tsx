@@ -44,19 +44,25 @@ const EMPTY_FORM: StampFormData = {
   isActive: true,
 };
 
-export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClientProps) {
+export function AdminTravelStampsClient({
+  initialStamps,
+}: AdminTravelStampsClientProps) {
   const router = useRouter();
   const [stamps, setStamps] = useState<AdminTravelStampDTO[]>(initialStamps);
   const [search, setSearch] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [selectedStatus, setSelectedStatus] = useState<
+    "ALL" | "ACTIVE" | "INACTIVE"
+  >("ALL");
   const [isPending, startTransition] = useTransition();
 
   // Modals state
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formData, setFormData] = useState<StampFormData>(EMPTY_FORM);
   const [isUploading, setIsUploading] = useState(false);
-  const [previewStamp, setPreviewStamp] = useState<AdminTravelStampDTO | null>(null);
+  const [previewStamp, setPreviewStamp] = useState<AdminTravelStampDTO | null>(
+    null,
+  );
 
   // Derive unique countries for filter
   const countries = useMemo(() => {
@@ -73,7 +79,10 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
     return stamps.filter((s) => {
       if (selectedStatus === "ACTIVE" && !s.isActive) return false;
       if (selectedStatus === "INACTIVE" && s.isActive) return false;
-      if (selectedCountry !== "all" && s.country?.toLowerCase() !== selectedCountry.toLowerCase()) {
+      if (
+        selectedCountry !== "all" &&
+        s.country?.toLowerCase() !== selectedCountry.toLowerCase()
+      ) {
         return false;
       }
       if (!q) return true;
@@ -92,7 +101,10 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
     const total = stamps.length;
     const active = stamps.filter((s) => s.isActive).length;
     const inactive = total - active;
-    const totalCollected = stamps.reduce((acc, curr) => acc + (curr.collectorCount || 0), 0);
+    const totalCollected = stamps.reduce(
+      (acc, curr) => acc + (curr.collectorCount || 0),
+      0,
+    );
     return { total, active, inactive, totalCollected };
   }, [stamps]);
 
@@ -121,12 +133,14 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
     setIsFormOpen(true);
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.match(/^image\/(png|jpeg|jpg|webp|svg\+xml)$/)) {
-      toast.error("Please upload a valid PNG, JPG, WebP, or SVG file.");
+    if (!file.type.match(/^image\/(png|jpeg|jpg|webp)$/)) {
+      toast.error("Please upload a valid PNG, JPG, or WebP file.");
       return;
     }
 
@@ -205,8 +219,8 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
                     displayOrder: updated.displayOrder ?? s.displayOrder,
                     isActive: updated.isActive ?? s.isActive,
                   }
-                : s
-            )
+                : s,
+            ),
           );
           toast.success("Travel stamp updated successfully!");
         } else {
@@ -249,7 +263,9 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
         setIsFormOpen(false);
         router.refresh();
       } catch (err: unknown) {
-        toast.error(err instanceof Error ? err.message : "Failed to save stamp");
+        toast.error(
+          err instanceof Error ? err.message : "Failed to save stamp",
+        );
       }
     });
   };
@@ -259,20 +275,30 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
       try {
         const updated = await toggleAdminTravelStampActiveAction(stamp.id);
         setStamps((prev) =>
-          prev.map((s) => (s.id === stamp.id ? { ...s, isActive: updated.isActive ?? !s.isActive } : s))
+          prev.map((s) =>
+            s.id === stamp.id
+              ? { ...s, isActive: updated.isActive ?? !s.isActive }
+              : s,
+          ),
         );
         toast.success(
-          `Stamp ${updated.isActive ? "activated" : "deactivated"} successfully!`
+          `Stamp ${updated.isActive ? "activated" : "deactivated"} successfully!`,
         );
         router.refresh();
       } catch (err: unknown) {
-        toast.error(err instanceof Error ? err.message : "Failed to toggle status");
+        toast.error(
+          err instanceof Error ? err.message : "Failed to toggle status",
+        );
       }
     });
   };
 
   const handleArchive = async (stamp: AdminTravelStampDTO) => {
-    if (!window.confirm(`Are you sure you want to archive "${stamp.displayName}"? Active guests who collected this stamp will keep it in their passport, but new guests won't be able to select it.`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to archive "${stamp.displayName}"? Active guests who collected this stamp will keep it in their passport, but new guests won't be able to select it.`,
+      )
+    ) {
       return;
     }
 
@@ -280,20 +306,23 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
       try {
         await archiveAdminTravelStampAction(stamp.id);
         setStamps((prev) =>
-          prev.map((s) => (s.id === stamp.id ? { ...s, isActive: false } : s))
+          prev.map((s) => (s.id === stamp.id ? { ...s, isActive: false } : s)),
         );
         toast.success(`"${stamp.displayName}" archived.`);
         router.refresh();
       } catch (err: unknown) {
-        toast.error(err instanceof Error ? err.message : "Failed to archive stamp");
+        toast.error(
+          err instanceof Error ? err.message : "Failed to archive stamp",
+        );
       }
     });
   };
 
   const handleDelete = async (stamp: AdminTravelStampDTO) => {
-    const msg = stamp.collectorCount > 0
-      ? `"${stamp.displayName}" has already been collected by ${stamp.collectorCount} traveler(s). Deleting will safely archive it so existing guest passports are not corrupted. Proceed?`
-      : `Are you sure you want to permanently delete "${stamp.displayName}"?`;
+    const msg =
+      stamp.collectorCount > 0
+        ? `"${stamp.displayName}" has already been collected by ${stamp.collectorCount} traveler(s). Deleting will safely archive it so existing guest passports are not corrupted. Proceed?`
+        : `Are you sure you want to permanently delete "${stamp.displayName}"?`;
 
     if (!window.confirm(msg)) return;
 
@@ -302,16 +331,22 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
         const result = await deleteAdminTravelStampAction(stamp.id);
         if (result.archived) {
           setStamps((prev) =>
-            prev.map((s) => (s.id === stamp.id ? { ...s, isActive: false } : s))
+            prev.map((s) =>
+              s.id === stamp.id ? { ...s, isActive: false } : s,
+            ),
           );
-          toast.info(`Stamp has active collectors, so it was safely deactivated.`);
+          toast.info(
+            `Stamp has active collectors, so it was safely deactivated.`,
+          );
         } else {
           setStamps((prev) => prev.filter((s) => s.id !== stamp.id));
           toast.success(`Stamp permanently deleted.`);
         }
         router.refresh();
       } catch (err: unknown) {
-        toast.error(err instanceof Error ? err.message : "Failed to delete stamp");
+        toast.error(
+          err instanceof Error ? err.message : "Failed to delete stamp",
+        );
       }
     });
   };
@@ -325,7 +360,9 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
             Travel Stamp Catalog
           </h1>
           <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
-            Create, design, and manage destination stamps. Approved stamps appear in traveler passports under &ldquo;Where I&apos;ve Been&rdquo;.
+            Create, design, and manage destination stamps. Approved stamps
+            appear in traveler passports under &ldquo;Where I&apos;ve
+            Been&rdquo;.
           </p>
         </div>
 
@@ -342,20 +379,34 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
       {/* KPI Stats Bar */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-2xs">
-          <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Total Stamps</p>
+          <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+            Total Stamps
+          </p>
           <p className="mt-1 text-2xl font-bold text-zinc-900">{stats.total}</p>
         </div>
         <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-2xs">
-          <p className="text-xs font-medium text-emerald-600 uppercase tracking-wider">Active Catalog</p>
-          <p className="mt-1 text-2xl font-bold text-emerald-700">{stats.active}</p>
+          <p className="text-xs font-medium text-emerald-600 uppercase tracking-wider">
+            Active Catalog
+          </p>
+          <p className="mt-1 text-2xl font-bold text-emerald-700">
+            {stats.active}
+          </p>
         </div>
         <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-2xs">
-          <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Inactive / Archived</p>
-          <p className="mt-1 text-2xl font-bold text-zinc-600">{stats.inactive}</p>
+          <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+            Inactive / Archived
+          </p>
+          <p className="mt-1 text-2xl font-bold text-zinc-600">
+            {stats.inactive}
+          </p>
         </div>
         <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-2xs">
-          <p className="text-xs font-medium text-amber-600 uppercase tracking-wider">Total Guest Collections</p>
-          <p className="mt-1 text-2xl font-bold text-amber-700">{stats.totalCollected}</p>
+          <p className="text-xs font-medium text-amber-600 uppercase tracking-wider">
+            Total Guest Collections
+          </p>
+          <p className="mt-1 text-2xl font-bold text-amber-700">
+            {stats.totalCollected}
+          </p>
         </div>
       </div>
 
@@ -408,7 +459,11 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
                   : "text-zinc-500 hover:text-zinc-900"
               }`}
             >
-              {status === "ALL" ? "All" : status === "ACTIVE" ? "Active" : "Archived"}
+              {status === "ALL"
+                ? "All"
+                : status === "ACTIVE"
+                  ? "Active"
+                  : "Archived"}
             </button>
           ))}
         </div>
@@ -472,7 +527,8 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
                     {stamp.title || stamp.displayName}
                   </h3>
                   <p className="text-xs text-zinc-500 mt-0.5">
-                    {[stamp.city, stamp.country].filter(Boolean).join(", ") || stamp.displayName}
+                    {[stamp.city, stamp.country].filter(Boolean).join(", ") ||
+                      stamp.displayName}
                   </p>
                   {stamp.description && (
                     <p className="mt-2 text-[11px] leading-relaxed text-zinc-600 line-clamp-2 px-1">
@@ -480,7 +536,11 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
                     </p>
                   )}
                   <div className="mt-3 text-[11px] text-zinc-400">
-                    Collected by <strong className="text-zinc-700">{stamp.collectorCount}</strong> travelers
+                    Collected by{" "}
+                    <strong className="text-zinc-700">
+                      {stamp.collectorCount}
+                    </strong>{" "}
+                    travelers
                   </div>
                 </div>
               </div>
@@ -529,7 +589,9 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
           <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-amber-100 text-2xl">
             🛂
           </div>
-          <h3 className="text-base font-bold text-zinc-800">No travel stamps found</h3>
+          <h3 className="text-base font-bold text-zinc-800">
+            No travel stamps found
+          </h3>
           <p className="mt-1 text-xs text-zinc-500 max-w-sm mx-auto">
             {search || selectedCountry !== "all" || selectedStatus !== "ALL"
               ? "Try adjusting your search or filters to find stamps."
@@ -552,10 +614,13 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
             <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-4">
               <div>
                 <h2 className="text-lg font-bold text-zinc-900">
-                  {formData.id ? "Edit Travel Stamp" : "Create New Travel Stamp"}
+                  {formData.id
+                    ? "Edit Travel Stamp"
+                    : "Create New Travel Stamp"}
                 </h2>
                 <p className="text-xs text-zinc-500 mt-0.5">
-                  Upload custom destination artwork and configure guest visibility.
+                  Upload custom destination artwork and configure guest
+                  visibility.
                 </p>
               </div>
               <button
@@ -567,7 +632,10 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
               </button>
             </div>
 
-            <form onSubmit={handleSaveForm} className="max-h-[80vh] overflow-y-auto px-6 py-5 space-y-4">
+            <form
+              onSubmit={handleSaveForm}
+              className="max-h-[80vh] overflow-y-auto px-6 py-5 space-y-4"
+            >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs font-semibold text-zinc-700">
@@ -577,11 +645,15 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
                     type="text"
                     required
                     value={formData.displayName}
-                    onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, displayName: e.target.value })
+                    }
                     placeholder="e.g. Paris"
                     className="mt-1 w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-amber-400"
                   />
-                  <span className="text-[10px] text-zinc-400">Short caption shown under stamp (e.g. Paris, Coffee)</span>
+                  <span className="text-[10px] text-zinc-400">
+                    Short caption shown under stamp (e.g. Paris, Coffee)
+                  </span>
                 </div>
 
                 <div>
@@ -591,40 +663,56 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                     placeholder="e.g. Paris Explorer"
                     className="mt-1 w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-amber-400"
                   />
-                  <span className="text-[10px] text-zinc-400">Used in detail dialogs and search tags</span>
+                  <span className="text-[10px] text-zinc-400">
+                    Used in detail dialogs and search tags
+                  </span>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700">Country</label>
+                  <label className="block text-xs font-semibold text-zinc-700">
+                    Country
+                  </label>
                   <input
                     type="text"
                     value={formData.country}
-                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, country: e.target.value })
+                    }
                     placeholder="e.g. France"
                     className="mt-1 w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700">City / Destination</label>
+                  <label className="block text-xs font-semibold text-zinc-700">
+                    City / Destination
+                  </label>
                   <input
                     type="text"
                     value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, city: e.target.value })
+                    }
                     placeholder="e.g. Paris"
                     className="mt-1 w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700">Category</label>
+                  <label className="block text-xs font-semibold text-zinc-700">
+                    Category
+                  </label>
                   <select
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category: e.target.value })
+                    }
                     className="mt-1 w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-amber-400"
                   >
                     <option value="CITY">City</option>
@@ -636,22 +724,33 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700">Display Order</label>
+                  <label className="block text-xs font-semibold text-zinc-700">
+                    Display Order
+                  </label>
                   <input
                     type="number"
                     value={formData.displayOrder}
-                    onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value, 10) || 0 })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        displayOrder: parseInt(e.target.value, 10) || 0,
+                      })
+                    }
                     className="mt-1 w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-amber-400"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700">Description</label>
+                <label className="block text-xs font-semibold text-zinc-700">
+                  Description
+                </label>
                 <textarea
                   rows={2}
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   placeholder="e.g. Awarded for discovering Paris, Eiffel Tower views, and authentic French bistros."
                   className="mt-1 w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-amber-400"
                 />
@@ -663,7 +762,8 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
                   Stamp Design Artwork <span className="text-rose-500">*</span>
                 </label>
                 <p className="text-[11px] text-zinc-500 mb-3">
-                  Upload a unique stamp illustration. Supports PNG, JPG, WebP, or SVG. Transparent backgrounds are highly recommended.
+                  Upload a unique stamp illustration. Supports PNG, JPG, or
+                  WebP. Transparent backgrounds are highly recommended.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -679,20 +779,24 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
                         className="object-contain"
                       />
                     ) : (
-                      <span className="text-xs text-zinc-400 text-center">No image</span>
+                      <span className="text-xs text-zinc-400 text-center">
+                        No image
+                      </span>
                     )}
                   </div>
 
                   <div className="flex-1 w-full">
                     <input
                       type="file"
-                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      accept="image/png,image/jpeg,image/webp"
                       onChange={handleFileUpload}
                       disabled={isUploading}
                       className="block w-full text-xs text-zinc-600 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-zinc-900 file:text-white hover:file:bg-black file:cursor-pointer"
                     />
                     {isUploading && (
-                      <p className="text-xs text-amber-600 font-medium mt-1">Uploading artwork...</p>
+                      <p className="text-xs text-amber-600 font-medium mt-1">
+                        Uploading artwork...
+                      </p>
                     )}
                     {formData.iconUrl && (
                       <p className="text-[10px] text-zinc-400 truncate mt-1">
@@ -717,7 +821,9 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
                           alt="Live Preview"
                           width={80}
                           height={80}
-                          unoptimized={Boolean(formData.iconUrl.endsWith(".svg"))}
+                          unoptimized={Boolean(
+                            formData.iconUrl.endsWith(".svg"),
+                          )}
                           className="object-contain"
                         />
                       </div>
@@ -735,15 +841,20 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
               {/* Active Toggle */}
               <div className="flex items-center justify-between rounded-xl border border-zinc-200 px-4 py-3">
                 <div>
-                  <p className="text-xs font-semibold text-zinc-900">Active for Traveler Selection</p>
+                  <p className="text-xs font-semibold text-zinc-900">
+                    Active for Traveler Selection
+                  </p>
                   <p className="text-[11px] text-zinc-500">
-                    When active, guests can discover and select this stamp in their passport.
+                    When active, guests can discover and select this stamp in
+                    their passport.
                   </p>
                 </div>
                 <input
                   type="checkbox"
                   checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isActive: e.target.checked })
+                  }
                   className="size-4 rounded accent-amber-500"
                 />
               </div>
@@ -761,7 +872,11 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
                   disabled={isPending || isUploading}
                   className="rounded-full bg-zinc-900 px-6 py-2 text-xs font-bold text-white hover:bg-black transition disabled:opacity-50"
                 >
-                  {isPending ? "Saving..." : formData.id ? "Save Changes" : "Create Stamp"}
+                  {isPending
+                    ? "Saving..."
+                    : formData.id
+                      ? "Save Changes"
+                      : "Create Stamp"}
                 </button>
               </div>
             </form>
@@ -777,7 +892,8 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
               Guest Profile Preview
             </h3>
             <p className="text-xs text-zinc-500 mt-1">
-              How this stamp renders in the guest&apos;s &ldquo;Where I&apos;ve Been&rdquo; section
+              How this stamp renders in the guest&apos;s &ldquo;Where I&apos;ve
+              Been&rdquo; section
             </p>
 
             <div className="my-8 flex justify-center">
@@ -789,7 +905,9 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
                       alt={previewStamp.displayName}
                       width={96}
                       height={96}
-                      unoptimized={Boolean(previewStamp.iconUrl.endsWith(".svg"))}
+                      unoptimized={Boolean(
+                        previewStamp.iconUrl.endsWith(".svg"),
+                      )}
                       className="object-contain"
                     />
                   ) : (
@@ -806,10 +924,24 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
             </div>
 
             <div className="rounded-2xl bg-zinc-50 p-3 text-left text-xs text-zinc-600 space-y-1 mb-5">
-              <p><strong>Title:</strong> {previewStamp.title || previewStamp.displayName}</p>
-              <p><strong>Location:</strong> {[previewStamp.city, previewStamp.country].filter(Boolean).join(", ") || "N/A"}</p>
-              <p><strong>Description:</strong> {previewStamp.description || "N/A"}</p>
-              <p><strong>Status:</strong> {previewStamp.isActive ? "Available to guests" : "Archived"}</p>
+              <p>
+                <strong>Title:</strong>{" "}
+                {previewStamp.title || previewStamp.displayName}
+              </p>
+              <p>
+                <strong>Location:</strong>{" "}
+                {[previewStamp.city, previewStamp.country]
+                  .filter(Boolean)
+                  .join(", ") || "N/A"}
+              </p>
+              <p>
+                <strong>Description:</strong>{" "}
+                {previewStamp.description || "N/A"}
+              </p>
+              <p>
+                <strong>Status:</strong>{" "}
+                {previewStamp.isActive ? "Available to guests" : "Archived"}
+              </p>
             </div>
 
             <button

@@ -23,6 +23,7 @@ export const PHOTO_ROOM_TYPES = [
   "KITCHEN",
   "DINING_ROOM",
   "WORKSPACE",
+  "ART_STUDIO",
   "STUDY_ROOM",
   "GAME_ROOM",
   "MEDIA_ROOM",

@@ -55,12 +55,12 @@ export function GuestDashboardSidebar({
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
 
   return (
-    <aside className="order-2 w-full shrink-0 lg:order-1 lg:w-[300px] xl:w-[452px]">
-      <h1 className="mb-7 hidden lg:block xl:mb-10">
+    <aside className="profile-navigation order-2 w-full shrink-0 lg:sticky lg:top-24 lg:order-1 lg:flex lg:max-h-[calc(100dvh-7rem)] lg:w-[300px] lg:self-start lg:flex-col xl:w-[452px]">
+      <h1 className="profile-page-title mb-7 hidden lg:block xl:mb-10">
         {t("profile_nav_my_profile", "My profile")}
       </h1>
 
-      <nav className="mobile-guest-grid grid md:grid-cols-3 grid-cols-2 gap-1.5 lg:block lg:mt-3 mt-5">
+      <nav className="mobile-guest-grid grid grid-cols-2 gap-1.5 mt-5 md:grid-cols-3 lg:visible-scrollbar lg:mt-3 lg:block lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-2">
         {GUEST_NAV_ITEMS.map((item, index) => {
           const isActive = item.id === currentActive;
           const precedesActive = GUEST_NAV_ITEMS[index + 1]?.id === currentActive;
@@ -81,7 +81,7 @@ export function GuestDashboardSidebar({
                   onSelectTab(item.id);
                 }
               }}
-              className={`group relative isolate min-h-[142px] flex flex-col items-center justify-center gap-2 rounded-lg border border-[#E5E5E5] px-2 py-4 text-center text-[16px] leading-5 font-normal shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-colors lg:h-[72px] lg:min-h-0 lg:w-full lg:flex-row lg:justify-start lg:gap-5 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:border-b lg:border-[#D7D7D7] lg:px-0 lg:py-0 lg:text-left lg:text-[15px] lg:leading-6 lg:font-medium lg:shadow-none xl:h-[88px] xl:gap-6 xl:text-[20px] xl:leading-7 ${
+              className={`group relative isolate min-h-[142px] flex flex-col items-center justify-center gap-2 rounded-lg border border-[#E5E5E5] px-2 py-4 text-center text-[15px] leading-5 font-medium shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-colors lg:h-[72px] lg:min-h-0 lg:w-full lg:flex-row lg:justify-start lg:gap-5 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:border-b lg:border-[#D7D7D7] lg:px-0 lg:py-0 lg:text-left lg:text-[15px] lg:leading-6 lg:font-medium lg:shadow-none xl:h-[80px] xl:gap-6 xl:text-[16px] xl:leading-6 ${
                 isActive
                   ? "bg-[#FCDF9C] text-[#1F1F1F] lg:bg-transparent lg:border-b-transparent"
                   : `bg-white text-[#1F1F1F] hover:bg-[#FFF8E8] lg:bg-transparent lg:hover:bg-transparent ${precedesActive ? "lg:border-b-transparent" : ""}`

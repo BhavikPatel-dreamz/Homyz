@@ -69,7 +69,7 @@ export async function reconcileAchievementEvidence(
     orderBy: { id: "asc" },
     take: limit,
     include: {
-      listing: { select: { checkOutTime: true, country: true } },
+      listing: { select: { country: true } },
       visitEvidence: { select: { id: true } },
     },
   });
@@ -84,7 +84,8 @@ export async function reconcileAchievementEvidence(
       dbStatus: booking.status,
       startDate: booking.startDate,
       endDate: booking.endDate,
-      checkOutTime: booking.listing.checkOutTime,
+      checkOutTime: booking.checkOutTime,
+      propertyTimeZone: booking.propertyTimeZone,
       now,
     })) {
       skippedIncompleteCount += 1;

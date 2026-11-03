@@ -9,6 +9,7 @@ import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 interface LeafletMapInstance {
   remove: () => void;
   setView: (center: [number, number], zoom: number) => void;
+  flyTo?: (center: [number, number], zoom: number, options?: { animate?: boolean; duration?: number }) => void;
   getZoom: () => number;
   zoomIn: () => void;
   zoomOut: () => void;
@@ -356,7 +357,12 @@ export function RealMap({
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
-    mapInstanceRef.current.setView([coords.lat, coords.lng], mapInstanceRef.current.getZoom() || (showExactLocation ? 14 : 13));
+    const targetZoom = mapInstanceRef.current.getZoom() || (showExactLocation ? 14 : 13);
+    if (typeof mapInstanceRef.current.flyTo === "function") {
+      mapInstanceRef.current.flyTo([coords.lat, coords.lng], targetZoom, { duration: 0.8 });
+    } else {
+      mapInstanceRef.current.setView([coords.lat, coords.lng], targetZoom);
+    }
     if (markerRef.current) {
       markerRef.current.setLatLng([coords.lat, coords.lng]);
     }

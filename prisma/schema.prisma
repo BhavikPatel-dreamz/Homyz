@@ -40,6 +40,38 @@ enum NotificationType {
   SYSTEM
 }
 
+enum NotificationOutboxStatus {
+  PENDING
+  PROCESSING
+  DELIVERED
+  RETRY_PENDING
+  DEAD_LETTER
+}
+
+enum NotificationDeliveryChannel {
+  IN_APP
+  EMAIL
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  SENDING
+  SENT
+  DELIVERED
+  FAILED
+  RETRY_PENDING
+  PERMANENTLY_FAILED
+}
+
+enum SupportCaseEvidenceScanStatus {
+  QUARANTINED
+  SCANNING
+  CLEAN
+  INFECTED
+  REJECTED
+  SCAN_FAILED
+}
+
 // Loyalty activity is an append-only, presentation-safe projection of trusted
 // achievement, tier, and referral outcomes. It is not a reward ledger.
 enum LoyaltyActivityType {
@@ -388,6 +420,57 @@ enum QualityIncidentSeverity {
   CRITICAL
 }
 
+// Relational support-case foundation. Category and issueType are strings so
+// product can introduce configured taxonomy without a schema migration; the
+// lifecycle and access controls remain strongly typed.
+enum SupportCaseStatus {
+  OPEN
+  IN_REVIEW
+  WAITING_FOR_GUEST
+  WAITING_FOR_HOST
+  WAITING_FOR_ADMIN
+  RESOLVED
+  CLOSED
+  REOPENED
+  ESCALATED
+}
+
+enum SupportCasePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum SupportCaseParticipantRole {
+  REPORTER
+  GUEST
+  HOST
+  ADMIN
+}
+
+enum SupportCaseContentVisibility {
+  PARTICIPANTS
+  ADMINS_ONLY
+}
+
+enum ResolutionOfferType {
+  MONETARY_COMPENSATION
+  PROPERTY_DAMAGE
+  NON_FINANCIAL
+  AMENITY_ISSUE
+  OTHER
+}
+
+enum ResolutionOfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COUNTERED
+  WITHDRAWN
+  EXPIRED
+}
+
 // Central content-moderation foundation. These enums are intentionally
 // separate from booking dispute and listing approval lifecycles.
 enum ModerationTargetType {
@@ -526,6 +609,7 @@ model User {
   referralRewardEarnedFor         ReferralReward?              @relation("ReferralRewardReferredGuest")
   reviewedReferralRewards         ReferralReward[]             @relation("ReferralRewardReviewer")
   notifications                   Notification[]
+  notificationDeliveries          NotificationDelivery[]       @relation("NotificationDeliveryRecipient")
   loyaltyActivities               LoyaltyActivity[]
   initiatedStayEliteReconciliationRuns StayEliteReconciliationRun[] @relation("StayEliteReconciliationInitiator")
   guestConversations              Conversation[]               @relation("GuestConversations")
@@ -535,6 +619,19 @@ model User {
   hostSpecialOffers               SpecialOffer[]               @relation("HostSpecialOffers")
   superhostEvaluations            SuperhostEvaluation[]
   reportedQualityIncidents        ListingQualityIncident[]     @relation("ReportedQualityIncidents")
+  reportedSupportCases            SupportCase[]                @relation("SupportCaseReporter")
+  assignedSupportCases            SupportCase[]                @relation("SupportCaseAssignee")
+  supportCaseParticipants         SupportCaseParticipant[]
+  sentSupportCaseMessages         SupportCaseMessage[]         @relation("SupportCaseMessageSender")
+  uploadedSupportCaseEvidence     SupportCaseEvidence[]        @relation("SupportCaseEvidenceUploader")
+  legalHeldSupportCaseEvidence    SupportCaseEvidence[]        @relation("SupportCaseEvidenceLegalHoldBy")
+  supportCaseEvidenceHoldActions  SupportCaseEvidenceHold[]    @relation("SupportCaseEvidenceHoldActor")
+  supportCaseEvents               SupportCaseEvent[]           @relation("SupportCaseEventActor")
+  previousSupportCaseAssignments  SupportCaseAssignmentHistory[] @relation("SupportCasePreviousAssignee")
+  newSupportCaseAssignments       SupportCaseAssignmentHistory[] @relation("SupportCaseNewAssignee")
+  escalationOwnedSupportCases     SupportCase[]                @relation("SupportCaseEscalationOwner")
+  proposedResolutionOffers        ResolutionOffer[]            @relation("ResolutionOfferProposer")
+  receivedResolutionOffers        ResolutionOffer[]            @relation("ResolutionOfferRecipient")
   submittedModerationReports      ModerationReport[]           @relation("SubmittedModerationReports")
   assignedModerationCases         ModerationCase[]             @relation("AssignedModerationCases")
   submittedModerationEvidence     ModerationEvidence[]         @relation("SubmittedModerationEvidence")
@@ -574,6 +671,11 @@ model User {
   stayEliteEvaluations            StayEliteTierEvaluation[]    @relation("StayEliteEvaluationGuest")
   stayEliteTierChanges            StayEliteTierHistory[]       @relation("StayEliteTierHistoryGuest")
   authorizedStayEliteTierChanges  StayEliteTierHistory[]       @relation("StayEliteTierHistoryActor")
+  pointsAccount                   PointsAccount?
+  pointsLedgerEntries             PointsLedgerEntry[]          @relation("PointsLedgerOwner")
+  authorizedPointsLedgerEntries   PointsLedgerEntry[]          @relation("PointsLedgerActor")
+  rewardRedemptions               RewardRedemption[]
+  createdLoyaltyCampaigns         LoyaltyCampaign[]            @relation("LoyaltyCampaignCreatedBy")
   travelFollowers                 TravelFollow[]               @relation("TravelFollowers")
   travelFollowing                 TravelFollow[]               @relation("TravelFollowing")
   blockedUsers                    UserBlock[]                  @relation("UserBlockedUsers")
@@ -633,10 +735,83 @@ model Notification {
   updatedAt  DateTime         @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries NotificationDelivery[]
 
   @@index([userId, isRead, createdAt])
   @@index([userId, createdAt])
   @@index([userId, type, entityId, entityType])
+}
+
+// Durable transactional queue for support and resolution notifications.  It is
+// intentionally independent from the user-facing Notification inbox, which is
+// written by the worker only after an event is safely claimed.
+model NotificationOutbox {
+  id                String                    @id @default(cuid())
+  eventType         String
+  entityType        String
+  entityId          String
+  eventVersion      Int                       @default(1)
+  payload           Json
+  idempotencyKey    String                    @unique
+  status            NotificationOutboxStatus @default(PENDING)
+  attemptCount      Int                       @default(0)
+  maxAttempts       Int                       @default(5)
+  nextAttemptAt     DateTime                  @default(now())
+  processingLeaseId String?
+  leaseExpiresAt    DateTime?
+  lastErrorCode     String?
+  lastError         String?                   @db.Text
+  processedAt       DateTime?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  deliveries NotificationDelivery[]
+
+  @@index([status, nextAttemptAt])
+  @@index([leaseExpiresAt])
+  @@index([entityType, entityId])
+}
+
+model NotificationDelivery {
+  id                String                     @id @default(cuid())
+  outboxEventId     String
+  notificationId    String?
+  recipientUserId   String
+  channel           NotificationDeliveryChannel
+  status            NotificationDeliveryStatus @default(PENDING)
+  providerMessageId String?
+  attemptCount      Int                        @default(0)
+  lastAttemptedAt   DateTime?
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+  failureReason     String?                    @db.Text
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+
+  outboxEvent  NotificationOutbox @relation(fields: [outboxEventId], references: [id], onDelete: Cascade)
+  notification Notification?      @relation(fields: [notificationId], references: [id], onDelete: SetNull)
+  recipient    User               @relation("NotificationDeliveryRecipient", fields: [recipientUserId], references: [id], onDelete: Cascade)
+  attempts     NotificationDeliveryAttempt[]
+
+  @@unique([outboxEventId, recipientUserId, channel])
+  @@index([recipientUserId, status, createdAt])
+  @@index([status, updatedAt])
+}
+
+model NotificationDeliveryAttempt {
+  id            String               @id @default(cuid())
+  deliveryId    String
+  attemptNumber Int
+  status        NotificationDeliveryStatus
+  errorCode     String?
+  errorMessage  String?              @db.Text
+  providerId    String?
+  createdAt     DateTime             @default(now())
+
+  delivery NotificationDelivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+
+  @@unique([deliveryId, attemptNumber])
+  @@index([deliveryId, createdAt])
 }
 
 model LoyaltyActivity {
@@ -826,6 +1001,9 @@ model Listing {
   country                 String?
   latitude                Float?
   longitude               Float?
+  // IANA timezone derived from the verified property location. This is the
+  // authoritative timezone for calendar days and arrival/departure schedules.
+  propertyTimeZone        String        @default("UTC")
   showExactLocation       Boolean @default(true)
 
   guests    Int @default(1)
@@ -969,6 +1147,12 @@ model Listing {
   approvalMethod           ListingApprovalMethod?
   licenseUnlistedAt        DateTime?
   licenseUnlistingReason   String?                         @db.Text
+  // Saudi registration data is per-listing. The national ID is encrypted and
+  // deliberately excluded from normal listing DTOs and logs.
+  licenseAccommodationType String?
+  encryptedLicenseNationalId String?                       @db.Text
+  licenseNationalIdLast4   String?
+  licenseRegistrationUpdatedAt DateTime?
 
   deletedAt     DateTime?
   removalReason Json?
@@ -988,6 +1172,7 @@ model Listing {
   specialOffers                SpecialOffer[]
   guestFavoriteEvaluations     GuestFavoriteEvaluation[]
   qualityIncidents             ListingQualityIncident[]
+  supportCases                 SupportCase[]
   searchRankingObservations    ListingSearchRankingObservation[]
   analyticsEvents              ListingAnalyticsEvent[]
   cleaningTasks                CleaningTask[]
@@ -1221,6 +1406,14 @@ model Booking {
   status                      BookingStatus @default(PENDING)
   startDate                   DateTime      @db.Date
   endDate                     DateTime      @db.Date
+  // Immutable property-local schedule captured when this reservation is made.
+  // Listing defaults may change later, but never rewrite an existing stay.
+  propertyTimeZone            String        @default("UTC")
+  checkInTime                 String        @default("15:00")
+  checkInEndTime              String        @default("22:00")
+  checkOutTime                String        @default("11:00")
+  scheduledCheckInAt          DateTime?     @db.Timestamptz(3)
+  scheduledCheckOutAt         DateTime?     @db.Timestamptz(3)
   guests                      Int           @default(1)
   totalPrice                  Int? // Minor units / cents
   nightlyPrice                Int? // Minor units / cents
@@ -1246,6 +1439,8 @@ model Booking {
   qualityIncidents    ListingQualityIncident[]
   payments            BookingPayment[]
   refunds             BookingRefund[]
+  supportCases        SupportCase[]
+  resolutionOffers    ResolutionOffer[]
   moderationReports   ModerationReport[]
   cleaningTasks       CleaningTask[]
   operatingExpenses   OperatingExpense[]
@@ -1525,6 +1720,8 @@ model BookingRefund {
   id               String       @id @default(cuid())
   bookingId        String
   paymentId        String?
+  supportCaseId    String?
+  resolutionOfferId String?      @unique
   refundReference  String?      @unique
   providerRefundId String?      @unique
   idempotencyKey   String?      @unique
@@ -1545,9 +1742,13 @@ model BookingRefund {
 
   booking Booking         @relation(fields: [bookingId], references: [id], onDelete: Restrict)
   payment BookingPayment? @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  supportCase SupportCase? @relation(fields: [supportCaseId], references: [id], onDelete: SetNull)
+  resolutionOffer ResolutionOffer? @relation(fields: [resolutionOfferId], references: [id], onDelete: SetNull)
 
   @@index([bookingId])
   @@index([paymentId])
+  @@index([supportCaseId])
+  @@index([resolutionOfferId])
   @@index([status])
   @@index([createdAt])
 }
@@ -2413,11 +2614,227 @@ model ListingQualityIncident {
   listing    Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
   booking    Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
   reportedBy User?    @relation("ReportedQualityIncidents", fields: [reportedById], references: [id], onDelete: SetNull)
+  supportCase SupportCase? @relation("LegacyIncidentSupportCase")
 
   @@index([listingId])
   @@index([listingId, status])
   @@index([bookingId])
   @@index([createdAt])
+}
+
+model SupportCase {
+  id                      String       @id @default(cuid())
+  caseNumber              String       @unique
+  idempotencyKey          String?      @unique
+  reporterId              String?
+  reporterRole            SupportCaseParticipantRole
+  bookingId               String?
+  listingId               String?
+  // Additive foreign-key link for the legacy ListingQualityIncident domain.
+  // The legacy incident remains authoritative for its existing APIs.
+  legacyQualityIncidentId String?      @unique
+  category                String
+  issueType               String?
+  subject                 String
+  description             String?      @db.Text
+  priority                SupportCasePriority @default(MEDIUM)
+  status                  SupportCaseStatus   @default(OPEN)
+  assignedAdminId         String?
+  resolvedAt              DateTime?
+  closedAt                DateTime?
+  escalatedAt             DateTime?
+  escalationReason        String?      @db.Text
+  escalationLevel         Int?
+  escalationOwnerId       String?
+  slaDueAt                DateTime?
+  firstResponseDueAt      DateTime?
+  nextResponseDueAt       DateTime?
+  slaPolicyVersion        String?
+  slaBreachedAt           DateTime?
+  version                 Int          @default(1)
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+
+  reporter              User?                   @relation("SupportCaseReporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  assignedAdmin         User?                   @relation("SupportCaseAssignee", fields: [assignedAdminId], references: [id], onDelete: SetNull)
+  escalationOwner       User?                   @relation("SupportCaseEscalationOwner", fields: [escalationOwnerId], references: [id], onDelete: SetNull)
+  booking               Booking?                @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  listing               Listing?                @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  legacyQualityIncident ListingQualityIncident?  @relation("LegacyIncidentSupportCase", fields: [legacyQualityIncidentId], references: [id], onDelete: SetNull)
+  participants          SupportCaseParticipant[]
+  messages              SupportCaseMessage[]
+  evidence              SupportCaseEvidence[]
+  events                SupportCaseEvent[]
+  assignmentHistory     SupportCaseAssignmentHistory[]
+  resolutionOffers      ResolutionOffer[]
+  refunds               BookingRefund[]
+
+  @@index([reporterId, createdAt])
+  @@index([assignedAdminId, status])
+  @@index([bookingId, createdAt])
+  @@index([listingId, createdAt])
+  @@index([status, priority, createdAt])
+  @@index([status, slaDueAt])
+  @@index([escalationOwnerId, status])
+  @@index([legacyQualityIncidentId])
+}
+
+model SupportCaseParticipant {
+  id        String                     @id @default(cuid())
+  caseId    String
+  userId    String
+  role      SupportCaseParticipantRole
+  canView   Boolean                    @default(true)
+  canPost   Boolean                    @default(true)
+  joinedAt  DateTime                   @default(now())
+  removedAt DateTime?
+
+  supportCase SupportCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([caseId, userId])
+  @@index([userId, removedAt])
+  @@index([caseId, removedAt])
+}
+
+model SupportCaseMessage {
+  id         String                       @id @default(cuid())
+  caseId     String
+  senderId   String
+  idempotencyKey String?                  @unique
+  content    String                       @db.Text
+  visibility SupportCaseContentVisibility @default(PARTICIPANTS)
+  createdAt  DateTime                     @default(now())
+
+  supportCase SupportCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  sender      User        @relation("SupportCaseMessageSender", fields: [senderId], references: [id], onDelete: Restrict)
+
+  @@index([caseId, createdAt])
+  @@index([senderId, createdAt])
+}
+
+model SupportCaseEvidence {
+  id             String                       @id @default(cuid())
+  caseId         String
+  uploaderId     String
+  storageKey     String                       @unique
+  originalName   String
+  mimeType       String
+  sizeBytes      Int
+  checksum       String?
+  visibility     SupportCaseContentVisibility @default(PARTICIPANTS)
+  retentionUntil DateTime?
+  scanStatus     SupportCaseEvidenceScanStatus @default(QUARANTINED)
+  scanAttemptCount Int                    @default(0)
+  scanLastError  String?                  @db.Text
+  scannedAt      DateTime?
+  quarantinedAt  DateTime                 @default(now())
+  legalHold      Boolean                  @default(false)
+  legalHoldReason String?                 @db.Text
+  legalHoldAt    DateTime?
+  legalHoldById  String?
+  deletedAt      DateTime?
+  metadata       Json?
+  createdAt      DateTime                     @default(now())
+
+  supportCase SupportCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  uploader    User        @relation("SupportCaseEvidenceUploader", fields: [uploaderId], references: [id], onDelete: Restrict)
+  legalHoldBy User?       @relation("SupportCaseEvidenceLegalHoldBy", fields: [legalHoldById], references: [id], onDelete: SetNull)
+  holds       SupportCaseEvidenceHold[]
+
+  @@index([caseId, createdAt])
+  @@index([uploaderId, createdAt])
+  @@index([retentionUntil])
+  @@index([scanStatus, createdAt])
+  @@index([legalHold, retentionUntil])
+}
+
+// Append-only record of legal-hold decisions; the current fields above are a
+// query-efficient projection and must never be the only source of history.
+model SupportCaseEvidenceHold {
+  id         String   @id @default(cuid())
+  evidenceId String
+  actorId    String
+  action     String
+  reason     String   @db.Text
+  createdAt  DateTime @default(now())
+
+  evidence SupportCaseEvidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+  actor    User                @relation("SupportCaseEvidenceHoldActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([evidenceId, createdAt])
+  @@index([actorId, createdAt])
+}
+
+model SupportCaseEvent {
+  id            String                       @id @default(cuid())
+  caseId        String
+  actorId       String?
+  eventType     String
+  visibility    SupportCaseContentVisibility @default(ADMINS_ONLY)
+  previousState Json?
+  newState      Json?
+  description   String?                      @db.Text
+  createdAt     DateTime                     @default(now())
+
+  supportCase SupportCase @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  actor       User?       @relation("SupportCaseEventActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([caseId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([eventType, createdAt])
+}
+
+model SupportCaseAssignmentHistory {
+  id                String   @id @default(cuid())
+  caseId            String
+  previousAssigneeId String?
+  newAssigneeId      String?
+  reason            String?  @db.Text
+  createdAt         DateTime @default(now())
+
+  supportCase      SupportCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  previousAssignee User?       @relation("SupportCasePreviousAssignee", fields: [previousAssigneeId], references: [id], onDelete: SetNull)
+  newAssignee      User?       @relation("SupportCaseNewAssignee", fields: [newAssigneeId], references: [id], onDelete: SetNull)
+
+  @@index([caseId, createdAt])
+  @@index([newAssigneeId, createdAt])
+}
+
+model ResolutionOffer {
+  id                String                @id @default(cuid())
+  caseId            String
+  bookingId         String
+  parentOfferId     String?
+  proposerId        String
+  recipientId       String
+  offerType         ResolutionOfferType
+  amount            Int?
+  currency          String                @default("SAR")
+  description       String                @db.Text
+  status            ResolutionOfferStatus @default(PENDING)
+  expiresAt         DateTime?
+  acceptedAt        DateTime?
+  rejectedAt        DateTime?
+  withdrawnAt       DateTime?
+  idempotencyKey    String?               @unique
+  version           Int                   @default(1)
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  supportCase SupportCase      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  booking     Booking          @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  parentOffer ResolutionOffer? @relation("ResolutionOfferCounter", fields: [parentOfferId], references: [id], onDelete: SetNull)
+  counterOffers ResolutionOffer[] @relation("ResolutionOfferCounter")
+  proposer    User             @relation("ResolutionOfferProposer", fields: [proposerId], references: [id], onDelete: Restrict)
+  recipient   User             @relation("ResolutionOfferRecipient", fields: [recipientId], references: [id], onDelete: Restrict)
+  refund      BookingRefund?
+
+  @@index([caseId, createdAt])
+  @@index([bookingId, status])
+  @@index([recipientId, status, createdAt])
+  @@index([proposerId, status, createdAt])
+  @@index([expiresAt, status])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3114,6 +3531,44 @@ enum SystemAwardStatus {
   REVOKED
 }
 
+// Point balances are projections of immutable ledger entries. No earning or
+// redemption policy is enabled merely by introducing these storage types.
+enum PointsLedgerEntryType {
+  PENDING_EARN
+  EARN
+  REDEEM_RESERVE
+  REDEEM_COMMIT
+  REDEEM_RELEASE
+  EXPIRE
+  REVERSE
+  ADMIN_ADJUSTMENT
+}
+
+enum RewardDefinitionStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum RewardRedemptionStatus {
+  ISSUED
+  AVAILABLE
+  RESERVED
+  REDEEMED
+  EXPIRED
+  REVERSED
+  CANCELLED
+}
+
+enum LoyaltyCampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
 model Destination {
   id              String   @id @default(cuid())
   countryName     String
@@ -3293,7 +3748,10 @@ model UserTravelStamp {
   stamp       TravelStamp       @relation(fields: [stampId], references: [id], onDelete: Cascade)
   systemAward AchievementAward? @relation("SystemAwardStamp", fields: [systemAwardId], references: [id], onDelete: SetNull)
 
-  @@unique([userId, stampId])
+  // A traveler may keep a personal selection and separately earn the same
+  // catalog artwork from a verified stay. Their provenance must never be
+  // merged, otherwise a manual selection could be misrepresented as an award.
+  @@unique([userId, stampId, ownership])
   @@index([userId, isPinned])
   @@index([stampId])
 }
@@ -3609,6 +4067,122 @@ model StayEliteTierHistory {
   @@index([membershipId, occurredAt])
   @@index([userId, occurredAt])
   @@index([sourceEventId])
+}
+
+// Phase 6 foundation. Accounts start at zero and can only change together with
+// a corresponding immutable ledger entry.
+model PointsAccount {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  availableBalance Int      @default(0)
+  pendingBalance   Int      @default(0)
+  reservedBalance  Int      @default(0)
+  version          Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ledgerEntries PointsLedgerEntry[]
+
+  @@index([availableBalance])
+}
+
+model PointsLedgerEntry {
+  id                   String                @id @default(cuid())
+  accountId            String
+  userId               String
+  type                 PointsLedgerEntryType
+  amount               Int
+  availableDelta       Int                   @default(0)
+  pendingDelta         Int                   @default(0)
+  reservedDelta        Int                   @default(0)
+  sourceType           String
+  sourceReference      String
+  idempotencyKey       String                @unique
+  policyVersion        String?
+  reason               String?
+  metadata             Json?
+  reversalOfEntryId    String?               @unique
+  createdById          String?
+  createdAt            DateTime              @default(now())
+
+  account               PointsAccount      @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  user                  User               @relation("PointsLedgerOwner", fields: [userId], references: [id], onDelete: Cascade)
+  createdBy             User?              @relation("PointsLedgerActor", fields: [createdById], references: [id], onDelete: SetNull)
+  reservationRedemption RewardRedemption?  @relation("RewardReservationLedger")
+
+  @@index([accountId, createdAt])
+  @@index([userId, createdAt])
+  @@index([sourceType, sourceReference])
+}
+
+// Catalog records are configuration only. No definition is seeded or activated
+// by this migration because prices and fulfilment policies remain unapproved.
+model RewardDefinition {
+  id                String                 @id @default(cuid())
+  code              String                 @unique
+  displayName       String
+  description       String                 @db.Text
+  status            RewardDefinitionStatus @default(DRAFT)
+  pointsCost        Int?
+  policyVersion     String?
+  fulfillmentConfig Json?
+  startsAt          DateTime?
+  endsAt            DateTime?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  redemptions RewardRedemption[]
+
+  @@index([status, startsAt, endsAt])
+}
+
+model RewardRedemption {
+  id                       String                 @id @default(cuid())
+  userId                   String
+  rewardDefinitionId       String
+  status                   RewardRedemptionStatus @default(ISSUED)
+  pointsCostSnapshot       Int
+  policyVersion            String?
+  reservationLedgerEntryId String?                @unique
+  idempotencyKey           String                 @unique
+  fulfillmentReference     String?
+  failureReason            String?                @db.Text
+  expiresAt                DateTime?
+  reservedAt               DateTime?
+  redeemedAt               DateTime?
+  cancelledAt              DateTime?
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewardDefinition       RewardDefinition   @relation(fields: [rewardDefinitionId], references: [id], onDelete: Restrict)
+  reservationLedgerEntry PointsLedgerEntry? @relation("RewardReservationLedger", fields: [reservationLedgerEntryId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status, createdAt])
+  @@index([rewardDefinitionId, status])
+}
+
+// Campaign configuration is retained separately from pricing or award logic.
+model LoyaltyCampaign {
+  id                String                @id @default(cuid())
+  code              String                @unique
+  displayName       String
+  status            LoyaltyCampaignStatus @default(DRAFT)
+  eligibilityConfig Json
+  benefitConfig     Json
+  policyVersion     String?
+  startsAt          DateTime?
+  endsAt            DateTime?
+  createdById       String?
+  publishedAt       DateTime?
+  archivedAt        DateTime?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  createdBy User? @relation("LoyaltyCampaignCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([status, startsAt, endsAt])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

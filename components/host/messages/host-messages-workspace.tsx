@@ -8,7 +8,12 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
 import { BackButton } from "@/components/ui/back-button";
 import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
-import { formatConversationListDate, formatMessageTime } from "@/lib/messages/message-date";
+import {
+  formatConversationListDate,
+  formatMessageDate,
+  formatMessageTime,
+  isSameUtcDate,
+} from "@/lib/messages/message-date";
 import {
   bookingDateKey,
   formatBookingDate,
@@ -20,6 +25,11 @@ import {
   type HostReservation,
 } from "@/components/host/host-workspace-shared";
 import { ReportContentModal } from "@/components/moderation/report-content-modal";
+import {
+  HostConversationRowsSkeleton,
+  HostChatThreadSkeleton,
+  HostRightSidebarSkeleton,
+} from "@/components/messages/message-workspace-skeleton";
 import type { ListingDTO } from "@/services/mappers";
 import type {
   ConversationDTO,
@@ -83,11 +93,42 @@ function getMessagePreview(lastMessage?: MessageDTO | null, t?: Translator, book
   return t ? t("messages_sent_an_attachment", "Sent an attachment") : "Sent an attachment";
 }
 
+type ReservationPanelFrameProps = React.HTMLAttributes<HTMLDivElement> & {
+  isModal: boolean;
+  isClosing: boolean;
+  onClose: () => void;
+};
+
+function ReservationPanelFrame({
+  isModal,
+  isClosing,
+  onClose,
+  className,
+  ...props
+}: ReservationPanelFrameProps) {
+  if (!isModal) {
+    return <div {...props} className={className} />;
+  }
+
+  return (
+    <ModalOverlay
+      {...props}
+      isOpen
+      onClose={onClose}
+      className={`messages-reservation-backdrop ${isClosing ? "messages-reservation-backdrop-closing" : ""} ${className || ""}`}
+    />
+  );
+}
+
 interface HostMessagesWorkspaceProps {
   initialConversationId?: string;
   initialConversations: ConversationDTO[];
   initialConversationTotal: number;
   initialRenderedAt: string;
+  initialMessages?: MessageDTO[];
+  initialNextCursor?: string | null;
+  initialHasMore?: boolean;
+  initialConversationDetail?: ConversationDTO | null;
 }
 
 export function HostMessagesWorkspace({
@@ -95,6 +136,10 @@ export function HostMessagesWorkspace({
   initialConversations,
   initialConversationTotal,
   initialRenderedAt,
+  initialMessages = [],
+  initialNextCursor = null,
+  initialHasMore = false,
+  initialConversationDetail = null,
 }: HostMessagesWorkspaceProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -105,9 +150,9 @@ export function HostMessagesWorkspace({
   const [conversations, setConversations] = useState<ConversationDTO[]>(initialConversations);
   const conversationsRef = useRef(initialConversations);
   const [conversationTotal, setConversationTotal] = useState(initialConversationTotal);
-  const [selectedId, setSelectedId] = useState<string | null>(() =>
-    activeIdFromQuery ?? initialConversations[0]?.id ?? null,
-  );
+  const initialActiveId = activeIdFromQuery ?? initialConversations[0]?.id ?? null;
+  const [selectedId, setSelectedId] = useState<string | null>(initialActiveId);
+  const [loadingConversations, setLoadingConversations] = useState(false);
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [inboxView, setInboxView] = useState<"all" | "hosting" | "traveling" | "support">("all");
@@ -117,17 +162,77 @@ export function HostMessagesWorkspace({
   const [messagingSettingsOpen, setMessagingSettingsOpen] = useState(false);
   const [mobileView, setMobileView] = useState<"list" | "thread">("list");
   const [laptopDetailsOpen, setLaptopDetailsOpen] = useState(false);
+  const [isReservationDetailsClosing, setIsReservationDetailsClosing] = useState(false);
   const [isCompactViewport, setIsCompactViewport] = useState(false);
   const [isTabletViewport, setIsTabletViewport] = useState(false);
+  const reservationDetailsCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openReservationDetails = useCallback(() => {
+    if (reservationDetailsCloseTimerRef.current) {
+      clearTimeout(reservationDetailsCloseTimerRef.current);
+      reservationDetailsCloseTimerRef.current = null;
+    }
+    setIsReservationDetailsClosing(false);
+    setLaptopDetailsOpen(true);
+  }, []);
+
+  const closeReservationDetails = useCallback(() => {
+    if (!isCompactViewport) {
+      setLaptopDetailsOpen(false);
+      return;
+    }
+    if (reservationDetailsCloseTimerRef.current) return;
+
+    setIsReservationDetailsClosing(true);
+    reservationDetailsCloseTimerRef.current = setTimeout(() => {
+      reservationDetailsCloseTimerRef.current = null;
+      setIsReservationDetailsClosing(false);
+      setLaptopDetailsOpen(false);
+    }, 280);
+  }, [isCompactViewport]);
+
+  useEffect(() => () => {
+    if (reservationDetailsCloseTimerRef.current) {
+      clearTimeout(reservationDetailsCloseTimerRef.current);
+    }
+  }, []);
+
+  // Messages cache per conversation
+  const messagesCacheRef = useRef<Map<string, MessageDTO[]>>(
+    new Map(
+      initialActiveId && initialMessages.length > 0
+        ? [[initialActiveId, initialMessages]]
+        : [],
+    ),
+  );
 
   // Messages state
-  const [messages, setMessages] = useState<MessageDTO[]>([]);
-  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [messages, setMessages] = useState<MessageDTO[]>(() => {
+    if (initialActiveId && initialMessages.length > 0) {
+      return initialMessages;
+    }
+    return [];
+  });
+  const [loadingMessages, setLoadingMessages] = useState<boolean>(() => {
+    if (initialActiveId && initialMessages.length === 0) {
+      return true;
+    }
+    return false;
+  });
+  const [messagesLoadError, setMessagesLoadError] = useState<string | null>(null);
   const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
-  const [nextMessageCursor, setNextMessageCursor] = useState<string | null>(null);
-  const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [nextMessageCursor, setNextMessageCursor] = useState<string | null>(initialNextCursor);
+  const [hasMoreMessages, setHasMoreMessages] = useState(initialHasMore);
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
+
+  // Details loading state
+  const [loadingDetails, setLoadingDetails] = useState<boolean>(() => {
+    if (initialActiveId && !initialConversationDetail) {
+      return true;
+    }
+    return false;
+  });
 
   // Attachments state
   const [stagedAttachments, setStagedAttachments] = useState<StagedAttachment[]>([]);
@@ -177,7 +282,13 @@ export function HostMessagesWorkspace({
   const conversationRequestIdRef = useRef(0);
   const messageRequestIdRef = useRef(0);
   const selectedIdRef = useRef<string | null>(selectedId);
-  const conversationDetailsRef = useRef(new Map<string, ConversationDTO>());
+  const conversationDetailsRef = useRef(
+    new Map<string, ConversationDTO>(
+      initialActiveId && initialConversationDetail
+        ? [[initialActiveId, initialConversationDetail]]
+        : [],
+    ),
+  );
   const [, setConversationDetailsVersion] = useState(0);
   const conversationCacheRef = useRef(
     new Map(initialConversations.map((conversation) => [conversation.id, conversation])),
@@ -359,6 +470,33 @@ export function HostMessagesWorkspace({
     return [district, city, country].filter(Boolean).join(", ");
   }, [selectedConversation]);
 
+  const threadHeader = useMemo(() => {
+    if (!messages.length) return null;
+    const firstMsg = messages[0];
+    const yesterday = new Date(initialRenderedAt);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+    const isToday = isSameUtcDate(firstMsg.createdAt, initialRenderedAt);
+    const isYesterday = isSameUtcDate(firstMsg.createdAt, yesterday.toISOString());
+
+    const dateTitle = isToday
+      ? t("messages_today_label", "Today")
+      : isYesterday
+      ? "Yesterday"
+      : formatMessageDate(firstMsg.createdAt, true);
+
+    const timeStr = formatMessageTime(firstMsg.createdAt);
+    const dateStr = formatMessageDate(firstMsg.createdAt);
+
+    let meta = `${dateStr} · ${timeStr}`;
+    if (inquiryDetails?.hasDetails) {
+      meta = `${t("messages_inquiry_sent_label", "Inquiry sent")} · ${dateStr} · ${timeStr}`;
+    } else if (selectedConversation?.booking) {
+      meta = `${t("messages_badge_confirmed_reservation", "Reservation confirmed")} · ${dateStr} · ${timeStr}`;
+    }
+
+    return { dateTitle, meta };
+  }, [messages, inquiryDetails, selectedConversation, initialRenderedAt, t]);
+
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     const el = messagesContainerRef.current;
     if (!el) return;
@@ -396,6 +534,9 @@ export function HostMessagesWorkspace({
   // Fetch conversations list
   const fetchConversations = useCallback(async () => {
     const requestId = ++conversationRequestIdRef.current;
+    if (conversationsRef.current.length === 0) {
+      setLoadingConversations(true);
+    }
     try {
       const params = new URLSearchParams();
       params.set("role", "host");
@@ -445,11 +586,18 @@ export function HostMessagesWorkspace({
       }
     } catch (err) {
       console.error("Error fetching conversations:", err);
+    } finally {
+      if (requestId === conversationRequestIdRef.current) {
+        setLoadingConversations(false);
+      }
     }
   }, [filter, search]);
 
   const fetchConversationDetail = useCallback(async (convId: string) => {
     try {
+      if (!conversationDetailsRef.current.has(convId)) {
+        setLoadingDetails(true);
+      }
       const response = await fetch(`/api/v1/messages/conversations/${convId}`, { cache: "no-store" });
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.success || !payload.data || selectedIdRef.current !== convId) return;
@@ -458,6 +606,10 @@ export function HostMessagesWorkspace({
       setConversationDetailsVersion((version) => version + 1);
     } catch (error) {
       console.error("Error fetching conversation details:", error);
+    } finally {
+      if (selectedIdRef.current === convId) {
+        setLoadingDetails(false);
+      }
     }
   }, []);
 
@@ -496,8 +648,12 @@ export function HostMessagesWorkspace({
     const isOlderPage = Boolean(options.cursor);
     const requestId = ++messageRequestIdRef.current;
     try {
-      if (isOlderPage) setLoadingOlderMessages(true);
-      else if (!options.background) setLoadingMessages(true);
+      if (isOlderPage) {
+        setLoadingOlderMessages(true);
+      } else if (!options.background) {
+        setLoadingMessages(true);
+        setMessagesLoadError(null);
+      }
       const params = new URLSearchParams({ take: "40", includeTotal: "false" });
       if (options.cursor) params.set("cursor", options.cursor);
       const res = await fetch(`/api/v1/messages/conversations/${convId}/messages?${params.toString()}`, { cache: "no-store" });
@@ -507,13 +663,20 @@ export function HostMessagesWorkspace({
       if (json.success && Array.isArray(json.data.messages)) {
         const incoming: MessageDTO[] = json.data.messages;
         setMessages((prev) => {
-          if (!options.background && !isOlderPage) return incoming;
-          const byId = new Map(prev.map((message) => [message.id, message]));
-          incoming.forEach((message) => byId.set(message.id, message));
-          return [...byId.values()].sort((left, right) =>
-            left.createdAt.localeCompare(right.createdAt) || left.id.localeCompare(right.id),
-          );
+          let updated: MessageDTO[];
+          if (!options.background && !isOlderPage) {
+            updated = incoming;
+          } else {
+            const byId = new Map(prev.map((message) => [message.id, message]));
+            incoming.forEach((message) => byId.set(message.id, message));
+            updated = [...byId.values()].sort((left, right) =>
+              left.createdAt.localeCompare(right.createdAt) || left.id.localeCompare(right.id),
+            );
+          }
+          messagesCacheRef.current.set(convId, updated);
+          return updated;
         });
+        setMessagesLoadError(null);
         if (!options.background) {
           setNextMessageCursor(json.data.nextCursor || null);
           setHasMoreMessages(Boolean(json.data.hasMore));
@@ -534,13 +697,18 @@ export function HostMessagesWorkspace({
       }
     } catch (err) {
       console.error("Error fetching messages:", err);
+      if (requestId === messageRequestIdRef.current && selectedIdRef.current === convId) {
+        if (!options.background && !isOlderPage && (!messagesCacheRef.current.get(convId)?.length)) {
+          setMessagesLoadError(t("messages_error_load_failed", "Unable to load messages. Please check your connection and try again."));
+        }
+      }
     } finally {
       if (requestId === messageRequestIdRef.current && selectedIdRef.current === convId) {
         if (isOlderPage) setLoadingOlderMessages(false);
         else if (!options.background) setLoadingMessages(false);
       }
     }
-  }, []);
+  }, [t]);
 
   const loadOlderMessages = useCallback(async () => {
     const container = messagesContainerRef.current;
@@ -574,9 +742,10 @@ export function HostMessagesWorkspace({
     if (selectedId) {
       lastScrolledConvIdRef.current = null;
       void fetchConversationDetail(selectedId);
-      fetchMessages(selectedId);
+      const isCached = messagesCacheRef.current.has(selectedId) && (messagesCacheRef.current.get(selectedId)?.length ?? 0) > 0;
+      fetchMessages(selectedId, { background: isCached });
       // Pre-populate modal dates if available from conversation
-      const conv = conversations.find((c) => c.id === selectedId);
+      const conv = conversationDetailsRef.current.get(selectedId) || conversations.find((c) => c.id === selectedId);
       if (conv?.booking) {
         setOfferStartDate(bookingDateKey(conv.booking.startDate));
         setOfferEndDate(bookingDateKey(conv.booking.endDate));
@@ -650,11 +819,32 @@ export function HostMessagesWorkspace({
 
   // Handle select conversation
   const handleSelectConversation = (id: string) => {
-    if (id === selectedId) return;
+    if (id === selectedId) {
+      setMobileView("thread");
+      return;
+    }
     setSelectedId(id);
     setMobileView("thread");
     lastScrolledConvIdRef.current = null;
     router.replace(`/host/messages?id=${id}`, { scroll: false });
+
+    // Instantly show cached messages if available
+    const cachedMessages = messagesCacheRef.current.get(id);
+    if (cachedMessages && cachedMessages.length > 0) {
+      setMessages(cachedMessages);
+      setLoadingMessages(false);
+      setMessagesLoadError(null);
+    } else {
+      setMessages([]);
+      setLoadingMessages(true);
+      setMessagesLoadError(null);
+    }
+
+    if (!conversationDetailsRef.current.has(id)) {
+      setLoadingDetails(true);
+    } else {
+      setLoadingDetails(false);
+    }
   };
 
   // Handle file attachment selection
@@ -827,7 +1017,11 @@ export function HostMessagesWorkspace({
       if (!res.ok) throw new Error("Failed to send message");
       const json = await res.json();
       if (json.success && json.data) {
-        setMessages((prev) => prev.map((m) => (m.id === tempId ? json.data : m)));
+        setMessages((prev) => {
+          const updated = prev.map((m) => (m.id === tempId ? json.data : m));
+          if (selectedId) messagesCacheRef.current.set(selectedId, updated);
+          return updated;
+        });
         fetchConversations();
       }
     } catch (err) {
@@ -969,43 +1163,43 @@ export function HostMessagesWorkspace({
     switch (status) {
       case "CONFIRMED":
         return (
-          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 border border-emerald-300">
+          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium leading-none text-emerald-800 border border-emerald-300">
             {t("messages_badge_confirmed_stay", "Confirmed stay")}
           </span>
         );
       case "PENDING":
         return (
-          <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 border border-amber-300">
+          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium leading-none text-amber-800 border border-amber-300">
             {t("messages_badge_pending", "Pending")}
           </span>
         );
       case "CANCELLED":
         return (
-          <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-800 border border-rose-300">
+          <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium leading-none text-rose-800 border border-rose-300">
             {t("messages_badge_cancelled", "Cancelled")}
           </span>
         );
       case "REJECTED":
         return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 border border-zinc-300">
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium leading-none text-zinc-700 border border-zinc-300">
             {t("messages_badge_declined", "Declined")}
           </span>
         );
       case "EXPIRED":
         return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600 border border-zinc-300">
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium leading-none text-zinc-600 border border-zinc-300">
             {t("messages_badge_expired", "Expired")}
           </span>
         );
       case "COMPLETED":
         return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 border border-zinc-300">
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium leading-none text-zinc-700 border border-zinc-300">
             {t("messages_badge_completed", "Completed")}
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 border border-zinc-300 capitalize">
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium leading-none text-zinc-700 border border-zinc-300 capitalize">
             {status.replaceAll("_", " ").toLowerCase()}
           </span>
         );
@@ -1037,28 +1231,23 @@ export function HostMessagesWorkspace({
           : "bg-blue-50 text-blue-700 border-blue-200";
 
     return (
-      <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${className}`}>
+      <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium leading-none ${className}`}>
         {label}
       </span>
     );
   };
 
   const panelIsModal = isCompactViewport && laptopDetailsOpen;
-  const InquiryPanelContainer = panelIsModal ? ModalOverlay : "div";
 
   return (
-    <div className="messages-workspace flex-1 w-full max-w-[1520px] mx-auto px-0 sm:px-6">
-      <div className="grid grid-cols-1 overflow-hidden bg-white lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)_362px] lg:h-[calc(100svh-132px)] lg:min-h-[680px] lg:border lg:border-zinc-300">
+    <div className="messages-workspace mx-auto box-border flex w-full max-w-[1600px] min-w-0 flex-1 px-4 sm:px-6 lg:px-8">
+      <div className="grid min-w-0 flex-1 grid-cols-1 overflow-hidden bg-white lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)_340px] lg:h-[calc(100svh-132px)] lg:min-h-[680px] lg:border lg:border-zinc-300">
         {/* ========================================================================= */}
         {/* COLUMN 1: CONVERSATIONS LIST                                              */}
         {/* ========================================================================= */}
-        <div className={`flex-col bg-white overflow-hidden h-[calc(100dvh-76px)] lg:h-auto lg:border-r lg:border-zinc-300 ${mobileView === "thread" ? "hidden lg:flex" : "flex"}`}>
+        <div className={`flex h-[calc(100dvh-108px)] min-h-0 min-w-0 flex-col overflow-hidden bg-white lg:h-auto lg:border-r lg:border-zinc-300 ${mobileView === "thread" ? "hidden lg:flex" : "flex"}`}>
           {/* Header & Tabs */}
-          <div className="shrink-0 border-b border-zinc-200 px-4 pb-4 pt-4 space-y-3 lg:pb-8 lg:pt-5 xl:pt-12">
-            <div className="flex h-6 items-center justify-between">
-              <h1 className="text-lg font-medium text-[#1F1F1F]">{t("messages_column_title", "Messages")}</h1>
-            </div>
-
+          <div className="shrink-0 border-b border-zinc-200 px-4 py-4 lg:px-5 lg:py-5">
             {/* Filter Pills / Search */}
             <div className="messages-filters flex min-h-10 items-center">
               {searchOpen ? (
@@ -1160,7 +1349,9 @@ export function HostMessagesWorkspace({
 
           {/* Conversations Scroll Area */}
           <div className="flex-1 overflow-y-auto divide-y divide-zinc-100 pb-[calc(108px+env(safe-area-inset-bottom))] sm:pb-0">
-            {visibleConversations.length === 0 ? (
+            {loadingConversations && conversations.length === 0 ? (
+              <HostConversationRowsSkeleton count={6} />
+            ) : visibleConversations.length === 0 ? (
               <div className="p-8 pb-32 text-center text-[#727272] space-y-2 sm:pb-8">
                 <svg
                   className="mx-auto size-10 text-zinc-400"
@@ -1204,12 +1395,12 @@ export function HostMessagesWorkspace({
                           className="size-10 rounded-full object-cover border border-zinc-200"
                         />
                       ) : (
-                        <div className="size-10 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-base border border-amber-300">
+                        <div className="size-10 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center font-medium text-base border border-amber-300">
                           {(conv.guest.name || "G")[0].toUpperCase()}
                         </div>
                       )}
                       {hasUnread && (
-                        <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-xs">
+                        <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white shadow-xs">
                           {conv.unreadCount}
                         </span>
                       )}
@@ -1262,45 +1453,56 @@ export function HostMessagesWorkspace({
         {/* ========================================================================= */}
         {/* COLUMN 2: ACTIVE CHAT THREAD                                              */}
         {/* ========================================================================= */}
-        <div className={`flex h-[calc(100dvh-76px)] flex-col overflow-hidden bg-white min-w-0 lg:h-auto lg:border-r lg:border-zinc-200 ${mobileView === "list" ? "hidden lg:flex" : "flex"}`}>
+        <div className={`flex h-[calc(100dvh-108px)] min-h-0 min-w-0 flex-col overflow-hidden bg-white lg:h-auto lg:border-r lg:border-zinc-200 ${mobileView === "list" ? "hidden lg:flex" : "flex"}`}>
           {selectedConversation ? (
             <>
               {/* Thread Top Bar */}
               <div className="border-b border-zinc-100 p-4 lg:hidden">
-                <div className="flex min-w-0 items-center gap-3 lg:flex-col lg:gap-0 lg:text-center">
-                  <BackButton onClick={() => setMobileView("list")} className="-ml-1 lg:hidden" aria-label={t("messages_aria_back" as any, "Back to messages")} />
-                  <div className="lg:hidden">
+                <div className="flex min-w-0 flex-col gap-2">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <BackButton onClick={() => setMobileView("list")} className="-ml-1 mt-1 shrink-0 lg:hidden" aria-label={t("messages_aria_back" as any, "Back to messages")} />
                     {selectedConversation.guest.image ? (
                       <Image
                         src={selectedConversation.guest.image}
                         alt={selectedConversation.guest.name || "Guest"}
                         width={40}
                         height={40}
-                        className="size-10 rounded-full object-cover border border-zinc-200"
+                        className="size-10 shrink-0 rounded-full border border-zinc-200 object-cover"
                       />
                     ) : (
-                      <div className="size-10 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-sm">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-200 text-sm font-bold text-amber-900">
                         {(selectedConversation.guest.name || "G")[0].toUpperCase()}
                       </div>
                     )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="whitespace-normal break-words text-sm font-medium leading-5 text-[#1F1F1F] sm:text-base">
+                        {selectedConversation.guest.name || "Guest"}
+                      </h3>
+                      <p className="mt-1 min-w-0 break-words text-xs leading-4 text-zinc-500 line-clamp-2">
+                        {selectedConversation.listing.title}
+                      </p>
+                      <div className="mt-1 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={openReservationDetails}
+                          className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[11px] font-medium leading-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] active:scale-[0.98] lg:hidden ${selectedConversation.reservationContext.kind === "ACTIVE_RESERVATION"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                            : selectedConversation.reservationContext.kind === "PAST_STAY"
+                              ? "border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-zinc-100"
+                              : "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                            }`}
+                          aria-label={`${getReservationContextLabel(selectedConversation.reservationContext)} details`}
+                          aria-expanded={laptopDetailsOpen}
+                          aria-controls="mobile-message-details"
+                        >
+                          <span>{getReservationContextLabel(selectedConversation.reservationContext)}</span>
+                          <svg className="size-3" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-medium text-[#727272] truncate">
-                      {selectedConversation.guest.name || "Guest"}
-                    </h3>
-                    <p className="text-xs text-zinc-500 truncate">
-                      {selectedConversation.listing.title}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setLaptopDetailsOpen(true)}
-                    className="ml-auto shrink-0 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-3 py-1.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#e5e7e9] lg:hidden"
-                    aria-expanded={laptopDetailsOpen}
-                    aria-controls="mobile-message-details"
-                  >
-                    {getReservationContextBadge(selectedConversation.reservationContext)}
-                  </button>
                 </div>
 
                 {/* Header Action Buttons (Pre-approve, Special offer, Decline) */}
@@ -1340,7 +1542,7 @@ export function HostMessagesWorkspace({
                 </div>
                 <button
                   type="button"
-                  onClick={() => setLaptopDetailsOpen(true)}
+                  onClick={openReservationDetails}
                   className="ml-4 shrink-0 rounded-full border border-[#1f1f1f] px-3 py-1.5 text-base bg-[#F3F4F5] font-medium text-[#1F1F1F] transition-colors hover:bg-[#1f1f1f]"
                   aria-expanded={laptopDetailsOpen}
                   aria-controls="laptop-message-details"
@@ -1351,60 +1553,80 @@ export function HostMessagesWorkspace({
 
               {/* Messages Area */}
               <div className="relative flex-1 min-h-0 flex flex-col">
-                <div
-                  ref={messagesContainerRef}
-                  onScroll={() => {
-                    handleContainerScroll();
-                    if (messagesContainerRef.current && messagesContainerRef.current.scrollTop < 80) {
-                      void loadOlderMessages();
-                    }
-                  }}
-                  className="flex-1 overflow-y-auto space-y-4 bg-white px-5 py-8 sm:px-12 sm:py-12"
-                >
-                  {hasMoreMessages && !loadingMessages && (
-                    <div className="flex justify-center pb-2">
-                      <button
-                        type="button"
-                        onClick={() => void loadOlderMessages()}
-                        disabled={loadingOlderMessages}
-                        className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50"
-                      >
-                        {loadingOlderMessages ? t("messages_loading", "Loading conversation...") : "Load earlier messages"}
-                      </button>
+                {loadingMessages && (!messages || messages.length === 0) ? (
+                  <HostChatThreadSkeleton />
+                ) : messagesLoadError ? (
+                  <div className="flex flex-1 flex-col items-center justify-center p-8 text-center my-auto min-h-[300px]">
+                    <div className="size-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-3">
+                      <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                      </svg>
                     </div>
-                  )}
-                  {loadingMessages ? (
-                    <div className="flex items-center justify-center h-full text-xs text-zinc-400">
-                      {t("messages_loading", "Loading conversation...")}
-                    </div>
-                  ) : messages.length === 0 ? (
-                    <div className="text-center py-12 text-zinc-400 space-y-2">
-                      {selectedConversation.booking ? (
-                        <>
-                          <p className="text-sm font-medium text-zinc-600">
-                            {selectedConversation.booking.status === "PENDING"
-                              ? t("messages_badge_booking_request", "Booking request")
-                              : t("messages_badge_confirmed_reservation", "Confirmed reservation")}
-                          </p>
-                          <p className="text-xs">
-                            {formatBookingDateRange(selectedConversation.booking.startDate, selectedConversation.booking.endDate)} · {selectedConversation.booking.guests} {selectedConversation.booking.guests === 1 ? "guest" : "guests"}
-                          </p>
-                          <p className="text-xs">Reservation reference: {selectedConversation.booking.id}</p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-sm font-medium text-zinc-600">{t("messages_thread_empty_title", "Start the conversation")}</p>
-                          <p className="text-xs">{t("messages_thread_empty_desc", "Send a welcome message or answer the guest's questions.")}</p>
-                        </>
-                      )}
-                    </div>
-                  ) : (
-                    <>
-                      <div className="pb-12 text-center">
-                        <p className="text-sm font-medium text-zinc-900">{t("messages_today_label", "Today")}</p>
-                        <p className="mt-0.5 text-[11px] text-zinc-400">{t("messages_inquiry_meta", "Inquiry sent · Date · Time")}</p>
+                    <p className="text-sm font-medium text-zinc-900 mb-1">{messagesLoadError}</p>
+                    <p className="text-xs text-zinc-500 mb-4 max-w-xs">{t("messages_error_load_subtext", "There was a problem retrieving the conversation history.")}</p>
+                    <button
+                      type="button"
+                      onClick={() => selectedId && void fetchMessages(selectedId)}
+                      className="rounded-full bg-[#1F1F1F] px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-zinc-800 cursor-pointer"
+                    >
+                      {t("messages_retry_action", "Retry")}
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    ref={messagesContainerRef}
+                    onScroll={() => {
+                      handleContainerScroll();
+                      if (messagesContainerRef.current && messagesContainerRef.current.scrollTop < 80) {
+                        void loadOlderMessages();
+                      }
+                    }}
+                    className="flex-1 overflow-y-auto space-y-4 bg-white px-5 py-6 sm:px-8 sm:py-8"
+                  >
+                    {hasMoreMessages && !loadingMessages && (
+                      <div className="flex justify-center pb-2">
+                        <button
+                          type="button"
+                          onClick={() => void loadOlderMessages()}
+                          disabled={loadingOlderMessages}
+                          className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50 cursor-pointer"
+                        >
+                          {loadingOlderMessages ? t("messages_loading", "Loading conversation...") : "Load earlier messages"}
+                        </button>
                       </div>
-                      {messages.map((m) => {
+                    )}
+                    {messages.length === 0 ? (
+                      <div className="text-center py-12 text-zinc-400 space-y-2">
+                        {selectedConversation.booking ? (
+                          <>
+                            <p className="text-sm font-medium text-zinc-600">
+                              {selectedConversation.booking.status === "PENDING"
+                                ? t("messages_badge_booking_request", "Booking request")
+                                : t("messages_badge_confirmed_reservation", "Confirmed reservation")}
+                            </p>
+                            <p className="text-xs">
+                              {formatBookingDateRange(selectedConversation.booking.startDate, selectedConversation.booking.endDate)} · {selectedConversation.booking.guests} {selectedConversation.booking.guests === 1 ? "guest" : "guests"}
+                            </p>
+                            <p className="text-xs">Reservation reference: {selectedConversation.booking.id}</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm font-medium text-zinc-600">{t("messages_thread_empty_title", "Start the conversation")}</p>
+                            <p className="text-xs">{t("messages_thread_empty_desc", "Send a welcome message or answer the guest's questions.")}</p>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        {threadHeader && (
+                          <div className="pb-4 text-center">
+                            <p className="text-sm font-medium text-zinc-900">{threadHeader.dateTitle}</p>
+                            <p className="mt-0.5 text-[11px] text-zinc-400">{threadHeader.meta}</p>
+                          </div>
+                        )}
+                        {messages.map((m) => {
                         const isHost = m.isOwn;
 
                         // Special Offer Card
@@ -1595,7 +1817,7 @@ export function HostMessagesWorkspace({
                                     <div
                                       key={att.id}
                                       className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${isHost
-                                        ? "bg-white/10 border-white/15 text-white"
+                                        ? "bg-white/90 border-indigo-200/80 text-zinc-800"
                                         : "bg-zinc-50 border-zinc-200 text-zinc-800"
                                         }`}
                                     >
@@ -1607,7 +1829,7 @@ export function HostMessagesWorkspace({
                                         </div>
                                         <div className="min-w-0">
                                           <p className="text-xs font-medium truncate max-w-[180px] sm:max-w-xs">{att.fileName}</p>
-                                          <p className={`text-[10px] ${isHost ? "text-zinc-300" : "text-zinc-500"}`}>{formatFileSize(att.fileSize)} • {t("messages_pdf_document", "PDF Document")}</p>
+                                          <p className="text-[10px] text-zinc-500">{formatFileSize(att.fileSize)} • {t("messages_pdf_document", "PDF Document")}</p>
                                         </div>
                                       </div>
                                       <div className="flex items-center gap-1.5 shrink-0">
@@ -1616,7 +1838,7 @@ export function HostMessagesWorkspace({
                                           target="_blank"
                                           rel="noreferrer"
                                           className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors ${isHost
-                                            ? "bg-white/20 hover:bg-white/30 text-white"
+                                            ? "bg-indigo-600 hover:bg-indigo-700 text-white"
                                             : "bg-zinc-200 hover:bg-zinc-300 text-zinc-800"
                                             }`}
                                         >
@@ -1626,7 +1848,7 @@ export function HostMessagesWorkspace({
                                           href={`${att.fileUrl}?download=true`}
                                           download={att.fileName}
                                           className={`p-1.5 rounded-lg transition-colors ${isHost
-                                            ? "bg-white/20 hover:bg-white/30 text-white"
+                                            ? "bg-indigo-100 hover:bg-indigo-200 text-indigo-900"
                                             : "bg-zinc-200 hover:bg-zinc-300 text-zinc-800"
                                             }`}
                                           title="Download document"
@@ -1648,9 +1870,22 @@ export function HostMessagesWorkspace({
                           </div>
                         );
                       })}
+                      {messages.length === 1 && (messages[0].type === "BOOKING_STATUS" || messages[0].type === "SYSTEM") && (
+                        <div className="mx-auto max-w-md rounded-xl border border-zinc-200/80 bg-zinc-50/70 p-4 text-center my-4 space-y-1">
+                          <p className="text-xs font-medium text-zinc-700">
+                            {selectedConversation.booking?.status === "CONFIRMED"
+                              ? t("messages_confirmed_prompt", "The reservation is confirmed.")
+                              : t("messages_booking_prompt", "Booking request is pending.")}
+                          </p>
+                          <p className="text-[11px] text-zinc-500">
+                            {t("messages_say_hello_prompt", "Send a welcome message or share check-in details with your guest.")}
+                          </p>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
+              )}
 
                 {/* Jump to latest button when user scrolled up */}
                 {!isNearBottom && !loadingMessages && messages.length > 0 && (
@@ -1671,7 +1906,7 @@ export function HostMessagesWorkspace({
               </div>
 
               {/* Message Composer */}
-              <div className="sticky bottom-0 z-20 shrink-0 border-t border-zinc-300 bg-white px-4 py-4 sm:px-6 sm:py-5 space-y-2 lg:static">
+              <div className="sticky bottom-0 z-20 shrink-0 border-t border-zinc-300 bg-white px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-6 sm:pt-5 sm:pb-[calc(1.25rem+env(safe-area-inset-bottom))] space-y-2 lg:static lg:pb-5">
                 {/* Staged attachments preview */}
                 {stagedAttachments.length > 0 && (
                   <div className="flex items-center gap-2 overflow-x-auto pb-1">
@@ -1825,76 +2060,129 @@ export function HostMessagesWorkspace({
         {/* ========================================================================= */}
         {/* COLUMN 3: CONTEXT & RESERVATION PANEL                                     */}
         {/* ========================================================================= */}
-        <InquiryPanelContainer
-          {...(panelIsModal ? { role: "dialog", "aria-modal": true, "aria-labelledby": "mobile-message-details-title" } : {})}
-          onMouseDown={isTabletViewport ? (event) => {
-            if (event.target === event.currentTarget) setLaptopDetailsOpen(false);
-          } : undefined}
+        <ReservationPanelFrame
+          isModal={panelIsModal}
+          isClosing={isReservationDetailsClosing}
+          onClose={closeReservationDetails}
           className={panelIsModal
             ? isTabletViewport
-              ? "fixed inset-0 z-[60] flex min-h-0 justify-center bg-[#F7F7F7] p-4 sm:p-6"
-              : "fixed inset-0 z-[60] flex min-h-0 bg-white"
-            : `relative hidden min-h-0 xl:flex xl:w-auto xl:border-l-0 xl:shadow-none ${laptopDetailsOpen ? "lg:fixed lg:bottom-0 lg:right-0 lg:top-[88px] lg:z-50 lg:flex lg:w-[362px] lg:border-l lg:border-zinc-200 lg:shadow-[-12px_0_28px_rgba(0,0,0,0.12)]" : ""}`}
+              ? "fixed inset-0 z-[60] flex min-h-0 items-center justify-center bg-black/35 p-4 sm:p-6"
+              : "fixed inset-0 z-[60] flex min-h-0 items-end justify-center bg-black/35"
+            : `relative hidden min-h-0 xl:flex xl:w-auto xl:border-l-0 xl:shadow-none ${laptopDetailsOpen ? "lg:fixed lg:bottom-0 lg:right-0 lg:top-[88px] lg:z-50 lg:flex lg:w-[340px] lg:border-l lg:border-zinc-200 lg:shadow-[-12px_0_28px_rgba(0,0,0,0.12)]" : ""}`}
         >
-          <aside id={panelIsModal ? "mobile-message-details" : "laptop-message-details"} ref={rightPanelScrollRef} onScroll={updateRightPanelScrollThumb} className={`custom-scrollbar flex h-full w-full flex-col gap-6 overflow-y-auto overscroll-contain bg-white ${panelIsModal ? isTabletViewport ? "max-w-[760px] border border-zinc-200 px-8 pb-8 pt-16 shadow-[0_8px_28px_rgba(0,0,0,0.08)]" : "pl-5.25 pr-5.25 pb-10 pt-[70px]" : "pl-5.25 pr-[38px] py-12"}`}>
-            <button
-              type="button"
-              onClick={() => setLaptopDetailsOpen(false)}
-              className={panelIsModal
-                ? isTabletViewport
-                  ? "absolute right-8 top-8 flex size-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-[#1A1A1A] shadow-sm transition-colors hover:bg-zinc-50"
-                  : "absolute right-6 top-8 flex size-9 items-center justify-center rounded-full text-[#1A1A1A] transition-colors hover:bg-zinc-100"
-                : "ml-auto hidden rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 lg:flex xl:hidden"}
-              aria-label="Close inquiry details"
-            >
-              {panelIsModal ? (
-                <svg className="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-              ) : "Close details"}
-            </button>
-            {selectedConversation ? (
+          <aside
+            id={panelIsModal ? "mobile-message-details" : "laptop-message-details"}
+            ref={rightPanelScrollRef}
+            onScroll={updateRightPanelScrollThumb}
+            role={panelIsModal ? "dialog" : undefined}
+            aria-modal={panelIsModal ? true : undefined}
+            aria-labelledby={panelIsModal ? "mobile-message-details-title" : undefined}
+            data-state={isReservationDetailsClosing ? "closing" : "open"}
+            className={`custom-scrollbar relative flex min-h-0 w-full flex-col gap-3 overflow-y-auto overscroll-contain bg-white ${panelIsModal
+              ? isTabletViewport
+                ? "h-full max-h-[90dvh] max-w-[760px] rounded-2xl border border-zinc-200 px-6 pb-6 pt-0 shadow-[0_8px_28px_rgba(0,0,0,0.08)] modal-dialog-no-animate messages-reservation-sheet"
+                : "h-[88dvh] max-h-[780px] rounded-t-2xl px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-0 shadow-[0_-8px_28px_rgba(0,0,0,0.14)] modal-dialog-no-animate messages-reservation-sheet"
+              : "h-full p-4 sm:p-5"} ${panelIsModal && isReservationDetailsClosing ? "messages-reservation-sheet-closing" : ""}`}
+          >
+            {panelIsModal ? (
+              <div className={`sticky top-0 z-10 -mx-4 flex shrink-0 items-center justify-between gap-3 border-b border-zinc-100 bg-white py-3 ${isTabletViewport ? "-mx-6 px-6" : "px-4"}`}>
+                <h2 id="mobile-message-details-title" className="text-base font-medium text-[#1F1F1F]">
+                  Reservation details
+                </h2>
+                <button
+                  type="button"
+                  onClick={closeReservationDetails}
+                  aria-label="Close reservation details"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-[#1F1F1F] transition-colors hover:bg-zinc-50"
+                >
+                  <svg className="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                </button>
+              </div>
+            ) : laptopDetailsOpen ? (
+              <button
+                type="button"
+                onClick={closeReservationDetails}
+                className="ml-auto hidden shrink-0 rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 lg:flex xl:hidden"
+                aria-label="Close reservation details"
+              >
+                Close details
+              </button>
+            ) : null}
+            {loadingDetails && !conversationDetailsRef.current.has(selectedId || "") ? (
+              <HostRightSidebarSkeleton />
+            ) : selectedConversation ? (
               <>
                 {/* 1. Header Section */}
-                <section className="border-b border-[#D7D7D7] pb-6">
-                  <p className="text-xs text-zinc-500">{t("messages_panel_inquiry_tag", "Inquiry")}</p>
-                  <h2 id={panelIsModal ? "mobile-message-details-title" : undefined} className="guest-name mt-1 text-xl font-medium text-[#727272]"><span className="text-[#1f1f1f]">{selectedConversation.guest.name || "Guest"}</span> {t("messages_panel_guest_asked_trip", { name: "" }, "asked about your trip").replace("{name}", "").trim()}</h2>
-                  <p className="property-location mt-3 text-sm text-[#1f1f1f] font-normal">{selectedConversation.listing.title}</p>
-                  <p className="countryname text-sm text-[#727272]">{[selectedConversation.listing.city, selectedConversation.listing.country].filter(Boolean).join(", ")}</p>
+                <section className="border-b border-zinc-200 pb-3">
+                  <p className="text-[11px] text-zinc-500 font-normal">
+                    {headerInfo?.badge || t("messages_panel_inquiry_tag", "Inquiry")}
+                  </p>
+                  <h2
+                    className="guest-name mt-0.5 text-[13px] sm:text-[14px] font-medium leading-snug text-[#727272]"
+                  >
+                    <span className="text-[#1f1f1f]">{selectedConversation.guest.name || "Guest"}</span>{" "}
+                    {t("messages_panel_guest_asked_trip", { name: "" }, "asked about your trip").replace("{name}", "").trim()}
+                  </h2>
+                  <p className="property-location mt-1 break-words text-[12px] font-medium text-[#1f1f1f]">
+                    {selectedConversation.listing.title}
+                  </p>
+                  <p className="countryname break-words text-[11px] text-zinc-500">
+                    {[selectedConversation.listing.city, selectedConversation.listing.country].filter(Boolean).join(", ")}
+                  </p>
                   {selectedConversation.status !== "CONFIRMED" && selectedConversation.status !== "DECLINED" && (
-                    <div className={isTabletViewport ? "mt-5 grid grid-cols-2 gap-2" : "mt-6 space-y-3"}>
-                      <button type="button" onClick={() => setPreApproveModalOpen(true)} className="flex min-h-[46px] w-full items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-base font-normal text-emerald-900 transition-colors hover:bg-emerald-100">{t("messages_action_pre_approve", "Pre-approve")}</button>
-                      <button type="button" onClick={openSpecialOfferModal} className="flex min-h-[46px] min-h-[46px] w-full items-center justify-center rounded-lg border border-amber-200 bg-[#FCDF9C] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]">{t("messages_action_special_offer", "Special offer")}</button>
-                      <button type="button" onClick={() => setDeclineModalOpen(true)} className={`${isTabletViewport ? "col-span-2" : ""} flex min-h-[46px] w-full items-center justify-center rounded-lg border border-zinc-300 hover:border-[#1f1f1f] px-3 text-base font-normal text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f]`}>{t("messages_action_decline", "Decline")}</button>
+                    <div className={isTabletViewport ? "mt-3 grid grid-cols-2 gap-2" : "mt-3 space-y-2"}>
+                      <button
+                        type="button"
+                        onClick={() => setPreApproveModalOpen(true)}
+                        className="flex h-8 sm:h-9 w-full items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-[11px] sm:text-[12px] font-medium text-emerald-900 transition-colors hover:bg-emerald-100"
+                      >
+                        {t("messages_action_pre_approve", "Pre-approve")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={openSpecialOfferModal}
+                        className="flex h-8 sm:h-9 w-full items-center justify-center rounded-lg border border-amber-200 bg-[#FCDF9C] px-3 text-[11px] sm:text-[12px] font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]"
+                      >
+                        {t("messages_action_special_offer", "Special offer")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeclineModalOpen(true)}
+                        className={`${isTabletViewport ? "col-span-2" : ""} flex h-8 sm:h-9 w-full items-center justify-center rounded-lg border border-zinc-300 hover:border-[#1f1f1f] px-3 text-[11px] sm:text-[12px] font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f]`}
+                      >
+                        {t("messages_action_decline", "Decline")}
+                      </button>
                     </div>
                   )}
                 </section>
 
                 {/* 2. Listing Card */}
-                <div className="rounded-[10px] border border-[#E5E5E5] bg-white p-3.5 shadow-[0_2px_5px_rgba(0,0,0,0.12)] space-y-2.5">
-                  <h4 className="text-base font-medium text-[#1F1F1F]">{t("messages_panel_listing_header", "Listing")}</h4>
-                  <div className="flex gap-3 items-center">
+                <div className="rounded-[10px] border border-zinc-200 bg-white p-3 shadow-xs space-y-2">
+                  <h4 className="text-[12px] sm:text-[13px] font-medium text-[#1F1F1F]">{t("messages_panel_listing_header", "Listing")}</h4>
+                  <div className="flex gap-2.5 items-center">
                     {selectedConversation.listing.photos[0] ? (
                       <Image
                         src={selectedConversation.listing.photos[0]}
                         alt={selectedConversation.listing.title}
-                        width={64}
-                        height={64}
-                        className="size-14 rounded-[10px] object-cover shrink-0 border border-zinc-200"
+                        width={48}
+                        height={48}
+                        className="size-12 rounded-lg object-cover shrink-0 border border-zinc-200"
                       />
                     ) : (
-                      <div className="size-14 rounded-[10px] bg-zinc-100 shrink-0 border border-zinc-200" />
+                      <div className="size-12 rounded-lg bg-zinc-100 shrink-0 border border-zinc-200" />
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-[#1F1F1F] truncate">
+                      <p className="break-words text-[12px] font-medium text-[#1F1F1F] line-clamp-2">
                         {selectedConversation.listing.title}
                       </p>
                       {listingLocation && (
-                        <p className="text-xs text-zinc-500 truncate">
+                        <p className="break-words text-[11px] text-zinc-500 line-clamp-2">
                           {listingLocation}
                         </p>
                       )}
-                      <p className="text-xs font-medium text-zinc-800 mt-1">
+                      <p className="text-[11px] font-medium text-zinc-800 mt-0.5">
                         {formatPrice(selectedConversation.listing.price, "SAR", 0)}{" "}
-                        <span className="font-normal text-zinc-500">/ night</span>
+                        <span className="font-normal text-zinc-500 text-[10px]">/ night</span>
                       </p>
                     </div>
                   </div>
@@ -1902,53 +2190,53 @@ export function HostMessagesWorkspace({
                     href={`/listings/${selectedConversation.listing.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full py-2.5 rounded-lg border border-zinc-400 hover:border-[#1f1f1f] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer text-center"
+                    className="block w-full py-1.5 rounded-lg border border-zinc-300 hover:border-[#1f1f1f] text-[#1F1F1F] hover:text-white text-[11px] sm:text-[12px] font-medium hover:bg-[#1f1f1f] transition-colors duration-200 cursor-pointer text-center"
                   >
                     View Listing
                   </Link>
                 </div>
 
                 {/* 3. Guest Profile Card */}
-                <section className="space-y-4 sm:rounded-2xl rounded-lg border border-[#E5E5E5] bg-white p-5 shadow-[0_2px_5px_rgba(0,0,0,0.12)] sm:p-6">
-                  <h4 className="text-xl font-medium leading-tight text-[#1F1F1F]">
-                    <span className="text-[#727272]">About </span>
+                <section className="space-y-2.5 rounded-[10px] border border-zinc-200 bg-white p-3 shadow-xs">
+                  <h4 className="text-[12px] sm:text-[13px] font-medium leading-tight text-[#1F1F1F]">
+                    <span className="text-zinc-500">About </span>
                     <span className="break-words">{selectedConversation.guest.name || "Guest"}</span>
                   </h4>
 
-                  <div className="space-y-2.5 text-base text-[#727272]">
-                    <div className="flex items-center gap-3">
-                      <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] text-[#1F1F1F]">
-                        <Image src="/images/icons/upcoming-trips.svg" alt="upcoming-trips.svg" width={16} height={16} className="w-4" />
+                  <div className="space-y-2 text-[11px] sm:text-[12px] text-zinc-600">
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-zinc-300 text-zinc-700">
+                        <Image src="/images/icons/upcoming-trips.svg" alt="" width={12} height={12} className="w-3" />
                       </span>
-                      <span>
+                      <span className="truncate">
                         {getReservationContextLabel(selectedConversation.reservationContext)}
                       </span>
                     </div>
 
                     {selectedConversation.guest.createdAt && (
-                      <div className="flex items-center gap-3">
-                        <span className="flex size-8 shrink-0 items-center justify-center text-[#1554D1]" aria-hidden="true">
-                          <Image src="/images/icons/homyz-icon.svg" alt="homyz-icon.svg" width={24} height={20} className="w-6" />
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex size-6 shrink-0 items-center justify-center text-[#1554D1]" aria-hidden="true">
+                          <Image src="/images/icons/homyz-icon.svg" alt="" width={16} height={14} className="w-4" />
                         </span>
-                        <span>Joined Homyz in {new Date(selectedConversation.guest.createdAt).getUTCFullYear()}</span>
+                        <span className="truncate">Joined Homyz in {new Date(selectedConversation.guest.createdAt).getUTCFullYear()}</span>
                       </div>
                     )}
 
                     {selectedConversation.guest.identityVerified && (
                       <div className="flex items-center gap-2">
-                        <svg className="size-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="size-3.5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        <span>{t("messages_identity_confirmed", "Identity confirmed")}</span>
+                        <span className="text-[11px]">{t("messages_identity_confirmed", "Identity confirmed")}</span>
                       </div>
                     )}
 
                     {selectedConversation.guest.emailVerified && (
                       <div className="flex items-center gap-2">
-                        <svg className="size-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="size-3.5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        <span>{t("messages_email_verified", "Email verified")}</span>
+                        <span className="text-[11px]">{t("messages_email_verified", "Email verified")}</span>
                       </div>
                     )}
                   </div>
@@ -1956,7 +2244,7 @@ export function HostMessagesWorkspace({
                   {selectedConversation.guest.id && (
                     <Link
                       href={`/users/profile/${selectedConversation.guest.id}`}
-                      className="inline-flex text-base font-medium text-[#1F1F1F] underline underline-offset-4 transition-colors hover:text-[#727272]"
+                      className="inline-flex text-[11px] sm:text-[12px] font-medium text-[#1F1F1F] underline underline-offset-4 transition-colors hover:text-zinc-600"
                     >
                       Show profile
                     </Link>
@@ -1964,30 +2252,30 @@ export function HostMessagesWorkspace({
                 </section>
 
                 {selectedConversation.reservationContext.booking && !selectedConversation.booking && (
-                  <section className="space-y-3 border-t border-[#E5E5E5] pt-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <h4 className="text-lg font-medium text-[#1F1F1F]">
+                  <section className="space-y-2 border-t border-zinc-200 pt-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="text-[12px] sm:text-[13px] font-medium text-[#1F1F1F]">
                         {t("messages_reservation_context_header", "Reservation context")}
                       </h4>
-                      {getReservationContextBadge(selectedConversation.reservationContext)}
+                      <div className="shrink-0 leading-none">{getReservationContextBadge(selectedConversation.reservationContext)}</div>
                     </div>
-                    <div className="rounded-[10px] border border-[#E5E5E5] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)]">
-                      <p className="truncate text-sm text-zinc-500">
+                    <div className="rounded-[10px] border border-zinc-200 bg-white px-3 py-2 shadow-xs space-y-0.5">
+                      <p className="truncate text-[11px] text-zinc-500">
                         {selectedConversation.listing.title}
                       </p>
-                      <p className="text-base font-medium text-[#1F1F1F]">
+                      <p className="text-[12px] font-medium text-[#1F1F1F]">
                         {formatBookingDateRange(
                           selectedConversation.reservationContext.booking.startDate,
                           selectedConversation.reservationContext.booking.endDate,
                         )}
                       </p>
-                      <p className="mt-1 text-sm text-zinc-500">
+                      <p className="text-[11px] text-zinc-500">
                         {selectedConversation.reservationContext.booking.guests} {selectedConversation.reservationContext.booking.guests === 1 ? "guest" : "guests"}
                       </p>
                     </div>
                     <Link
                       href={`/host/bookings/${selectedConversation.reservationContext.booking.id}`}
-                      className="inline-flex text-base font-medium text-[#1F1F1F] underline underline-offset-4 transition-colors hover:text-[#727272]"
+                      className="inline-flex text-[11px] sm:text-[12px] font-medium text-[#1F1F1F] underline underline-offset-4 transition-colors hover:text-zinc-600"
                     >
                       {t("messages_view_reservation", "View reservation")}
                     </Link>
@@ -2000,44 +2288,44 @@ export function HostMessagesWorkspace({
                   const isConfirmed = b.status === "CONFIRMED";
                   const isPending = b.status === "PENDING";
                   const isCancelled = b.status === "CANCELLED";
-                  const cardClass = "rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]";
+                  const cardClass = "rounded-[10px] bg-white px-3 py-2 shadow-xs border border-zinc-200 space-y-0.5";
                   return (
-                    <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
+                    <section className="border-t border-zinc-200 pt-3 space-y-2">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-xl font-medium text-[#1F1F1F]">{t("messages_booking_details_header", "Booking details")}</h4>
-                        {getBookingStatusBadge(b.status)}
+                        <h4 className="text-[12px] sm:text-[13px] font-medium text-[#1F1F1F]">{t("messages_booking_details_header", "Booking details")}</h4>
+                        <div className="shrink-0 leading-none">{getBookingStatusBadge(b.status)}</div>
                       </div>
 
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         <div className={cardClass}>
-                          <p className="text-base font-medium text-[#1F1F1F]">{t("messages_guests_label", "Guests")}</p>
-                          <p className="text-base text-zinc-500">
+                          <p className="text-[11px] font-medium text-zinc-500">{t("messages_guests_label", "Guests")}</p>
+                          <p className="text-[12px] font-medium text-[#1F1F1F]">
                             {b.guests} {b.guests === 1 ? "guest" : "guests"}
                           </p>
                         </div>
 
                         {(inquiryDetails?.startDate || b.startDate) && (
-                          <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                          <p className="text-base font-medium text-[#1F1F1F]">{t("messages_requested_checkin_label", "Requested check-in")}</p>
-                          <p className="text-base text-zinc-500">
-                            {formatBookingDate(b.startDate, { weekday: true })}
-                          </p>
+                          <div className={cardClass}>
+                            <p className="text-[11px] font-medium text-zinc-500">{t("messages_requested_checkin_label", "Requested check-in")}</p>
+                            <p className="text-[12px] font-medium text-[#1F1F1F]">
+                              {formatBookingDate(b.startDate, { weekday: true })}
+                            </p>
                           </div>
                         )}
 
                         {(inquiryDetails?.endDate || b.endDate) && (
-                          <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                          <p className="text-base font-medium text-[#1F1F1F]">{t("messages_requested_checkout_label", "Requested check-out")}</p>
-                          <p className="text-base text-zinc-500">
-                            {formatBookingDate(b.endDate, { weekday: true })}
-                          </p>
+                          <div className={cardClass}>
+                            <p className="text-[11px] font-medium text-zinc-500">{t("messages_requested_checkout_label", "Requested check-out")}</p>
+                            <p className="text-[12px] font-medium text-[#1F1F1F]">
+                              {formatBookingDate(b.endDate, { weekday: true })}
+                            </p>
                           </div>
                         )}
 
                         {b.totalPrice != null && (
                           <div className={cardClass}>
-                            <p className="text-base font-medium text-[#1F1F1F]">{t("messages_total_price_label", "Total price")}</p>
-                            <p className="text-base font-medium text-zinc-900">
+                            <p className="text-[11px] font-medium text-zinc-500">{t("messages_total_price_label", "Total price")}</p>
+                            <p className="text-[12px] font-medium text-zinc-900">
                               {formatPrice(b.totalPrice, b.currency || "SAR", 2)}
                             </p>
                           </div>
@@ -2045,8 +2333,8 @@ export function HostMessagesWorkspace({
 
                         {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy) && (
                           <div className={cardClass}>
-                            <p className="text-base font-medium text-[#1F1F1F]">{t("messages_cancellation_policy_label", "Cancellation policy")}</p>
-                            <p className="text-base text-zinc-500 capitalize">
+                            <p className="text-[11px] font-medium text-zinc-500">{t("messages_cancellation_policy_label", "Cancellation policy")}</p>
+                            <p className="text-[12px] font-medium text-zinc-800 capitalize">
                               {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy || "Flexible")
                                 .replaceAll("_", " ")
                                 .toLowerCase()}
@@ -2056,7 +2344,7 @@ export function HostMessagesWorkspace({
 
                         <Link
                           href={`/host/calendar?listingId=${selectedConversation.listing.id}`}
-                          className="inline-flex items-center gap-1 text-base font-medium text-[#1F1F1F] hover:text-[#727272]"
+                          className="inline-flex items-center gap-1 text-[11px] sm:text-[12px] font-medium text-[#1F1F1F] hover:text-zinc-600 pt-0.5"
                         >
                           <span className="underline underline-offset-2">{t("messages_view_in_calendar", "View in calendar →").replace("→", "").trim()}</span>
                           <span aria-hidden="true">→</span>
@@ -2066,7 +2354,7 @@ export function HostMessagesWorkspace({
                           <button
                             type="button"
                             onClick={() => setShowReservationDetails(true)}
-                            className="mt-3 block text-center w-full py-3 rounded-full bg-[#FCDF9C] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1F1F1F] transition-colors cursor-pointer duration-300"
+                            className="mt-2 block text-center w-full py-2.5 rounded-full bg-[#FCDF9C] text-[#1F1F1F] hover:text-white text-[11px] sm:text-[12px] font-medium hover:bg-[#1F1F1F] transition-colors cursor-pointer duration-200 shadow-2xs"
                           >
                             View Reservation Details
                           </button>
@@ -2075,73 +2363,73 @@ export function HostMessagesWorkspace({
                     </section>
                   );
                 })() : (
-                  <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
+                  <section className="border-t border-zinc-200 pt-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <h4 className="sm:text-xl text-lg font-medium text-[#1F1F1F]">{t("messages_booking_details_header", "Booking details")}</h4>
-                      {getReservationContextBadge(selectedConversation.reservationContext)}
+                      <h4 className="text-[12px] sm:text-[13px] font-medium text-[#1F1F1F]">{t("messages_booking_details_header", "Booking details")}</h4>
+                      <div className="shrink-0 leading-none">{getReservationContextBadge(selectedConversation.reservationContext)}</div>
                     </div>
 
-                    <div className="space-y-3 text-sm text-zinc-600">
+                    <div className="space-y-1.5 text-[11px] text-zinc-500">
                       <p>{t("messages_prebooking_inquiry_note")}</p>
                     </div>
 
                     {inquiryDetails?.hasDetails ? (
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {inquiryDetails.guests != null && (
-                          <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                            <p className="text-base font-medium text-[#1F1F1F]">{t("messages_guests_label", "Guests")}</p>
-                            <p className="text-base text-zinc-500">
+                          <div className="rounded-[10px] bg-white px-3 py-2 shadow-xs border border-zinc-200 space-y-0.5">
+                            <p className="text-[11px] font-medium text-zinc-500">{t("messages_guests_label", "Guests")}</p>
+                            <p className="text-[12px] font-medium text-[#1F1F1F]">
                               {inquiryDetails.guests} {inquiryDetails.guests === 1 ? "guest" : "guests"}
                             </p>
                           </div>
                         )}
 
                         {inquiryDetails.startDate && (
-                          <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                            <p className="text-base font-medium text-[#1F1F1F]">{t("messages_requested_checkin_label", "Requested check-in")}</p>
-                            <p className="text-base text-zinc-500">
+                          <div className="rounded-[10px] bg-white px-3 py-2 shadow-xs border border-zinc-200 space-y-0.5">
+                            <p className="text-[11px] font-medium text-zinc-500">{t("messages_requested_checkin_label", "Requested check-in")}</p>
+                            <p className="text-[12px] font-medium text-[#1F1F1F]">
                               {formatBookingDate(inquiryDetails.startDate, { weekday: true })}
                             </p>
                           </div>
                         )}
 
                         {inquiryDetails.endDate && (
-                          <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                            <p className="text-base font-medium text-[#1F1F1F]">{t("messages_requested_checkout_label", "Requested check-out")}</p>
-                            <p className="text-base text-zinc-500">
+                          <div className="rounded-[10px] bg-white px-3 py-2 shadow-xs border border-zinc-200 space-y-0.5">
+                            <p className="text-[11px] font-medium text-zinc-500">{t("messages_requested_checkout_label", "Requested check-out")}</p>
+                            <p className="text-[12px] font-medium text-[#1F1F1F]">
                               {formatBookingDate(inquiryDetails.endDate, { weekday: true })}
                             </p>
                           </div>
                         )}
 
                         {inquiryDetails.createdAt && (
-                          <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                            <p className="text-base font-medium text-[#1F1F1F]">{t("messages_inquiry_sent_label", "Inquiry sent")}</p>
-                            <p className="text-base text-zinc-500">
+                          <div className="rounded-[10px] bg-white px-3 py-2 shadow-xs border border-zinc-200 space-y-0.5">
+                            <p className="text-[11px] font-medium text-zinc-500">{t("messages_inquiry_sent_label", "Inquiry sent")}</p>
+                            <p className="text-[12px] font-medium text-[#1F1F1F]">
                               {formatBookingDate(inquiryDetails.createdAt, { weekday: true })}
                             </p>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="rounded-[10px] bg-zinc-50 p-4 text-sm text-[#727272] border border-zinc-200">
+                      <div className="rounded-[10px] bg-zinc-50 p-3 text-[11px] text-zinc-600 border border-zinc-200">
                         {t("messages_prebooking_inquiry_note")}
                       </div>
                     )}
 
                     {selectedConversation.status !== "DECLINED" && (
-                      <div className="pt-2 space-y-2.5">
+                      <div className="pt-1.5 space-y-2">
                         <button
                           type="button"
                           onClick={() => setPreApproveModalOpen(true)}
-                          className="w-full py-2.5 rounded-lg border border-zinc-400 hover:border-[#1f1f1f] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer"
+                          className="w-full py-2 rounded-lg border border-zinc-300 hover:border-[#1f1f1f] text-[#1F1F1F] hover:text-white text-[11px] sm:text-[12px] font-medium hover:bg-[#1f1f1f] transition-colors duration-200 cursor-pointer"
                         >
                           {t("messages_action_pre_approve")}
                         </button>
                         <button
                           type="button"
                           onClick={() => setSpecialOfferModalOpen(true)}
-                            className="w-full py-2.5 rounded-lg border border-zinc-400 hover:border-[#1f1f1f] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer"
+                          className="w-full py-2 rounded-lg border border-zinc-300 hover:border-[#1f1f1f] text-[#1F1F1F] hover:text-white text-[11px] sm:text-[12px] font-medium hover:bg-[#1f1f1f] transition-colors duration-200 cursor-pointer"
                         >
                           {t("messages_action_special_offer")}
                         </button>
@@ -2154,29 +2442,29 @@ export function HostMessagesWorkspace({
                 {selectedConversation.activeSpecialOffer &&
                   (!selectedConversation.booking ||
                     selectedConversation.booking.status !== "CONFIRMED") && (
-                    <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
+                    <section className="border-t border-zinc-200 pt-3 space-y-2">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-base font-medium text-[#1F1F1F]">{t("messages_active_special_offer_header")}</h4>
-                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 border border-amber-200 capitalize">
+                        <h4 className="text-[12px] sm:text-[13px] font-medium text-[#1F1F1F]">{t("messages_active_special_offer_header")}</h4>
+                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-800 border border-amber-200 capitalize">
                           {selectedConversation.activeSpecialOffer.status.toLowerCase()}
                         </span>
                       </div>
-                      <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                        <p className="text-xs text-zinc-500">{t("messages_quick_field_dates")}</p>
-                        <p className="text-sm font-medium text-zinc-800 mt-0.5">
+                      <div className="rounded-[10px] bg-white px-3 py-2 shadow-xs border border-zinc-200 space-y-1">
+                        <p className="text-[11px] text-zinc-500 font-medium">{t("messages_quick_field_dates")}</p>
+                        <p className="text-[12px] font-medium text-zinc-800">
                           {formatBookingDateRange(
                             selectedConversation.activeSpecialOffer.startDate,
                             selectedConversation.activeSpecialOffer.endDate,
                           )}
                         </p>
-                        <p className="text-xs text-zinc-600 mt-1">
+                        <p className="text-[11px] text-zinc-500">
                           {selectedConversation.activeSpecialOffer.guests}{" "}
                           {selectedConversation.activeSpecialOffer.guests === 1
                             ? "guest"
                             : "guests"}
                         </p>
-                        <div className="mt-2.5 pt-2 border-t border-zinc-100 flex justify-between items-center text-sm">
-                          <span className="text-zinc-600 font-medium">{t("messages_offer_total_label")}</span>
+                        <div className="mt-2 pt-1.5 border-t border-zinc-100 flex justify-between items-center text-[12px]">
+                          <span className="text-zinc-500 font-medium">{t("messages_offer_total_label")}</span>
                           <span className="font-medium text-zinc-900">
                             {formatPrice(
                               selectedConversation.activeSpecialOffer.subtotalPrice || 0,
@@ -2211,7 +2499,7 @@ export function HostMessagesWorkspace({
               </button>
             </div>
           )}
-        </InquiryPanelContainer>
+        </ReservationPanelFrame>
       </div>
 
       {/* Reservation Details Modal */}

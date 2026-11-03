@@ -160,8 +160,8 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
     if (initialData) publishUnreadNotificationCount(initialData.unreadCount);
   }, [initialData]);
 
-  const loadNotifications = useCallback(async () => {
-    setLoading(true);
+  const loadNotifications = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) setLoading(true);
     setError(null);
     try {
       const res = await getNotificationsAction({ skip: 0, take: 20 });
@@ -178,9 +178,28 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
     } catch {
       setError(t("profile_notif_error_unexpected", "An unexpected error occurred while fetching notifications."));
     } finally {
-      setLoading(false);
+      if (!options?.silent) setLoading(false);
     }
   }, [t]);
+
+  useEffect(() => {
+    // Notifications do not have a configured socket/SSE transport. Refreshing
+    // only while this view is visible keeps the list and unread badge current
+    // across devices without an uncontrolled background polling loop.
+    const refresh = () => {
+      if (document.visibilityState === "visible") {
+        void loadNotifications({ silent: true });
+      }
+    };
+    const poll = window.setInterval(refresh, 30_000);
+    window.addEventListener("homyz:notifications-updated", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.clearInterval(poll);
+      window.removeEventListener("homyz:notifications-updated", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [loadNotifications]);
 
   const loadMore = async () => {
     if (loadingMore || notifications.length >= total) return;
@@ -348,7 +367,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between xl:mb-8">
         <div>
           <div className="flex items-center gap-3">
-            <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
+            <h2 className="profile-page-title text-[#1F1F1F]">
               {t("profile_notif_title", "Notifications")}
             </h2>
             {unreadCount > 0 && (
@@ -379,7 +398,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
           <p>{error}</p>
           <button
             type="button"
-            onClick={loadNotifications}
+            onClick={() => void loadNotifications()}
             className="rounded-lg bg-red-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-800 transition-colors shrink-0"
           >
             {t("profile_notif_retry", "Retry")}

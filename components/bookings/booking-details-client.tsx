@@ -61,7 +61,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
   );
 
   return (
-    <div className="w-full pb-16 pt-4 text-[#1F1F1F]">
+    <div className="guest-booking-details w-full pb-16 pt-4 text-[#1F1F1F]">
       {/* Back navigation */}
       <Link
         href={backLinkHref}
@@ -83,7 +83,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
               <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
                 {t("booking_details_reservation_code", { code: bookingCode }, `Reservation #${bookingCode}`)}
               </p>
-              <h1 className="mt-1.5">
+              <h1 className="reservation-page-title mt-1.5">
                 {listing.title}
               </h1>
               {location && (

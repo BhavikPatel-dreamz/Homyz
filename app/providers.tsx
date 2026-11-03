@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { WishlistProvider } from "@/components/wishlist/WishlistProvider";
 import { CurrencyProvider } from "@/lib/currency-context";
 import { ProfileCompletionModal } from "@/components/auth/profile-completion-modal";
+import { HeaderSearchProvider } from "@/components/header/header-search-context";
 
 export function Providers({ children, session }: { children: ReactNode; session: Session | null }) {
   return (
@@ -22,9 +23,11 @@ export function Providers({ children, session }: { children: ReactNode; session:
             refetchWhenOffline={false}
           >
             <WishlistProvider>
-              {children}
-              <ProfileCompletionModal />
-              <Toaster />
+              <HeaderSearchProvider>
+                {children}
+                <ProfileCompletionModal />
+                <Toaster />
+              </HeaderSearchProvider>
             </WishlistProvider>
           </SessionProvider>
         </LanguageProvider>

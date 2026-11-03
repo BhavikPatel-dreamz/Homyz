@@ -1016,6 +1016,7 @@ export function HostListingEditorClient({
       payload = {
         photos: editPhotos,
         photoRoomAssignments: editPhotoRoomAssignments,
+        rooms,
       };
     } else if (sectionToSave === "amenities" || sectionToSave === "add-amenities") {
       payload = { amenities: normalizeAmenities(editAmenities) };
@@ -1274,6 +1275,15 @@ export function HostListingEditorClient({
         if (payload.guests !== undefined) {
           setEditGuests(payload.guests);
           setMaxGuestsCount(payload.guests);
+        }
+        if (payload.rooms !== undefined) {
+          setRooms((res.data as any)?.rooms ?? payload.rooms);
+        }
+        if (payload.photos !== undefined) {
+          setEditPhotos((res.data as any)?.photos ?? payload.photos);
+        }
+        if (payload.photoRoomAssignments !== undefined) {
+          setEditPhotoRoomAssignments((res.data as any)?.photoRoomAssignments ?? payload.photoRoomAssignments);
         }
         if (payload.smartPricing !== undefined) {
           setSmartPricing(Boolean((res.data as any).smartPricing ?? payload.smartPricing));
@@ -1649,7 +1659,9 @@ export function HostListingEditorClient({
                 photoRoomAssignments={editPhotoRoomAssignments}
                 onChange={handlePhotoTourChange}
                 onChangeRoomAssignments={setEditPhotoRoomAssignments}
-                onSave={() => handleSaveSection("photos")}
+                rooms={rooms}
+                onChangeRooms={setRooms}
+                onSave={(overrides) => handleSaveSection("photos", undefined, overrides)}
                 isSaving={isSaving}
                 isLoading={isLoading}
                 onBack={() => setActiveSection("sleeping-arrangements")}
@@ -2135,6 +2147,7 @@ export function HostListingEditorClient({
           guidebooksCount={initialGuidebooks?.length ?? 0}
           editBedrooms={editBedrooms}
           editBeds={editBeds}
+          editBathrooms={editBathrooms}
           parkingAvailable={parkingAvailable}
           parkingType={parkingType}
           setIsRemoveListingModalOpen={setIsRemoveListingModalOpen}

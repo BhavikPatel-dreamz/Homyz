@@ -10,6 +10,8 @@ import {
   useState,
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
+  type RefObject,
+  type CSSProperties,
 } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -39,6 +41,7 @@ import {
   differenceInBookingNights,
 } from "@/lib/booking/booking-date";
 import { buildHostCalendarReservationSpans } from "@/lib/booking/host-calendar-spans";
+import { getCalendarWeeks, getWeekBookingSegments } from "@/lib/booking/calendar-week-layout";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { CloseButton } from "@/components/ui/close-button";
 import { calculatePriceTips } from "@/lib/pricing/price-tips";
@@ -88,6 +91,28 @@ function shiftDateKey(key: string, days: number): string {
   const [y, m, d] = key.split("-").map(Number);
   const date = new Date(Date.UTC(y, m - 1, d + days));
   return date.toISOString().slice(0, 10);
+}
+
+function bookingBarTone(booking: HostReservation) {
+  return booking.status === "PENDING"
+    ? "border-[#c2a0ff] bg-[#dfccff] text-[#4b268a]"
+    : "border-[#fb9ab4] bg-[#ffd0db] text-[#76142c]";
+}
+
+function timelineBookingBarTone(booking: HostReservation) {
+  if (booking.status === "PENDING") return "border-[#efc86a] bg-[#ffedc5] text-[#815000]";
+  if (booking.status === "COMPLETED") return "border-[#83d9a2] bg-[#c9f2d5] text-[#155c34]";
+  return "border-[#fb9ab4] bg-[#ffd6e1] text-[#7b1733]";
+}
+
+function guestInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase() || "G";
 }
 
 function getNormalizedRange(selection: CalendarSelection): {
@@ -459,8 +484,6 @@ function MonthGrid({
 
   const year = month.getFullYear();
   const monthIndex = month.getMonth();
-  const count = new Date(year, monthIndex + 1, 0).getDate();
-  const offset = new Date(year, monthIndex, 1).getDay();
   const today = dateKey(new Date());
 
   const localizedWeekdays = useMemo(() => {
@@ -491,6 +514,12 @@ function MonthGrid({
     [year, monthIndex, listing],
   );
 
+  const calendarWeeks = useMemo(() => getCalendarWeeks(month), [month]);
+  const bookingSegmentsByWeek = useMemo(
+    () => calendarWeeks.map((week) => getWeekBookingSegments(week, bookingRanges)),
+    [calendarWeeks, bookingRanges],
+  );
+
   return (
     <div className="min-w-0 select-none">
       {/* Weekday headers */}
@@ -506,20 +535,42 @@ function MonthGrid({
         ))}
       </div>
 
-      {/* Days grid */}
-      <div className="grid min-w-0 grid-cols-7 gap-1.5 sm:gap-2">
-        {Array.from({ length: offset }, (_, i) => (
-          <span key={`blank-${i}`} aria-hidden="true" />
-        ))}
+      {/* Every week owns the same seven-column coordinate system as its booking bars. */}
+      <div className="space-y-2">
+        {calendarWeeks.map((week, weekIndex) => {
+          const weekSegments = bookingSegmentsByWeek[weekIndex];
+          const bookingLaneCount = isAllListings
+            ? 1
+            : Math.max(1, ...weekSegments.map((segment) => segment.lane + 1));
+          const rowStyle = {
+            "--calendar-booking-lanes": bookingLaneCount,
+          } as CSSProperties;
 
-        {Array.from({ length: count }, (_, i) => {
-          const dayNum = i + 1;
-          const date = new Date(year, monthIndex, dayNum);
+          return (
+            <div key={week.key} className="relative" style={rowStyle}>
+              <div className="grid min-w-0 grid-cols-7 gap-1.5 sm:gap-2">
+                {week.dates.map((date) => {
+          const dayNum = date.getDate();
           const key = dateKey(date);
+          const isOutsideMonth = date.getMonth() !== monthIndex;
           const isToday = key === today;
           const isPast = key < today;
           const dayBookings = bookingsByDate.get(key) || [];
           const primaryReservation = dayBookings[0];
+
+          if (isOutsideMonth) {
+            const adjacentRate = weekdayBase;
+            return (
+              <div
+                key={key}
+                aria-hidden="true"
+                className={`min-w-0 rounded-[14px] border border-[#ececef] bg-[#fafafa] p-2.5 text-left opacity-55 dark:border-zinc-800 dark:bg-zinc-900 ${compact ? "min-h-[48px] sm:min-h-[68px]" : "min-h-[76px] sm:min-h-[102px] lg:min-h-[calc(104px+var(--calendar-booking-lanes)*36px)]"}`}
+              >
+                <span className="block text-xs font-semibold text-[#737780]">{dayNum}</span>
+                {!compact && <span className="mt-2 block text-[10px] font-medium text-[#858991] sm:text-sm">{formatMoney(adjacentRate, sourceCurrency, 2)}</span>}
+              </div>
+            );
+          }
 
           // Check if key is part of normalized selected range
           // A reservation is actionable as a reservation, not as an editable
@@ -538,23 +589,6 @@ function MonthGrid({
             isSelected && isRangeStart && isRangeEnd;
           const isRangeMiddle =
             isSelected && !isRangeStart && !isRangeEnd;
-
-          // Continuous reservation bar calculation
-          const activeRange = primaryReservation
-            ? bookingRanges.find(
-              (r) =>
-                r.booking.id === primaryReservation.id &&
-                r.start <= key &&
-                r.end > key,
-            )
-            : null;
-
-          const isBookingStart =
-            activeRange ? key === activeRange.start : false;
-          const isBookingEndNight =
-            activeRange
-              ? key === shiftDateKey(activeRange.end, -1)
-              : false;
 
           // ALL LISTINGS MODE
           if (isAllListings) {
@@ -634,16 +668,15 @@ function MonthGrid({
 
           // Compute cell visual styles
           let cellBgClass =
-            "border-transparent bg-[#F3F4F5] text-[#1F1F1F] hover:bg-[#DDDDDE] dark:bg-zinc-800/80 dark:text-zinc-100 dark:hover:border-zinc-600";
-          let cellRoundingClass = compact ? "rounded-[10px]" : "md:rounded-[20px] rounded-[10px]";
+            "border-[#ececef] bg-white text-[#1F1F1F] hover:border-[#cfcfd4] hover:bg-[#fcfcfd] dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-100 dark:hover:border-zinc-600";
+          let cellRoundingClass = compact ? "rounded-[10px]" : "rounded-[14px]";
 
           if (primaryReservation) {
-            // Keep the reservation treatment inside the tile. The dark stay strip
-            // below carries the booking state, while this light surface preserves
-            // the scan-friendly month grid used by the host calendar.
+            // The range overlay carries the booking state; the card stays light
+            // so prices and guest bars remain independently legible.
             cellBgClass =
-              "border border-[#1F1F1F] bg-[#DDDDDE] text-[#1F1F1F] shadow-xs dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-100";
-            cellRoundingClass = compact ? "rounded-[10px]" : "md:rounded-[20px] rounded-[10px]";
+              "border-[#e6e6e9] bg-white text-[#1F1F1F] shadow-xs dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-100";
+            cellRoundingClass = compact ? "rounded-[10px]" : "rounded-[14px]";
           } else if (blocked) {
             // Blocked state
             cellBgClass =
@@ -657,28 +690,28 @@ function MonthGrid({
           // Selection highlight override
           if (isSelected) {
             if (isSingleSelection) {
-              cellRoundingClass = `${compact ? "rounded-[10px]" : "md:rounded-[20px] rounded-[10px]"}`;
+              cellRoundingClass = `${compact ? "rounded-[10px]" : "rounded-[14px]"}`;
               if (!primaryReservation) {
                 cellBgClass =
-                  "border-zinc-950 dark:border-amber-400 bg-[#DDDDDE] dark:bg-[#DDDDDE] text-[#1F1F1F] dark:text-zinc-100 shadow-sm";
+                  "border-[#198cff] bg-[#f5faff] text-[#1F1F1F] shadow-sm dark:border-sky-400 dark:bg-sky-950/40 dark:text-zinc-100";
               }
             } else if (isRangeStart) {
               cellRoundingClass = `${compact ? "rounded-l-[10px]" : "rounded-l-xl"} rounded-r-none border-r-0`;
               if (!primaryReservation) {
                 cellBgClass =
-                  "border-y-2 border-l-2 border-zinc-950 dark:border-amber-400 bg-amber-100/90 dark:bg-amber-950/70 text-[#1F1F1F] dark:text-zinc-100 shadow-sm";
+                  "border-y-2 border-l-2 border-[#198cff] bg-[#edf7ff] dark:border-sky-400 dark:bg-sky-950/70 text-[#1F1F1F] dark:text-zinc-100 shadow-sm";
               }
             } else if (isRangeEnd) {
               cellRoundingClass = `${compact ? "rounded-r-[10px]" : "rounded-r-xl"} rounded-l-none border-l-0`;
               if (!primaryReservation) {
                 cellBgClass =
-                  "border-y-2 border-r-2 border-zinc-950 dark:border-amber-400 bg-amber-100/90 dark:bg-amber-950/70 text-[#1F1F1F] dark:text-zinc-100 shadow-sm";
+                  "border-y-2 border-r-2 border-[#198cff] bg-[#edf7ff] dark:border-sky-400 dark:bg-sky-950/70 text-[#1F1F1F] dark:text-zinc-100 shadow-sm";
               }
             } else if (isRangeMiddle) {
               cellRoundingClass = "rounded-none border-x-0";
               if (!primaryReservation) {
                 cellBgClass =
-                  "border-y-2 border-zinc-950/40 dark:border-amber-400/50 bg-amber-50/80 dark:bg-amber-950/50 text-[#1F1F1F] dark:text-zinc-100";
+                  "border-y-2 border-[#198cff]/50 dark:border-sky-400/50 bg-[#edf7ff] dark:bg-sky-950/50 text-[#1F1F1F] dark:text-zinc-100";
               }
             }
           }
@@ -705,21 +738,21 @@ function MonthGrid({
               onKeyDown={(e) => onKeyDown?.(key, e)}
               aria-label={`${key}, ${statusDescription}, ${promo?.applied ? `${formatMoney(promo.promotionalPrice, sourceCurrency, 2)} (${promo.percentage}% promo, regular ${formatMoney(rate, sourceCurrency, 2)})` : formatMoney(rate, sourceCurrency, 2)}${isSelected ? ", selected" : ""}`}
               aria-pressed={isSelected}
-              className={`group relative flex min-w-0 self-stretch flex-col items-center border text-center transition-all duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 ${cellRoundingClass} ${cellBgClass} ${compact
+              className={`group relative flex min-w-0 self-stretch flex-col items-start border text-left transition-all duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 ${cellRoundingClass} ${cellBgClass} ${compact
                 ? "min-h-[48px] p-1 sm:min-h-[68px] sm:py-1.5"
-                : "min-h-[76px] p-2 sm:min-h-[102px] sm:p-2.5 lg:h-[116px] lg:min-h-[116px] lg:p-3"
+                : "min-h-[76px] p-2 sm:min-h-[102px] sm:p-2.5 lg:min-h-[calc(104px+var(--calendar-booking-lanes)*36px)] lg:p-3"
                 }`}
             >
-              <div className="flex min-h-0 w-full flex-1 flex-col items-center">
+              <div className="flex min-h-0 w-full flex-1 flex-col items-start lg:pb-[calc(var(--calendar-booking-lanes)*36px)]">
                 {/* Day number */}
-                <div className="flex w-full items-center justify-center px-1">
+                <div className="flex w-full items-center justify-start px-1">
                   <span
                     className={`flex items-center justify-center rounded-full font-medium transition-transform ${compact
                       ? "size-5 max-[360px]:text-[9px] text-xs sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px]"
                       : "size-6 text-xs sm:size-7 sm:text-xs"
                       } ${isToday
                         ? "border border-[#EBA900] bg-[#FCDF9C] text-[#1F1F1F] font-medium shadow-xs sm:!border-[#EBA900] sm:!bg-[#FCDF9C] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#1F1F1F]"
-                        : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700"
+                      : "text-zinc-900 dark:text-zinc-200"
                       } ${blocked ? "line-through text-[#727272]" : ""} ${isSelected || primaryReservation ? "!text-xs" : ""}`}
                   >
                     {dayNum}
@@ -728,7 +761,7 @@ function MonthGrid({
                 </div>
 
                 {/* Price / Status */}
-                <div className="mt-1 flex min-h-8 w-full flex-1 flex-col items-center justify-center px-0.5 text-center">
+                <div className="mt-1 flex min-h-8 w-full flex-1 flex-col items-start justify-start px-0.5 text-left">
                   {blocked ? (
                     <span className="text-xs text-[#727272] line-through font-medium">{t("host_cal_blocked_label", "Blocked")}</span>
                   ) : primaryReservation ? (
@@ -797,20 +830,238 @@ function MonthGrid({
                 </div>
               </div>
 
-              {/* One reservation is rendered as joined segments across its stay.
-                  The segments only extend into the grid gutter, so the grid's
-                  column geometry remains stable when the settings panel opens. */}
-              {primaryReservation && !compact ? (
-                <div className={`pointer-events-none relative z-10 mt-1 hidden h-7 min-w-0 items-center overflow-hidden bg-[#1F1F1F] px-2 text-xs font-medium text-white md:flex ${isBookingStart ? "ml-0 rounded-l-lg" : "-ml-3 sm:-ml-4 rounded-l-none"} ${isBookingEndNight ? "mr-0 rounded-r-lg" : "-mr-3 sm:-mr-4 rounded-r-none"}`}>
-                  <span className={`truncate ${isBookingStart ? "w-full text-center" : "sr-only"}`}>
-                    {primaryReservation.guestName}
-                  </span>
-                </div>
-              ) : null}
             </button>
           );
         })}
+              </div>
+
+              {!compact && !isAllListings && weekSegments.length > 0 && (
+                <div
+                  className="pointer-events-none absolute inset-x-0 bottom-3 z-20 hidden grid grid-cols-7 gap-1.5 sm:gap-2 lg:grid"
+                  style={{ gridTemplateRows: `repeat(${bookingLaneCount}, 32px)` }}
+                >
+                  {weekSegments.map((segment) => {
+                    const startsHere = !segment.continuesBefore;
+                    const endsHere = !segment.continuesAfter;
+                    return (
+                      <button
+                        key={`${week.key}:${segment.booking.id}`}
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onDayClick(dateKey(week.dates[segment.startColumn - 1]), segment.booking);
+                        }}
+                        aria-label={`Open reservation for ${segment.booking.guestName}`}
+                        style={{
+                          gridColumn: `${segment.startColumn} / ${segment.endColumn}`,
+                          gridRow: segment.lane + 1,
+                        }}
+                        className={`pointer-events-auto flex min-w-0 items-center overflow-hidden border px-2 text-left text-xs font-semibold shadow-[0_2px_7px_rgba(0,0,0,0.06)] transition-transform duration-150 hover:-translate-y-px hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 ${bookingBarTone(segment.booking)} ${startsHere ? "rounded-l-full" : "rounded-l-md border-l-0"} ${endsHere ? "rounded-r-full" : "rounded-r-md border-r-0"}`}
+                      >
+                        {startsHere && (
+                          <span className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-white bg-white/90 text-[9px] font-bold shadow-sm">
+                            {guestInitials(segment.booking.guestName)}
+                          </span>
+                        )}
+                        <span className="truncate">{startsHere ? segment.booking.guestName : "Continues"}</span>
+                        {segment.continuesAfter && <span className="ml-auto text-base leading-none opacity-60">›</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
+    </div>
+  );
+}
+
+function CalendarStatusLegend() {
+  const items = [
+    { label: "Available", description: "Can be booked", swatch: "border-[#d8dadd] bg-white" },
+    { label: "Booked", description: "Not available", swatch: "border-[#fb9ab4] bg-[#ff9ab5]" },
+    { label: "Your selected dates", description: "Ready to edit", swatch: "border-[#63b7ff] bg-[#9dd4ff]" },
+    { label: "Unavailable", description: "Blocked by host", swatch: "border-[#d7d9dd] bg-[#e6e8eb]" },
+    { label: "Promo price", description: "Special discount", swatch: "border-[#8de6bd] bg-[#d9f7e7]" },
+  ];
+
+  return (
+    <div className="mt-6 grid grid-cols-2 gap-x-5 gap-y-4 rounded-[22px] bg-[#f7f7f8] px-5 py-4 sm:grid-cols-3 lg:grid-cols-5">
+      {items.map((item) => (
+        <div key={item.label} className="flex min-w-0 items-center gap-3">
+          <span className={`size-6 shrink-0 rounded-lg border ${item.swatch}`} aria-hidden="true" />
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold text-[#202124]">{item.label}</span>
+            <span className="block truncate text-xs text-[#6b7078]">{item.description}</span>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+type ContinuousMonthCalendarProps = Omit<MonthGridProps, "month" | "compact"> & {
+  activeMonth: Date;
+  navigationKey: number;
+  scrollRootRef: RefObject<HTMLDivElement | null>;
+  onVisibleMonthChange: (month: Date) => void;
+};
+
+/**
+ * A deliberately bounded scroll window. The workspace already receives the
+ * host's reservation set in one request, so this keeps the DOM stable without
+ * inventing a per-month API contract. Explicit navigation recenters the window;
+ * regular scrolling only changes the toolbar label.
+ */
+function ContinuousMonthCalendar({
+  activeMonth,
+  navigationKey,
+  scrollRootRef,
+  onVisibleMonthChange,
+  ...monthGridProps
+}: ContinuousMonthCalendarProps) {
+  const monthElements = useRef(new Map<string, HTMLElement>());
+  const onVisibleMonthChangeRef = useRef(onVisibleMonthChange);
+  const activeMonthRef = useRef(activeMonth);
+  const pendingScrollKeyRef = useRef<string | null>(null);
+  const pendingScrollDeltaRef = useRef(0);
+  const pendingPrependKeyRef = useRef<string | null>(null);
+  const rebasingRef = useRef(false);
+  const hasInitializedViewportRef = useRef(false);
+  const initialWindow = useCallback((center: Date) => (
+    Array.from({ length: 5 }, (_, index) =>
+      new Date(center.getFullYear(), center.getMonth() + index, 1),
+    )
+  ), []);
+  const [months, setMonths] = useState(() => initialWindow(activeMonth));
+
+  useEffect(() => {
+    activeMonthRef.current = activeMonth;
+  }, [activeMonth]);
+
+  useEffect(() => {
+    // The initial list deliberately starts with the active month. Scrolling it
+    // into view here could briefly expose the previous buffered month and let
+    // the observer overwrite the selected month, so only recenter after an
+    // explicit navigation action.
+    if (!hasInitializedViewportRef.current) {
+      hasInitializedViewportRef.current = true;
+      return;
+    }
+
+    const targetMonth = activeMonthRef.current;
+    const targetKey = formatMonthKey(targetMonth);
+    const target = monthElements.current.get(targetKey);
+    const scrollRoot = scrollRootRef.current;
+    if (target && scrollRoot) {
+      const offset = target.getBoundingClientRect().top - scrollRoot.getBoundingClientRect().top;
+      scrollRoot.scrollTo({ top: scrollRoot.scrollTop + offset, behavior: "smooth" });
+      return;
+    }
+    pendingScrollKeyRef.current = targetKey;
+    setMonths(initialWindow(targetMonth));
+  }, [navigationKey, initialWindow, scrollRootRef]);
+
+  useEffect(() => {
+    const scrollRoot = scrollRootRef.current;
+    if (scrollRoot && pendingScrollDeltaRef.current) {
+      scrollRoot.scrollTop += pendingScrollDeltaRef.current;
+      pendingScrollDeltaRef.current = 0;
+    }
+    if (scrollRoot && pendingPrependKeyRef.current) {
+      const inserted = monthElements.current.get(pendingPrependKeyRef.current);
+      scrollRoot.scrollTop += (inserted?.offsetHeight || 0) + 40;
+      pendingPrependKeyRef.current = null;
+    }
+    rebasingRef.current = false;
+
+    const targetKey = pendingScrollKeyRef.current;
+    if (!targetKey) return;
+    const target = monthElements.current.get(targetKey);
+    if (!target || !scrollRoot) return;
+    pendingScrollKeyRef.current = null;
+    const offset = target.getBoundingClientRect().top - scrollRoot.getBoundingClientRect().top;
+    scrollRoot.scrollTo({ top: scrollRoot.scrollTop + offset, behavior: "auto" });
+  }, [months, scrollRootRef]);
+
+  useEffect(() => {
+    onVisibleMonthChangeRef.current = onVisibleMonthChange;
+  }, [onVisibleMonthChange]);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const root = scrollRootRef.current;
+    if (!root) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        const key = visible?.target.getAttribute("data-calendar-month");
+        const next = key ? parseMonthKey(key) : null;
+        if (next) onVisibleMonthChangeRef.current(next);
+
+        if (rebasingRef.current) return;
+        const firstKey = formatMonthKey(months[0]);
+        const lastKey = formatMonthKey(months.at(-1)!);
+        const firstEntry = entries.find(
+          (entry) => entry.isIntersecting && entry.target.getAttribute("data-calendar-month") === firstKey,
+        );
+        const lastEntry = entries.find(
+          (entry) => entry.isIntersecting && entry.target.getAttribute("data-calendar-month") === lastKey,
+        );
+
+        if (lastEntry) {
+          const firstElement = monthElements.current.get(firstKey);
+          pendingScrollDeltaRef.current = -((firstElement?.offsetHeight || 0) + 40);
+          rebasingRef.current = true;
+          setMonths((current) => [
+            ...current.slice(1),
+            new Date(current.at(-1)!.getFullYear(), current.at(-1)!.getMonth() + 1, 1),
+          ]);
+        } else if (firstEntry) {
+          const previous = new Date(months[0].getFullYear(), months[0].getMonth() - 1, 1);
+          rebasingRef.current = true;
+          pendingPrependKeyRef.current = formatMonthKey(previous);
+          setMonths((current) => [previous, ...current.slice(0, -1)]);
+        }
+      },
+      { root, rootMargin: "0px 0px 180px", threshold: [0.45, 0.65] },
+    );
+
+    const elements = [...monthElements.current.values()];
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [months, scrollRootRef]);
+
+  return (
+    <div className="space-y-10 pb-3">
+      {months.map((calendarMonth) => {
+        const key = formatMonthKey(calendarMonth);
+        return (
+          <section
+            key={key}
+            ref={(element) => {
+              if (element) monthElements.current.set(key, element);
+              else monthElements.current.delete(key);
+            }}
+            data-calendar-month={key}
+            className="scroll-mt-4"
+          >
+            <div className="mb-4 flex items-baseline justify-between">
+              <h2 className="text-xl font-semibold tracking-tight text-[#202124] dark:text-zinc-100">
+                {monthName(calendarMonth)} {calendarMonth.getFullYear()}
+              </h2>
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-[#777b83]">Calendar</span>
+            </div>
+            <MonthGrid {...monthGridProps} month={calendarMonth} compact={false} />
+          </section>
+        );
+      })}
+      <CalendarStatusLegend />
     </div>
   );
 }
@@ -930,6 +1181,12 @@ function MultiPropertyCalendar({
   const year = month.getFullYear();
   const monthIndex = month.getMonth();
   const dayCount = new Date(year, monthIndex + 1, 0).getDate();
+  const timelineViewportRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const propertyColumnWidth = 212;
+  const dateColumnWidth = 56;
+  const headerHeight = 62;
+  const baseRowHeight = 64;
   const dateKeys = useMemo(
     () => Array.from({ length: dayCount }, (_, index) => dateKey(new Date(year, monthIndex, index + 1))),
     [year, monthIndex, dayCount],
@@ -942,62 +1199,107 @@ function MultiPropertyCalendar({
     [bookings, visibleStart, visibleEnd, listingIds],
   );
   const dateIndex = useMemo(() => new Map(dateKeys.map((key, index) => [key, index])), [dateKeys]);
-  const gridStyle = { gridTemplateColumns: `176px repeat(${dateKeys.length}, minmax(44px, 1fr))` };
+  const gridStyle = useMemo(
+    () => ({ gridTemplateColumns: `${propertyColumnWidth}px repeat(${dateKeys.length}, ${dateColumnWidth}px)` }),
+    [dateKeys.length],
+  );
+  const rows = useMemo(() => {
+    const spansByListing = new Map<string, typeof spans>();
+    for (const span of spans) {
+      const current = spansByListing.get(span.booking.listingId) || [];
+      current.push(span);
+      spansByListing.set(span.booking.listingId, current);
+    }
+
+    return listings.reduce<Array<{
+      listing: ListingDTO;
+      laidOutSpans: Array<(typeof spans)[number] & { lane: number }>;
+      laneCount: number;
+      height: number;
+      offset: number;
+    }>>((computedRows, listing) => {
+      const laneEnds: string[] = [];
+      const laidOutSpans = (spansByListing.get(listing.id) || []).map((span) => {
+        const existingLane = laneEnds.findIndex((end) => end <= span.visibleStart);
+        const lane = existingLane === -1 ? laneEnds.length : existingLane;
+        laneEnds[lane] = span.visibleEnd;
+        return { ...span, lane };
+      });
+      const laneCount = Math.max(1, laneEnds.length);
+      const height = Math.max(baseRowHeight, laneCount * 34 + 8);
+      const previousRow = computedRows.at(-1);
+      const offset = previousRow ? previousRow.offset + previousRow.height : 0;
+      const row = { listing, laidOutSpans, laneCount, height, offset };
+      return [...computedRows, row];
+    }, []);
+  }, [listings, spans]);
+  const totalRowsHeight = rows.reduce((total, row) => total + row.height, 0);
+  const overscan = 240;
+  const visibleRows = useMemo(
+    () => rows.filter((row) => row.offset + row.height >= scrollTop - overscan && row.offset <= scrollTop + 1200 + overscan),
+    [rows, scrollTop],
+  );
+  const today = dateKey(new Date());
+
+  useEffect(() => {
+    timelineViewportRef.current?.scrollTo({ left: 0, top: 0 });
+  }, [year, monthIndex]);
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-      <div className="min-w-[920px]">
-        <div className="sticky top-0 z-20 grid border-b border-zinc-200 bg-white text-center dark:border-zinc-700 dark:bg-zinc-900" style={gridStyle}>
-          <div className="sticky left-0 z-30 flex items-center border-r border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-            Properties
+    <div
+      ref={timelineViewportRef}
+      onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+      className="h-full min-h-[340px] overflow-auto rounded-2xl border border-[#e3e4e8] bg-[#f7f8fa] shadow-[0_8px_24px_rgba(31,31,31,0.04)] calendar-panel-scrollbar dark:border-zinc-700 dark:bg-zinc-950"
+      aria-label={`${monthName(month, language)} ${year} all listings calendar`}
+    >
+      <div style={{ minWidth: propertyColumnWidth + dateKeys.length * dateColumnWidth }}>
+        <div className="sticky top-0 z-30 grid border-b border-[#e3e4e8] bg-white text-center shadow-[0_2px_8px_rgba(31,31,31,0.04)] dark:border-zinc-700 dark:bg-zinc-900" style={{ ...gridStyle, height: headerHeight }}>
+          <div className="sticky left-0 z-40 flex flex-col justify-center border-r border-[#dedfe3] bg-white px-4 text-left dark:border-zinc-700 dark:bg-zinc-900">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#777b83]">Properties</span>
+            <span className="mt-0.5 text-xs font-medium text-[#25282d] dark:text-zinc-100">{listings.length} selected</span>
           </div>
           {dateKeys.map((key) => {
             const day = new Date(`${key}T12:00:00`);
+            const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+            const isToday = key === today;
             return (
-              <div key={key} className="border-r border-zinc-100 py-2 text-[11px] font-medium text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
-                <span className="block uppercase">{day.toLocaleDateString(language || "en", { weekday: "short" })}</span>
-                <span className="text-sm text-zinc-950 dark:text-white">{day.getDate()}</span>
+              <div key={key} className={`border-r border-[#ececf0] py-2 text-[10px] font-semibold ${isWeekend ? "bg-[#fafafc] text-[#6b7078]" : "text-[#5d636d]"} dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300`}>
+                <span className="block uppercase tracking-wide">{day.toLocaleDateString(language || "en", { weekday: "short" })}</span>
+                <span className={`mx-auto mt-1 flex size-6 items-center justify-center rounded-full text-sm font-semibold ${isToday ? "bg-[#2383e2] text-white" : "text-[#1f2329] dark:text-white"}`}>{day.getDate()}</span>
               </div>
             );
           })}
         </div>
 
-        {listings.map((listing) => {
-          const rowSpans = spans.filter((span) => span.booking.listingId === listing.id);
-          const laneEnds: string[] = [];
-          const laidOutSpans = rowSpans.map((span) => {
-            let lane = laneEnds.findIndex((end) => end <= span.visibleStart);
-            if (lane < 0) lane = laneEnds.length;
-            laneEnds[lane] = span.visibleEnd;
-            return { ...span, lane };
-          });
-          const laneCount = Math.max(1, laneEnds.length);
-
-          return (
+        <div className="relative" style={{ height: totalRowsHeight }}>
+          {visibleRows.map(({ listing, laidOutSpans, laneCount, height, offset }) => {
+            const blockedDates = new Set(listing.blockedDates || []);
+            const location = [listing.district, listing.city].filter(Boolean).join(", ") || listing.country;
+            return (
             <div
               key={listing.id}
-              className="grid border-b border-zinc-200 last:border-b-0 dark:border-zinc-700"
-              style={{ ...gridStyle, gridTemplateRows: `repeat(${laneCount}, 30px)` }}
+              className="absolute left-0 grid border-b border-[#e9eaed] bg-white dark:border-zinc-800 dark:bg-zinc-900"
+              style={{ ...gridStyle, top: offset, height, gridTemplateRows: `repeat(${laneCount}, minmax(30px, 1fr))` }}
             >
               <div
-                className="sticky left-0 z-10 row-span-full flex items-center border-r border-zinc-200 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900"
+                className="sticky left-0 z-20 row-span-full flex items-center border-r border-[#dedfe3] bg-white px-3 dark:border-zinc-700 dark:bg-zinc-900"
                 style={{ gridColumn: 1, gridRow: `1 / span ${laneCount}` }}
               >
-                <div className="relative size-11 shrink-0 overflow-hidden rounded-md bg-zinc-100">
+                <div className="size-9 shrink-0 overflow-hidden rounded-lg bg-zinc-100">
                   <PropertyPhoto listing={listing} className="size-full object-cover" />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-1 pt-3">
-                    <p className="truncate text-[8px] font-medium text-white" title={listing.title}>{listing.title || "Property"}</p>
-                  </div>
                 </div>
-                <p className="ml-2 truncate text-xs font-medium text-zinc-800 dark:text-zinc-100" title={listing.title}>{listing.title || "Property"}</p>
+                <span className="ml-2 min-w-0">
+                  <span className="block truncate text-xs font-semibold text-[#282c32] dark:text-zinc-100" title={listing.title || "Property"}>{listing.title || "Property"}</span>
+                  {location && <span className="mt-0.5 block truncate text-[10px] text-[#7c818a]" title={location}>{location}</span>}
+                </span>
               </div>
               {dateKeys.map((key, index) => (
                 <button
                   key={key}
                   type="button"
-                  aria-label={`${listing.title || "Property"}, ${key}`}
+                  aria-label={`${listing.title || "Property"}, ${key}${blockedDates.has(key) ? ", blocked" : ", available"}`}
                   onClick={() => onOpenPropertyDate(listing.id, key)}
-                  className="row-span-full border-r border-zinc-100 bg-white transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  className={`row-span-full border-r border-[#f0f0f2] transition-colors hover:bg-[#edf7ff] dark:border-zinc-800 dark:hover:bg-zinc-800 ${blockedDates.has(key) ? "bg-[#eceef1]" : index % 7 === 0 || index % 7 === 6 ? "bg-[#fcfcfd]" : "bg-white dark:bg-zinc-900"}`}
                   style={{ gridColumn: index + 2, gridRow: `1 / span ${laneCount}` }}
                 />
               ))}
@@ -1011,16 +1313,18 @@ function MultiPropertyCalendar({
                     type="button"
                     onClick={() => onSelectReservation(span.booking)}
                     title={`${span.booking.guestName} · ${formatBookingDateRange(span.start, span.end)}`}
-                    className={`z-[1] mx-px flex min-w-0 items-center truncate bg-[#1F1F1F] px-2 text-left text-xs font-medium text-white transition-colors hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-400 ${span.continuesBefore ? "rounded-l-none" : "rounded-l-md"} ${span.continuesAfter ? "rounded-r-none" : "rounded-r-md"}`}
+                    className={`z-[1] mx-0.5 my-1 flex h-7 min-w-0 self-center items-center overflow-hidden border px-2 text-left text-xs font-semibold shadow-sm transition-transform hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#2383e2] ${timelineBookingBarTone(span.booking)} ${span.continuesBefore ? "rounded-l-none border-l-0" : "rounded-l-full"} ${span.continuesAfter ? "rounded-r-none border-r-0" : "rounded-r-full"}`}
                     style={{ gridColumn: `${startIndex + 2} / span ${endIndex - startIndex}`, gridRow: span.lane + 1 }}
                   >
-                    <span className="truncate">{span.booking.guestName}</span>
+                    {!span.continuesBefore && <span className="mr-1.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-white/90 text-[8px] font-bold shadow-sm">{guestInitials(span.booking.guestName)}</span>}
+                    <span className="truncate">{span.continuesBefore ? "Continues" : span.booking.guestName}</span>
                   </button>
                 );
               })}
             </div>
           );
-        })}
+          })}
+        </div>
       </div>
     </div>
   );
@@ -2186,52 +2490,53 @@ function AllListingsOverviewPanel({
   ).length;
 
   return (
-    <div className="space-y-6 text-[#1F1F1F] dark:text-zinc-100">
+    <div className="space-y-4 text-[#1F1F1F] dark:text-zinc-100">
       <div>
-        <h2 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">
+        <h2 className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">
           {t("host_calendar_portfolio_overview", "Portfolio Overview")}
         </h2>
-        <p className="mt-1 text-xs text-[#727272]">
+        <p className="mt-0.5 text-[11px] leading-4 text-[#727272]">
           {t("host_calendar_portfolio_desc", "Manage and monitor all your properties in one place.")}
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/80 p-3.5 border border-white dark:border-zinc-700">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-[#727272]">
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-xl border border-[#e8e9ec] bg-[#f7f8fa] p-2.5 dark:border-zinc-700 dark:bg-zinc-800/80">
+          <p className="text-[9px] font-semibold uppercase tracking-wider text-[#727272]">
             {t("host_calendar_listings_stat", "Listings")}
           </p>
-          <p className="mt-1 text-2xl font-medium">{listings.length}</p>
+          <p className="mt-0.5 text-xl font-semibold">{listings.length}</p>
         </div>
-        <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/80 p-3.5 border border-white dark:border-zinc-700">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-[#727272]">
+        <div className="rounded-xl border border-[#e8e9ec] bg-[#f7f8fa] p-2.5 dark:border-zinc-700 dark:bg-zinc-800/80">
+          <p className="text-[9px] font-semibold uppercase tracking-wider text-[#727272]">
             {t("host_calendar_active_stays_stat", "Active Stays")}
           </p>
-          <p className="mt-1 text-2xl font-medium">{activeBookingsCount}</p>
+          <p className="mt-0.5 text-xl font-semibold">{activeBookingsCount}</p>
         </div>
       </div>
 
-      <div className="space-y-2.5">
-        <p className="text-sm font-medium text-[#727272]">
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-[#555b64]">
           {t("host_calendar_select_property_edit", "Select property to edit rates:")}
         </p>
-        <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
+        <div className="space-y-1.5 max-h-[min(52vh,420px)] overflow-y-auto pr-1 calendar-panel-scrollbar">
           {listings.map((l) => (
             <button
               key={l.id}
               type="button"
               onClick={() => onSelectListing(l.id)}
-              className="flex w-full items-center gap-3 rounded-xl border border-[#d7d7d7] dark:border-zinc-700 p-2.5 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer"
+              title={l.title}
+              className="flex w-full items-center gap-2 rounded-lg border border-[#e5e6e9] p-2 text-left transition-colors hover:border-[#c9c4ed] hover:bg-[#faf9ff] dark:border-zinc-700 dark:hover:bg-zinc-800 cursor-pointer"
             >
               <PropertyPhoto
                 listing={l}
-                className="size-12 shrink-0 rounded-lg object-cover"
+                className="size-9 shrink-0 rounded-md object-cover"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-medium text-[#1F1F1F] dark:text-zinc-100">
+                <p className="truncate text-[11px] font-semibold text-[#1F1F1F] dark:text-zinc-100">
                   {l.title}
                 </p>
-                <p className="truncate text-xs text-[#727272]">
+                <p className="truncate text-[10px] text-[#727272]">
                   {[l.district, l.city].filter(Boolean).join(", ") || l.country}
                 </p>
               </div>
@@ -2293,6 +2598,8 @@ export function HostCalendarWorkspace({
   }, [initialMonth, searchParams]);
 
   const [month, setMonth] = useState<Date>(defaultMonth);
+  const [calendarNavigationKey, setCalendarNavigationKey] = useState(0);
+  const calendarScrollRef = useRef<HTMLDivElement>(null);
 
   // Initialize view from initialView / searchParams or default to "month"
   const defaultView = useMemo<"month" | "year">(() => {
@@ -2372,6 +2679,13 @@ export function HostCalendarWorkspace({
       null
     );
   }, [isAllListings, selectedId, savedListings, listings]);
+
+  const selectedBookingListing = useMemo(
+    () => selectedBooking
+      ? listings.find((listing) => listing.id === selectedBooking.listingId) || null
+      : null,
+    [listings, selectedBooking],
+  );
 
   const sourceCurrency = selectedListing
     ? resolvePropertyCurrency(selectedListing)
@@ -2454,6 +2768,7 @@ export function HostCalendarWorkspace({
   const handleSelectMonth = useCallback(
     (newMonth: Date) => {
       setMonth(newMonth);
+      setCalendarNavigationKey((key) => key + 1);
       setSelection({ start: null, end: null, isDragging: false });
       setPreviewPrice(null);
       syncUrl(selectedId, newMonth, view);
@@ -2497,6 +2812,7 @@ export function HostCalendarWorkspace({
   const handlePrev = useCallback(() => {
     setSelection({ start: null, end: null, isDragging: false });
     setPreviewPrice(null);
+    setCalendarNavigationKey((key) => key + 1);
     if (view === "year") {
       setMonth(
         (prev) => new Date(prev.getFullYear() - 1, prev.getMonth(), 1),
@@ -2516,6 +2832,7 @@ export function HostCalendarWorkspace({
   const handleNext = useCallback(() => {
     setSelection({ start: null, end: null, isDragging: false });
     setPreviewPrice(null);
+    setCalendarNavigationKey((key) => key + 1);
     if (view === "year") {
       const next = new Date(month.getFullYear() + 1, month.getMonth(), 1);
       setMonth(next);
@@ -2530,11 +2847,24 @@ export function HostCalendarWorkspace({
   const handleToday = useCallback(() => {
     setSelection({ start: null, end: null, isDragging: false });
     setPreviewPrice(null);
+    setCalendarNavigationKey((key) => key + 1);
     const now = new Date();
     const todayMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     setMonth(todayMonth);
     syncUrl(selectedId, todayMonth, view);
   }, [selectedId, view, syncUrl]);
+
+  // Scrolling changes the toolbar context and URL, but intentionally does not
+  // trigger navigation or reset a selected range. This separation prevents the
+  // common scroll-to-month feedback loop.
+  const handleVisibleMonthChange = useCallback(
+    (visibleMonth: Date) => {
+      if (formatMonthKey(visibleMonth) === formatMonthKey(month)) return;
+      setMonth(visibleMonth);
+      syncUrl(selectedId, visibleMonth, view);
+    },
+    [month, selectedId, syncUrl, view],
+  );
 
   // Precompute O(1) lookups for active bookings, blocked dates, custom prices
   const { bookingsByDate, bookingRanges } = useMemo(() => {
@@ -3116,7 +3446,7 @@ export function HostCalendarWorkspace({
         </div>
 
         {/* Top Control Bar: Month Selector, Prev/Next, Today, Price Tips, View Switcher */}
-        <div className="relative hidden flex-wrap items-center justify-between gap-4 pb-5 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[#d8d8d8] sm:flex sm:pl-[120px] sm:after:left-[129px] dark:after:bg-zinc-700">
+        <div className="sticky top-0 z-30 relative hidden flex-wrap items-center justify-between gap-4 bg-white/95 pb-5 pt-2 backdrop-blur after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[#d8d8d8] sm:flex sm:pl-[120px] sm:after:left-[129px] dark:bg-zinc-950/95 dark:after:bg-zinc-700">
           {/* Left: Month Navigation Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Month/Year Title & Dropdown Trigger */}
@@ -3261,7 +3591,20 @@ export function HostCalendarWorkspace({
             </button>
 
             {/* Calendar view dropdown — preserves the existing Month/Year behavior. */}
-            <div ref={viewDropdownRef} className="relative">
+            <div className="hidden overflow-hidden rounded-full bg-[#f2f3f5] p-1 lg:flex">
+              {(["month", "year"] as const).map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => handleSelectView(option)}
+                  aria-pressed={view === option}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${view === option ? "bg-[#20262d] text-white shadow-sm" : "text-[#4e535b] hover:text-[#202124]"}`}
+                >
+                  {option === "month" ? t("host_calendar_view_month", "Month") : t("host_calendar_view_year", "Year")}
+                </button>
+              ))}
+            </div>
+            <div ref={viewDropdownRef} className="relative lg:hidden">
               <button
                 type="button"
                 onClick={() => {
@@ -3333,7 +3676,7 @@ export function HostCalendarWorkspace({
         </div>
 
         {/* 3-Column Layout: Left Rail | Center Calendar Matrix | Right Settings */}
-        <div className="hidden items-start gap-6 sm:flex lg:h-[970px]">
+        <div className={`mt-4 hidden items-start gap-6 sm:flex ${isAllListings ? "lg:h-[calc(100dvh-226px)] lg:min-h-[420px]" : "lg:h-[970px]"}`}>
           {/* 1. Left Rail: Property Switcher (Desktop & Tablet) */}
           <aside
             aria-label="Property selection"
@@ -3426,7 +3769,7 @@ export function HostCalendarWorkspace({
           </aside>
 
           {/* 2. Center Calendar Matrix */}
-          <div className="relative min-w-0 flex-1 border-b border-[#d7d7d7] pb-4 lg:h-full lg:overflow-y-auto lg:pr-4 calendar-panel-scrollbar dark:border-zinc-700">
+          <div ref={calendarScrollRef} className={`relative min-w-0 flex-1 border-b border-[#d7d7d7] lg:h-full lg:pr-4 dark:border-zinc-700 ${isAllListings ? "overflow-hidden pb-0" : "overflow-y-auto pb-4 calendar-panel-scrollbar"}`}>
             {isAllListings ? (
               <MultiPropertyCalendar
                 month={month}
@@ -3441,8 +3784,11 @@ export function HostCalendarWorkspace({
                 }}
               />
             ) : view === "month" ? (
-              <MonthGrid
-                month={month}
+              <ContinuousMonthCalendar
+                activeMonth={month}
+                navigationKey={calendarNavigationKey}
+                scrollRootRef={calendarScrollRef}
+                onVisibleMonthChange={handleVisibleMonthChange}
                 listing={selectedListing}
                 bookingsByDate={bookingsByDate}
                 bookingRanges={bookingRanges}
@@ -3452,7 +3798,6 @@ export function HostCalendarWorkspace({
                 focusedDateKey={focusedDateKey}
                 isAllListings={isAllListings}
                 listingsCount={listings.length}
-                compact={false}
                 onDayClick={handleDayClick}
                 onDayPointerDown={handleDayPointerDown}
                 onDayPointerEnter={handleDayPointerEnter}
@@ -3500,7 +3845,7 @@ export function HostCalendarWorkspace({
           {/* 3. Right Settings / Contextual Management Panel (Desktop Sidebar) */}
           <aside
             aria-label={t("host_calendar_settings_title", "Calendar Settings")}
-            className="hidden h-full w-[300px] shrink-0 overflow-y-auto border-l border-l-[#eeeeee] px-5 py-5 font-['Poppins'] lg:block xl:w-[338px] calendar-panel-scrollbar dark:border-zinc-800 dark:border-l-zinc-800"
+            className={`hidden h-full shrink-0 overflow-y-auto border-l border-l-[#eeeeee] font-['Poppins'] lg:block calendar-panel-scrollbar dark:border-zinc-800 dark:border-l-zinc-800 ${isAllListings ? "w-[250px] px-4 py-4 xl:w-[270px]" : "w-[300px] px-5 py-5 xl:w-[338px]"}`}
           >
             {isAllListings ? (
               <AllListingsOverviewPanel
@@ -3858,13 +4203,10 @@ export function HostCalendarWorkspace({
 
         {/* Reservation Details Modal */}
         {
-          selectedBooking && selectedListing && (
+          selectedBooking && selectedBookingListing && (
             <ReservationDetails
               booking={selectedBooking}
-              listing={
-                listings.find((l) => l.id === selectedBooking.listingId) ||
-                selectedListing
-              }
+              listing={selectedBookingListing}
               onClose={() => setSelectedBooking(null)}
               onMoney={() => setShowMoney(true)}
             />

@@ -4,7 +4,7 @@ import { ok } from "@/lib/api/response";
 import { requireApiRole } from "@/lib/permissions/guards";
 import { Role } from "@/generated/prisma/enums";
 import { hostEarningsAnalyticsService } from "@/services/host-earnings-analytics.service";
-import { parseInsightsReportingFilters } from "@/lib/dashboard/insights-query";
+import { normalizeAnalyticsReportingFilters, parseInsightsReportingFilters } from "@/lib/dashboard/insights-query";
 import { AppError } from "@/lib/api/errors";
 import { requireHostDashboardFeature } from "@/lib/entitlements/host-dashboard";
 
@@ -13,8 +13,13 @@ export const dynamic = "force-dynamic";
 export const GET = apiHandler(async (req: NextRequest) => {
   const actor = await requireApiRole(req, [Role.HOST, Role.ADMIN]);
   await requireHostDashboardFeature(actor, "ADVANCED_EARNINGS");
-  const filters = parseInsightsReportingFilters(new URL(req.url));
   const url = new URL(req.url);
+  const normalizedPeriod = normalizeAnalyticsReportingFilters(url.searchParams);
+  const normalizedUrl = new URL(url);
+  if (normalizedPeriod.period) normalizedUrl.searchParams.set("period", normalizedPeriod.period);
+  if (normalizedPeriod.startDate) normalizedUrl.searchParams.set("startDate", normalizedPeriod.startDate);
+  if (normalizedPeriod.endDate) normalizedUrl.searchParams.set("endDate", normalizedPeriod.endDate);
+  const filters = parseInsightsReportingFilters(normalizedUrl);
   const comparisonStartDate = url.searchParams.get("comparisonStartDate") || undefined;
   const comparisonEndDate = url.searchParams.get("comparisonEndDate") || undefined;
   const validDate = (value: string | undefined) => {

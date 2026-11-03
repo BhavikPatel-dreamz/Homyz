@@ -10,11 +10,15 @@ const SALT = "homyz-payout-encryption-salt-v1";
 const ALGORITHM = "aes-256-gcm";
 
 function getDerivedKey(): Buffer {
-  const secret =
-    process.env.PAYOUT_ENCRYPTION_KEY ||
-    process.env.NEXTAUTH_SECRET ||
-    process.env.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY ||
-    "homyz-dev-fallback-payout-encryption-secret-key";
+  // A dedicated key is preferred. The established NEXTAUTH fallback remains
+  // solely for compatibility with existing encrypted rows until a separately
+  // approved key-rotation migration has re-encrypted them.
+  const secret = process.env.PAYOUT_ENCRYPTION_KEY?.trim()
+    || process.env.NEXTAUTH_SECRET?.trim()
+    || process.env.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY?.trim();
+  if (!secret) {
+    throw new Error("PAYOUT_ENCRYPTION_KEY (or an existing server encryption secret) is required.");
+  }
 
   return crypto.scryptSync(secret, SALT, 32);
 }
@@ -96,5 +100,4 @@ export function maskEmail(email: string): string {
   }
   return `${username[0]}***${username[username.length - 1]}@${domain}`;
 }
-
 

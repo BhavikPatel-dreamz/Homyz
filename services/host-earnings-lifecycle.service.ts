@@ -84,6 +84,8 @@ export function evaluateBookingEarnings(
     status: string;
     startDate: Date;
     endDate: Date;
+    checkOutTime?: string | null;
+    propertyTimeZone?: string | null;
     totalPrice?: number | null;
     currency?: string;
     priceBreakdown?: unknown;
@@ -165,7 +167,8 @@ export function evaluateBookingEarnings(
     dbStatus: booking.status,
     startDate: booking.startDate,
     endDate: booking.endDate,
-    checkOutTime: booking.listing?.checkOutTime,
+    checkOutTime: booking.checkOutTime,
+    propertyTimeZone: booking.propertyTimeZone,
     now,
   });
 

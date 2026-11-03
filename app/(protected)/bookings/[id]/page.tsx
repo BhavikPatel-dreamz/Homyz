@@ -6,6 +6,9 @@ import { BookingDetailsClient } from "@/components/bookings/booking-details-clie
 import { toReservationCardData } from "@/lib/profile/reservation-data";
 import { BookingDetailsActions } from "@/components/bookings/booking-details-actions";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata({
   params,
 }: {

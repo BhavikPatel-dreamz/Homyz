@@ -22,6 +22,62 @@ export type SearchAnalyticsEvent = {
   metadata?: Record<string, unknown> | null;
 };
 
+export type StoredUserSearch = {
+  query: string;
+  displayName: string;
+  placeType: string;
+  city: string | null;
+  country: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  checkIn: string | null;
+  checkOut: string | null;
+  guests: number;
+  savedAt: string;
+  /** Bounded count of meaningful submitted searches for this destination. */
+  searchCount?: number;
+  /** Used only for user-scoped affinity ranking; never exposed publicly. */
+  lastSearchedAt?: string;
+};
+
+type UserSearchInput = {
+  query?: string | null;
+  destination?: string | null;
+  displayName?: string | null;
+  destinationType?: string | null;
+  placeType?: string | null;
+  city?: string | null;
+  country?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  checkIn?: string | null;
+  checkOut?: string | null;
+  guestCount?: number | null;
+  guests?: number | null;
+};
+
+const INTEREST_HALF_LIFE_MS = 14 * 24 * 60 * 60 * 1000;
+const MAX_DESTINATION_SEARCH_COUNT = 25;
+const DUPLICATE_EVENT_WINDOW_MS = 3_000;
+
+/**
+ * Frequency has diminishing returns and naturally fades as a destination gets
+ * stale. Keeping this pure makes the ranking safe to reuse in a durable store
+ * later without changing the homepage contract.
+ */
+export function calculateSearchInterestScore(
+  search: Pick<StoredUserSearch, "searchCount" | "lastSearchedAt" | "savedAt">,
+  now = Date.now(),
+): number {
+  const count = Math.max(1, Math.min(MAX_DESTINATION_SEARCH_COUNT, search.searchCount ?? 1));
+  const lastSeen = Date.parse(search.lastSearchedAt || search.savedAt);
+  const age = Number.isFinite(lastSeen) ? Math.max(0, now - lastSeen) : INTEREST_HALF_LIFE_MS;
+  const recency = Math.exp((-Math.LN2 * age) / INTEREST_HALF_LIFE_MS);
+  return Math.log2(count + 1) * recency;
+}
+
 export async function trackHomepageSearchEvent(
   event: SearchAnalyticsEvent,
 ): Promise<void> {
@@ -59,16 +115,16 @@ export async function trackHomepageSearchEvent(
 const USER_SEARCHES_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
 const globalForUserSearches = globalThis as unknown as {
-  __homyzUserRecentSearches?: Map<string, { data: any[]; expiresAt: number }>;
+  __homyzUserRecentSearches?: Map<string, { data: StoredUserSearch[]; expiresAt: number }>;
 };
 
 const userSearchesMemory = (globalForUserSearches.__homyzUserRecentSearches ??= new Map());
 
-export async function getUserRecentSearches(userId: string): Promise<any[]> {
+export async function getUserRecentSearches(userId: string): Promise<StoredUserSearch[]> {
   if (!userId) return [];
   try {
     const key = CACHE_KEYS.USER_RECENT_SEARCHES(userId);
-    const cached = await getCache<any[]>(key);
+    const cached = await getCache<StoredUserSearch[]>(key);
     if (Array.isArray(cached) && cached.length > 0) {
       return cached.slice(0, 4);
     }
@@ -82,9 +138,23 @@ export async function getUserRecentSearches(userId: string): Promise<any[]> {
   return [];
 }
 
+/**
+ * Returns the active destination affinity for a signed-in user. It uses only
+ * their own submitted search records, is bounded to the existing 30-day
+ * retention window, and intentionally does not inspect other users' data.
+ */
+export async function getUserPrimarySearchInterest(userId: string): Promise<StoredUserSearch | null> {
+  const searches = await getUserRecentSearches(userId);
+  if (!searches.length) return null;
+
+  return searches
+    .map((search, index) => ({ search, index, score: calculateSearchInterestScore(search) }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)[0]?.search ?? null;
+}
+
 export async function saveUserRecentSearch(
   userId: string,
-  search: Record<string, any>,
+  search: UserSearchInput,
 ): Promise<void> {
   if (!userId || !search) return;
   const locKey = (search.city || search.displayName || search.destination || search.query || "").trim().toLowerCase();
@@ -92,8 +162,17 @@ export async function saveUserRecentSearch(
 
   try {
     const existing = await getUserRecentSearches(userId);
+    const existingMatch = existing.find((s) => {
+      const k = (s.city || s.displayName || s.query || "").trim().toLowerCase();
+      return locKey === k || Boolean(search.city && s.city && search.city.trim().toLowerCase() === s.city.trim().toLowerCase());
+    });
+    const now = new Date();
+    const previousTimestamp = Date.parse(existingMatch?.lastSearchedAt || existingMatch?.savedAt || "");
+    const isDuplicateDelivery = Number.isFinite(previousTimestamp) && now.getTime() - previousTimestamp < DUPLICATE_EVENT_WINDOW_MS;
+    const previousCount = Math.max(1, Number(existingMatch?.searchCount) || 1);
+
     const filtered = existing.filter((s) => {
-      const k = (s.city || s.displayName || s.destination || s.query || "").trim().toLowerCase();
+      const k = (s.city || s.displayName || s.query || "").trim().toLowerCase();
       if (locKey === k) return false;
       if (search.city && s.city && search.city.trim().toLowerCase() === s.city.trim().toLowerCase()) return false;
       if (search.query && s.query && search.query.trim().toLowerCase() === s.query.trim().toLowerCase()) return false;
@@ -112,7 +191,14 @@ export async function saveUserRecentSearch(
         checkIn: search.checkIn || null,
         checkOut: search.checkOut || null,
         guests: typeof search.guestCount === "number" ? search.guestCount : search.guests ?? 1,
-        savedAt: new Date().toISOString(),
+        savedAt: now.toISOString(),
+        searchCount: Math.min(
+          MAX_DESTINATION_SEARCH_COUNT,
+          previousCount + (existingMatch && !isDuplicateDelivery ? 1 : 0),
+        ),
+        lastSearchedAt: isDuplicateDelivery
+          ? (existingMatch?.lastSearchedAt || existingMatch?.savedAt || now.toISOString())
+          : now.toISOString(),
       },
       ...filtered,
     ].slice(0, 4);
@@ -127,4 +213,3 @@ export async function saveUserRecentSearch(
     console.error("Failed to save user recent search to Redis:", error);
   }
 }
-

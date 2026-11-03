@@ -26,6 +26,9 @@ const ROUTE_NAV_KEY: Array<{ prefix: string; key: string; exact?: boolean }> = [
   { prefix: "/admin/bookings/payments",      key: "payments" },
   { prefix: "/admin/bookings/payouts",       key: "payouts" },
   // Support & Operations
+  { prefix: "/admin/support/notifications",  key: "support-notifications" },
+  { prefix: "/admin/support/analytics",      key: "support-analytics" },
+  { prefix: "/admin/support",                key: "support-cases" },
   { prefix: "/admin/bookings/disputes",      key: "disputes" },
   { prefix: "/admin/bookings/communications",key: "communications" },
   { prefix: "/admin/bookings/notifications", key: "notifications" },
@@ -349,6 +352,37 @@ export function AdminSidebar({
     {
       name: "SUPPORT & OPERATIONS",
       items: [
+         {
+          key: "support-cases",
+          label: "Support Cases",
+          href: "/admin/support",
+          requiredPermission: PERMISSIONS.DISPUTES_VIEW,
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 12.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          ),
+        },
+        // {
+        //   key: "support-notifications",
+        //   label: "Notification Delivery",
+        //   href: "/admin/support/notifications",
+        //   requiredPermission: PERMISSIONS.NOTIFICATIONS_VIEW,
+        //   icon: (
+        //     <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        //       <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        //     </svg>
+        //   ),
+        // },
+        {
+          key: "support-analytics",
+          label: "Support Analytics",
+          href: "/admin/support/analytics",
+          requiredPermission: PERMISSIONS.DISPUTES_VIEW,
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 19V5m0 14h16M8 16v-5m4 5V8m4 8v-3" /></svg>
+          ),
+        },
         {
           key: "disputes",
           label: "Disputes",

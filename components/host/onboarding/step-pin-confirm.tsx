@@ -60,10 +60,10 @@ export function StepPinConfirm({
           <div className="max-w-187.5 mx-auto w-full flex flex-col items-start my-auto">
             {/* Title & Subtitle */}
             <h1 className="mb-2">
-              {t("host_pin_confirm_title")}
+              {t("host_pin_confirm_title", "Is the pin in the right spot?")}
             </h1>
             <p className="sm:mb-6 mb-4">
-              {t("host_pin_confirm_desc")}
+              {t("host_pin_confirm_desc", "Your address is only shared with guests after they’ve made a reservation.")}
             </p>
 
             {/* Address Summary Bar with Edit button */}
@@ -130,7 +130,7 @@ export function StepPinConfirm({
             <div className="w-full mb-6">
               <div className="flex items-center justify-between gap-4 mb-2">
                 <h3 className="text-lg font-medium text-[#1F1F1F]">
-                  {t("host_show_specific_location")}
+                  {t("host_show_specific_location", "Show your specific location")}
                 </h3>
                 <button
                   type="button"

@@ -132,7 +132,7 @@ AWS later: **Amazon RDS PostgreSQL** in a private subnet. Same steps.
 4. SSL required.
 5. Create database `homyz` and a user. Save the URL:
    ```text
-   postgresql://USER:PASSWORD@HOST:5432/homyz?sslmode=require
+   postgresql://USER:PASSWORD@HOST:5432/homyz?sslmode=verify-full
    ```
 
 ### Cut over
@@ -143,7 +143,7 @@ On a laptop that can reach **both** Neon and RDS (or from the ECS if Neon is all
 # 1. Freeze writes if you already have production data (maintenance window).
 
 # 2. Empty RDS: apply Prisma migrations (no prisma migrate dev / reset).
-DATABASE_URL='postgresql://USER:PASSWORD@RDS_HOST:5432/homyz?sslmode=require' \
+DATABASE_URL='postgresql://USER:PASSWORD@RDS_HOST:5432/homyz?sslmode=verify-full' \
   npx prisma migrate deploy
 
 # 3. Copy data from Neon → RDS (example).
@@ -188,7 +188,7 @@ PM2/VPS deploy is skipped while `ENABLE_ECS_DEPLOY=true`. Docker→ECR is AWS-sp
 
 Copy `.env.example` → `/opt/homyz/.env`. Production:
 
-- `DATABASE_URL` — Neon now; RDS in Phase 3 (`sslmode=require`)
+- `DATABASE_URL` — Neon now; RDS in Phase 3 (`sslmode=verify-full`)
 - `NEXTAUTH_SECRET`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`
 - `APP_URL` / `NEXTAUTH_URL` — public `https://` hostname on the **load balancer**
 - `MEDIA_SERVER_SECRET` — required; Compose points the app at `http://media:4001`

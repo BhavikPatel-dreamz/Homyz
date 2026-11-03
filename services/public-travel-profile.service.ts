@@ -38,8 +38,16 @@ async function getPublicTravelProfile(
   const ownerId = profile.userId;
   const access = await canViewTravelProfile(viewerId, ownerId);
   const [completedStays, profileLikes, photoLikes, tripLikes, reviews, destinationStats, followCounts] = await Promise.all([
-    prisma.booking.findMany({ where: { userId: ownerId, status: "CONFIRMED" }, select: { status: true, startDate: true, endDate: true } })
-      .then((bookings) => bookings.filter((booking) => isCompletedConfirmedBooking({ dbStatus: booking.status, startDate: booking.startDate, endDate: booking.endDate })).length),
+    prisma.booking.findMany({
+      where: { userId: ownerId, status: "CONFIRMED" },
+      select: { status: true, startDate: true, endDate: true, propertyTimeZone: true, checkOutTime: true },
+    }).then((bookings) => bookings.filter((booking) => isCompletedConfirmedBooking({
+      dbStatus: booking.status,
+      startDate: booking.startDate,
+      endDate: booking.endDate,
+      checkOutTime: booking.checkOutTime,
+      propertyTimeZone: booking.propertyTimeZone,
+    })).length),
     prisma.profileLike.count({ where: { targetUserId: ownerId } }),
     prisma.travelPhotoLike.count({ where: { photo: { is: { userId: ownerId } } } }),
     prisma.travelTripLike.count({ where: { trip: { is: { userId: ownerId } } } }),
@@ -113,7 +121,7 @@ async function getPublicTravelProfile(
   for (const highlight of highlights) if (highlight.photoCount === 0 && !safeHighlightMap.has(highlight.country.toLowerCase())) safeHighlightMap.set(highlight.country.toLowerCase(), highlight);
 
   const safeHighlights = [...safeHighlightMap.values()];
-  const publicStamps: PublicTravelStampDTO[] = stamps.map((stamp) => ({ id: stamp.id, slug: stamp.stamp.slug, displayName: stamp.stamp.displayName, description: stamp.stamp.description, iconUrl: stamp.stamp.iconUrl, category: stamp.stamp.category, awardedAt: stamp.awardedAt, isPinned: stamp.isPinned, isPublic: stamp.isPublic, isManual: stamp.isManual }));
+  const publicStamps: PublicTravelStampDTO[] = stamps.map((stamp) => ({ id: stamp.id, slug: stamp.stamp.slug, displayName: stamp.stamp.displayName, description: stamp.stamp.description, iconUrl: stamp.stamp.iconUrl, category: stamp.stamp.category, awardedAt: stamp.awardedAt, isPinned: stamp.isPinned, isPublic: stamp.isPublic, isManual: stamp.isManual, isSystemAwarded: stamp.isSystemAwarded }));
   return { ...shell, bio: profile.bio, homeLocation: profile.homeLocation, coverUrl: profile.coverUrl, showStamps: profile.showStamps, canViewContent: true, restrictionReason: null, photos, highlights: safeHighlights, stamps: publicStamps };
 }
 

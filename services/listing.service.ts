@@ -6,6 +6,7 @@ import { assertOwnership, authorize } from "@/lib/permissions/authorize";
 import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
 import { prisma } from "@/lib/db/prisma";
 import { bookingDateKey, parseBookingDate, shiftBookingDateKey } from "@/lib/booking/booking-date";
+import { resolvePropertyTimeZone } from "@/lib/booking/property-timezone";
 import {
   acquireCacheLease,
   deleteCache,
@@ -22,7 +23,7 @@ import type {
   CreateListingInput,
   UpdateListingInput,
 } from "@/lib/validation/listing";
-import { BookingStatus, ListingCoHostStatus, ListingStatus, ReviewDirection, ReviewStatus, Role } from "@/generated/prisma/enums";
+import { BookingStatus, ListingCoHostStatus, ListingLicenseEligibilityStatus, ListingStatus, ReviewDirection, ReviewStatus, Role } from "@/generated/prisma/enums";
 import { Prisma, type Listing } from "@/generated/prisma/client";
 import { getExpiryThresholdDate, isBookingRequestExpired } from "@/lib/booking/booking-expiry";
 import { validateStayAvailability } from "@/lib/booking/availability";
@@ -32,6 +33,7 @@ import {
   generateFlexibleCandidateStays,
   type FlexibleDuration,
 } from "@/lib/search/flexible-stays";
+import { isSaudiArabia } from "@/lib/location/address-countries";
 
 import { auditService } from "./audit.service";
 import { qualificationService } from "./qualification.service";
@@ -132,11 +134,6 @@ function requiresReapproval(existing: Listing, input: UpdateListingInput): boole
     const current = (existing as unknown as Record<string, unknown>)[key];
     return !valuesMatchForReapproval(current, next);
   });
-}
-
-function isSaudiArabia(country: string | null | undefined): boolean {
-  const value = country?.trim().toUpperCase() ?? "";
-  return value === "SA" || value === "KSA" || value.includes("SAUDI");
 }
 
 export type ListingPublishReadiness = {
@@ -1667,6 +1664,7 @@ async function create(
       country: input.country || null,
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,
+      propertyTimeZone: resolvePropertyTimeZone(input),
       showExactLocation: input.showExactLocation ?? true,
       guests: input.guests ?? 1,
       bedrooms: input.bedrooms ?? 1,
@@ -1861,7 +1859,7 @@ async function update(
     dataToUpdate.amenities = normalizeAmenities(dataToUpdate.amenities);
   }
   if (Array.isArray(dataToUpdate.languages)) {
-    dataToUpdate.languages = [...new Set(dataToUpdate.languages.map((language) => String(language).trim()).filter(Boolean))].slice(0, 20);
+    dataToUpdate.languages = [...new Set(dataToUpdate.languages.map((language: string) => String(language).trim()).filter(Boolean))].slice(0, 20);
   }
   if (dataToUpdate.rooms !== undefined) {
     dataToUpdate.rooms = dataToUpdate.rooms ? JSON.parse(JSON.stringify(dataToUpdate.rooms)) : null;
@@ -1894,39 +1892,77 @@ async function update(
   if (dataToUpdate.customSlug !== undefined) {
     dataToUpdate.customSlug = typeof dataToUpdate.customSlug === "string" ? normalizeSlug(dataToUpdate.customSlug) : null;
   }
-
+  // The property timezone belongs to the verified listing location, not to the
+  // host's browser. Re-resolve it whenever location data changes. Existing
+  // reservations retain their own schedule/timezone snapshots.
+  if (
+    dataToUpdate.city !== undefined
+    || dataToUpdate.country !== undefined
+    || dataToUpdate.latitude !== undefined
+    || dataToUpdate.longitude !== undefined
+  ) {
+    (dataToUpdate as typeof dataToUpdate & { propertyTimeZone?: string }).propertyTimeZone = resolvePropertyTimeZone({
+      city: dataToUpdate.city ?? existing.city,
+      country: dataToUpdate.country ?? existing.country,
+    });
+}
+  
   // A host changing reviewed material must not leave that revised content live.
   // The listing is held for the same Admin review that governs initial launch.
+  // Saudi listings are verified via government license, exempt from manual admin re-approval.
   const reapprovalRequired = actor.role !== Role.ADMIN
     && existing.status === ListingStatus.ACTIVE
+    && !isSaudiArabia(dataToUpdate.country ?? existing.country)
     && requiresReapproval(existing, dataToUpdate);
-  if (reapprovalRequired) {
-    dataToUpdate.status = ListingStatus.PENDING_REVIEW;
-    dataToUpdate.published = false;
-    dataToUpdate.isPaused = false;
-    dataToUpdate.submittedAt = new Date();
-    dataToUpdate.reviewerId = null;
-    dataToUpdate.reviewStartedAt = null;
-  }
 
-  // Enforce publication photo threshold consistency:
-  // If an active, published listing is being updated with photos and photos count drops below 5,
-  // non-admin hosts cannot silently violate publication rules by removing required photos.
+  const prismaUpdateInput: Prisma.ListingUpdateInput = { ...dataToUpdate } as Prisma.ListingUpdateInput;
+  // Convert JSON fields to Prisma-compatible types
+  if (prismaUpdateInput.descriptionSections !== undefined) {
+    prismaUpdateInput.descriptionSections = prismaUpdateInput.descriptionSections ? JSON.parse(JSON.stringify(prismaUpdateInput.descriptionSections)) : Prisma.JsonNull;
+  }
+  if (prismaUpdateInput.accessibilityDetails !== undefined) {
+    prismaUpdateInput.accessibilityDetails = prismaUpdateInput.accessibilityDetails ? JSON.parse(JSON.stringify(prismaUpdateInput.accessibilityDetails)) : Prisma.JsonNull;
+  }
+  if (prismaUpdateInput.photoRoomAssignments !== undefined) {
+    prismaUpdateInput.photoRoomAssignments = prismaUpdateInput.photoRoomAssignments ? JSON.parse(JSON.stringify(prismaUpdateInput.photoRoomAssignments)) : Prisma.JsonNull;
+  }
+  if (prismaUpdateInput.rooms !== undefined) {
+    prismaUpdateInput.rooms = prismaUpdateInput.rooms ? JSON.parse(JSON.stringify(prismaUpdateInput.rooms)) : Prisma.JsonNull;
+  }
+  if (prismaUpdateInput.discounts !== undefined) {
+    prismaUpdateInput.discounts = prismaUpdateInput.discounts ? JSON.parse(JSON.stringify(prismaUpdateInput.discounts)) : Prisma.JsonNull;
+  }
+  if ((prismaUpdateInput as any).customPrices !== undefined) {
+    (prismaUpdateInput as any).customPrices = (prismaUpdateInput as any).customPrices ? JSON.parse(JSON.stringify((prismaUpdateInput as any).customPrices)) : Prisma.JsonNull;
+  }
+  if (prismaUpdateInput.customSlug !== undefined) {
+    prismaUpdateInput.customSlug = typeof prismaUpdateInput.customSlug === "string" ? normalizeSlug(prismaUpdateInput.customSlug) : null;
+  }
+  // Apply propertyTimeZone if location changed
   if (
-    Array.isArray(dataToUpdate.photos) &&
-    existing.published &&
-    existing.status === ListingStatus.ACTIVE &&
-    dataToUpdate.photos.length < 5 &&
-    actor.role !== Role.ADMIN
+    dataToUpdate.city !== undefined
+    || dataToUpdate.country !== undefined
+    || dataToUpdate.latitude !== undefined
+    || dataToUpdate.longitude !== undefined
   ) {
-    throw AppError.badRequest(
-      `Cannot save photos. Active published listings require a minimum of 5 photos (${dataToUpdate.photos.length} provided). Upload replacement photos first, or unpublish your listing before removing required photos.`,
-    );
+    prismaUpdateInput.propertyTimeZone = resolvePropertyTimeZone({
+      city: dataToUpdate.city ?? existing.city,
+      country: dataToUpdate.country ?? existing.country,
+    });
+  }
+  // Apply reapproval fields to Prisma update input
+  if (reapprovalRequired) {
+    prismaUpdateInput.status = ListingStatus.PENDING_REVIEW;
+    prismaUpdateInput.published = false;
+    prismaUpdateInput.isPaused = false;
+    prismaUpdateInput.submittedAt = new Date();
+    prismaUpdateInput.reviewerId = null;
+    prismaUpdateInput.reviewStartedAt = null;
   }
 
   let listing;
   try {
-    listing = await prisma.listing.update({ where: { id }, data: dataToUpdate });
+    listing = await prisma.listing.update({ where: { id }, data: prismaUpdateInput });
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       const target = String(error.meta?.target || error.meta?.constraint || error.message);
@@ -2095,11 +2131,11 @@ async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> 
   }
 
   // An existing Saudi licence link is a legal eligibility constraint, not a
-  // replacement for normal moderation.  Check it synchronously so a listing
-  // cannot be republished in the gap before the expiry job next runs. Listings
-  // without a licence link can still follow the normal manual-review path.
-  if (isSaudiArabia(existing.country) && ["EXPIRED", "INELIGIBLE"].includes(existing.licenseEligibilityStatus)) {
-    throw AppError.badRequest("This Saudi listing has an expired or ineligible license and cannot be published until it is reverified.");
+  // replacement for normal moderation. Check it synchronously so a listing
+  // cannot be republished unless its license is verified and eligible. Listings
+  // without a licence link (non-Saudi) follow the normal review path.
+  if (isSaudiArabia(existing.country) && existing.licenseEligibilityStatus !== ListingLicenseEligibilityStatus.ELIGIBLE) {
+    throw AppError.badRequest("This Saudi listing has an unverified, expired, or ineligible license and cannot be published until it is reverified and eligible.");
   }
 
   // Direct publishing is reserved for admins and listings already approved

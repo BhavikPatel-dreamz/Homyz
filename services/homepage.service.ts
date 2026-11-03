@@ -476,6 +476,77 @@ function createSectionBuilder(seenListingIds: Set<string>, sections: HomepageSec
   };
 }
 
+type NearbyCityGroup = {
+  city: string;
+  country: string | null;
+  distanceKm: number;
+  listings: DiscoveryListing[];
+};
+
+/**
+ * Finds actual neighbouring cities from the current public inventory. A city
+ * needs enough eligible listings and a coordinate-derived centroid; this keeps
+ * labels such as "nearby" geographically honest instead of text-matching
+ * destination names.
+ */
+function findNearbyCityGroups(params: {
+  listings: DiscoveryListing[];
+  anchorCity?: string | null;
+  anchorCountry?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  limit?: number;
+}): NearbyCityGroup[] {
+  const { listings, anchorCity, anchorCountry, latitude, longitude, limit = 2 } = params;
+  const normalizedAnchorCity = anchorCity?.trim().toLowerCase() || "";
+  const normalizedAnchorCountry = anchorCountry?.trim().toLowerCase() || "";
+
+  let originLat = latitude ?? null;
+  let originLng = longitude ?? null;
+  if (originLat == null || originLng == null) {
+    const anchorListings = listings.filter((listing) =>
+      listing.city?.trim().toLowerCase() === normalizedAnchorCity &&
+      listing.latitude != null && listing.longitude != null &&
+      (!normalizedAnchorCountry || listing.country?.trim().toLowerCase() === normalizedAnchorCountry),
+    );
+    if (anchorListings.length) {
+      originLat = anchorListings.reduce((sum, listing) => sum + (listing.latitude as number), 0) / anchorListings.length;
+      originLng = anchorListings.reduce((sum, listing) => sum + (listing.longitude as number), 0) / anchorListings.length;
+    }
+  }
+  if (originLat == null || originLng == null) return [];
+
+  const cityGroups = new Map<string, { city: string; country: string | null; listings: DiscoveryListing[] }>();
+  for (const listing of listings) {
+    const city = listing.city?.trim();
+    if (!city || listing.latitude == null || listing.longitude == null) continue;
+    if (city.toLowerCase() === normalizedAnchorCity) continue;
+    if (normalizedAnchorCountry && listing.country?.trim().toLowerCase() !== normalizedAnchorCountry) continue;
+
+    const key = `${listing.country?.trim().toLowerCase() || ""}:${city.toLowerCase()}`;
+    const group = cityGroups.get(key) ?? { city, country: listing.country || null, listings: [] };
+    group.listings.push(listing);
+    cityGroups.set(key, group);
+  }
+
+  return [...cityGroups.values()]
+    .filter((group) => group.listings.length >= MIN_PROPERTY_CAROUSEL)
+    .map((group) => {
+      const centroidLat = group.listings.reduce((sum, listing) => sum + (listing.latitude as number), 0) / group.listings.length;
+      const centroidLng = group.listings.reduce((sum, listing) => sum + (listing.longitude as number), 0) / group.listings.length;
+      return {
+        ...group,
+        distanceKm: calculateDistance(originLat as number, originLng as number, centroidLat, centroidLng),
+        listings: group.listings.slice().sort((a, b) => calculatePopularityScore(b) - calculatePopularityScore(a)),
+      };
+    })
+    // A different city under 5 km is normally a duplicate administrative label;
+    // 250 km keeps the suggestion within a credible regional journey.
+    .filter((group) => group.distanceKm >= 5 && group.distanceKm <= 250)
+    .sort((a, b) => a.distanceKm - b.distanceKm || b.listings.length - a.listings.length)
+    .slice(0, limit);
+}
+
 async function loadVolatileQualifications(
   listingIds: string[],
   version: number,
@@ -1652,12 +1723,15 @@ async function getRecentSearchSections(params: {
   searches: Array<RecentSearchCandidate>;
   userId?: string;
   currentLocationQuery?: string | null;
+  /** The user's highest-scoring, private search affinity for this request. */
+  primaryLocationQuery?: string | null;
   limit?: number;
 }): Promise<HomepageSection[]> {
-  const { searches = [], userId, currentLocationQuery, limit = 4 } = params;
+  const { searches = [], userId, currentLocationQuery, primaryLocationQuery, limit = 4 } = params;
   if (!searches.length) return [];
 
   const normCurrent = currentLocationQuery?.trim().toLowerCase() || "";
+  const normPrimary = primaryLocationQuery?.trim().toLowerCase() || "";
   const seenLocations = new Set<string>();
   if (normCurrent) {
     seenLocations.add(normCurrent);
@@ -1756,7 +1830,12 @@ async function getRecentSearchSections(params: {
 
     if (matched.length === 0) continue; // Do not render empty carousel rows
 
-    const title = isLandmark ? `Stays near ${s.displayName || locName}` : `Stays in ${locName}`;
+    const isPrimaryInterest = Boolean(normPrimary && normPrimary === locName.toLowerCase());
+    const title = isPrimaryInterest
+      ? `Based on your ${locName} search`
+      : isLandmark
+        ? `Stays near ${s.displayName || locName}`
+        : `Stays in ${locName}`;
     const sp = new URLSearchParams();
     const destParam = s.displayName || s.query;
     if (destParam) sp.set("destination", destParam);
@@ -1783,13 +1862,55 @@ async function getRecentSearchSections(params: {
       subtitle: s.checkIn && s.checkOut ? `Available stays for your dates` : undefined,
       type: "PROPERTY",
       source: "RECOMMENDATION",
-      priority: 105,
+      priority: isPrimaryInterest ? 15 : 105,
       properties,
       items: properties,
       seeAllHref: `/listings?${sp.toString()}`,
       previewImages: matched.slice(0, 3).flatMap((l) => l.photos || []).filter(Boolean),
       totalCount: matched.length,
     });
+
+    // The primary destination can surface a small number of geographically
+    // adjacent city rows. These are calculated from real listing coordinates,
+    // not a hardcoded city map, and only appear when each city has inventory.
+    if (isPrimaryInterest && sections.length < limit) {
+      const nearbyCities = findNearbyCityGroups({
+        listings: allListings,
+        anchorCity: s.city || locName,
+        anchorCountry: s.country,
+        latitude: searchedLat,
+        longitude: searchedLng,
+        limit: Math.min(2, limit - sections.length),
+      });
+
+      for (const nearby of nearbyCities) {
+        const nearbyParams = new URLSearchParams({
+          destination: nearby.city,
+          city: nearby.city,
+        });
+        const properties = nearby.listings.slice(0, 10).map((listing) => {
+          const property = toProperty(listing, { distanceKm: nearby.distanceKm });
+          if (favoriteIds.has(listing.id)) {
+            property.favoriteStatus = true;
+            property.isFavorite = true;
+          }
+          return property;
+        });
+        sections.push({
+          id: `nearby-city-${nearby.city.toLowerCase().replace(/[^a-z0-9]/g, "-")}`,
+          title: `Discover homes in ${nearby.city}`,
+          subtitle: `${Math.round(nearby.distanceKm)} km from ${locName}`,
+          type: "LOCATION",
+          source: "NEARBY",
+          priority: 80 + sections.length,
+          properties,
+          items: properties,
+          seeAllHref: `/listings?${nearbyParams.toString()}`,
+          previewImages: nearby.listings.slice(0, 3).flatMap((listing) => listing.photos || []).filter(Boolean),
+          totalCount: nearby.listings.length,
+        });
+      }
+    }
 
     if (sections.length >= limit) break;
   }

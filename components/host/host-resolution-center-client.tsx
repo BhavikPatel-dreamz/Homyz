@@ -119,11 +119,25 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
             <span className="text-sm sm:text-sm text-[#727272]">{t("host_res_center_title", "Resolution Center")}</span>
           </div>
           <h1 className="mt-1.5">
-            {t("host_res_center_title", "Resolution Center")}
+            {t("host_res_center_title", "Help & Resolution Center")}
           </h1>
           <p className="mt-1.5 text-sm text-[#727272] max-w-2xl leading-relaxed">
-            {t("host_res_center_desc", "Manage booking complaints, respond to support inquiries, submit evidence, and propose resolutions for your properties.")}
+            {t("host_res_center_desc", "Manage support requests, booking issues, guest complaints, and resolutions in one place.")}
           </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/host/support"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#1F1F1F] px-5 text-sm font-medium text-white hover:bg-black transition-colors"
+          >
+            Help &amp; Resolution Center
+          </Link>
+          <Link
+            href="/host/support?view=direct"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-300 bg-white px-4 text-sm font-medium text-[#1F1F1F] hover:border-zinc-900"
+          >
+            Direct resolutions
+          </Link>
         </div>
       </div>
 

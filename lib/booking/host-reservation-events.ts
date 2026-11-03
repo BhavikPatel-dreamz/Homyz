@@ -1,5 +1,6 @@
 import { formatBookingDateRange } from "@/lib/booking/booking-date";
 import { formatTime12h, parseTimeMinutes } from "@/lib/booking/booking-time";
+import { propertyDateKey } from "@/lib/booking/property-timezone";
 import type { HostReservation } from "@/components/host/host-workspace-shared";
 import type { ListingDTO } from "@/services/mappers";
 
@@ -42,11 +43,14 @@ export function buildOperationalEvents(
   bookings: HostReservation[],
   listingsById: ReadonlyMap<string, ListingDTO>,
   period: ReservationPeriod,
-  today: string,
+  today: string | Date,
 ): OperationalEvent[] {
   const events: OperationalEvent[] = [];
 
   for (const booking of bookings) {
+    const localToday = today instanceof Date
+      ? propertyDateKey(today, booking.propertyTimeZone)
+      : today;
     const listing: HostOperationalListing = listingsById.get(booking.listingId)
       ?? booking.listing
       ?? {
@@ -62,54 +66,54 @@ export function buildOperationalEvents(
 
     if (period === "today") {
       if (booking.status !== "CONFIRMED" && booking.status !== "PENDING") continue;
-      if (booking.endDate === today) {
+      if (booking.endDate === localToday) {
         events.push({
           id: `${booking.id}:checkout`,
           booking,
           listing,
           eventType: "checkout",
-          timeMinutes: parseTimeMinutes(listing.checkOutTime, 11 * 60),
-          timeDisplay: formatTime12h(listing.checkOutTime, "11:00 AM"),
+          timeMinutes: parseTimeMinutes(booking.checkOutTime ?? listing.checkOutTime, 11 * 60),
+          timeDisplay: formatTime12h(booking.checkOutTime ?? listing.checkOutTime, "11:00 AM"),
           subtitleDisplay: `${booking.guestName || "Guest"} checks out`,
         });
       }
-      if (booking.startDate === today) {
+      if (booking.startDate === localToday) {
         events.push({
           id: `${booking.id}:checkin`,
           booking,
           listing,
           eventType: "checkin",
-          timeMinutes: parseTimeMinutes(listing.checkInStart, 15 * 60),
-          timeDisplay: formatTime12h(listing.checkInStart, "3:00 PM"),
+          timeMinutes: parseTimeMinutes(booking.checkInTime ?? listing.checkInStart, 15 * 60),
+          timeDisplay: formatTime12h(booking.checkInTime ?? listing.checkInStart, "3:00 PM"),
           subtitleDisplay: `${booking.guestName || "Guest"} checks in`,
         });
-      } else if (booking.startDate < today && booking.endDate > today) {
+      } else if (booking.startDate < localToday && booking.endDate > localToday) {
         events.push({
           id: `${booking.id}:staying`,
           booking,
           listing,
           eventType: "staying",
           timeMinutes: 12 * 60,
-          timeDisplay: formatTime12h(listing.checkOutTime, "11:00 AM"),
+          timeDisplay: formatTime12h(booking.checkOutTime ?? listing.checkOutTime, "11:00 AM"),
           subtitleDisplay: `Currently hosting ${booking.guestName || "Guest"}`,
         });
       }
     } else if (period === "upcoming") {
       if (booking.status !== "CONFIRMED" && booking.status !== "PENDING") continue;
-      if (booking.startDate > today) {
+      if (booking.startDate > localToday) {
         events.push({
           id: `${booking.id}:upcoming`,
           booking,
           listing,
           eventType: "upcoming",
-          timeMinutes: parseTimeMinutes(listing.checkInStart, 15 * 60),
-          timeDisplay: formatTime12h(listing.checkInStart, "3:00 PM"),
+          timeMinutes: parseTimeMinutes(booking.checkInTime ?? listing.checkInStart, 15 * 60),
+          timeDisplay: formatTime12h(booking.checkInTime ?? listing.checkInStart, "3:00 PM"),
           subtitleDisplay: `${booking.guestName || "Guest"} checks in`,
           dateDisplay: formatBookingDateRange(booking.startDate, booking.endDate),
         });
       }
     } else if (period === "staying") {
-      if (booking.status === "CONFIRMED" && booking.startDate <= today && booking.endDate > today) {
+      if (booking.status === "CONFIRMED" && booking.startDate <= localToday && booking.endDate > localToday) {
         events.push({
           id: `${booking.id}:staying`,
           booking,
@@ -122,7 +126,7 @@ export function buildOperationalEvents(
         });
       }
     } else if (period === "completed") {
-      if (booking.status === "CONFIRMED" && booking.endDate <= today) {
+      if (booking.status === "CONFIRMED" && booking.endDate <= localToday) {
         events.push({
           id: `${booking.id}:completed`,
           booking,
@@ -163,8 +167,8 @@ export function buildOperationalEvents(
     } else if (period === "all") {
       const isCancelled = booking.status === "CANCELLED";
       const isPending = booking.status === "PENDING";
-      const isCompleted = booking.status === "CONFIRMED" && booking.endDate <= today;
-      const isStaying = booking.status === "CONFIRMED" && booking.startDate <= today && booking.endDate > today;
+      const isCompleted = booking.status === "CONFIRMED" && booking.endDate <= localToday;
+      const isStaying = booking.status === "CONFIRMED" && booking.startDate <= localToday && booking.endDate > localToday;
 
       const eventType = isCancelled
         ? "cancelled"
@@ -182,14 +186,14 @@ export function buildOperationalEvents(
         ? "Pending"
         : isCompleted
         ? "Completed"
-        : formatTime12h(listing.checkInStart, "3:00 PM");
+        : formatTime12h(booking.checkInTime ?? listing.checkInStart, "3:00 PM");
 
       events.push({
         id: `${booking.id}:${eventType}`,
         booking,
         listing,
         eventType,
-        timeMinutes: parseTimeMinutes(listing.checkInStart, 15 * 60),
+        timeMinutes: parseTimeMinutes(booking.checkInTime ?? listing.checkInStart, 15 * 60),
         timeDisplay,
         subtitleDisplay: `${booking.guestName || "Guest"} · ${booking.status}`,
         dateDisplay: formatBookingDateRange(booking.startDate, booking.endDate),

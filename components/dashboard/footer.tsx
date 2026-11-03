@@ -170,7 +170,7 @@ export function Footer() {
     >
       <Container>
         <div
-          className="pt-8 sm:pt-12 pb-6"
+          className="pt-8 sm:pt-12 pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-6"
           style={{
             borderTop: `1px solid ${footerConfig.appearance?.borderColor || "rgba(31,31,31,0.9)"}`,
           }}
@@ -222,7 +222,7 @@ export function Footer() {
                         >
                           <span>{link.label}</span>
                           {link.badge && (
-                            <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-zinc-200 text-zinc-800 no-underline">
+                            <span className="text-[10px] uppercase font-medium tracking-wider px-1.5 py-0.5 rounded bg-zinc-200 text-zinc-800 no-underline">
                               {link.badge}
                             </span>
                           )}

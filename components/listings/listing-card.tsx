@@ -492,7 +492,7 @@ export function ListingCard({
       )}
       {/* ── Image Carousel ── */}
       <div
-        className={`relative aspect-[4/4] w-full shrink-0 overflow-hidden bg-zinc-100 select-none ${isSearchGridCard ? "rounded-none shadow-none" : "rounded-2xl shadow-xs"}`}
+        className={`relative w-full shrink-0 overflow-hidden bg-zinc-100 select-none ${isSearchGridCard ? "aspect-[4/3] rounded-t-[16px] shadow-none sm:aspect-square sm:rounded-none" : "aspect-square rounded-2xl shadow-xs"}`}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -693,8 +693,8 @@ export function ListingCard({
 
       {/* ── Search-results card body ── */}
       {isSearchGridCard ? (
-        <div className="flex-1 flex flex-col justify-between px-3.5 py-3 text-left sm:px-3.5 sm:py-3.5">
-          <div className="space-y-1.5 min-w-0">
+        <div className="flex-1 flex flex-col justify-between px-3 py-2.5 text-left sm:px-3.5 sm:py-3.5">
+          <div className="min-w-0 space-y-1 sm:space-y-1.5">
             {/* Row 1: Title */}
             <h3 className="truncate text-sm sm:text-base font-medium leading-5 text-[#1F1F1F] transition-colors group-hover:text-amber-950">
               {primaryHeading}

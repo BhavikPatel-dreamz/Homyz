@@ -1,5 +1,9 @@
 import { AppError } from "@/lib/api/errors";
-import type { DateRangePreset } from "@/lib/dashboard/reporting-filter";
+import {
+  resolveTimeframeBounds,
+  type DateRangePreset,
+  type TimeframeGranularity,
+} from "@/lib/dashboard/reporting-filter";
 
 const periods = new Set<DateRangePreset>([
   "this_month",
@@ -42,5 +46,38 @@ export function parseInsightsReportingFilters(url: URL) {
     startDate,
     endDate,
     currency: currency?.toUpperCase(),
+  };
+}
+
+/**
+ * The analytics page also accepts the established host-reporting URL shape
+ * (`year`, `month`, and `timeframe`). Convert it to the analytics service's
+ * canonical custom range so direct links and client refreshes retain context.
+ */
+export function normalizeAnalyticsReportingFilters(params: URLSearchParams) {
+  const period = params.get("period");
+  const startDate = params.get("startDate");
+  const endDate = params.get("endDate");
+  if (period || startDate || endDate) {
+    return { period: period || undefined, startDate: startDate || undefined, endDate: endDate || undefined };
+  }
+
+  const timeframe = (params.get("analyticsTimeframe") || params.get("timeframe") || "monthly") as TimeframeGranularity;
+  const month = Number(params.get("month"));
+  const year = Number(params.get("year"));
+  const quarter = Number(params.get("quarter"));
+  const bounds = resolveTimeframeBounds({
+    timeframe,
+    date: params.get("date") || undefined,
+    weekStart: params.get("weekStart") || undefined,
+    month: Number.isInteger(month) ? month : undefined,
+    year: Number.isInteger(year) ? year : undefined,
+    quarter: Number.isInteger(quarter) ? quarter : undefined,
+  });
+
+  return {
+    period: "custom" as const,
+    startDate: bounds.startDateKey,
+    endDate: bounds.endDateKey,
   };
 }

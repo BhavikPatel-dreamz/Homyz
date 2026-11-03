@@ -9,46 +9,9 @@ import {
   SavedListingsSkeleton,
   SupportChatSkeleton,
   InviteEarnSkeleton,
+  ProfileAboutSkeleton,
 } from "@/components/dashboard/section-skeletons";
 import { extractProfileRoute } from "@/lib/profile/tab-utils";
-
-function AboutMeSkeleton() {
-  return (
-    <>
-      <div className="mb-3 flex items-center gap-5 lg:mb-8 xl:mb-10">
-        <div className="h-[30px] w-32 rounded-lg skeleton-shimmer sm:h-[36px] sm:w-40 lg:h-[40px] xl:h-[44px]" />
-        <div className="h-12 w-20 rounded-full skeleton-shimmer" />
-      </div>
-
-      <div className="mb-8 flex items-start gap-6">
-        <div className="h-[124px] w-[124px] shrink-0 rounded-xl border border-[#1F1F1F] skeleton-shimmer sm:h-[151px] sm:w-[233px] sm:rounded-2xl sm:border-2" />
-        <div className="flex min-h-[124px] flex-1 flex-col justify-center gap-4 sm:min-h-[151px] sm:max-w-[195px]">
-          <div className="h-5 w-28 rounded skeleton-shimmer" />
-          <div className="h-4 w-36 rounded skeleton-shimmer" />
-          <div className="flex gap-5 border-t border-zinc-200 pt-4">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="flex flex-col items-center gap-2">
-                <div className="h-9 w-9 rounded-full skeleton-shimmer" />
-                <div className="h-3 w-10 rounded skeleton-shimmer" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <section className="border-t border-zinc-200/80 pt-6">
-        <div className="mb-5 flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="h-7 w-36 rounded skeleton-shimmer" />
-            <div className="h-4 w-60 rounded skeleton-shimmer" />
-          </div>
-          <div className="h-6 w-16 rounded-full skeleton-shimmer" />
-        </div>
-        <div className="h-56 max-w-[336px] rounded-2xl border border-zinc-200 skeleton-shimmer" />
-      </section>
-    </>
-  );
-}
 
 function ReservationsSkeleton({ tab }: { tab?: string }) {
   return <LoadingSkeleton count={4} tab={tab} />;
@@ -147,7 +110,7 @@ export default function Loading() {
   const activeTab = route.tab;
 
   return (
-    <div className="min-h-[85vh] w-full bg-white pb-14 pt-5 lg:pb-12">
+    <div className="guest-profile min-h-[85vh] w-full bg-white pb-14 pt-5 font-sans lg:pb-12">
       <div className="grid grid-cols-1 gap-3 sm:gap-8 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
         <GuestDashboardSidebar activeId={activeTab} />
 
@@ -156,7 +119,7 @@ export default function Loading() {
           aria-label="Loading profile content"
           className="order-1 flex min-w-0 flex-col lg:order-2"
         >
-          {activeTab === "about_me" && <AboutMeSkeleton />}
+          {activeTab === "about_me" && <ProfileAboutSkeleton />}
           {activeTab === "profile_management" && (
             <ProfileManagementSkeleton subTab={route.subTab} />
           )}

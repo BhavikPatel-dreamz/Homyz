@@ -194,9 +194,9 @@ function highlightMatch(text: string, query: string) {
   return (
     <>
       {text.slice(0, idx)}
-      <strong className="font-semibold text-[#1f1f1f] underline decoration-zinc-400 underline-offset-2">
+      <span className="font-medium text-[#1f1f1f] underline decoration-zinc-400 underline-offset-2">
         {text.slice(idx, idx + q.length)}
-      </strong>
+      </span>
       {text.slice(idx + q.length)}
     </>
   );
@@ -778,7 +778,7 @@ export function ListingSearchBar() {
             )}
           </div>
           <div className="min-w-0">
-            <span className="block text-[14px] font-semibold text-[#1f1f1f] leading-tight">
+            <span className="block text-[14px] font-medium text-[#1f1f1f] leading-tight">
               {isLocating ? t("home_detecting_location", "Detecting location...") : t("home_use_current_location", "Use current location")}
             </span>
             <span className="block text-[11px] text-[#727272] font-medium">{t("home_search_discover_near_you", "Discover verified stays near you")}</span>
@@ -914,7 +914,7 @@ export function ListingSearchBar() {
                     <div className="text-sm text-[#727272] truncate">{d.subtitle || d.fullLabel}</div>
                   </div>
                 </div>
-                <span className="shrink-0 rounded-full bg-blue-100/70 px-2 py-0.5 text-[10px] font-semibold text-blue-900">
+                <span className="shrink-0 rounded-full bg-blue-100/70 px-2 py-0.5 text-[10px] font-medium text-blue-900">
                   {d.badge || "District"}
                 </span>
               </button>
@@ -976,7 +976,7 @@ export function ListingSearchBar() {
                   <path d="M5 12h14" />
                 </svg>
               </button>
-              <span aria-live="polite" className="min-w-4 text-center text-[15px] font-semibold tabular-nums">
+              <span aria-live="polite" className="min-w-4 text-center text-[15px] font-medium tabular-nums">
                 {mobileGuests[key]}
               </span>
               <button

@@ -4,7 +4,7 @@ import { PHOTO_ROOM_TYPES } from "@/lib/listing/photo-room-assignments";
 
 export const HOSTING_TYPES = ["HOME", "EXPERIENCE", "SERVICE"] as const;
 export const LISTING_TYPES = ["ENTIRE_PLACE", "ROOM", "SHARED_ROOM"] as const;
-export const MAX_ONBOARDING_STEP = 21;
+export const MAX_ONBOARDING_STEP = 22;
 export const LOCATION_FEATURE_IDS = [
   "near_public_transport",
   "near_landmarks",
@@ -144,6 +144,8 @@ const photoRoomAssignmentSchema = z.object({
   roomInstanceId: z.string().trim().min(1).max(120).nullable().optional(),
   roomLabel: z.string().trim().min(1).max(120).nullable().optional(),
   sortOrder: z.number().int().min(0).max(1000).nullable().optional(),
+  description: z.string().trim().max(500).nullable().optional(),
+  caption: z.string().trim().max(500).nullable().optional(),
 }).passthrough();
 
 const customSlugSchema = z.preprocess(
@@ -197,9 +199,14 @@ export const bedItemSchema = z.object({
 export const roomSchema = z.object({
   id: z.string().min(1).max(80),
   name: z.string().trim().min(1).max(100),
-  type: z.enum(ROOM_TYPES).default("BEDROOM"),
+  type: z.string().trim().min(1).max(100).default("BEDROOM"),
   beds: z.array(bedItemSchema).default([]),
-});
+  amenities: z.array(z.string().trim()).default([]),
+  hasPrivateBathroom: z.boolean().optional(),
+  privacy: z.record(z.string(), z.any()).optional(),
+  accessibilityFeatures: z.array(z.string().trim()).default([]),
+  accessibilityDetails: z.array(z.any()).default([]),
+}).passthrough();
 
 export const roomsSchema = z.array(roomSchema).max(50);
 export type RoomInput = z.infer<typeof roomSchema>;
@@ -352,17 +359,11 @@ export const createListingSchema = z
   });
 export type CreateListingInput = z.infer<typeof createListingSchema>;
 
-// Defaults belong to creation only. Retaining them on a partial update silently
-// overwrites unrelated listing settings whenever an editor saves one section.
-const updateListingFields = Object.fromEntries(
-  Object.entries(listingFields).map(([key, schema]) => {
-    const withoutDefault = "removeDefault" in schema ? schema.removeDefault() : schema;
-    return [key, withoutDefault.optional()];
-  }),
-) as z.ZodRawShape;
-
+// Optional wrappers bypass defaults for omitted update fields and preserve the
+// concrete field types for callers that consume parsed updates.
 export const updateListingSchema = z
-  .object(updateListingFields)
+  .object(listingFields)
+  .partial()
   .refine((value) => Object.keys(value).length > 0, {
     message: "No fields to update",
   })

@@ -6,6 +6,9 @@ import { ReservationDashboard } from "@/components/dashboard/reservation-dashboa
 import { ReservationCardData } from "@/components/dashboard/reservation-card";
 import { toReservationCardData } from "@/lib/profile/reservation-data";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function DashboardPage() {
   const user = await requirePageUser();
 

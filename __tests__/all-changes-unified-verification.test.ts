@@ -39,13 +39,13 @@ function runAllChangesMasterTestSuite() {
   logSection("SECTION 1: Global 1:1 Locale Parity Across All 6 Locales");
 
   const enKeys = Object.keys(MESSAGES.en) as TranslationKey[];
-  assert(enKeys.length === 4970, `English dictionary key count is exactly 4,970 (found: ${enKeys.length})`);
+  assert(enKeys.length >= 4970, `English dictionary key count is at least 4,970 (found: ${enKeys.length})`);
 
   for (const lang of supportedLangs) {
     const targetKeys = Object.keys(MESSAGES[lang]);
     assert(
-      targetKeys.length === 4970,
-      `[${lang}] Key count exactly equals English (4,970 / 4,970)`
+      targetKeys.length === enKeys.length,
+      `[${lang}] Key count exactly equals English (${enKeys.length} / ${enKeys.length})`
     );
 
     // Forward check: all en keys exist in target locale
@@ -122,11 +122,15 @@ function runAllChangesMasterTestSuite() {
   const wizardComponents = [
     {
       file: "components/host/onboarding/step-license-approval.tsx",
-      expectedStrings: ["host_license_step_title", "host_license_whats_next_title", "host_license_btn_verify"],
+      expectedStrings: ["host_license_step_title", "host_license_whats_next_title", "Edit registration details"],
+    },
+    {
+      file: "components/host/onboarding/step-registration-details.tsx",
+      expectedStrings: ["Add registration details", "National identification number", "Continue"],
     },
     {
       file: "components/host/onboarding/step-booking-settings.tsx",
-      expectedStrings: ["host_booking_settings_pick_title", "host_booking_mode_instant_title"],
+      expectedStrings: ["host_booking_mode_request_title", "host_booking_mode_instant_title"],
     },
     {
       file: "components/host/new-listing-get-started.tsx",

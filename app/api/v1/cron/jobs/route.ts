@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { jobQueueService } from "@/services/job-queue.service";
 import { saudiLicenseService } from "@/services/saudi-license.service";
+import { notificationOutboxService } from "@/services/notification-outbox.service";
+import { supportCaseService } from "@/services/support-case.service";
 
 function validateCronSecret(req: Request): boolean {
   const configuredSecret = process.env.CRON_SECRET?.trim();
@@ -70,11 +72,21 @@ export async function POST(req: Request) {
       maxAttempts: 3,
       backoffSeconds: 60,
     }),
+    // Backfill missed completion events safely. The worker derives eligibility
+    // from confirmed, checked-out booking/listing data and is idempotent.
+    jobQueueService.enqueueJob({
+      type: "ACHIEVEMENT_RECONCILIATION",
+      payload: { mode: "TRAVEL_STAMP_AWARDS", limit: 100 },
+      idempotencyKey: `cron_travel_stamp_awards_${currentHourKey}`,
+      priority: 4,
+      maxAttempts: 3,
+      backoffSeconds: 60,
+    }),
   ]);
 
   // 2. Process batch of due jobs, CMS actions, and Saudi licence expiry.
   // Expiry is independently safe to re-run and has a distributed lease.
-  const [batchResult, cmsScheduleResult, licenseExpiryResult] = await Promise.all([
+  const [batchResult, cmsScheduleResult, licenseExpiryResult, slaNotificationResult, notificationOutboxResult] = await Promise.all([
     jobQueueService.runBatch({ batchSize: 20 }),
     (async () => {
       try {
@@ -88,6 +100,14 @@ export async function POST(req: Request) {
     saudiLicenseService.enforceExpiry().catch((err) => {
       console.warn("[cron] Saudi license expiry execution warning:", err);
       return { checked: 0, unlisted: 0, skipped: false };
+    }),
+    supportCaseService.queueSupportSlaNotifications({ limit: 25 }).catch((err) => {
+      console.warn("[cron] Support SLA notification scheduling warning:", err);
+      return { scanned: 0, approaching: 0, breached: 0 };
+    }),
+    notificationOutboxService.processNotificationOutboxBatch({ limit: 25 }).catch((err) => {
+      console.warn("[cron] Notification outbox processing warning:", err);
+      return { recovered: 0, claimed: 0, delivered: 0, retryPending: 0, deadLetter: 0 };
     }),
   ]);
   const stats = await jobQueueService.getQueueStats();
@@ -104,6 +124,8 @@ export async function POST(req: Request) {
     cmsScheduledSucceeded: cmsScheduleResult.succeeded,
     saudiLicensesChecked: licenseExpiryResult.checked,
     saudiListingsUnlisted: licenseExpiryResult.unlisted,
+    supportSlaNotifications: slaNotificationResult,
+    notificationOutbox: notificationOutboxResult,
     jobs: batchResult.jobs,
     queueStats: stats,
   });

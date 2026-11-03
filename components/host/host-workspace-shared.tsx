@@ -82,6 +82,10 @@ export type HostReservation = {
   status: string;
   startDate: string;
   endDate: string;
+  propertyTimeZone?: string;
+  checkInTime?: string;
+  checkInEndTime?: string;
+  checkOutTime?: string;
   createdAt: string;
   guestName: string;
   guestId?: string;
@@ -646,11 +650,11 @@ export function ReservationDetails({
                 />
                 <DetailRow
                   label={t("host_cal_res_label_checkin", "Check-in")}
-                  value={`${shortDate(booking.startDate)} · ${formatTime12h(listing.checkInStart, "3:00 PM")}`}
+                  value={`${shortDate(booking.startDate)} · ${formatTime12h(booking.checkInTime ?? listing.checkInStart, "3:00 PM")}`}
                 />
                 <DetailRow
                   label={t("host_cal_res_label_checkout", "Check-out")}
-                  value={`${shortDate(booking.endDate)} · ${formatTime12h(listing.checkOutTime, "11:00 AM")}`}
+                  value={`${shortDate(booking.endDate)} · ${formatTime12h(booking.checkOutTime ?? listing.checkOutTime, "11:00 AM")}`}
                 />
                 <DetailRow
                   label={t("host_cal_res_label_length", "Length of stay")}

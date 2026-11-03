@@ -1,25 +1,22 @@
 "use client";
 
 import { HostHeader } from "./host-header";
-import { Container } from "../ui";
 
 export function HostListingCardsSkeleton({
   cardCount = 12,
-  compact = false,
 }: {
   cardCount?: number;
-  compact?: boolean;
 }) {
   return (
-    <div className={`host-listing-workspace grid ${compact ? "grid-cols-2" : "grid-cols-1"} gap-x-4 gap-y-8 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-6 xl:gap-y-8`}>
+    <div className="host-listing-workspace grid min-w-0 grid-cols-[repeat(auto-fill,minmax(min(100%,260px),min(100%,298px)))] gap-x-5 gap-y-6 sm:gap-y-8">
       {Array.from({ length: cardCount }).map((_, i) => (
-        <div key={i} className="group relative min-w-0 text-left">
-          <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-zinc-200/80 bg-zinc-100 skeleton-shimmer">
-            <div className="absolute top-4 left-4 h-7 w-20 rounded-full bg-white/70 backdrop-blur-xs skeleton-shimmer" />
+        <div key={i} className="group relative w-full min-w-0 max-w-full text-left sm:max-w-[298px]">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] border border-zinc-200/80 bg-zinc-100 skeleton-shimmer">
+            <div className="absolute left-3 top-3 h-6 w-20 rounded-full bg-white/80 backdrop-blur-xs skeleton-shimmer" />
           </div>
-          <div className="px-0 pt-3 sm:px-3 lg:pt-6">
-            <div className="mb-2 h-5 w-3/4 rounded-md skeleton-shimmer" />
-            <div className="h-4 w-1/2 rounded-md skeleton-shimmer" />
+          <div className="min-w-0 px-0 pt-3">
+            <div className="mb-2 h-4 w-3/4 rounded-md skeleton-shimmer" />
+            <div className="h-3 w-1/2 rounded-md skeleton-shimmer" />
           </div>
         </div>
       ))}
@@ -35,35 +32,26 @@ export function HostListingsSkeleton({ cardCount = 12 }: { cardCount?: number })
 
       {/* 2. MAIN CONTENT AREA */}
       <main className="listing-main min-w-0 flex-1 pt-7.5 pb-[calc(128px+env(safe-area-inset-bottom))] sm:pt-12 sm:pb-14 lg:pt-16 lg:pb-16">
-        <Container className="max-sm:px-6">
-          {/* Mobile Title Skeleton */}
-          <div className="mb-8 flex items-center justify-between gap-3 sm:hidden">
-            <div className="h-7 w-36 rounded-lg skeleton-shimmer" />
-            <div className="flex shrink-0 items-center gap-2">
-              <div className="size-11 rounded-full skeleton-shimmer" />
-              <div className="size-11 rounded-full skeleton-shimmer" />
-              <div className="size-11 rounded-full skeleton-shimmer" />
-            </div>
-          </div>
-
-          {/* Desktop Title & Action Skeleton */}
-          <div className="mb-8 hidden items-center justify-between gap-3 sm:mb-9 sm:flex lg:mb-12">
-            <div className="h-9 w-48 rounded-lg skeleton-shimmer" />
-            <div className="flex items-center gap-3">
-              <div className="h-11 w-64 lg:w-80 rounded-full skeleton-shimmer" />
-              <div className="h-11 w-44 rounded-full skeleton-shimmer" />
+        <div className="mx-auto box-border w-full min-w-0 max-w-[1600px] px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 flex min-w-0 flex-col gap-4 sm:mb-8 min-[900px]:flex-row min-[900px]:items-center min-[900px]:justify-between">
+            <div className="h-7 w-40 rounded-lg skeleton-shimmer" />
+            <div className="flex w-full min-w-0 items-center gap-2 sm:gap-3 min-[900px]:w-auto">
+              <div className="h-10 min-w-0 flex-1 rounded-full skeleton-shimmer sm:max-w-[288px] min-[900px]:w-[288px] min-[900px]:flex-none" />
+              <div className="size-10 shrink-0 rounded-full skeleton-shimmer" />
             </div>
           </div>
 
           {/* Status Tabs Pill Skeleton */}
-          <div className="mb-6 flex w-full items-center gap-2 border-b border-[#727272] pb-5 sm:mb-8 sm:w-fit sm:pb-6 overflow-x-auto no-scrollbar py-1">
+          <div className="mb-6 min-w-0 border-b border-[#727272]/20 pb-4 sm:mb-8 sm:pb-5">
+            <div className="flex min-w-0 flex-wrap items-center gap-2 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:overscroll-x-contain max-sm:pb-1 no-scrollbar">
             {Array.from({ length: 7 }).map((_, i) => (
-              <div key={i} className="h-10 w-24 rounded-full skeleton-shimmer shrink-0" />
+              <div key={i} className="h-9 w-24 shrink-0 rounded-full skeleton-shimmer" />
             ))}
+            </div>
           </div>
 
           <HostListingCardsSkeleton cardCount={cardCount} />
-        </Container>
+        </div>
       </main>
 
     </div>

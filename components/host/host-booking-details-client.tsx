@@ -255,7 +255,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                 )}
                 {relatedCases.length > 1 && (
                   <Link
-                    href={`/host/resolution-center?bookingId=${encodeURIComponent(details.id)}`}
+                    href={`/host/support?bookingId=${encodeURIComponent(details.id)}`}
                     className="order-2 sm:order-3 inline-flex min-h-10 w-full sm:w-auto items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-2 text-center text-sm font-medium text-[#1f1f1f] transition-colors hover:border-[#1f1f1f] whitespace-nowrap"
                   >
                     View {relatedCases.length} disputes

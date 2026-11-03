@@ -9,8 +9,16 @@ import {
 } from "@/services/travel-privacy.service";
 import path from "node:path";
 import { nanoid } from "nanoid";
-import { getOrCreateDestination } from "@/services/travel-destination.service";
-import { TravelProfileVisibility, type Prisma } from "@/generated/prisma/client";
+import {
+  getOrCreateDestination,
+  normalizeCountry,
+} from "@/services/travel-destination.service";
+import { isCompletedConfirmedBooking } from "@/lib/booking/booking-status";
+import {
+  BookingStatus,
+  TravelProfileVisibility,
+  type Prisma,
+} from "@/generated/prisma/client";
 
 import type {
   TravelPhotoDTO,
@@ -26,7 +34,9 @@ const SYSTEM_PLACEHOLDER_PHOTO_URLS = new Set([
 ]);
 
 /** A saved row is not a gallery item unless it points to actual photo media. */
-export function isRenderableTravelPhotoUrl(url: string | null | undefined): boolean {
+export function isRenderableTravelPhotoUrl(
+  url: string | null | undefined,
+): boolean {
   const normalized = url?.trim();
   return Boolean(normalized && !SYSTEM_PLACEHOLDER_PHOTO_URLS.has(normalized));
 }
@@ -45,7 +55,9 @@ type PhotoLocationInput = {
   longitude?: number | null;
 };
 
-function normalizeCaption(value: string | null | undefined): string | null | undefined {
+function normalizeCaption(
+  value: string | null | undefined,
+): string | null | undefined {
   if (value === undefined) return undefined;
   const normalized = value?.trim() || null;
   if (normalized && normalized.length > MAX_TRAVEL_PHOTO_CAPTION_LENGTH) {
@@ -56,12 +68,17 @@ function normalizeCaption(value: string | null | undefined): string | null | und
   return normalized;
 }
 
-function normalizeTaggedUserIds(value: string[] | undefined): string[] | undefined {
+function normalizeTaggedUserIds(
+  value: string[] | undefined,
+): string[] | undefined {
   if (value === undefined) return undefined;
-  if (!Array.isArray(value)) throw AppError.badRequest("People tags must be a list.");
+  if (!Array.isArray(value))
+    throw AppError.badRequest("People tags must be a list.");
   const ids = [...new Set(value.map((id) => id.trim()).filter(Boolean))];
   if (ids.length > MAX_TRAVEL_PHOTO_TAGS) {
-    throw AppError.badRequest(`A photo can tag up to ${MAX_TRAVEL_PHOTO_TAGS} people.`);
+    throw AppError.badRequest(
+      `A photo can tag up to ${MAX_TRAVEL_PHOTO_TAGS} people.`,
+    );
   }
   return ids;
 }
@@ -82,13 +99,17 @@ async function resolvePhotoDestination(
     countryName,
     cityName: location.city?.trim() || null,
     latitude: typeof location.latitude === "number" ? location.latitude : null,
-    longitude: typeof location.longitude === "number" ? location.longitude : null,
+    longitude:
+      typeof location.longitude === "number" ? location.longitude : null,
   });
   return destination.id;
 }
 
 /** Only public, unblocked travel profiles are eligible for a people tag. */
-async function assertTaggableUsers(ownerId: string, taggedUserIds: string[]): Promise<void> {
+async function assertTaggableUsers(
+  ownerId: string,
+  taggedUserIds: string[],
+): Promise<void> {
   if (!taggedUserIds.length) return;
   if (taggedUserIds.includes(ownerId)) {
     throw AppError.badRequest("You cannot tag yourself in this photo.");
@@ -120,7 +141,14 @@ async function assertTaggableUsers(ownerId: string, taggedUserIds: string[]): Pr
 export async function searchTaggableTravelUsers(
   ownerId: string,
   query: string,
-): Promise<Array<{ id: string; name: string | null; image: string | null; handle: string | null }>> {
+): Promise<
+  Array<{
+    id: string;
+    name: string | null;
+    image: string | null;
+    handle: string | null;
+  }>
+> {
   const term = query.trim();
   const users = await prisma.user.findMany({
     where: {
@@ -128,7 +156,16 @@ export async function searchTaggableTravelUsers(
       status: "ACTIVE",
       travelProfile: { is: { visibility: "PUBLIC" } },
       ...(term
-        ? { OR: [{ name: { contains: term, mode: "insensitive" } }, { travelProfile: { is: { handle: { contains: term, mode: "insensitive" } } } }] }
+        ? {
+            OR: [
+              { name: { contains: term, mode: "insensitive" } },
+              {
+                travelProfile: {
+                  is: { handle: { contains: term, mode: "insensitive" } },
+                },
+              },
+            ],
+          }
         : {}),
     },
     select: {
@@ -150,10 +187,19 @@ export async function searchTaggableTravelUsers(
     },
     select: { blockerId: true, blockedId: true },
   });
-  const blockedIds = new Set(blocks.map((block) => block.blockerId === ownerId ? block.blockedId : block.blockerId));
+  const blockedIds = new Set(
+    blocks.map((block) =>
+      block.blockerId === ownerId ? block.blockedId : block.blockerId,
+    ),
+  );
   return users
     .filter((user) => !blockedIds.has(user.id))
-    .map((user) => ({ id: user.id, name: user.name, image: user.image, handle: user.travelProfile?.handle || null }));
+    .map((user) => ({
+      id: user.id,
+      name: user.name,
+      image: user.image,
+      handle: user.travelProfile?.handle || null,
+    }));
 }
 
 /**
@@ -427,14 +473,20 @@ export async function getUserTrips(userId: string): Promise<TravelTripDTO[]> {
     },
   });
 
-  const destinationIds = [...new Set(trips.flatMap((trip) => trip.destinationId ? [trip.destinationId] : []))];
+  const destinationIds = [
+    ...new Set(
+      trips.flatMap((trip) => (trip.destinationId ? [trip.destinationId] : [])),
+    ),
+  ];
   const destinations = destinationIds.length
     ? await prisma.destination.findMany({
         where: { id: { in: destinationIds } },
         select: { id: true, countryName: true, countryCode: true },
       })
     : [];
-  const destinationsById = new Map(destinations.map((destination) => [destination.id, destination]));
+  const destinationsById = new Map(
+    destinations.map((destination) => [destination.id, destination]),
+  );
 
   return trips.map((t) => {
     const visibleTripPhotos = t.photos.filter((photo) =>
@@ -446,7 +498,8 @@ export async function getUserTrips(userId: string): Promise<TravelTripDTO[]> {
       coverUrl = coverPhoto?.mediumUrl || coverPhoto?.url || null;
     }
     if (!coverUrl && visibleTripPhotos.length > 0) {
-      coverUrl = visibleTripPhotos[0].mediumUrl || visibleTripPhotos[0].url || null;
+      coverUrl =
+        visibleTripPhotos[0].mediumUrl || visibleTripPhotos[0].url || null;
     }
 
     const photos: TravelPhotoDTO[] = visibleTripPhotos.map((p) => ({
@@ -470,7 +523,9 @@ export async function getUserTrips(userId: string): Promise<TravelTripDTO[]> {
       userId: t.userId,
       title: t.title,
       destinationId: t.destinationId,
-      destination: t.destinationId ? destinationsById.get(t.destinationId) ?? null : null,
+      destination: t.destinationId
+        ? (destinationsById.get(t.destinationId) ?? null)
+        : null,
       startDate: t.startDate,
       endDate: t.endDate,
       coverPhotoId: t.coverPhotoId,
@@ -504,7 +559,11 @@ export async function createTrip(
   if (!title) {
     throw AppError.badRequest("Trip title cannot be empty");
   }
-  if (input.startDate && input.endDate && new Date(input.endDate) < new Date(input.startDate)) {
+  if (
+    input.startDate &&
+    input.endDate &&
+    new Date(input.endDate) < new Date(input.startDate)
+  ) {
     throw AppError.badRequest("End date cannot be before start date");
   }
 
@@ -563,8 +622,18 @@ export async function updateTrip(
   if (input.title !== undefined && !input.title?.trim()) {
     throw AppError.badRequest("Trip title cannot be empty");
   }
-  const nextStartDate = input.startDate === undefined ? trip.startDate : input.startDate ? new Date(input.startDate) : null;
-  const nextEndDate = input.endDate === undefined ? trip.endDate : input.endDate ? new Date(input.endDate) : null;
+  const nextStartDate =
+    input.startDate === undefined
+      ? trip.startDate
+      : input.startDate
+        ? new Date(input.startDate)
+        : null;
+  const nextEndDate =
+    input.endDate === undefined
+      ? trip.endDate
+      : input.endDate
+        ? new Date(input.endDate)
+        : null;
   if (nextStartDate && nextEndDate && nextEndDate < nextStartDate) {
     throw AppError.badRequest("End date cannot be before start date");
   }
@@ -786,104 +855,118 @@ export async function uploadTravelPhoto(
   const mediumUrl = `${saved.url}?w=768&q=80`;
 
   // 5. Database Persistence with capacity re-verification in transaction
-  const result = await prisma.$transaction(async (tx) => {
-    if (resolvedTripId && !replacePhotoId) {
-      const activeCount = await tx.travelPhoto.count({
-        where: { tripId: resolvedTripId },
-      });
-      if (activeCount >= MAX_PHOTOS_PER_TRIP) {
-        throw AppError.badRequest(
-          `Cannot add photo: trip already contains maximum ${MAX_PHOTOS_PER_TRIP} photos.`,
-        );
+  let result;
+  try {
+    result = await prisma.$transaction(async (tx) => {
+      if (resolvedTripId && !replacePhotoId) {
+        const activeCount = await tx.travelPhoto.count({
+          where: { tripId: resolvedTripId },
+        });
+        if (activeCount >= MAX_PHOTOS_PER_TRIP) {
+          throw AppError.badRequest(
+            `Cannot add photo: trip already contains maximum ${MAX_PHOTOS_PER_TRIP} photos.`,
+          );
+        }
       }
-    }
 
-    if (replacePhotoId) {
-      // Check if updating an existing TravelPhoto
-      const travelPhoto = await tx.travelPhoto.findUnique({
-        where: { id: replacePhotoId },
-      });
-      if (travelPhoto) {
-        return tx.travelPhoto.update({
+      if (replacePhotoId) {
+        // Check if updating an existing TravelPhoto
+        const travelPhoto = await tx.travelPhoto.findUnique({
           where: { id: replacePhotoId },
-          data: {
-            url: saved.url,
-            thumbnailUrl,
-            mediumUrl,
-            ...(normalizedCaption !== undefined && {
-              caption: normalizedCaption,
-            }),
-            ...(location !== undefined && {
-              location: location ? location.trim() : null,
-            }),
-            ...(resolvedTripId && { tripId: resolvedTripId }),
-            ...(resolvedDestinationId && {
+        });
+        if (travelPhoto) {
+          return tx.travelPhoto.update({
+            where: { id: replacePhotoId },
+            data: {
+              url: saved.url,
+              thumbnailUrl,
+              mediumUrl,
+              ...(normalizedCaption !== undefined && {
+                caption: normalizedCaption,
+              }),
+              ...(location !== undefined && {
+                location: location ? location.trim() : null,
+              }),
+              ...(resolvedTripId && { tripId: resolvedTripId }),
+              ...(resolvedDestinationId && {
+                destinationId: resolvedDestinationId,
+              }),
+              ...(taggedUserIds !== undefined && {
+                personTags: {
+                  deleteMany: {},
+                  create: taggedUserIds.map((taggedUserId) => ({
+                    taggedUserId,
+                  })),
+                },
+              }),
+            },
+            include: { trip: true },
+          });
+        }
+
+        // Or converting a legacy TripPhoto into a TravelPhoto
+        const legacyPhoto = await tx.tripPhoto.findUnique({
+          where: { id: replacePhotoId },
+        });
+        if (legacyPhoto) {
+          await tx.tripPhoto.delete({ where: { id: replacePhotoId } });
+          return tx.travelPhoto.create({
+            data: {
+              userId: actor.id,
+              tripId: resolvedTripId,
               destinationId: resolvedDestinationId,
-            }),
-            ...(taggedUserIds !== undefined && {
-              personTags: {
-                deleteMany: {},
-                create: taggedUserIds.map((taggedUserId) => ({ taggedUserId })),
-              },
-            }),
-          },
-          include: { trip: true },
-        });
+              url: saved.url,
+              thumbnailUrl,
+              mediumUrl,
+              caption:
+                normalizedCaption !== undefined
+                  ? normalizedCaption
+                  : legacyPhoto.caption,
+              location:
+                location !== undefined
+                  ? location
+                    ? location.trim()
+                    : null
+                  : legacyPhoto.location,
+              order,
+              ...(taggedUserIds !== undefined && {
+                personTags: {
+                  create: taggedUserIds.map((taggedUserId) => ({
+                    taggedUserId,
+                  })),
+                },
+              }),
+            },
+            include: { trip: true },
+          });
+        }
       }
 
-      // Or converting a legacy TripPhoto into a TravelPhoto
-      const legacyPhoto = await tx.tripPhoto.findUnique({
-        where: { id: replacePhotoId },
+      // Standard new TravelPhoto creation
+      return tx.travelPhoto.create({
+        data: {
+          userId: actor.id,
+          tripId: resolvedTripId,
+          destinationId: resolvedDestinationId,
+          url: saved.url,
+          thumbnailUrl,
+          mediumUrl,
+          caption: normalizedCaption || null,
+          location: location ? location.trim() : null,
+          order,
+          ...(taggedUserIds !== undefined && {
+            personTags: {
+              create: taggedUserIds.map((taggedUserId) => ({ taggedUserId })),
+            },
+          }),
+        },
+        include: { trip: true },
       });
-      if (legacyPhoto) {
-        await tx.tripPhoto.delete({ where: { id: replacePhotoId } });
-        return tx.travelPhoto.create({
-          data: {
-            userId: actor.id,
-            tripId: resolvedTripId,
-            destinationId: resolvedDestinationId,
-            url: saved.url,
-            thumbnailUrl,
-            mediumUrl,
-            caption:
-              normalizedCaption !== undefined
-                ? normalizedCaption
-                : legacyPhoto.caption,
-            location:
-              location !== undefined
-                ? location
-                  ? location.trim()
-                  : null
-                : legacyPhoto.location,
-            order,
-            ...(taggedUserIds !== undefined && {
-              personTags: { create: taggedUserIds.map((taggedUserId) => ({ taggedUserId })) },
-            }),
-          },
-          include: { trip: true },
-        });
-      }
-    }
-
-    // Standard new TravelPhoto creation
-    return tx.travelPhoto.create({
-      data: {
-        userId: actor.id,
-        tripId: resolvedTripId,
-        destinationId: resolvedDestinationId,
-        url: saved.url,
-        thumbnailUrl,
-        mediumUrl,
-        caption: normalizedCaption || null,
-        location: location ? location.trim() : null,
-        order,
-        ...(taggedUserIds !== undefined && {
-          personTags: { create: taggedUserIds.map((taggedUserId) => ({ taggedUserId })) },
-        }),
-      },
-      include: { trip: true },
     });
-  });
+  } catch (error) {
+    await deleteManagedMediaUrl(saved.url).catch(() => {});
+    throw error;
+  }
 
   // 6. Asynchronously clean up old media file if replacement succeeded
   if (existingPhotoToReplace) {
@@ -980,7 +1063,16 @@ export async function getPaginatedTravelPhotos(opts: {
         trip: { select: { id: true, title: true } },
         user: { select: { id: true, name: true, image: true } },
         personTags: {
-          include: { taggedUser: { select: { id: true, name: true, image: true, travelProfile: { select: { handle: true, visibility: true } } } } },
+          include: {
+            taggedUser: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                travelProfile: { select: { handle: true, visibility: true } },
+              },
+            },
+          },
         },
         _count: { select: { likes: true, comments: true } },
         likes: opts.actorId
@@ -1114,7 +1206,16 @@ export async function getPhotoDetails(
       trip: { select: { id: true, title: true } },
       user: { select: { id: true, name: true, image: true } },
       personTags: {
-        include: { taggedUser: { select: { id: true, name: true, image: true, travelProfile: { select: { handle: true, visibility: true } } } } },
+        include: {
+          taggedUser: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              travelProfile: { select: { handle: true, visibility: true } },
+            },
+          },
+        },
       },
       _count: { select: { likes: true, comments: true } },
       likes: actorId
@@ -1285,12 +1386,14 @@ export async function togglePhotoLike(
   } catch (error: unknown) {
     // Two rapid clicks can race on the unique relation. Preserve the single
     // persisted relation and return its authoritative state instead of 500.
-    if (!(
-      error &&
-      typeof error === "object" &&
-      "code" in error &&
-      (error.code === "P2002" || error.code === "P2025")
-    )) {
+    if (
+      !(
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        (error.code === "P2002" || error.code === "P2025")
+      )
+    ) {
       throw error;
     }
   }
@@ -1424,10 +1527,17 @@ export async function getCountryHighlights(
     : access.isFollowing
       ? [TravelProfileVisibility.PUBLIC, TravelProfileVisibility.FOLLOWERS_ONLY]
       : [TravelProfileVisibility.PUBLIC];
-  const tripVisibilityWhere: Prisma.EnumTravelProfileVisibilityFilter<"TravelTrip"> | undefined = isOwner
+  const tripVisibilityWhere:
+    | Prisma.EnumTravelProfileVisibilityFilter<"TravelTrip">
+    | undefined = isOwner
     ? undefined
     : access.isFollowing
-      ? { in: [TravelProfileVisibility.PUBLIC, TravelProfileVisibility.FOLLOWERS_ONLY] }
+      ? {
+          in: [
+            TravelProfileVisibility.PUBLIC,
+            TravelProfileVisibility.FOLLOWERS_ONLY,
+          ],
+        }
       : { equals: TravelProfileVisibility.PUBLIC };
   const viewerVisibilityWhere: Prisma.TravelPhotoWhereInput = {
     ...(visibleToViewer ? { visibility: { in: visibleToViewer } } : {}),
@@ -1470,18 +1580,53 @@ export async function getCountryHighlights(
 
   // Created trips and verified stays are useful owner-only history, but neither
   // may reveal a country to a profile viewer without a visible photo.
-  const trips = isOwner
-    ? await prisma.travelTrip.findMany({
-        where: { userId, destinationId: { not: null } },
-        select: { destinationId: true },
+  const [trips, verifiedUserDests, confirmedBookings] = await Promise.all([
+    isOwner
+      ? prisma.travelTrip.findMany({
+          where: { userId, destinationId: { not: null } },
+          select: { destinationId: true },
+        })
+      : Promise.resolve([]),
+    isOwner
+      ? prisma.userDestination.findMany({
+          where: { userId, verificationStatus: "VERIFIED" },
+          include: { destination: true },
+        })
+      : Promise.resolve([]),
+    // Do not require a separate reconciliation write before a completed stay
+    // appears on its owner's profile. This also includes bookings created
+    // before UserDestination records were introduced.
+    isOwner
+      ? prisma.booking.findMany({
+          where: { userId, status: BookingStatus.CONFIRMED },
+          select: {
+            status: true,
+            startDate: true,
+            endDate: true,
+            propertyTimeZone: true,
+            checkOutTime: true,
+            listing: { select: { country: true } },
+          },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const completedBookingCountries = confirmedBookings.flatMap((booking) => {
+    if (
+      !isCompletedConfirmedBooking({
+        dbStatus: booking.status,
+        startDate: booking.startDate,
+        endDate: booking.endDate,
+        checkOutTime: booking.checkOutTime,
+        propertyTimeZone: booking.propertyTimeZone,
       })
-    : [];
-  const verifiedUserDests = isOwner
-    ? await prisma.userDestination.findMany({
-        where: { userId, verificationStatus: "VERIFIED" },
-        include: { destination: true },
-      })
-    : [];
+    ) {
+      return [];
+    }
+
+    const country = normalizeCountry(booking.listing.country);
+    return country ? [country] : [];
+  });
 
   const destinationIds = [
     ...new Set(
@@ -1564,6 +1709,11 @@ export async function getCountryHighlights(
     }
   }
 
+  for (const country of completedBookingCountries) {
+    verifiedCountryNames.add(country.countryName.toLowerCase());
+    verifiedCountryCodes.add(country.countryCode.toUpperCase());
+  }
+
   // Also include verified countries if they are not already in memories
   for (const ud of verifiedUserDests) {
     if (!ud.destination || ud.destination.cityName) continue;
@@ -1583,6 +1733,22 @@ export async function getCountryHighlights(
     }
   }
 
+  // Legacy completed stays can exist before their UserDestination projection
+  // has been reconciled. Project those stays into the owner's carousel at
+  // read time, without mutating booking or destination history.
+  for (const country of completedBookingCountries) {
+    const normalizedKey = country.countryName.toLocaleLowerCase();
+    if (!countryMap.has(normalizedKey)) {
+      countryMap.set(normalizedKey, {
+        country: country.countryName,
+        countryCode: country.countryCode,
+        photoCount: 0,
+        coverUrl: null,
+        sampleLocation: country.countryName,
+      });
+    }
+  }
+
   return Array.from(countryMap.values()).map((data) => ({
     country: data.country,
     countryCode: data.countryCode,
@@ -1593,7 +1759,7 @@ export async function getCountryHighlights(
       verifiedCountryNames.has(data.country.toLowerCase()) ||
       Boolean(
         data.countryCode &&
-        verifiedCountryCodes.has(data.countryCode.toUpperCase()),
+          verifiedCountryCodes.has(data.countryCode.toUpperCase()),
       ),
   }));
 }
@@ -1613,7 +1779,8 @@ export async function updateTravelPhotoMetadata(
     order?: number;
   },
 ): Promise<TravelPhotoDTO> {
-  const caption = input.caption === undefined ? undefined : normalizeCaption(input.caption);
+  const caption =
+    input.caption === undefined ? undefined : normalizeCaption(input.caption);
   const taggedUserIds = normalizeTaggedUserIds(input.taggedUserIds);
   const destinationId = await resolvePhotoDestination(input.locationData);
   const photo = await prisma.travelPhoto.findUnique({
@@ -1631,7 +1798,11 @@ export async function updateTravelPhotoMetadata(
 
     // Tagging or attaching a destination upgrades the legacy row to the
     // current model so people tags are enforced with a database relation.
-    if (input.tripId || taggedUserIds !== undefined || destinationId !== undefined) {
+    if (
+      input.tripId ||
+      taggedUserIds !== undefined ||
+      destinationId !== undefined
+    ) {
       if (input.tripId) await assertTripCapacity(input.tripId, 1);
       if (taggedUserIds) await assertTaggableUsers(userId, taggedUserIds);
       const converted = await prisma.$transaction(async (tx) => {
@@ -1644,10 +1815,7 @@ export async function updateTravelPhotoMetadata(
             url: legacy.url,
             thumbnailUrl: legacy.url,
             mediumUrl: legacy.url,
-            caption:
-              caption !== undefined
-                ? caption
-                : legacy.caption,
+            caption: caption !== undefined ? caption : legacy.caption,
             location:
               input.location !== undefined
                 ? input.location
@@ -1656,7 +1824,9 @@ export async function updateTravelPhotoMetadata(
                 : legacy.location,
             order: input.order ?? 0,
             ...(taggedUserIds !== undefined && {
-              personTags: { create: taggedUserIds.map((taggedUserId) => ({ taggedUserId })) },
+              personTags: {
+                create: taggedUserIds.map((taggedUserId) => ({ taggedUserId })),
+              },
             }),
           },
           include: {
@@ -1691,8 +1861,15 @@ export async function updateTravelPhotoMetadata(
         location: converted.location,
         destinationId: converted.destinationId,
         taggedPeople: converted.personTags
-          .filter((tag) => tag.taggedUser.travelProfile?.visibility === "PUBLIC")
-          .map((tag) => ({ id: tag.taggedUser.id, name: tag.taggedUser.name, image: tag.taggedUser.image, handle: tag.taggedUser.travelProfile?.handle || null })),
+          .filter(
+            (tag) => tag.taggedUser.travelProfile?.visibility === "PUBLIC",
+          )
+          .map((tag) => ({
+            id: tag.taggedUser.id,
+            name: tag.taggedUser.name,
+            image: tag.taggedUser.image,
+            handle: tag.taggedUser.travelProfile?.handle || null,
+          })),
         order: converted.order,
         createdAt: converted.createdAt,
         updatedAt: converted.updatedAt,
@@ -1792,7 +1969,12 @@ export async function updateTravelPhotoMetadata(
     destinationId: updated.destinationId,
     taggedPeople: updated.personTags
       .filter((tag) => tag.taggedUser.travelProfile?.visibility === "PUBLIC")
-      .map((tag) => ({ id: tag.taggedUser.id, name: tag.taggedUser.name, image: tag.taggedUser.image, handle: tag.taggedUser.travelProfile?.handle || null })),
+      .map((tag) => ({
+        id: tag.taggedUser.id,
+        name: tag.taggedUser.name,
+        image: tag.taggedUser.image,
+        handle: tag.taggedUser.travelProfile?.handle || null,
+      })),
     order: updated.order,
     createdAt: updated.createdAt,
     updatedAt: updated.updatedAt,

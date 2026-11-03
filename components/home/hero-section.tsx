@@ -223,7 +223,7 @@ function highlightMatch(text: string | null | undefined, query: string): React.R
   return (
     <>
       {text.slice(0, idx)}
-      <span className="font-semibold text-[#1f1f1f] underline decoration-zinc-400 underline-offset-2">
+      <span className="font-medium text-[#1f1f1f] underline decoration-zinc-400 underline-offset-2">
         {text.slice(idx, idx + q.length)}
       </span>
       {text.slice(idx + q.length)}
@@ -1021,7 +1021,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
           </div>
-          <p className="text-[14px] font-semibold text-[#1F1F1F]">{t("home_no_matching_location")}</p>
+          <p className="text-[14px] font-medium text-[#1F1F1F]">{t("home_no_matching_location")}</p>
           <p className="text-[12px] text-[#727272] mt-1">{t("home_no_matching_location_hint")}</p>
         </div>
       ) : (
@@ -1162,7 +1162,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
   return (
     <>
       {/* Mobile Hero Section (screens < md) */}
-      <div className="block md:hidden w-full">
+      <div className="hidden w-full">
         {/* Top Image Card */}
         <div className="relative aspect-[358/512] w-full overflow-hidden rounded-[28px] bg-[#e5e5e5] shadow-xs">
           <Image
@@ -1186,6 +1186,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
         {/* Start your search bar */}
         <div className="mt-5">
           <button
+            id="homepage-mobile-search"
             type="button"
             disabled={isSearching}
             onClick={() => {
@@ -1221,7 +1222,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
 
       {/* Desktop / Tablet Hero Section (screens >= md) */}
       <section
-        className={`relative isolate hidden min-h-[410px] w-full items-center rounded-[32px] bg-[#ddd] md:flex sm:min-h-[460px] lg:min-h-[512px] lg:rounded-[60px] ${desktopPanel ? "z-[60]" : "z-20"
+        className={`relative isolate hidden min-h-[512px] w-full items-center rounded-[60px] bg-[#ddd] lg:flex ${desktopPanel ? "z-[60]" : "z-20"
           }`}
       >
         {/* Background Travel Imagery */}
@@ -1245,6 +1246,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
 
           {/* Floating Search Container */}
           <form
+            id="homepage-hero-search"
             ref={desktopSearchRef}
             onSubmit={handleSearchSubmit}
             autoComplete="off"
@@ -1485,7 +1487,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
           >
             {/* Close Button at top right */}
             <div className="flex justify-between items-center mb-3">
-              <h2 className="text-base font-bold text-[#1F1F1F]"></h2>
+              <h2 className="text-base font-medium text-[#1F1F1F]"></h2>
               <button
                 type="button"
                 onClick={() => setIsMobileSearchOpen(false)}

@@ -1874,9 +1874,11 @@ export function PublicListingDetailClient({
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
-      <AppHeader />
+      <div className="hidden lg:block">
+        <AppHeader />
+      </div>
 
-      <main className="w-full flex-1 pb-13 pt-5 sm:pt-10">
+      <main className="w-full flex-1 pb-13 pt-0 lg:pt-10">
         <Container>
           <div className="single-listing-page">
             {/* Header Section */}
@@ -1923,6 +1925,10 @@ export function PublicListingDetailClient({
                 key={listing.id}
                 photos={photos}
                 photoRoomAssignments={(listing as any).photoRoomAssignments || []}
+                rooms={(listing as any).rooms || []}
+                amenities={(listing as any).amenities || []}
+                listingId={listing.id}
+                listingSlug={listing.customSlug || undefined}
                 listingTitle={listing.title}
                 onShare={handleShare}
                 onSave={() => void handleSave()}
@@ -3017,7 +3023,7 @@ export function PublicListingDetailClient({
                     calendarEl.scrollIntoView({ behavior: "smooth", block: "center" });
                   }
                 }}
-                className="rounded-2xl border border-amber-400 bg-[#fee09a] px-5 py-2.5 text-xs font-bold text-[#1f1f1f] shadow-xs transition hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
+                className="rounded-2xl border border-amber-400 bg-[#fee09a] px-5 py-2.5 text-xs font-medium text-[#1f1f1f] shadow-xs transition hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
               >
                 {t("listing_detail_check_availability", "Check availability")}
               </button>
@@ -3026,7 +3032,7 @@ export function PublicListingDetailClient({
                 type="button"
                 disabled={isBookingSubmitting || !hasValidQuote}
                 onClick={handleReserve}
-                className={`rounded-2xl px-5 py-2.5 text-xs font-bold transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
+                className={`rounded-2xl px-5 py-2.5 text-xs font-medium transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
                   ? "border border-amber-400 bg-[#fee09a] text-[#1f1f1f] hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
                   : "border border-zinc-200 bg-zinc-100 text-[#727272] cursor-not-allowed"
                   }`}

@@ -1,19 +1,20 @@
 import { prisma } from "@/lib/db/prisma";
 import { AppError } from "@/lib/api/errors";
 import { verifyUserBookings } from "./travel-destination.service";
+import { awardSystemTravelStamps } from "./travel-stamp.service";
 
 export interface TravelerReconciliationSummary {
   userId: string;
   verifiedDestinationsCount: number;
   completedStaysCount: number;
   awardedStampsCount: number;
+  missingStampConfiguration: string[];
   evaluatedAt: string;
 }
 
 /**
  * Authoritative, idempotent reconciliation engine for a traveler's verified
- * destinations based on completed stays. Stamp collection is intentionally
- * explicit: an admin catalog entry is not a user-owned stamp.
+ * destinations and system-owned catalog awards based on completed stays.
  *
  * Safe to rerun repeatedly; will never duplicate records or regress earned status.
  */
@@ -22,12 +23,14 @@ export async function reconcileTravelerHistory(userId: string): Promise<Traveler
 
   // 1. Verify bookings and create/update UserDestination records
   const destResult = await verifyUserBookings(userId);
+  const awardResult = await awardSystemTravelStamps(userId);
 
   return {
     userId,
     verifiedDestinationsCount: destResult.verifiedDestinationsCount,
     completedStaysCount: destResult.completedStaysCount,
-    awardedStampsCount: 0,
+    awardedStampsCount: awardResult.awardedCount,
+    missingStampConfiguration: awardResult.missingConfiguration,
     evaluatedAt: new Date().toISOString(),
   };
 }

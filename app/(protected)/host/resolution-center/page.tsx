@@ -1,10 +1,6 @@
 import { Role } from "@/generated/prisma/enums";
 import { requirePageRole } from "@/lib/permissions/page-guards";
-import { disputeService } from "@/services/dispute.service";
-import { listingService } from "@/services/listing.service";
-import { HostHeader } from "@/components/host/host-header";
-import { Container } from "@/components/ui";
-import { HostResolutionCenterClient } from "@/components/host/host-resolution-center-client";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,31 +10,22 @@ export default async function HostResolutionCenterPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const actor = await requirePageRole([Role.HOST]);
+  await requirePageRole([Role.HOST]);
   const params = await searchParams;
-  const value = (key: string) => typeof params[key] === "string" ? params[key] : undefined;
-  const [data, listings] = await Promise.all([
-    disputeService.listDisputesForHost(actor, {
-      page: Number(value("page")) || 1,
-      limit: 20,
-      tab: value("tab") as "all" | "response_required" | "open" | "resolved" | undefined,
-      search: value("search"),
-      propertyId: value("propertyId"),
-      status: value("status"),
-      startDate: value("startDate"),
-      endDate: value("endDate"),
-    }),
-    listingService.listForHost(actor, { take: 100 }),
-  ]);
+  const query = new URLSearchParams();
 
-  return (
-    <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] text-[#1F1F1F] sm:pb-0">
-      <HostHeader />
-      <main className="flex-1 py-8 sm:py-10">
-        <Container className="px-4 sm:px-6">
-          <HostResolutionCenterClient data={data} listings={listings.items.map((listing) => ({ id: listing.id, title: listing.title }))} />
-        </Container>
-      </main>
-    </div>
-  );
+  for (const [key, value] of Object.entries(params)) {
+    if (typeof value === "string") query.set(key, value);
+    else if (Array.isArray(value)) value.forEach((entry) => query.append(key, entry));
+  }
+
+  const caseId = typeof params.caseId === "string" ? params.caseId : undefined;
+  if (caseId) {
+    query.delete("caseId");
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    redirect(`/host/support/cases/${encodeURIComponent(caseId)}${qs}`);
+  }
+
+  // Preserve historic bookmarks while enforcing one host-facing support entry point.
+  redirect(`/host/support${query.size ? `?${query.toString()}` : ""}`);
 }

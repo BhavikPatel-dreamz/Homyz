@@ -6,7 +6,8 @@ import { runAction } from "@/lib/actions/result";
 import { AppError } from "@/lib/api/errors";
 import { getSessionUser } from "@/lib/auth/session";
 import { personalInfoService } from "@/services/personal-info.service";
-import { savePrivateMedia } from "@/lib/storage/media";
+import { deletePrivateMedia, savePrivateMedia } from "@/lib/storage/media";
+import { validateDocumentUpload } from "@/lib/media/document-validation";
 import {
   addressSchema,
   emergencyContactSchema,
@@ -34,7 +35,10 @@ function isIdentityDocumentType(value: string): value is IdentityDocumentType {
 export async function getPersonalInfoAction() {
   return runAction(async () => {
     const actor = await getSessionUser();
-    if (!actor) throw AppError.unauthorized("Authentication required to access personal information");
+    if (!actor)
+      throw AppError.unauthorized(
+        "Authentication required to access personal information",
+      );
     return personalInfoService.getPersonalInfo(actor.id);
   });
 }
@@ -56,7 +60,10 @@ export async function updatePreferredNameAction(input: PreferredNameInput) {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized("Authentication required");
     const parsed = preferredNameSchema.parse(input);
-    const updated = await personalInfoService.updatePreferredFirstName(actor.id, parsed);
+    const updated = await personalInfoService.updatePreferredFirstName(
+      actor.id,
+      parsed,
+    );
     revalidatePath("/account-settings/personal-info");
     return updated;
   });
@@ -89,7 +96,10 @@ export async function updateResidentialAddressAction(input: AddressInput) {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized("Authentication required");
     const parsed = addressSchema.parse(input);
-    const updated = await personalInfoService.updateResidentialAddress(actor.id, parsed);
+    const updated = await personalInfoService.updateResidentialAddress(
+      actor.id,
+      parsed,
+    );
     revalidatePath("/account-settings/personal-info");
     return updated;
   });
@@ -100,18 +110,26 @@ export async function updatePostalAddressAction(input: PostalAddressInput) {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized("Authentication required");
     const parsed = postalAddressSchema.parse(input);
-    const updated = await personalInfoService.updatePostalAddress(actor.id, parsed);
+    const updated = await personalInfoService.updatePostalAddress(
+      actor.id,
+      parsed,
+    );
     revalidatePath("/account-settings/personal-info");
     return updated;
   });
 }
 
-export async function updateEmergencyContactAction(input: EmergencyContactInput) {
+export async function updateEmergencyContactAction(
+  input: EmergencyContactInput,
+) {
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized("Authentication required");
     const parsed = emergencyContactSchema.parse(input);
-    const updated = await personalInfoService.updateEmergencyContact(actor.id, parsed);
+    const updated = await personalInfoService.updateEmergencyContact(
+      actor.id,
+      parsed,
+    );
     revalidatePath("/account-settings/personal-info");
     return updated;
   });
@@ -123,7 +141,8 @@ export async function uploadIdentityDocumentAction(formData: FormData) {
     if (!actor) throw AppError.unauthorized("Authentication required");
 
     const file = formData.get("file") as File | null;
-    const documentType = (formData.get("documentType") as string | null) || "passport";
+    const documentType =
+      (formData.get("documentType") as string | null) || "passport";
 
     if (!file || typeof file === "string") {
       throw AppError.badRequest("Please select a document file to upload.");
@@ -133,22 +152,6 @@ export async function uploadIdentityDocumentAction(formData: FormData) {
       throw AppError.badRequest("Invalid document type selected.");
     }
 
-    const allowedMimes = new Set([
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "application/pdf",
-    ]);
-
-    if (!allowedMimes.has(file.type)) {
-      throw AppError.badRequest("Only JPEG, PNG, WebP, and PDF documents are supported.");
-    }
-
-    const MAX_SIZE = 15 * 1024 * 1024;
-    if (file.size <= 0 || file.size > MAX_SIZE) {
-      throw AppError.badRequest("Document file must be between 1 byte and 15 MB.");
-    }
-
     const uploadedExtension = path.extname(file.name).toLowerCase();
     const extensionByMimeType: Record<string, string> = {
       "image/jpeg": ".jpg",
@@ -156,11 +159,19 @@ export async function uploadIdentityDocumentAction(formData: FormData) {
       "image/webp": ".webp",
       "application/pdf": ".pdf",
     };
-    const cleanExt = extensionByMimeType[file.type] || uploadedExtension || ".jpg";
+    const cleanExt =
+      extensionByMimeType[file.type] || uploadedExtension || ".jpg";
     const safeBaseName = `id_${actor.id}_${documentType}_${Date.now()}${cleanExt}`;
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+    const validation = validateDocumentUpload({
+      fileName: file.name,
+      mimeType: file.type,
+      size: file.size,
+      buffer,
+    });
+    if (validation) throw AppError.badRequest(validation.message);
 
     const saved = await savePrivateMedia({
       kind: "host-documents",
@@ -169,11 +180,20 @@ export async function uploadIdentityDocumentAction(formData: FormData) {
       contentType: file.type || "application/octet-stream",
     });
 
-    const updated = await personalInfoService.uploadIdentityDocument(actor.id, {
-      documentType,
-      fileName: file.name,
-      fileUrl: `/api/v1/users/personal-info/identity-document/file/${saved.storagePath}`,
-    });
+    let updated;
+    try {
+      updated = await personalInfoService.uploadIdentityDocument(actor.id, {
+        documentType,
+        fileName: file.name,
+        fileUrl: `/api/v1/users/personal-info/identity-document/file/${saved.storagePath}`,
+      });
+    } catch (error) {
+      await deletePrivateMedia({
+        kind: "host-documents",
+        fileName: saved.storagePath,
+      }).catch(() => {});
+      throw error;
+    }
 
     revalidatePath("/account-settings/personal-info");
     revalidatePath("/profile");

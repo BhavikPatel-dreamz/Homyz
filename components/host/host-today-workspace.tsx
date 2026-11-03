@@ -13,7 +13,6 @@ import {
 } from "./host-workspace-shared";
 import type { ListingDTO } from "@/services/mappers";
 import { Container } from "../ui";
-import { bookingDateKey } from "@/lib/booking/booking-date";
 import {
   buildOperationalEvents,
   deduplicateHostReservations,
@@ -48,7 +47,7 @@ export function HostTodayWorkspace({
   page: initialPageProp,
   totalPages: initialTotalPagesProp,
   pendingRequestCount: initialPendingRequestCount,
-  today,
+  today: _today,
   initialCurrentTimeMinutes,
   initialTab,
   initialPage,
@@ -59,6 +58,9 @@ export function HostTodayWorkspace({
   initialPage?: number;
 }) {
   const { t } = useLanguage();
+  // Kept in the page contract for the initial server render; each operational
+  // event below resolves "today" from its own property timezone.
+  void _today;
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pendingUrlListingId, setPendingUrlListingId] = useState(
@@ -75,7 +77,7 @@ export function HostTodayWorkspace({
   const { selectedPropertyId, setSelectedPropertyId } = useHostDashboardState();
   const [draftPropertyId, setDraftPropertyId] = useState<string | null>(null);
   const [selected, setSelected] = useState<HostReservation | null>(null);
-  const [currentDate, setCurrentDate] = useState(today);
+  const [currentDate, setCurrentDate] = useState(() => new Date());
   const [currentTimeMinutes, setCurrentTimeMinutes] = useState(
     initialCurrentTimeMinutes,
   );
@@ -478,7 +480,7 @@ export function HostTodayWorkspace({
   useEffect(() => {
     const updateCurrentTime = () => {
       const now = new Date();
-      setCurrentDate(bookingDateKey(now));
+      setCurrentDate(now);
       setCurrentTimeMinutes(now.getHours() * 60 + now.getMinutes());
     };
     updateCurrentTime();

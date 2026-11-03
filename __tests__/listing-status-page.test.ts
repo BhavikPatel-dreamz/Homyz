@@ -154,7 +154,7 @@ test("Listing Status Actions: submitListingForReviewAction & resubmitListingForR
   assert.equal(typeof resubmitListingForReviewAction, "function");
 });
 
-test("Listing Status Component: renders house illustration, listed & unlisted cards, and disabled state for PENDING_REVIEW", async () => {
+test("Listing Status Component: Pending review shows clean single status without house illustration", async () => {
   const React = await import("react");
   const { renderToStaticMarkup } = await import("react-dom/server");
   const { ListingStatusView } = await import(
@@ -189,35 +189,21 @@ test("Listing Status Component: renders house illustration, listed & unlisted ca
     })
   );
 
-  // 1. Must render House Illustration SVG
-  assert.ok(html.includes("viewBox=\"0 0 200 160\""), "Must contain Figma house illustration SVG");
-  assert.ok(html.includes("#FDE047"), "Must contain house roof color");
+  // 1. House Illustration SVG must be removed
+  assert.ok(!html.includes("viewBox=\"0 0 200 160\""), "Must NOT contain old cartoon house illustration SVG");
 
-  // 2. Must render "Listed" and "Unlisted" cards
-  assert.ok(html.includes("Listed"), "Must render Listed card");
-  assert.ok(html.includes("Unlisted"), "Must render Unlisted card");
-
-  // 3. Must show Admin Approval Required message
-  assert.ok(html.includes("Admin approval required"), "Must display Admin approval required heading");
+  // 2. Must show clean Pending Review status
+  assert.ok(html.includes("Pending review"), "Must display Pending review status");
   assert.ok(
-    html.includes("Your listing has been submitted for review"),
-    "Must explain property is submitted for review"
-  );
-  assert.ok(
-    html.includes("Do not show the listing as fully published until the admin has actually approved it"),
-    "Must include requirement to not show as published until approved"
+    html.includes("Your listing is being reviewed"),
+    "Must explain listing is being reviewed"
   );
 
-  // 4. Must show Disabled / Locked indicator for "Listed"
-  assert.ok(html.includes("Locked"), "Must show Locked badge on Listed card");
-  assert.ok(
-    html.includes("Requires Admin Approval before publishing"),
-    "Must explain why Listed is disabled"
-  );
-  assert.ok(html.includes("Save (Disabled: Admin approval required)"), "Save button must be disabled for unapproved listing");
+  // 3. Must not show premature Listed active controls for unpublished review
+  assert.ok(!html.includes("Listing visibility"), "Unpublished listing must not show visibility switcher");
 });
 
-test("Listing Status Component: enables Listed card and shows Approved banner when APPROVED (International)", async () => {
+test("Listing Status Component: Approved unpublished listing shows Ready to publish and Publish listing action", async () => {
   const React = await import("react");
   const { renderToStaticMarkup } = await import("react-dom/server");
   const { ListingStatusView } = await import(
@@ -251,22 +237,21 @@ test("Listing Status Component: enables Listed card and shows Approved banner wh
     })
   );
 
-  // Must render Approved banner
-  assert.ok(html.includes("Listing Approved"), "Must display Listing Approved banner");
-  // Must render House SVG
-  assert.ok(html.includes("viewBox=\"0 0 200 160\""), "Must contain house illustration");
-  // Listed card must be enabled (not Locked)
-  assert.ok(!html.includes("Save (Disabled: Admin approval required)"), "Save button should be enabled");
+  // Must render Ready to publish status
+  assert.ok(/Ready to [pP]ublish/.test(html), "Must display Ready to publish status");
+  assert.ok(html.includes("Publish listing"), "Must display Publish listing primary action");
+  // House SVG must be removed
+  assert.ok(!html.includes("viewBox=\"0 0 200 160\""), "Must NOT contain old cartoon house illustration");
 });
 
-test("Listing Status Component: Saudi Arabia listings do not require admin approval and show Ready to Publish", async () => {
+test("Listing Status Component: Published listing renders Airbnb-inspired Listed and Unlisted visibility controls", async () => {
   const React = await import("react");
   const { renderToStaticMarkup } = await import("react-dom/server");
   const { ListingStatusView } = await import(
     "../app/(protected)/host/listings/[id]/components/ListingStatusView"
   );
 
-  const saudiListing = {
+  const publishedListing = {
     id: "cmtwgd9jz00085eastgi95o32",
     title: "Saudi Luxury Penthouse",
     description: "An exceptional stay with all amenities included in the center of Riyadh.",
@@ -281,29 +266,31 @@ test("Listing Status Component: Saudi Arabia listings do not require admin appro
     latitude: 24.7136,
     longitude: 46.6753,
     safetyDisclosures: ["SECURITY_CAMERA:NO", "NOISE_MONITOR:NO", "WEAPONS:NO"],
-    status: "DRAFT",
-    published: false,
+    status: "ACTIVE",
+    published: true,
   };
 
   const html = renderToStaticMarkup(
     React.createElement(ListingStatusView, {
-      listing: saudiListing as any,
+      listing: publishedListing as any,
       setActiveSection: () => {},
-      status: "unlisted",
+      status: "listed",
     })
   );
 
-  // 1. Must NOT show Admin Approval Required
-  assert.ok(!html.includes("Admin approval required"), "Must NOT display Admin approval required for Saudi listing");
-  // 2. Must show Ready to Publish banner
-  assert.ok(html.includes("Ready to Publish"), "Must display Ready to Publish banner");
-  // 3. Must indicate no admin approval is required in copy
-  assert.ok(
-    html.includes("No admin approval is required for Saudi listings"),
-    "Must explain that no admin approval is required"
-  );
-  // 4. Listed card must be enabled and save button must NOT say disabled
-  assert.ok(!html.includes("Save (Disabled: Admin approval required)"), "Save button should not be disabled for admin approval");
+  // 1. Must display single status "Listed" and active indicator
+  assert.ok(html.includes("Listed"), "Must display Listed status");
+  assert.ok(html.includes("Active"), "Must display Active badge/indicator");
+  // 2. Must display Listing visibility section
+  assert.ok(html.includes("Listing visibility"), "Must display Listing visibility section");
+  // 3. Must display Listed and Unlisted options
+  assert.ok(/Guests can find/.test(html), "Must describe Listed option");
+  assert.ok(/hidden from search/.test(html), "Must describe Unlisted option");
+  // 4. Must display Save changes and Cancel buttons
+  assert.ok(html.includes("Save changes"), "Must display Save changes button");
+  assert.ok(html.includes("Cancel"), "Must display Cancel button");
+  // 5. Must NOT display cartoon house illustration
+  assert.ok(!html.includes("viewBox=\"0 0 200 160\""), "Must NOT contain old cartoon house illustration");
 });
 
 

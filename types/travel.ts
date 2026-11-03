@@ -210,6 +210,8 @@ export interface UserTravelStampDTO {
   isPublic: boolean;
   /** Manual stamps are personal declarations and never count as verified travel. */
   isManual: boolean;
+  /** A system-earned stamp has verified booking evidence and cannot be removed or edited. */
+  isSystemAwarded: boolean;
   visitDate?: Date | string | null;
   personalDescription?: string | null;
 }
@@ -268,6 +270,7 @@ export interface PublicTravelStampDTO {
   isPinned: boolean;
   isPublic: boolean;
   isManual: boolean;
+  isSystemAwarded: boolean;
 }
 
 export interface PublicTravelProfileDTO {

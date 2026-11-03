@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import type { UserTravelStampDTO } from "@/types/travel";
 import { TravelStampDetailModal } from "./travel-stamp-detail-modal";
@@ -48,6 +48,15 @@ export function TravelStampsSection({
   );
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [collectionCount, setCollectionCount] = useState(totalCount);
+
+  // Completion awards are committed by the background worker. A router refresh
+  // must update the existing profile section rather than leaving its local
+  // collection state stale until the user reloads the page.
+  useEffect(() => {
+    setLocalStamps(stamps);
+    setNextCursor(initialNextCursor);
+    setCollectionCount(totalCount);
+  }, [stamps, initialNextCursor, totalCount]);
 
   const handleToggleVisibility = async () => {
     if (!isOwner || isTogglingVisibility) return;
@@ -292,8 +301,8 @@ export function TravelStampsSection({
                         </span>
                       )}
                     </button>
-                    {isOwner && (
-                      <div className="absolute right-0 top-0 flex gap-1 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100">
+                    {isOwner && !userStamp.isSystemAwarded && (
+                      <div className="absolute right-0 top-0 flex gap-1 sm:opacity-0 sm:transition sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                         {stamp.isCustom && (
                           <button
                             type="button"
@@ -322,6 +331,16 @@ export function TravelStampsSection({
                     {stamp.isCustom && (
                       <span className="mt-1 rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-amber-800">
                         Personal
+                      </span>
+                    )}
+                    {userStamp.isSystemAwarded && (
+                      <span className="mt-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-800">
+                        Verified stay
+                      </span>
+                    )}
+                    {!userStamp.isSystemAwarded && !stamp.isCustom && (
+                      <span className="mt-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-zinc-600">
+                        Selected
                       </span>
                     )}
                   </div>
@@ -382,7 +401,7 @@ export function TravelStampsSection({
         userStamp={selectedStamp}
         isOpen={Boolean(selectedStamp)}
         onClose={() => setSelectedStamp(null)}
-        onTogglePin={isOwner ? handleTogglePin : undefined}
+        onTogglePin={isOwner && !selectedStamp?.isSystemAwarded ? handleTogglePin : undefined}
         isPinning={isPinning}
       />
 

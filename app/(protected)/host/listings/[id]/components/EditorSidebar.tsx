@@ -162,6 +162,7 @@ interface EditorSidebarProps {
   guidebooksCount?: number;
   editBedrooms?: number;
   editBeds?: number;
+  editBathrooms?: number;
   parkingAvailable?: boolean;
   parkingType?: string;
   setIsRemoveListingModalOpen?: (open: boolean) => void;
@@ -362,6 +363,7 @@ export function EditorSidebar({
   checkOutInstructions = "",
   editBedrooms = 1,
   editBeds = 1,
+  editBathrooms = 1,
   parkingAvailable = false,
   parkingType = "Free",
   setIsRemoveListingModalOpen,
@@ -827,17 +829,26 @@ export function EditorSidebar({
               </div>
             ) : editorTab === "space" ? (
               <div className="space-y-3">
-                {/* Photo Card Stack Preview (Matches reference image: 4 overlapping cards with hover animation) */}
+                {/* Photo Tour Summary Card (Matches Airbnb reference: Photo tour, bedroom/bed/bath count, collage, tasks) */}
                 {activeSection !== "about-host" && (
                   <div
                     onClick={() => setActiveSection("photos")}
-                    className={`relative min-w-0 cursor-pointer group sm:mb-[72px] mb-[40px] rounded-3xl transition-all ${activeSection === "photos"
-                      ? ""
-                      : "hover:bg-zinc-100/50"
+                    className={`relative min-w-0 cursor-pointer group sm:mb-[48px] mb-[32px] rounded-2xl border p-4 transition-all ${activeSection === "photos"
+                      ? "border-zinc-900 dark:border-zinc-200 bg-zinc-50 dark:bg-zinc-800/80 shadow-xs"
+                      : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700"
                       }`}
                     aria-label="Photo tour preview"
                   >
-                    <div className="relative w-full max-w-[70%] h-36 sm:h-45">
+                    <div className="mb-3">
+                      <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
+                        {t("host_photo_tour", "Photo tour")}
+                      </h3>
+                      <p className="text-xs font-normal text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        {editBedrooms || 1} {editBedrooms === 1 ? (t("host_bedroom_single") || "bedroom") : (t("host_bedroom_plural") || "bedrooms")} · {editBeds || 1} {editBeds === 1 ? (t("host_bed_single") || "bed") : (t("host_bed_plural") || "beds")} · {editBathrooms || 1} {editBathrooms === 1 ? (t("host_bath_single") || "bath") : (t("host_bath_plural") || "baths")}
+                      </p>
+                    </div>
+
+                    <div className="relative w-full max-w-[85%] h-32 sm:h-38 mx-auto my-2">
                       {/* Card 0 (Leftmost, z-0) */}
                       <div
                         className="absolute top-0 bottom-0 left-0 w-[154px] rounded-xl border-2 border-[#1F1F1F] bg-white shadow-2xs overflow-hidden z-0 transition-all duration-300 ease-out hover:!z-50 hover:shadow-lg"
@@ -936,6 +947,13 @@ export function EditorSidebar({
                         </div>
                       </div>
                     </div>
+
+                    {editPhotos.length < 5 && (
+                      <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                        <span className="size-2 rounded-full bg-amber-500 shrink-0" />
+                        <span>You have tasks</span>
+                      </div>
+                    )}
                   </div>
                 )}
                 {/* 1. Title */}

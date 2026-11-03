@@ -14,17 +14,18 @@ import { removeTravelStamp } from "@/services/travel-stamp.service";
 
 const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), "utf8");
 
-test("Phase 2 foundation remains inactive and has no public arbitrary event route", () => {
+test("completion events use a server-only automatic stamp-award path and have no public arbitrary event route", () => {
   const schema = read("prisma/schema.prisma");
   const events = read("services/achievement-event.service.ts");
   const reconciliation = read("services/achievement-reconciliation.service.ts");
   const migration = read("prisma/migrations/20261028130000_add_stayelite_event_foundation/migration.sql");
 
-  assert.equal(isAutomaticAchievementAwardingEnabled(), false);
+  assert.equal(isAutomaticAchievementAwardingEnabled(), true);
   assert.match(schema, /model AchievementEvent/);
   assert.match(schema, /model BookingVisitEvidence/);
   assert.match(schema, /ownership\s+TravelStampOwnership\s+@default\(USER_MANAGED\)/);
-  assert.match(events, /awardIssued:\s*false/);
+  assert.match(events, /recordStayCompletionCandidateEvent/);
+  assert.match(events, /awardSystemTravelStamps/);
   assert.match(events, /idempotencyKey:\s*string/);
   assert.match(reconciliation, /dryRun = options\.dryRun !== false/);
   assert.match(reconciliation, /STAYELITE_EVIDENCE_BACKFILL_ENABLED/);
@@ -32,7 +33,11 @@ test("Phase 2 foundation remains inactive and has no public arbitrary event rout
   assert.ok(!fs.existsSync(path.join(process.cwd(), "app/api/v1/achievements/events/route.ts")));
 });
 
-test("parallel delivery is idempotent, processing cannot award, and system stamps cannot be removed", async (t) => {
+test("parallel delivery is idempotent, non-completion events do not award, and system stamps cannot be removed", async (t) => {
+  if (process.env.STAYELITE_DB_TESTS !== "true") {
+    t.skip("Set STAYELITE_DB_TESTS=true only for an explicitly approved isolated database.");
+    return;
+  }
   try {
     await prisma.achievementEvent.count({ take: 1 });
   } catch (error: any) {

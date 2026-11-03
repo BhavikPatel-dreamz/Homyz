@@ -9,9 +9,13 @@ if (typeof (globalThis as any).crypto === "undefined") {
   (globalThis as any).crypto = require("crypto").webcrypto;
 }
 
-const PREVIEW_SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || "cms_preview_secret_homyz_key_32chars_min"
-);
+function previewSecret(): Uint8Array {
+  const secret = process.env.NEXTAUTH_SECRET?.trim();
+  if (!secret) {
+    throw new Error("NEXTAUTH_SECRET is required to sign CMS preview tokens.");
+  }
+  return new TextEncoder().encode(secret);
+}
 
 export interface PreviewTokenPayload {
   contentId: string;
@@ -28,7 +32,7 @@ export async function generatePreviewToken(payload: PreviewTokenPayload): Promis
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("1h")
-    .sign(PREVIEW_SECRET);
+    .sign(previewSecret());
 }
 
 /**
@@ -36,7 +40,7 @@ export async function generatePreviewToken(payload: PreviewTokenPayload): Promis
  */
 export async function verifyPreviewToken(token: string): Promise<PreviewTokenPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, PREVIEW_SECRET);
+    const { payload } = await jwtVerify(token, previewSecret());
     if (!payload.contentId || !payload.versionId) {
       return null;
     }
@@ -50,4 +54,3 @@ export async function verifyPreviewToken(token: string): Promise<PreviewTokenPay
     return null;
   }
 }
-

@@ -886,3 +886,182 @@ input[type="number"] {
   animation: modal-step-fade-in 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: transform, opacity;
 }
+
+@keyframes messages-reservation-sheet-in {
+  from {
+    opacity: 0.8;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes messages-reservation-sheet-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0.8;
+    transform: translateY(28px);
+  }
+}
+
+.messages-reservation-sheet {
+  animation: messages-reservation-sheet-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+.messages-reservation-sheet-closing {
+  animation: messages-reservation-sheet-out 280ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.messages-reservation-backdrop-closing {
+  animation: modal-backdrop-out 280ms ease-in forwards !important;
+}
+
+/* Guest profile typography. These tokens are deliberately scoped to the guest
+   profile workspace and guest reservation details so they cannot affect Host,
+   Admin, search, or listing pages. */
+.guest-profile,
+.guest-booking-details {
+  --profile-ink: #1f1f1f;
+  --profile-muted: #727272;
+  --profile-title-size: 1.875rem;
+  --profile-section-size: 1.375rem;
+  --profile-card-title-size: 1rem;
+  --profile-body-size: 0.9375rem;
+  --profile-secondary-size: 0.875rem;
+}
+
+.profile-page-title,
+.reservation-page-title {
+  color: var(--profile-ink);
+  font-size: var(--profile-title-size);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.profile-section-title,
+.guest-booking-details h2 {
+  color: var(--profile-ink);
+  font-size: var(--profile-section-size);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+.profile-card-title,
+.guest-booking-details h3 {
+  color: var(--profile-ink);
+  font-size: var(--profile-card-title-size);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.profile-secondary-text {
+  color: var(--profile-muted);
+  font-size: var(--profile-body-size);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.profile-value {
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.profile-value--hero {
+  font-size: 2rem;
+}
+
+.profile-button {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  white-space: nowrap;
+}
+
+.profile-button--small {
+  min-height: 2.25rem;
+  padding-inline: 1rem;
+}
+
+.profile-button--medium {
+  min-height: 2.75rem;
+  padding-inline: 1.25rem;
+}
+
+.profile-tab {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  white-space: nowrap;
+}
+
+.guest-profile :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea),
+.guest-booking-details :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.guest-profile :is(input:not([type="checkbox"]):not([type="radio"]), select),
+.guest-booking-details :is(input:not([type="checkbox"]):not([type="radio"]), select) {
+  min-height: 2.75rem;
+}
+
+.guest-profile form label,
+.guest-booking-details form label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.guest-profile form button[type="submit"],
+.guest-booking-details form button[type="submit"] {
+  min-height: 2.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+.guest-booking-details h1 {
+  font-size: var(--profile-title-size);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.guest-booking-details :is(p, dd, span) {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 639px) {
+  .guest-profile,
+  .guest-booking-details {
+    --profile-title-size: 1.5rem;
+    --profile-section-size: 1.125rem;
+  }
+
+  .profile-value--hero {
+    font-size: 1.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .messages-reservation-sheet,
+  .messages-reservation-sheet-closing,
+  .messages-reservation-backdrop-closing {
+    animation-duration: 1ms !important;
+  }
+}
