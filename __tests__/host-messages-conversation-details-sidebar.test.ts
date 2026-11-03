@@ -8,6 +8,27 @@ const root = path.resolve(import.meta.dirname, "..");
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
 describe("Host Messages conversation details sidebar", () => {
+  it("uses the shared wide container and balanced responsive inbox columns", () => {
+    const workspace = read("components/host/messages/host-messages-workspace.tsx");
+    const skeleton = read("components/messages/message-workspace-skeleton.tsx");
+
+    assert.ok(
+      workspace.includes("max-w-[1600px] min-w-0 flex-1 px-4 sm:px-6 lg:px-8"),
+      "Messages content must use the shared wide container with responsive gutters",
+    );
+    assert.ok(
+      workspace.includes("lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)_340px]"),
+      "The chat column must flex between balanced conversation and details columns",
+    );
+    assert.ok(
+      skeleton.includes("max-w-[1600px]") && skeleton.includes("xl:grid-cols-[320px_minmax(0,1fr)_340px]"),
+      "The loading skeleton must preserve the live workspace width and column geometry",
+    );
+    assert.ok(workspace.includes("flex-1 overflow-y-auto space-y-4"), "Only message history should scroll");
+    assert.ok(workspace.includes("overflow-y-auto overscroll-contain bg-white"), "Details must scroll independently");
+    assert.ok(workspace.includes("shrink-0 border-t border-zinc-300 bg-white"), "Composer must stay anchored below history");
+  });
+
   it("uses selectedConversation as single source of truth without stale cross-talk", () => {
     const workspace = read("components/host/messages/host-messages-workspace.tsx");
 

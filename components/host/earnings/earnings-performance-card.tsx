@@ -469,22 +469,23 @@ export function EarningsPerformanceCard({
   return (
     <div
       ref={dropdownRef}
-      className="w-full rounded-3xl border border-zinc-200/90 bg-white p-5 sm:p-7 shadow-xs font-sans text-zinc-900 transition-all"
+      className="flex w-full flex-col rounded-3xl border border-zinc-200/90 bg-white p-5 font-sans text-zinc-900 shadow-xs sm:p-7 lg:p-8"
     >
       {/* ── 1. Header ── */}
-      <div className="flex flex-col gap-1">
-        <h2 className="text-xl sm:text-2xl font-medium tracking-tight text-zinc-900">
+      <div className="flex flex-col gap-2">
+        <h2 className="text-2xl font-medium tracking-tight text-zinc-900 sm:text-[26px]">
           Earnings performance
         </h2>
-        <p className="text-xs sm:text-sm text-zinc-500 font-normal">
-          Get real-time insights on your earnings. {dateRangeSubtitle}
+        <p className="max-w-2xl text-sm font-normal leading-6 text-zinc-500">
+          Track your earnings performance and booking activity for{" "}
+          <span className="font-medium text-zinc-700">{dateRangeSubtitle}</span>.
         </p>
       </div>
 
       {/* ── 2. Top Controls Toolbar ── */}
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-zinc-100">
+      <div className="mt-6 overflow-x-auto pb-1">
         {/* Metric Switcher Pills */}
-        <div className="flex items-center gap-1.5 bg-zinc-100/70 p-1 rounded-full">
+        <div className="inline-flex min-w-max items-center gap-1 rounded-xl bg-zinc-100 p-1">
           <button
             type="button"
             onClick={() => setMetricMode("total")}
@@ -516,7 +517,7 @@ export function EarningsPerformanceCard({
                 : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200/50"
             }`}
           >
-            Host (commissions)
+            Host commissions
           </button>
         </div>
 

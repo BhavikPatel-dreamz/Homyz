@@ -106,6 +106,16 @@ describe("Host Navigation Drawer — Airbnb Inspired Redesign & Verification", (
     assert.ok(content.includes("onOpenLanguagesCurrency"), "Must include Languages & currency handler");
   });
 
+  test("Host navigation rows use readable responsive typography and consistent spacing", () => {
+    const content = fs.readFileSync(drawerFilePath, "utf8");
+    assert.ok(content.includes("min-h-12"), "Navigation rows must be at least 48px tall");
+    assert.ok(content.includes("text-base font-medium leading-5"), "Mobile labels must use 16px medium text");
+    assert.ok(content.includes("md:text-[15px]"), "Tablet and desktop labels must use 15px text");
+    assert.ok(content.includes("px-3.5 py-2"), "Navigation rows must retain compact 14px horizontal padding");
+    assert.ok(content.includes("items-center gap-3"), "Icons and labels must align with a 12px gap");
+    assert.ok(content.includes("drawerNavigationItemBaseClass} gap-3"), "Logout must use the shared row typography");
+  });
+
   test("DrawerFooter provides Logout with icon and clean redirection", () => {
     const content = fs.readFileSync(drawerFilePath, "utf8");
     assert.ok(content.includes("Log out"), "Footer must include 'Log out'");

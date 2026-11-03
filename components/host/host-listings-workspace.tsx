@@ -18,7 +18,6 @@ import {
   updateListingAvailabilityAction,
 } from "@/actions/host/listings";
 import type { HostListingCardDTO, ListingDTO } from "@/services/mappers";
-import { Container } from "../ui";
 import { normalizeAmenities } from "@/lib/constants/amenities";
 import { isSaudiArabia } from "@/lib/location/address-countries";
 import { useLanguage } from "@/lib/i18n/language-context";
@@ -179,7 +178,6 @@ export function HostListingsWorkspace({
     initialTotalPages ?? Math.max(1, Math.ceil((initialTotalCount ?? initialListings.length) / 12)),
   );
   const [counts, setCounts] = useState<Record<string, number> | undefined>(initialCounts);
-  const compactGrid = false;
   const [searchQuery, setSearchQuery] = useState<string>(initialSearchQuery);
   const [loading, setLoading] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
@@ -755,7 +753,7 @@ export function HostListingsWorkspace({
 
       {/* ── 2. MAIN CONTENT AREA ── */}
       <main className="listing-main min-w-0 flex-1 pt-7.5 pb-[calc(128px+env(safe-area-inset-bottom))] sm:pt-12 sm:pb-14 lg:pt-16 lg:pb-16">
-        <Container className="max-sm:px-6">
+        <div className="mx-auto box-border w-full min-w-0 max-w-[1600px] px-4 sm:px-6 lg:px-8">
           {/* Toast Alert */}
           {toastMsg && (
             <div className={`fixed top-5 right-4 left-4 sm:left-auto sm:max-w-md z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-semibold transition-all ${toastMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"
@@ -779,14 +777,14 @@ export function HostListingsWorkspace({
           )}
 
           {/* Listings Title & Actions Bar (Fully Responsive without changing flow) */}
-          <div className="listing-title mb-6 flex flex-col gap-4 sm:mb-8 md:mb-9 lg:mb-10 min-[900px]:flex-row min-[900px]:items-center min-[900px]:justify-between">
-            <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F] sm:text-3xl lg:text-[32px] shrink-0 whitespace-nowrap">
+          <div className="listing-title mb-6 flex min-w-0 flex-col gap-4 sm:mb-8 min-[900px]:flex-row min-[900px]:items-center min-[900px]:justify-between">
+            <h1 className="min-w-0 text-2xl font-semibold text-[#1F1F1F]">
               {t("host_listings_title")}
             </h1>
 
-            <div className="flex w-full items-center gap-2.5 sm:gap-3 min-[900px]:w-auto min-[900px]:justify-end">
+            <div className="flex w-full min-w-0 items-center gap-2 sm:gap-3 min-[900px]:w-auto min-[900px]:justify-end">
               {/* Search Bar */}
-              <div className="relative flex-1 min-w-0 sm:w-64 lg:w-80 min-[900px]:flex-initial">
+              <div className="relative min-w-0 flex-1 sm:max-w-[288px] min-[900px]:w-[288px] min-[900px]:flex-none">
                 <div className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center">
                   <svg
                     width="18"
@@ -811,7 +809,7 @@ export function HostListingsWorkspace({
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder={t("host_search_listings_aria") ? `${t("host_search_listings_aria")}...` : "Search listings..."}
                   aria-label={t("host_search_listings_aria")}
-                  className="h-11 w-full rounded-full border border-zinc-300 bg-[#f9fafb] pl-10 pr-9 font-['Poppins'] text-sm text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F] focus:bg-white [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+                  className="h-10 w-full rounded-full border border-zinc-300 bg-[#f9fafb] pl-10 pr-9 font-['Poppins'] text-sm text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F] focus:bg-white [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
                 />
                 {searchQuery && (
                   <button
@@ -830,17 +828,18 @@ export function HostListingsWorkspace({
                 type="button"
                 onClick={handleOpenCreate}
                 disabled={pending}
+                aria-label={t("host_create_new_listing", "Add listing")}
                 className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] hover:bg-[#FCDF9C] text-[#1F1F1F] hover:text-white font-normal text-sm transition-all cursor-pointer disabled:opacity-50"
               >
-                <Image src="/images/icons/Plus.svg" alt="Plus.svg" width={24} height={24}/>
+                <Image src="/images/icons/Plus.svg" alt="" width={24} height={24} />
               </button>
             </div>
           </div>
 
           {/* Status Tabs Pill Switcher matching /host/today style */}
-          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272]/20 pb-5 sm:mb-8 sm:pb-6">
+          <div className="mb-6 min-w-0 border-b border-[#727272]/20 pb-4 sm:mb-8 sm:pb-5">
             <div
-              className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
+              className="flex min-w-0 flex-wrap items-center gap-2 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:overscroll-x-contain max-sm:pb-1 no-scrollbar"
               role="tablist"
               aria-label={t("host_listings_tablist_aria", "Listing status")}
             >
@@ -853,7 +852,7 @@ export function HostListingsWorkspace({
                     role="tab"
                     aria-selected={isSelected}
                     onClick={() => handleTabChange(tabItem.id)}
-                    className={`rounded-full px-4 py-2.5 text-sm sm:px-4.5 sm:py-2.5 font-medium transition-all duration-200 shrink-0 font-sans cursor-pointer ${
+                    className={`inline-flex h-9 shrink-0 items-center rounded-full px-3 text-xs font-medium font-sans transition-colors duration-200 cursor-pointer sm:px-3.5 ${
                       isSelected
                         ? "bg-[#1F1F1F] text-white shadow-xs"
                         : "bg-[#F3F4F6] text-[#717171] hover:bg-zinc-200 hover:text-[#1F1F1F]"
@@ -861,7 +860,7 @@ export function HostListingsWorkspace({
                   >
                     <span>{t(tabItem.key, tabItem.label)}</span>
                     {count !== undefined && (
-                      <span className={`ml-1.5 text-xs ${isSelected ? "text-zinc-300" : "text-zinc-500"}`}>
+                      <span className={`ml-1.5 text-[11px] ${isSelected ? "text-zinc-300" : "text-zinc-500"}`}>
                         ({count})
                       </span>
                     )}
@@ -873,7 +872,7 @@ export function HostListingsWorkspace({
 
           <div aria-busy={loading}>
             {loading ? (
-              <HostListingCardsSkeleton cardCount={12} compact={compactGrid} />
+              <HostListingCardsSkeleton cardCount={12} />
             ) : (
               <>
               {/* Property Cards Grid */}
@@ -892,7 +891,7 @@ export function HostListingsWorkspace({
                 ) : listings.length === 0 ? (
                   <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
                 ) : (
-                  <div className={`host-listing-workspace grid ${compactGrid ? "grid-cols-2" : "grid-cols-1"} gap-x-4 gap-y-8 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-6 xl:gap-y-8`}>
+                  <div className="host-listing-workspace grid min-w-0 grid-cols-[repeat(auto-fill,minmax(min(100%,260px),min(100%,298px)))] gap-x-5 gap-y-6 sm:gap-y-8">
                     {listings.map((item) => {
                       const photos = Array.isArray(item.photos) ? item.photos : [];
                       const coverPhoto = photos[0] || null;
@@ -904,16 +903,16 @@ export function HostListingsWorkspace({
                       return (
                         <div
                           key={item.id}
-                          className="group relative min-w-0 text-left"
+                          className="group relative w-full min-w-0 max-w-full text-left sm:max-w-[298px]"
                         >
                           {/* Photo Container */}
-                          <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-[#777] bg-[#f1f1f1]">
+                          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] border border-zinc-200 bg-[#f1f1f1]">
                             {coverPhoto ? (
                               <Image
                                 src={coverPhoto}
                                 alt={item.title || t("host_no_photo_yet")}
                                 fill
-                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                                sizes="(max-width: 639px) calc(100vw - 32px), 298px"
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 loading="lazy"
                                 unoptimized={!isOptimizableImage(coverPhoto)}
@@ -923,8 +922,8 @@ export function HostListingsWorkspace({
                             )}
 
                             {/* White Pill Badge matching screenshot */}
-                            <div className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-[#FFFFFF99] px-2.5 py-1 text-sm leading-5 text-[#252525]">
-                              <span className={`w-2 h-2 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-[#E1473D]"}`}></span>
+                            <div className="absolute left-3 top-3 flex max-w-[calc(100%-5rem)] items-center gap-1.5 rounded-full bg-white/90 px-2 py-1 text-[11px] leading-4 text-[#252525]">
+                              <span className={`size-1.5 shrink-0 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-[#E1473D]"}`}></span>
                               {isCoHosted ? t("host_badge_cohost") : isListed ? t("host_badge_listed") : t("host_badge_action_required")}
                             </div>
 
@@ -939,7 +938,7 @@ export function HostListingsWorkspace({
                                 }}
                                 aria-label={t("host_delete_property_aria")}
                                 title={t("host_delete_property_aria")}
-                                className="absolute z-20 top-3 right-3 flex size-8 items-center justify-center rounded-full bg-white text-xs text-rose-600 shadow-2xs backdrop-blur-xs transition-colors duration-200 ease-out hover:bg-rose-600 hover:text-white max-sm:hidden cursor-pointer"
+                                className="absolute right-3 top-3 z-20 flex size-8 items-center justify-center rounded-full bg-white text-xs text-rose-600 shadow-2xs backdrop-blur-xs transition-colors duration-200 ease-out hover:bg-rose-600 hover:text-white max-sm:hidden cursor-pointer"
                               >
                                 <svg
                                   aria-hidden="true"
@@ -956,20 +955,20 @@ export function HostListingsWorkspace({
                           </div>
 
                           {/* Below Card Information */}
-                          <div className="px-0 pt-3 sm:px-3 lg:pt-6">
-                            <h3 className="truncate text-base font-medium leading-6 text-[#1f1f1f]">
+                          <div className="min-w-0 px-0 pt-3">
+                            <h3 className="line-clamp-2 text-sm font-semibold leading-5 text-[#1f1f1f]">
                               <Link
                                 href={`/host/listings/${item.id}`}
-                                className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
+                                className="after:absolute after:inset-0 after:rounded-[14px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
                               >
                                 {item.title === "Draft Listing" ? t("host_untitled_draft") : item.title || t("host_untitled_listing")}
                               </Link>
                             </h3>
-                            <p className="mt-1 truncate text-sm leading-6 text-[#727272]">
+                            <p className="mt-1 line-clamp-1 text-xs leading-4 text-[#727272]">
                               {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : t("host_no_location_yet")}
                             </p>
                             {item.status === "PENDING_REVIEW" && (
-                              <p className="mt-1 text-sm font-medium text-[#349010]">
+                              <p className="mt-1 text-xs font-medium text-[#349010]">
                                 {isSaudiArabia(item.country) ? t("host_ready_to_publish") : t("host_submitted_for_admin_approval")}
                               </p>
                             )}
@@ -1041,7 +1040,7 @@ export function HostListingsWorkspace({
               </>
             )}
           </div>
-        </Container>
+        </div>
       </main>
 
       <BecomeHostModal

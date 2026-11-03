@@ -14,6 +14,21 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { lockBodyScroll } from "@/lib/ui/body-scroll-lock";
 
+const drawerNavigationItemBaseClass =
+  "flex min-h-12 w-full items-center rounded-xl px-3.5 py-2 text-base font-medium leading-5 transition cursor-pointer text-left md:text-[15px]";
+const drawerNavigationItemActiveClass =
+  "bg-zinc-100 text-zinc-950 dark:bg-zinc-800 dark:text-white";
+const drawerNavigationItemInactiveClass =
+  "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-800/60 dark:hover:text-white";
+const drawerNavigationContentClass = "flex min-w-0 items-center gap-3";
+const drawerNavigationIconClass = "size-5 shrink-0 text-zinc-600 dark:text-zinc-400";
+
+function drawerNavigationItemClass(isActive: boolean): string {
+  return `${drawerNavigationItemBaseClass} justify-between ${
+    isActive ? drawerNavigationItemActiveClass : drawerNavigationItemInactiveClass
+  }`;
+}
+
 export interface HostNavigationDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -276,17 +291,13 @@ export function DrawerNavigation({
       <button
         type="button"
         onClick={() => onNavigate("/host/dashboard")}
-        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition cursor-pointer text-left ${
-          isDashboardActive
-            ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white font-medium"
-            : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-950 dark:hover:text-white font-normal"
-        }`}
+        className={drawerNavigationItemClass(isDashboardActive)}
       >
-        <div className="flex items-center gap-3.5">
-          <svg className="size-5 shrink-0 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <div className={drawerNavigationContentClass}>
+          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 19V9m6 10V5m6 14v-7m4 7H2" />
           </svg>
-          <span>Dashboard</span>
+          <span className="min-w-0">Dashboard</span>
         </div>
       </button>
 
@@ -294,18 +305,14 @@ export function DrawerNavigation({
       <button
         type="button"
         onClick={() => onNavigate("/host/earnings")}
-        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition cursor-pointer text-left ${
-          isEarningsActive
-            ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white font-medium"
-            : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-950 dark:hover:text-white font-normal"
-        }`}
+        className={drawerNavigationItemClass(isEarningsActive)}
       >
-        <div className="flex items-center gap-3.5">
-          <svg className="size-5 shrink-0 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <div className={drawerNavigationContentClass}>
+          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <rect width="20" height="14" x="2" y="5" rx="2" strokeLinecap="round" strokeLinejoin="round" />
             <line x1="2" x2="22" y1="10" y2="10" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span>Earnings</span>
+          <span className="min-w-0">Earnings</span>
         </div>
       </button>
 
@@ -313,18 +320,14 @@ export function DrawerNavigation({
       <button
         type="button"
         onClick={() => onNavigate("/host/insights")}
-        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition cursor-pointer text-left ${
-          isInsightsActive
-            ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white font-medium"
-            : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-950 dark:hover:text-white font-normal"
-        }`}
+        className={drawerNavigationItemClass(isInsightsActive)}
       >
-        <div className="flex items-center gap-3.5">
-          <svg className="size-5 shrink-0 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <div className={drawerNavigationContentClass}>
+          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" />
             <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-5 5-4-4-3 3" />
           </svg>
-          <span>Insights</span>
+          <span className="min-w-0">Insights</span>
         </div>
       </button>
 
@@ -332,17 +335,13 @@ export function DrawerNavigation({
       <button
         type="button"
         onClick={() => onNavigate("/host/support")}
-        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition cursor-pointer text-left ${
-          isSupportActive
-            ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white font-medium"
-            : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-950 dark:hover:text-white font-normal"
-        }`}
+        className={drawerNavigationItemClass(isSupportActive)}
       >
-        <div className="flex items-center gap-3.5">
-          <svg className="size-5 shrink-0 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <div className={drawerNavigationContentClass}>
+          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>Help &amp; Resolution Center</span>
+          <span className="min-w-0">Help &amp; Resolution Center</span>
         </div>
       </button>
 
@@ -391,18 +390,14 @@ export function DrawerNavigation({
       <button
         type="button"
         onClick={() => onNavigate("/host/account-settings")}
-        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition cursor-pointer text-left ${
-          isSettingsActive
-            ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white font-medium"
-            : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-950 dark:hover:text-white font-normal"
-        }`}
+        className={drawerNavigationItemClass(isSettingsActive)}
       >
-        <div className="flex items-center gap-3.5">
-          <svg className="size-5 shrink-0 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <div className={drawerNavigationContentClass}>
+          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-          <span>Account settings</span>
+          <span className="min-w-0">Account settings</span>
         </div>
       </button>
 
@@ -410,15 +405,15 @@ export function DrawerNavigation({
       <button
         type="button"
         onClick={onOpenLanguagesCurrency}
-        className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-950 dark:hover:text-white font-normal transition cursor-pointer text-left"
+        className={drawerNavigationItemClass(false)}
       >
-        <div className="flex items-center gap-3.5">
-          <svg className="size-5 shrink-0 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <div className={drawerNavigationContentClass}>
+          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
             <line x1="2" y1="12" x2="22" y2="12" strokeLinecap="round" strokeLinejoin="round" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
           </svg>
-          <span>Languages &amp; currency</span>
+          <span className="min-w-0">Languages &amp; currency</span>
         </div>
       </button>
 
@@ -429,13 +424,13 @@ export function DrawerNavigation({
       <button
         type="button"
         onClick={() => onNavigate("/host/listings/new")}
-        className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-950 dark:hover:text-white font-normal transition cursor-pointer text-left"
+        className={drawerNavigationItemClass(false)}
       >
-        <div className="flex items-center gap-3.5">
-          <svg className="size-5 shrink-0 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <div className={drawerNavigationContentClass}>
+          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          <span>Create a new listing</span>
+          <span className="min-w-0">Create a new listing</span>
         </div>
       </button>
 
@@ -461,17 +456,13 @@ export function DrawerNavigation({
       <button
         type="button"
         onClick={() => onNavigate("/host/refer")}
-        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition cursor-pointer text-left ${
-          isReferActive
-            ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white font-medium"
-            : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-950 dark:hover:text-white font-normal"
-        }`}
+        className={drawerNavigationItemClass(isReferActive)}
       >
-        <div className="flex items-center gap-3.5">
-          <svg className="size-5 shrink-0 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <div className={drawerNavigationContentClass}>
+          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
           </svg>
-          <span>Refer a host</span>
+          <span className="min-w-0">Refer a host</span>
         </div>
       </button>
 
@@ -480,20 +471,16 @@ export function DrawerNavigation({
         <button
           type="button"
           onClick={() => onNavigate("/admin")}
-          className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition cursor-pointer text-left ${
-            isAdminActive
-              ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white font-medium"
-              : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-950 dark:hover:text-white font-normal"
-          }`}
+            className={drawerNavigationItemClass(isAdminActive)}
         >
-          <div className="flex items-center gap-3.5">
-            <svg className="size-5 shrink-0 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+            <div className={drawerNavigationContentClass}>
+              <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <rect x="3" y="3" width="7" height="7" rx="1.5" />
               <rect x="14" y="3" width="7" height="7" rx="1.5" />
               <rect x="14" y="14" width="7" height="7" rx="1.5" />
               <rect x="3" y="14" width="7" height="7" rx="1.5" />
             </svg>
-            <span>Admin</span>
+            <span className="min-w-0">Admin</span>
           </div>
         </button>
       )}
@@ -514,10 +501,10 @@ export function DrawerFooter({ onLogout }: DrawerFooterProps) {
       <button
         type="button"
         onClick={onLogout}
-        className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition cursor-pointer"
+        className={`${drawerNavigationItemBaseClass} gap-3 ${drawerNavigationItemInactiveClass}`}
       >
         <svg
-          className="size-5 shrink-0 text-zinc-500 dark:text-zinc-400"
+          className="size-5 shrink-0 text-zinc-600 dark:text-zinc-400"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
