@@ -203,7 +203,7 @@ export const roomSchema = z.object({
   beds: z.array(bedItemSchema).default([]),
   amenities: z.array(z.string().trim()).default([]),
   hasPrivateBathroom: z.boolean().optional(),
-  privacy: z.record(z.any()).optional(),
+  privacy: z.record(z.string(), z.any()).optional(),
   accessibilityFeatures: z.array(z.string().trim()).default([]),
   accessibilityDetails: z.array(z.any()).default([]),
 }).passthrough();
@@ -359,17 +359,11 @@ export const createListingSchema = z
   });
 export type CreateListingInput = z.infer<typeof createListingSchema>;
 
-// Defaults belong to creation only. Retaining them on a partial update silently
-// overwrites unrelated listing settings whenever an editor saves one section.
-const updateListingFields = Object.fromEntries(
-  Object.entries(listingFields).map(([key, schema]) => {
-    const withoutDefault = "removeDefault" in schema ? schema.removeDefault() : schema;
-    return [key, withoutDefault.optional()];
-  }),
-) as z.ZodRawShape;
-
+// Optional wrappers bypass defaults for omitted update fields and preserve the
+// concrete field types for callers that consume parsed updates.
 export const updateListingSchema = z
-  .object(updateListingFields)
+  .object(listingFields)
+  .partial()
   .refine((value) => Object.keys(value).length > 0, {
     message: "No fields to update",
   })

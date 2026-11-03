@@ -29,6 +29,23 @@ describe("Host Messages conversation details sidebar", () => {
     assert.ok(workspace.includes("shrink-0 border-t border-zinc-300 bg-white"), "Composer must stay anchored below history");
   });
 
+  it("renders reservation details as a closeable mobile sheet and keeps the mobile chat header readable", () => {
+    const workspace = read("components/host/messages/host-messages-workspace.tsx");
+    const styles = read("app/globals.css");
+
+    assert.ok(workspace.includes("<ReservationPanelFrame"), "Reservation details must reuse the shared panel content");
+    assert.ok(workspace.includes("onClose={closeReservationDetails}"), "The sheet must close from its button, backdrop, and Escape");
+    assert.ok(workspace.includes("Reservation details"), "The mobile sheet must have a clear title");
+    assert.ok(workspace.includes("break-words text-sm font-medium leading-5"), "Long guest names must wrap on mobile");
+    assert.ok(workspace.includes("mt-1 min-w-0 break-words text-xs leading-4 text-zinc-500 line-clamp-2"), "Property names must have the full text column beneath the guest name");
+    assert.ok(workspace.includes("mt-1 flex justify-end"), "The reservation badge must sit on its own row below the property name");
+    assert.ok(workspace.includes("getReservationContextLabel(selectedConversation.reservationContext)} details`}"), "The reservation action must have a descriptive accessible label");
+    assert.ok(workspace.includes("focus-visible:outline-2") && workspace.includes("hover:bg-emerald-100"), "The reservation action must have visible focus and status-aware hover styling");
+    assert.ok(workspace.includes("h-[calc(100dvh-108px)]"), "Conversation list and chat must share the mobile viewport height");
+    assert.ok(workspace.includes("env(safe-area-inset-bottom)"), "The composer must clear mobile safe-area insets");
+    assert.ok(styles.includes("messages-reservation-sheet-in 280ms"), "The reservation sheet must animate smoothly");
+  });
+
   it("uses selectedConversation as single source of truth without stale cross-talk", () => {
     const workspace = read("components/host/messages/host-messages-workspace.tsx");
 

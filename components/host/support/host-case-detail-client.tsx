@@ -279,6 +279,9 @@ export function HostCaseDetailClient({
       : undefined;
   const currentView = rawView || rawTab || "all";
 
+  const getReturnLabel = () =>
+    currentView === "direct" ? "Return to Resolution Center" : "Return to Support Center";
+
   const buildReturnHref = () => {
     const params = new URLSearchParams();
     if (rawView) params.set("view", rawView);

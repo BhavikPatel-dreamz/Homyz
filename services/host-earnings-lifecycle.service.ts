@@ -84,6 +84,8 @@ export function evaluateBookingEarnings(
     status: string;
     startDate: Date;
     endDate: Date;
+    checkOutTime?: string | null;
+    propertyTimeZone?: string | null;
     totalPrice?: number | null;
     currency?: string;
     priceBreakdown?: unknown;

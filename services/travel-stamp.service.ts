@@ -312,7 +312,9 @@ type QualifyingStay = {
   id: string;
   startDate: Date;
   endDate: Date;
-  listing: { country: string | null; city: string | null; checkOutTime: string | null };
+  propertyTimeZone: string;
+  checkOutTime: string;
+  listing: { country: string | null; city: string | null };
 };
 
 function configuredCitiesForStamp(stamp: { slug: string; city: string | null }) {
@@ -353,7 +355,7 @@ export async function awardSystemTravelStamps(userId: string, now = new Date()):
     prisma.travelStamp.findMany({ where: { isActive: true, isCustom: false } }),
   ]);
 
-  const stays = (bookings as QualifyingStay[]).flatMap((booking) => {
+  const stays = bookings.flatMap((booking) => {
     if (!isCompletedConfirmedBooking({
       dbStatus: "CONFIRMED",
       startDate: booking.startDate,
