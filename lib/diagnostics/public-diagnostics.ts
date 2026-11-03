@@ -48,12 +48,12 @@ function describeError(error: unknown) {
  */
 export async function recordPublicDiagnostic(input: PublicDiagnosticInput) {
   try {
-    await mkdir(dirname(diagnosticsLogPath), { recursive: true });
+    await mkdir(/*turbopackIgnore: true*/ dirname(diagnosticsLogPath), { recursive: true });
 
-    const current = await stat(diagnosticsLogPath).catch(() => null);
+    const current = await stat(/*turbopackIgnore: true*/ diagnosticsLogPath).catch(() => null);
     if (current && current.size >= maxLogBytes) {
       await writeFile(
-        diagnosticsLogPath,
+        /*turbopackIgnore: true*/ diagnosticsLogPath,
         `${JSON.stringify({
           timestamp: new Date().toISOString(),
           severity: "warning",
@@ -83,7 +83,7 @@ export async function recordPublicDiagnostic(input: PublicDiagnosticInput) {
       ...(error ? { error } : {}),
     };
 
-    await appendFile(diagnosticsLogPath, `${JSON.stringify(event)}\n`, "utf8");
+    await appendFile(/*turbopackIgnore: true*/ diagnosticsLogPath, `${JSON.stringify(event)}\n`, "utf8");
   } catch {
     // Diagnostics must never hide or replace the application error being logged.
   }
@@ -91,7 +91,7 @@ export async function recordPublicDiagnostic(input: PublicDiagnosticInput) {
 
 export async function readPublicDiagnosticsLog() {
   try {
-    return await readFile(diagnosticsLogPath, "utf8");
+    return await readFile(/*turbopackIgnore: true*/ diagnosticsLogPath, "utf8");
   } catch {
     return "";
   }
