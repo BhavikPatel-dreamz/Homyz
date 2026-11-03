@@ -186,6 +186,7 @@ const nextConfig: NextConfig = {
     // Pass production ALB/CloudFront host via APP_URL or SERVER_ACTION_ALLOWED_ORIGINS at image build.
     serverActions: {
       allowedOrigins: actionOrigins,
+      bodySizeLimit: "200mb",
     },
   },
   async rewrites() {

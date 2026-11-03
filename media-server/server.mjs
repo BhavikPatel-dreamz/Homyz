@@ -24,7 +24,7 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number.parseInt(process.env.PORT || "4001", 10);
 const HOST = process.env.HOSTNAME || "0.0.0.0";
-const MAX_BYTES = Number.parseInt(process.env.MEDIA_MAX_BYTES || String(15 * 1024 * 1024), 10);
+const MAX_BYTES = Number.parseInt(process.env.MEDIA_MAX_BYTES || String(200 * 1024 * 1024), 10);
 
 const defaultDataDir = process.env.MEDIA_DATA_DIR?.trim()
   ? process.env.MEDIA_DATA_DIR.trim()
