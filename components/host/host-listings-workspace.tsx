@@ -5,7 +5,10 @@ import { useState, useEffect, useTransition, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { HostHeader } from "./host-header";
-import { HostListingCardsSkeleton } from "./host-listings-skeleton";
+import {
+  HOST_LISTINGS_GRID_CLASS,
+  HostListingCardsSkeleton,
+} from "./host-listings-skeleton";
 import { BecomeHostModal } from "./become-host-modal";
 import {
   createListingAction,
@@ -891,7 +894,7 @@ export function HostListingsWorkspace({
                 ) : listings.length === 0 ? (
                   <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
                 ) : (
-                  <div className="host-listing-workspace grid min-w-0 grid-cols-[repeat(auto-fill,minmax(min(100%,260px),min(100%,298px)))] gap-x-5 gap-y-6 max-sm:justify-center sm:gap-y-8">
+                  <div className={HOST_LISTINGS_GRID_CLASS}>
                     {listings.map((item) => {
                       const photos = Array.isArray(item.photos) ? item.photos : [];
                       const coverPhoto = photos[0] || null;
@@ -903,7 +906,7 @@ export function HostListingsWorkspace({
                       return (
                         <div
                           key={item.id}
-                          className="group relative w-full min-w-0 max-w-full text-left sm:max-w-[298px]"
+                          className="group relative w-full min-w-0 text-left"
                         >
                           {/* Photo Container */}
                           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] border border-zinc-200 bg-[#f1f1f1]">

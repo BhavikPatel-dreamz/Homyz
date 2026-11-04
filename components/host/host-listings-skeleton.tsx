@@ -2,15 +2,18 @@
 
 import { HostHeader } from "./host-header";
 
+export const HOST_LISTINGS_GRID_CLASS =
+  "host-listing-workspace grid min-w-0 grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2 sm:gap-y-8 md:grid-cols-3 xl:grid-cols-4 min-[1440px]:grid-cols-5";
+
 export function HostListingCardsSkeleton({
   cardCount = 12,
 }: {
   cardCount?: number;
 }) {
   return (
-    <div className="host-listing-workspace grid min-w-0 grid-cols-[repeat(auto-fill,minmax(min(100%,260px),min(100%,298px)))] gap-x-5 gap-y-6 max-sm:justify-center sm:gap-y-8">
+    <div className={HOST_LISTINGS_GRID_CLASS}>
       {Array.from({ length: cardCount }).map((_, i) => (
-        <div key={i} className="group relative w-full min-w-0 max-w-full text-left sm:max-w-[298px]">
+        <div key={i} className="group relative w-full min-w-0 text-left">
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] border border-zinc-200/80 bg-zinc-100 skeleton-shimmer">
             <div className="absolute left-3 top-3 h-6 w-20 rounded-full bg-white/80 backdrop-blur-xs skeleton-shimmer" />
           </div>
