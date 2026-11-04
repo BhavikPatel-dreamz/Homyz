@@ -53,7 +53,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         </div>
         <Link
           href="/forgot-password"
-          className="w-full rounded-full bg-[#FCDF9C] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer"
+          className="w-full rounded-full bg-[#FCDF9C] hover:bg-[#F3D382] py-3.5 text-sm font-medium text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer"
         >
           {t("auth_request_new_reset_link")} →
         </Link>
@@ -71,7 +71,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         </div>
 
         <div>
-          <h2 className="text-2xl font-semibold text-zinc-950">
+          <h2 className="text-2xl font-medium text-zinc-950">
             {t("auth_reset_success_title")}
           </h2>
           <p className="text-sm text-[#727272] mt-1.5 leading-relaxed">
@@ -85,7 +85,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
         <Link
           href="/login"
-          className="w-full rounded-full bg-[#FCDF9C] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer mt-2"
+          className="w-full rounded-full bg-[#FCDF9C] hover:bg-[#F3D382] py-3.5 text-sm font-medium text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer mt-2"
         >
           {t("auth_signin")} →
         </Link>
@@ -103,7 +103,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
       {/* New Password */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="password" className="text-xs font-semibold text-zinc-800">
+        <label htmlFor="password" className="text-xs font-medium text-zinc-800">
           {t("auth_new_password")} *
         </label>
         <div className="relative">
@@ -140,7 +140,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
       {/* Confirm Password */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="confirmPassword" className="text-xs font-semibold text-zinc-800">
+        <label htmlFor="confirmPassword" className="text-xs font-medium text-zinc-800">
           {t("auth_confirm_password")} *
         </label>
         <input
@@ -158,7 +158,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
       {/* Complexity Checklist */}
       <div className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 text-xs flex flex-col gap-2">
-        <div className="font-semibold text-zinc-700 uppercase tracking-wider text-[10px]">
+        <div className="font-medium text-zinc-700 uppercase tracking-wider text-[10px]">
           {t("auth_pwd_requirements")}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -169,7 +169,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                 : "bg-white text-[#727272] border-zinc-200"
             }`}
           >
-            <span className="font-semibold">{minLength ? "✓" : "○"}</span> {t("auth_pwd_min_length")}
+            <span className="font-medium">{minLength ? "✓" : "○"}</span> {t("auth_pwd_min_length")}
           </div>
           <div
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
@@ -178,7 +178,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                 : "bg-white text-[#727272] border-zinc-200"
             }`}
           >
-            <span className="font-semibold">{hasUpper ? "✓" : "○"}</span> {t("auth_pwd_uppercase")}
+            <span className="font-medium">{hasUpper ? "✓" : "○"}</span> {t("auth_pwd_uppercase")}
           </div>
           <div
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
@@ -187,7 +187,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                 : "bg-white text-[#727272] border-zinc-200"
             }`}
           >
-            <span className="font-semibold">{hasNumber ? "✓" : "○"}</span> {t("auth_pwd_number")}
+            <span className="font-medium">{hasNumber ? "✓" : "○"}</span> {t("auth_pwd_number")}
           </div>
           {confirmPassword ? (
             <div
@@ -197,7 +197,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                   : "bg-rose-50 text-rose-800 border-rose-200"
               }`}
             >
-              <span className="font-semibold">{matches ? "✓" : "✕"}</span> {t("auth_passwords_match")}
+              <span className="font-medium">{matches ? "✓" : "✕"}</span> {t("auth_passwords_match")}
             </div>
           ) : (
             <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-zinc-200 bg-white text-[#727272] text-[11px]">
@@ -210,7 +210,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       <button
         type="submit"
         disabled={pending || !minLength || !hasUpper || !hasNumber || !matches}
-        className="mt-2 w-full rounded-full bg-[#FCDF9C] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
+        className="mt-2 w-full rounded-full bg-[#FCDF9C] hover:bg-[#F3D382] py-3.5 text-sm font-medium text-[#1F1F1F] transition-colors shadow-2xs disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
       >
         {pending && (
           <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent" />

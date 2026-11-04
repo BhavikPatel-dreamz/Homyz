@@ -22,6 +22,8 @@ import { CompactSearchBar } from "./compact-search-bar";
 import { ExpandedSearchBar } from "./expanded-search-bar";
 import { SearchBackdrop } from "./search-backdrop";
 import { MobileSearchDialog } from "./mobile-search-dialog";
+import { BrandLogo } from "@/components/branding/brand-logo";
+import { useBranding } from "@/components/branding/branding-provider";
 
 const BecomeHostModal = dynamic(
   () => import("@/components/host/become-host-modal").then((mod) => mod.BecomeHostModal),
@@ -33,6 +35,7 @@ interface UnifiedGuestHeaderProps {
 }
 
 export function UnifiedGuestHeader({ showBottomBorder }: UnifiedGuestHeaderProps) {
+  const branding = useBranding();
   const pathname = usePathname();
   const router = useRouter();
   const { data: session, status: sessionStatus, update } = useSession();
@@ -304,14 +307,14 @@ export function UnifiedGuestHeader({ showBottomBorder }: UnifiedGuestHeaderProps
               className="flex items-center gap-2.5 transition-opacity hover:opacity-85 focus-visible:outline-none"
               aria-label="Homyz home"
             >
-              <Image
-                src="/images/brand/homyz-logo-dark-v1.svg"
+              <BrandLogo
+                src={branding.guestHeaderLogoUrl}
+                fallbackSrc="/images/brand/homyz-logo-dark-v1.svg"
                 alt="Homyz"
                 width={140}
                 height={40}
                 className="h-auto w-[125px] md:w-[135px] lg:w-[145px]"
                 priority
-                unoptimized
               />
             </Link>
           </div>

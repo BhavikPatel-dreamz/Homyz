@@ -201,7 +201,7 @@ export function StepPhotos({
                         type="button"
                         onClick={() => handleRemovePhoto(idx)}
                         aria-label={t("host_remove_photo_title", "Remove photo")}
-                        className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-white/90 text-xs font-semibold text-zinc-700 opacity-0 shadow-xs transition-colors group-hover:opacity-100 hover:bg-red-500 hover:text-white focus-visible:opacity-100"
+                        className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-white/90 text-xs font-medium text-zinc-700 opacity-0 shadow-xs transition-colors group-hover:opacity-100 hover:bg-red-500 hover:text-white focus-visible:opacity-100"
                       >
                         ✕
                       </button>
@@ -274,7 +274,7 @@ export function StepPhotos({
                                     e.stopPropagation();
                                     handleRemoveModalPreview(idx);
                                   }}
-                                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center text-[10px] font-semibold"
+                                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center text-[10px] font-medium"
                                 >
                                   ✕
                                 </button>

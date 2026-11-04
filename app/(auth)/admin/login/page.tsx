@@ -24,7 +24,7 @@ export default async function AdminLoginPage() {
         <div className="min-h-screen bg-white flex items-center justify-center text-[#1F1F1F]">
           <div className="flex flex-col items-center gap-3">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-amber-400 border-t-transparent" />
-            <p className="text-xs font-semibold text-zinc-600">Loading...</p>
+            <p className="text-xs font-medium text-zinc-600">Loading...</p>
           </div>
         </div>
       }

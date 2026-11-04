@@ -436,7 +436,7 @@ export function PropertyDetailsViews({
       {/* VIEW 1: DESCRIPTION */}
       {/* --------------------------------------------------------- */}
       {activeSection === "description" && (
-        <div className="w-full max-w-full space-y-6 animate-in fade-in sm:pb-10 font-sans lg:max-w-[calc(100%-75px)] mx-auto">
+        <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
           {/* Header & Back Button */}
           <div className="sm:space-y-1.5 space-y-3">
             <div className="flex items-start gap-6">
@@ -680,7 +680,7 @@ export function PropertyDetailsViews({
       {/* VIEW 4: TITLE */}
       {/* --------------------------------------------------------- */}
       {activeSection === "title" && (
-        <div className="w-full max-w-xl space-y-6 animate-in fade-in pb-10 mx-auto">
+        <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
           <div className="flex min-w-0 items-center gap-4 sm:gap-6">
             <BackButton onClick={() => setActiveSection("description")} />
             <h1 className="min-w-0">{t("host_listing_title")}</h1>
@@ -695,7 +695,7 @@ export function PropertyDetailsViews({
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
                 placeholder={t("host_title_placeholder")}
-                className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px]"
+                className="w-full rounded-xl border border-[#727272] bg-white px-4 py-3 text-base font-normal text-[#1F1F1F] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[48px] dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100 dark:focus:border-zinc-400"
               />
               <div className="flex justify-between items-center text-xs text-[#727272] mb-0">
                 <span>{t("host_title_max_chars")}</span>
@@ -706,7 +706,7 @@ export function PropertyDetailsViews({
                 type="button"
                 disabled={isSaving}
                 onClick={() => handleSaveSection("title")}
-                className="mt-12 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-sm font-medium text-[#1F1F1F] transition-colors lg:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
+                className="mt-6 inline-flex h-11 min-h-11 items-center justify-center whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 text-sm font-medium text-[#1F1F1F] transition-colors border border-transparent hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white cursor-pointer disabled:opacity-50"
               >
                 {isSaving ? t("host_saving") : t("host_save_title")}
               </button>
@@ -719,7 +719,7 @@ export function PropertyDetailsViews({
       {/* VIEW 10: PROPERTY TYPE */}
       {/* --------------------------------------------------------- */}
       {activeSection === "propertyType" && (
-        <div className="space-y-6 animate-in fade-in pb-10 pr-0 font-sans lg:pr-6">
+        <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
           {/* Back button & Section Header */}
           <div className="flex items-center gap-6">
             <BackButton onClick={() => setActiveSection("description")} />
@@ -1078,7 +1078,7 @@ export function PropertyDetailsViews({
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("propertyType")}
-                  className="w-full rounded-full border border-transparent bg-[#FCDF9C] dark:bg-amber-400 dark:text-zinc-950 px-4 py-2.25 text-lg font-medium text-[#1F1F1F] transition-all duration-300 cursor-pointer hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600 sm:w-auto sm:py-2.5 sm:text-base min-w-[136px]"
+                  className="inline-flex h-11 min-h-11 items-center justify-center rounded-full border border-transparent bg-[#FCDF9C] dark:bg-amber-400 dark:text-zinc-950 px-6 text-sm font-medium text-[#1F1F1F] transition-all duration-300 cursor-pointer hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600 min-w-[136px] disabled:opacity-50"
                 >
                   {isSaving ? t("host_saving_btn") : t("host_save_btn")}
                 </button>
@@ -1092,10 +1092,10 @@ export function PropertyDetailsViews({
       {/* VIEW: GUESTS & SLEEPING ARRANGEMENTS */}
       {/* --------------------------------------------------------- */}
       {(activeSection === "guests" || activeSection === "sleeping-arrangements") && (
-        <div className={activeSection === "guests" ? "w-full max-w-none animate-in fade-in pb-6 font-sans" : "w-full animate-in fade-in pb-10 font-sans"}>
+        <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
           {/* Header */}
           <div className={activeSection === "guests" ? "hidden" : "space-y-1"}>
-            <div className="flex items-start gap-6 max-w-[491px] mx-auto">
+            <div className="flex items-start gap-6">
               <BackButton onClick={() => setActiveSection("propertyType")} className="mt-2" />
               <div className="space-y-1.5">
                 <h1>{activeSection === "guests" ? t("host_number_of_guests") : t("host_sleeping_arrangements_title")}</h1>
@@ -1113,7 +1113,7 @@ export function PropertyDetailsViews({
               <GuestsSkeleton />
             )
           ) : (
-            <div className="space-y-6 pt-12 max-w-[491px] mx-auto">
+            <div className="space-y-6 pt-2">
               {/* Section 1: Guest Capacity Counter */}
               <div className={`Guest-Capacity-Counter  ${activeSection === "guests" ? "" : ""}`}>
                 <div className={`${activeSection === "guests" ? "flex min-h-[500px] flex-col items-center justify-center gap-9 pb-14" : "space-y-4 rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4"}`}>
@@ -1246,7 +1246,7 @@ export function PropertyDetailsViews({
                         };
                         setRooms?.([defaultRoom]);
                       }}
-                      className="text-xs font-semibold text-amber-700 dark:text-amber-400 underline cursor-pointer"
+                      className="text-xs font-medium text-amber-700 dark:text-amber-400 underline cursor-pointer"
                     >
                       {t("host_add_bedroom_1")}
                     </button>
@@ -1581,7 +1581,7 @@ export function PropertyDetailsViews({
         };
 
         return (
-          <div className="w-full sm:max-w-[calc(100%-75px)] mx-auto space-y-5 animate-in fade-in font-sans">
+          <div className="w-full max-w-3xl space-y-5 animate-in fade-in font-sans">
             {/* Header */}
             <div className="flex sm:flex-row flex-col sm:gap-0 gap-5 sm:items-center items-start justify-between">
               <div className="space-y-1">
@@ -1761,7 +1761,7 @@ export function PropertyDetailsViews({
                     <button
                       type="button"
                       onClick={() => setActiveSection("add-amenities")}
-                      className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                      className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-medium text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
                     >
                       {t("host_add_amenities_btn")}
                     </button>
@@ -1836,7 +1836,7 @@ export function PropertyDetailsViews({
       {/* VIEW 2: ACCESSIBILITY FEATURES */}
       {/* --------------------------------------------------------- */}
       {activeSection === "accessibility" && (
-        <div className="w-full max-w-full space-y-6 animate-in fade-in sm:pb-10 font-sans lg:max-w-[calc(100%-75px)] mx-auto">
+        <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
@@ -1951,7 +1951,7 @@ export function PropertyDetailsViews({
                                 event.stopPropagation();
                                 collapseAccessibilityFeature(feature.id);
                               }}
-                              className="group w-8 h-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 text-xs font-semibold shrink-0 shadow-2xs transition-all cursor-pointer"
+                              className="group w-8 h-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 text-xs font-medium shrink-0 shadow-2xs transition-all cursor-pointer"
                             >
                               <Image src="/images/icons/minus-icon.svg" alt={t("host_acc_collapse_alt")} width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                             </button>

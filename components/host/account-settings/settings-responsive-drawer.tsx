@@ -49,7 +49,7 @@ export function SettingsResponsiveDrawer({
         {/* Header */}
         <div className="flex items-start justify-between border-b border-zinc-100 p-5 sm:p-6 shrink-0">
           <div>
-            <h2 id="drawer-title" className="text-lg sm:text-xl font-bold text-[#1F1F1F]">
+            <h2 id="drawer-title" className="text-lg sm:text-xl font-medium text-[#1F1F1F]">
               {title}
             </h2>
             {subtitle && (

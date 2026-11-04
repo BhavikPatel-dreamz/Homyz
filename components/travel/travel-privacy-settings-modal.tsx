@@ -105,7 +105,7 @@ export function TravelPrivacySettingsModal({
           ✕
         </button>
 
-        <h3 id="privacy-modal-title" className="text-xl font-bold text-zinc-900">
+        <h3 id="privacy-modal-title" className="text-xl font-medium text-zinc-900">
           Travel Privacy & Controls
         </h3>
         <p className="text-xs text-zinc-500 mt-1">
@@ -117,7 +117,7 @@ export function TravelPrivacySettingsModal({
           <button
             type="button"
             onClick={() => setActiveTab("visibility")}
-            className={`py-2 px-4 text-xs font-semibold border-b-2 transition cursor-pointer ${
+            className={`py-2 px-4 text-xs font-medium border-b-2 transition cursor-pointer ${
               activeTab === "visibility"
                 ? "border-amber-500 text-amber-900"
                 : "border-transparent text-zinc-500 hover:text-zinc-800"
@@ -128,7 +128,7 @@ export function TravelPrivacySettingsModal({
           <button
             type="button"
             onClick={() => setActiveTab("blocking")}
-            className={`py-2 px-4 text-xs font-semibold border-b-2 transition cursor-pointer ${
+            className={`py-2 px-4 text-xs font-medium border-b-2 transition cursor-pointer ${
               activeTab === "blocking"
                 ? "border-amber-500 text-amber-900"
                 : "border-transparent text-zinc-500 hover:text-zinc-800"
@@ -159,7 +159,7 @@ export function TravelPrivacySettingsModal({
                     className="mt-1 size-4 text-amber-600 focus:ring-amber-500"
                   />
                   <div className="flex-1">
-                    <div className="flex items-center gap-1.5 font-bold text-sm text-zinc-900">
+                    <div className="flex items-center gap-1.5 font-medium text-sm text-zinc-900">
                       <span>{opt.icon}</span>
                       <span>{opt.title}</span>
                     </div>
@@ -175,7 +175,7 @@ export function TravelPrivacySettingsModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-600 hover:bg-zinc-100 transition cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-medium text-zinc-600 hover:bg-zinc-100 transition cursor-pointer"
               >
                 Cancel
               </button>
@@ -183,7 +183,7 @@ export function TravelPrivacySettingsModal({
                 type="button"
                 disabled={isSaving}
                 onClick={handleSave}
-                className="px-5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white transition shadow-sm cursor-pointer"
+                className="px-5 py-2 rounded-xl text-xs font-medium bg-amber-500 hover:bg-amber-600 text-white transition shadow-sm cursor-pointer"
               >
                 {isSaving ? "Saving..." : "Save Privacy"}
               </button>
@@ -199,17 +199,17 @@ export function TravelPrivacySettingsModal({
                     className="flex items-center justify-between p-2.5 rounded-xl border border-zinc-200 bg-zinc-50/60"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="size-8 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-xs text-zinc-600">
+                      <div className="size-8 rounded-full bg-zinc-200 flex items-center justify-center font-medium text-xs text-zinc-600">
                         {u.name ? u.name.charAt(0) : "U"}
                       </div>
-                      <span className="text-xs font-semibold text-zinc-800">
+                      <span className="text-xs font-medium text-zinc-800">
                         {u.name || "User"}
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleUnblock(u.id)}
-                      className="px-3 py-1 rounded-lg text-[11px] font-bold text-red-600 hover:bg-red-50 border border-red-200 transition cursor-pointer"
+                      className="px-3 py-1 rounded-lg text-[11px] font-medium text-red-600 hover:bg-red-50 border border-red-200 transition cursor-pointer"
                     >
                       Unblock
                     </button>
@@ -226,7 +226,7 @@ export function TravelPrivacySettingsModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-600 hover:bg-zinc-100 transition cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-medium text-zinc-600 hover:bg-zinc-100 transition cursor-pointer"
               >
                 Close
               </button>

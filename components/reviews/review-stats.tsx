@@ -25,10 +25,10 @@ export function ReviewStats({ averageRating, totalReviews, className = "", layou
   );
 
   return layout === "vertical" ? (
-    <div className={`${className} flex flex-col items-center gap-1 text-sm font-semibold text-[#1F1F1F]`}>
+    <div className={`${className} flex flex-col items-center gap-1 text-sm font-medium text-[#1F1F1F]`}>
       <div className="flex items-center gap-1.5">{summary}</div>
     </div>
   ) : (
-    <span className={`${className} inline-flex items-center gap-1.5 text-sm font-semibold text-[#1F1F1F]`}>{summary}</span>
+    <span className={`${className} inline-flex items-center gap-1.5 text-sm font-medium text-[#1F1F1F]`}>{summary}</span>
   );
 }

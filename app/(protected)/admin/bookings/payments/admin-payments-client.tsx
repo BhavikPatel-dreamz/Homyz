@@ -247,19 +247,19 @@ export function AdminPaymentsClient({
         <div className="flex flex-wrap items-center gap-2.5">
           <Link
             href="/admin/bookings/refunds"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>Refunds</span>
           </Link>
           <Link
             href="/admin/bookings/payouts"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>Host Payouts</span>
           </Link>
           <Link
             href="/admin/bookings/disputes"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>Disputes</span>
           </Link>
@@ -268,7 +268,7 @@ export function AdminPaymentsClient({
             type="button"
             onClick={exportCSV}
             disabled={payments.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all disabled:opacity-50"
           >
             <svg className="w-3.5 h-3.5 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -281,10 +281,10 @@ export function AdminPaymentsClient({
       {/* 11.2 — 8 KPI Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Captured
           </p>
-          <p className="text-lg font-bold text-foreground mt-1">
+          <p className="text-lg font-medium text-foreground mt-1">
             {formatPrice(summary.totalCapturedVolume / 100, summary.currency)}
           </p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">
@@ -293,61 +293,61 @@ export function AdminPaymentsClient({
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Authorized
           </p>
-          <p className="text-lg font-bold text-sky-600 mt-1">
+          <p className="text-lg font-medium text-sky-600 mt-1">
             {formatPrice(summary.authorizedVolume / 100, summary.currency)}
           </p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">{summary.authorizedCount} holds</p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Pending
           </p>
-          <p className="text-lg font-bold text-amber-600 mt-1">{summary.pendingCount}</p>
+          <p className="text-lg font-medium text-amber-600 mt-1">{summary.pendingCount}</p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">Awaiting capture</p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Successful
           </p>
-          <p className="text-lg font-bold text-emerald-600 mt-1">{summary.successfulCount}</p>
+          <p className="text-lg font-medium text-emerald-600 mt-1">{summary.successfulCount}</p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">Fully captured</p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Failed
           </p>
-          <p className="text-lg font-bold text-rose-600 mt-1">{summary.failedCount}</p>
+          <p className="text-lg font-medium text-rose-600 mt-1">{summary.failedCount}</p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">Declined / Error</p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Partial Refund
           </p>
-          <p className="text-lg font-bold text-purple-600 mt-1">{summary.partiallyRefundedCount}</p>
+          <p className="text-lg font-medium text-purple-600 mt-1">{summary.partiallyRefundedCount}</p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">Partially returned</p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Full Refund
           </p>
-          <p className="text-lg font-bold text-indigo-600 mt-1">{summary.fullyRefundedCount}</p>
+          <p className="text-lg font-medium text-indigo-600 mt-1">{summary.fullyRefundedCount}</p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">
             {formatPrice((summary.refundedVolume ?? 0) / 100, summary.currency)}
           </p>
         </div>
         <div className="rounded-xl border border-rose-200 bg-rose-50/50 dark:bg-rose-950/20 p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-rose-700 dark:text-rose-400 uppercase tracking-wider">
+          <p className="text-2xs font-medium text-rose-700 dark:text-rose-400 uppercase tracking-wider">
             Attention
           </p>
-          <p className="text-lg font-bold text-rose-700 dark:text-rose-300 mt-1">{summary.requiresAttentionCount}</p>
+          <p className="text-lg font-medium text-rose-700 dark:text-rose-300 mt-1">{summary.requiresAttentionCount}</p>
           <p className="text-2xs text-rose-600/80 mt-0.5">Stale / Issues</p>
         </div>
       </div>
@@ -366,7 +366,7 @@ export function AdminPaymentsClient({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all shrink-0 ${
                 isActive
                   ? "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-2xs"
                   : "text-[var(--muted-foreground)] hover:text-foreground hover:bg-[var(--surface-secondary)]"
@@ -416,7 +416,7 @@ export function AdminPaymentsClient({
           <button
             type="button"
             onClick={() => setFilterDrawerOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)]"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)]"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -428,7 +428,7 @@ export function AdminPaymentsClient({
             type="button"
             onClick={() => fetchPayments(pagination.page)}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50"
           >
             <svg className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -442,7 +442,7 @@ export function AdminPaymentsClient({
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[var(--surface-secondary)]/50 text-[var(--muted-foreground)] font-semibold border-b border-[var(--border)]">
+            <thead className="bg-[var(--surface-secondary)]/50 text-[var(--muted-foreground)] font-medium border-b border-[var(--border)]">
               <tr>
                 <th className="py-3 px-4">Transaction / ID</th>
                 <th className="py-3 px-4">Booking</th>
@@ -474,7 +474,7 @@ export function AdminPaymentsClient({
                   const capturedMajor = (p.capturedAmount || 0) / 100;
                   return (
                     <tr key={p.id} className="hover:bg-[var(--surface-secondary)]/40 transition-colors">
-                      <td className="py-3.5 px-4 font-mono text-2xs text-foreground font-semibold">
+                      <td className="py-3.5 px-4 font-mono text-2xs text-foreground font-medium">
                         <Link href={`/admin/bookings/payments/${p.id}`} className="hover:underline">
                           {p.id.slice(0, 14)}...
                         </Link>
@@ -497,7 +497,7 @@ export function AdminPaymentsClient({
                         {p.booking?.listing?.title || "—"}
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className="font-semibold text-foreground block truncate">
+                        <span className="font-medium text-foreground block truncate">
                           {p.booking?.user?.name || "Guest"}
                         </span>
                         <span className="text-3xs text-[var(--muted-foreground)] block truncate">
@@ -505,7 +505,7 @@ export function AdminPaymentsClient({
                         </span>
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className="font-semibold text-foreground block truncate">
+                        <span className="font-medium text-foreground block truncate">
                           {p.booking?.listing?.host?.name || "Host"}
                         </span>
                       </td>
@@ -514,7 +514,7 @@ export function AdminPaymentsClient({
                           {p.provider}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-foreground whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-medium text-foreground whitespace-nowrap">
                         {formatPrice(capturedMajor, p.currency)}
                         {p.refundedAmount > 0 && (
                           <span className="block text-3xs text-rose-600">
@@ -524,7 +524,7 @@ export function AdminPaymentsClient({
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-semibold ${
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-medium ${
                             p.status === "CAPTURED"
                               ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
                               : p.status === "AUTHORIZED"
@@ -547,7 +547,7 @@ export function AdminPaymentsClient({
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         <Link
                           href={`/admin/bookings/payments/${p.id}`}
-                          className="px-2.5 py-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-xs font-semibold text-foreground transition-all"
+                          className="px-2.5 py-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-xs font-medium text-foreground transition-all"
                         >
                           View Details
                         </Link>
@@ -570,14 +570,14 @@ export function AdminPaymentsClient({
             <button
               onClick={() => fetchPayments(pagination.page - 1)}
               disabled={pagination.page <= 1 || loading}
-              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-semibold"
+              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-medium"
             >
               ← Prev
             </button>
             <button
               onClick={() => fetchPayments(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages || loading}
-              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-semibold"
+              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-medium"
             >
               Next →
             </button>
@@ -591,10 +591,10 @@ export function AdminPaymentsClient({
           <div className="w-full max-w-md h-full bg-[var(--surface)] border-l border-[var(--border)] p-6 flex flex-col justify-between overflow-y-auto">
             <div>
               <div className="flex items-center justify-between border-b border-[var(--border)] pb-4 mb-5">
-                <h3 className="text-base font-bold text-foreground">Filter Payments</h3>
+                <h3 className="text-base font-medium text-foreground">Filter Payments</h3>
                 <button
                   onClick={() => setFilterDrawerOpen(false)}
-                  className="text-[var(--muted-foreground)] hover:text-foreground font-bold"
+                  className="text-[var(--muted-foreground)] hover:text-foreground font-medium"
                 >
                   ✕
                 </button>
@@ -602,7 +602,7 @@ export function AdminPaymentsClient({
 
               <div className="space-y-4 text-xs">
                 <div>
-                  <label className="block font-semibold text-foreground mb-1">Payment Provider</label>
+                  <label className="block font-medium text-foreground mb-1">Payment Provider</label>
                   <select
                     value={filterProvider}
                     onChange={(e) => setFilterProvider(e.target.value)}
@@ -616,7 +616,7 @@ export function AdminPaymentsClient({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-foreground mb-1">Status</label>
+                  <label className="block font-medium text-foreground mb-1">Status</label>
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
@@ -633,7 +633,7 @@ export function AdminPaymentsClient({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-foreground mb-1">From Date</label>
+                  <label className="block font-medium text-foreground mb-1">From Date</label>
                   <input
                     type="date"
                     value={startDate}
@@ -643,7 +643,7 @@ export function AdminPaymentsClient({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-foreground mb-1">To Date</label>
+                  <label className="block font-medium text-foreground mb-1">To Date</label>
                   <input
                     type="date"
                     value={endDate}
@@ -653,7 +653,7 @@ export function AdminPaymentsClient({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-foreground mb-1">Sort By</label>
+                  <label className="block font-medium text-foreground mb-1">Sort By</label>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
@@ -675,14 +675,14 @@ export function AdminPaymentsClient({
                   setStartDate("");
                   setEndDate("");
                 }}
-                className="w-1/2 py-2.5 rounded-xl border border-[var(--border)] text-xs font-semibold hover:bg-[var(--surface-secondary)]"
+                className="w-1/2 py-2.5 rounded-xl border border-[var(--border)] text-xs font-medium hover:bg-[var(--surface-secondary)]"
               >
                 Reset
               </button>
               <button
                 type="button"
                 onClick={() => setFilterDrawerOpen(false)}
-                className="w-1/2 py-2.5 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-semibold"
+                className="w-1/2 py-2.5 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-medium"
               >
                 Apply Filters
               </button>

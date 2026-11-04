@@ -196,7 +196,7 @@ export const BookingSummary = memo(function BookingSummary({ state, actions, isB
           {pricing.status === "error" || (!pricing.quote && pricing.status !== "loading") ? (
             <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">
               <p>{pricing.error || t("book_price_error", "We couldn't update your price.")}</p>
-              <button type="button" onClick={actions.onRetryPricing} className="mt-2 min-h-9 rounded-full border border-rose-400 px-4 font-semibold hover:bg-rose-100">{t("book_try_again", "Try again")}</button>
+              <button type="button" onClick={actions.onRetryPricing} className="mt-2 min-h-9 rounded-full border border-rose-400 px-4 font-medium hover:bg-rose-100">{t("book_try_again", "Try again")}</button>
             </div>
           ) : !pricing.quote ? (
             <p className="text-sm text-zinc-500" aria-live="polite">{t("book_price_updating", "Updating price…")}</p>
@@ -209,8 +209,8 @@ export const BookingSummary = memo(function BookingSummary({ state, actions, isB
         </section>
 
         <div className="flex items-center justify-between pt-4">
-          <span className="text-sm font-semibold text-[#1f1f1f] sm:text-base">{t("book_total", { currency: displayCurrency }, `Total (${displayCurrency})`)}</span>
-          <span className="text-sm font-bold text-zinc-950 sm:text-base" aria-live="polite">
+          <span className="text-sm font-medium text-[#1f1f1f] sm:text-base">{t("book_total", { currency: displayCurrency }, `Total (${displayCurrency})`)}</span>
+          <span className="text-sm font-medium text-zinc-950 sm:text-base" aria-live="polite">
             {pricing.quote ? actions.formatMoney(pricing.quote.guestTotal, 2) : "Unavailable"}
           </span>
         </div>

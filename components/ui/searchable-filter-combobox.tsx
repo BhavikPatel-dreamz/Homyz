@@ -135,7 +135,7 @@ export function SearchableFilterCombobox({ label, placeholder, value, onChange, 
 
   return (
     <div ref={root} className="relative min-w-0" onKeyDown={onKeyDown}>
-      <label htmlFor={`${id}-trigger`} className="mb-1.5 block text-[11px] font-semibold text-[var(--muted-foreground)]">{label}</label>
+      <label htmlFor={`${id}-trigger`} className="mb-1.5 block text-[11px] font-medium text-[var(--muted-foreground)]">{label}</label>
       <button id={`${id}-trigger`} type="button" aria-expanded={open} aria-haspopup="listbox" onClick={toggle} className="flex h-10 w-full items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 text-left text-xs text-foreground hover:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]">
         <span className="min-w-0 flex-1 truncate">{selected?.label || (value ? "Selected value" : placeholder)}</span>
         {value && <span role="button" tabIndex={0} onClick={(event) => { event.stopPropagation(); choose(""); }} className="rounded p-0.5 text-[var(--muted-foreground)] hover:bg-[var(--surface)]" aria-label={`Clear ${label}`}>×</span>}
@@ -163,13 +163,13 @@ export function SearchableFilterCombobox({ label, placeholder, value, onChange, 
           )}
         </div>
         <div role="listbox" className="mt-2 max-h-56 overflow-y-auto">
-          <button type="button" role="option" aria-selected={!value} onClick={() => choose("")} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)]"><span className="min-w-0 flex-1 truncate">{placeholder}</span>{!value && <span className="text-[var(--accent)]">✓</span>}</button>
-          {value && <button type="button" onClick={() => choose("")} className="flex w-full items-center rounded-lg px-2.5 py-2 text-left text-xs font-semibold text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)]">Clear selection</button>}
+          <button type="button" role="option" aria-selected={!value} onClick={() => choose("")} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)]"><span className="min-w-0 flex-1 truncate">{placeholder}</span>{!value && <span className="text-[var(--accent)]">✓</span>}</button>
+          {value && <button type="button" onClick={() => choose("")} className="flex w-full items-center rounded-lg px-2.5 py-2 text-left text-xs font-medium text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)]">Clear selection</button>}
           {loading && <p className="px-2.5 py-3 text-xs text-[var(--muted-foreground)]">Loading options…</p>}
           {!loading && requestError && <button type="button" onClick={() => void fetchPage(query, 1)} className="w-full rounded-lg px-2.5 py-3 text-left text-xs text-rose-600 hover:bg-rose-50 dark:text-rose-300">Could not load options. Retry</button>}
           {!loading && !requestError && visibleItems.length === 0 && <p className="px-2.5 py-3 text-xs text-[var(--muted-foreground)]">No matching options.</p>}
-          {!loading && !requestError && visibleItems.map((item, index) => <button key={item.value} type="button" role="option" aria-selected={item.value === value} onMouseEnter={() => setActive(index)} onClick={() => choose(item.value)} className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-[var(--surface-secondary)] ${index === active ? "bg-[var(--surface-secondary)]" : ""}`}><span className="min-w-0 flex-1"><span className="block truncate font-semibold text-foreground">{item.label}</span>{item.description && <span className="block truncate text-[10px] text-[var(--muted-foreground)]">{item.description}</span>}</span>{item.value === value && <span className="text-[var(--accent)]">✓</span>}</button>)}
-          {!loading && loadOptions && hasMore && <button type="button" onClick={() => void fetchPage(query, page + 1, true)} className="mt-1 w-full rounded-lg px-2.5 py-2 text-left text-xs font-semibold text-[var(--accent)] hover:bg-[var(--surface-secondary)]">Load more</button>}
+          {!loading && !requestError && visibleItems.map((item, index) => <button key={item.value} type="button" role="option" aria-selected={item.value === value} onMouseEnter={() => setActive(index)} onClick={() => choose(item.value)} className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-[var(--surface-secondary)] ${index === active ? "bg-[var(--surface-secondary)]" : ""}`}><span className="min-w-0 flex-1"><span className="block truncate font-medium text-foreground">{item.label}</span>{item.description && <span className="block truncate text-[10px] text-[var(--muted-foreground)]">{item.description}</span>}</span>{item.value === value && <span className="text-[var(--accent)]">✓</span>}</button>)}
+          {!loading && loadOptions && hasMore && <button type="button" onClick={() => void fetchPage(query, page + 1, true)} className="mt-1 w-full rounded-lg px-2.5 py-2 text-left text-xs font-medium text-[var(--accent)] hover:bg-[var(--surface-secondary)]">Load more</button>}
         </div>
       </div>}
     </div>

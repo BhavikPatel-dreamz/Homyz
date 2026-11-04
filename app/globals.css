@@ -139,27 +139,27 @@
 }
 
 .admin-listing-editor main :is(label, legend) {
-  font-size: 0.75rem !important;
-  font-weight: 700 !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
   letter-spacing: 0.01em;
 }
 
 .admin-listing-editor main h1 {
-  font-size: 1.5rem !important;
-  font-weight: 700 !important;
+  font-size: 1.75rem !important;
+  font-weight: 500 !important;
   letter-spacing: -0.025em;
 }
 
 .admin-listing-editor main h2 {
   font-size: 1.25rem !important;
-  font-weight: 700 !important;
+  font-weight: 500 !important;
   letter-spacing: -0.02em;
 }
 
 .admin-listing-editor main h3,
 .admin-listing-editor main h4 {
-  font-size: 0.875rem !important;
-  font-weight: 700 !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
 }
 
 .admin-listing-editor main :is(.text-xl, .text-2xl, .text-3xl) {
@@ -212,8 +212,8 @@
 }
 
 .admin-listing-editor main button {
-  font-size: 0.75rem !important;
-  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
 }
 
 .admin-listing-editor main button:not([class*="rounded-full"]) {
@@ -336,36 +336,64 @@ body {
 }
 
 @layer base {
-  h1,
-  h2 {
+  h1 {
     font-family: var(--font-poppins), sans-serif;
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 500;
-    line-height: 30px;
+    line-height: 32px;
     color: #1f1f1f;
+    letter-spacing: -0.015em;
   }
 
   @media (min-width: 640px) {
-    h1,
-    h2 {
+    h1 {
       font-size: 28px;
       line-height: 36px;
     }
   }
 
   @media (min-width: 1024px) {
-    h1,
-    h2 {
-      font-size: 32px;
-      line-height: 40px;
+    h1 {
+      font-size: 30px;
+      line-height: 38px;
     }
   }
 
-  @media (min-width: 1280px) {
-    h1,
+  h2 {
+    font-family: var(--font-poppins), sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 26px;
+    color: #1f1f1f;
+    letter-spacing: -0.01em;
+  }
+
+  @media (min-width: 640px) {
     h2 {
-      font-size: 32px;
-      line-height: 40px;
+      font-size: 20px;
+      line-height: 28px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    h2 {
+      font-size: 22px;
+      line-height: 30px;
+    }
+  }
+
+  h3 {
+    font-family: var(--font-poppins), sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    color: #1f1f1f;
+  }
+
+  @media (min-width: 1024px) {
+    h3 {
+      font-size: 17px;
+      line-height: 24px;
     }
   }
 }
@@ -929,8 +957,8 @@ input[type="number"] {
 .guest-booking-details {
   --profile-ink: #1f1f1f;
   --profile-muted: #727272;
-  --profile-title-size: 1.875rem;
-  --profile-section-size: 1.375rem;
+  --profile-title-size: 1.75rem;
+  --profile-section-size: 1.25rem;
   --profile-card-title-size: 1rem;
   --profile-body-size: 0.9375rem;
   --profile-secondary-size: 0.875rem;
@@ -940,7 +968,7 @@ input[type="number"] {
 .reservation-page-title {
   color: var(--profile-ink);
   font-size: var(--profile-title-size);
-  font-weight: 650;
+  font-weight: 500;
   letter-spacing: -0.025em;
   line-height: 1.2;
 }
@@ -949,7 +977,7 @@ input[type="number"] {
 .guest-booking-details h2 {
   color: var(--profile-ink);
   font-size: var(--profile-section-size);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.015em;
   line-height: 1.3;
 }
@@ -958,7 +986,7 @@ input[type="number"] {
 .guest-booking-details h3 {
   color: var(--profile-ink);
   font-size: var(--profile-card-title-size);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.4;
 }
 
@@ -971,13 +999,13 @@ input[type="number"] {
 
 .profile-value {
   font-size: 1.25rem;
-  font-weight: 650;
+  font-weight: 500;
   letter-spacing: -0.015em;
   line-height: 1.2;
 }
 
 .profile-value--hero {
-  font-size: 2rem;
+  font-size: 1.75rem;
 }
 
 .profile-button {
@@ -986,7 +1014,7 @@ input[type="number"] {
   justify-content: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.25rem;
   white-space: nowrap;
 }
@@ -1030,13 +1058,13 @@ input[type="number"] {
 .guest-booking-details form button[type="submit"] {
   min-height: 2.75rem;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.25rem;
 }
 
 .guest-booking-details h1 {
   font-size: var(--profile-title-size);
-  font-weight: 650;
+  font-weight: 500;
   letter-spacing: -0.025em;
   line-height: 1.2;
   overflow-wrap: anywhere;

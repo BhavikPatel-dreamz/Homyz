@@ -153,11 +153,11 @@ export function PayoutMethodsManager({ initialMethods }: PayoutMethodsManagerPro
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-semibold text-zinc-950 text-sm sm:text-base">
+                    <p className="font-medium text-zinc-950 text-sm sm:text-base">
                       {method.bankName}
                     </p>
                     {method.isDefault && (
-                      <span className="rounded-full bg-zinc-900 px-2 py-0.5 text-[10px] font-semibold text-white">
+                      <span className="rounded-full bg-zinc-900 px-2 py-0.5 text-[10px] font-medium text-white">
                         Default
                       </span>
                     )}
@@ -192,7 +192,7 @@ export function PayoutMethodsManager({ initialMethods }: PayoutMethodsManagerPro
                     type="button"
                     onClick={() => handleSetDefault(method.id)}
                     disabled={Boolean(actionLoading)}
-                    className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors disabled:opacity-50"
+                    className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-800 hover:bg-zinc-50 transition-colors disabled:opacity-50"
                   >
                     Set as Default
                   </button>
@@ -200,7 +200,7 @@ export function PayoutMethodsManager({ initialMethods }: PayoutMethodsManagerPro
 
                 <Link
                   href={`/host/account-settings/payouts/methods/${method.id}`}
-                  className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
+                  className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-800 hover:bg-zinc-50 transition-colors"
                 >
                   Details
                 </Link>
@@ -235,7 +235,7 @@ export function PayoutMethodsManager({ initialMethods }: PayoutMethodsManagerPro
             <div className="flex size-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
               <TrashIcon size={22} />
             </div>
-            <h3 className="mt-4 text-lg font-bold text-zinc-950">
+            <h3 className="mt-4 text-lg font-medium text-zinc-950">
               Remove Payout Method?
             </h3>
             <p className="mt-2 text-xs sm:text-sm text-zinc-600 leading-relaxed">
@@ -251,7 +251,7 @@ export function PayoutMethodsManager({ initialMethods }: PayoutMethodsManagerPro
               <button
                 type="button"
                 onClick={() => setMethodToDelete(null)}
-                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
               >
                 Cancel
               </button>
@@ -259,7 +259,7 @@ export function PayoutMethodsManager({ initialMethods }: PayoutMethodsManagerPro
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={Boolean(actionLoading)}
-                className="rounded-full bg-rose-600 px-5 py-2 text-xs font-semibold text-white hover:bg-rose-700 transition-colors disabled:opacity-50"
+                className="rounded-full bg-rose-600 px-5 py-2 text-xs font-medium text-white hover:bg-rose-700 transition-colors disabled:opacity-50"
               >
                 {actionLoading === methodToDelete.id ? "Removing..." : "Confirm Removal"}
               </button>

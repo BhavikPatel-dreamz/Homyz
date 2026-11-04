@@ -2,9 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions/permissions";
 import type { GlobalSettingsPayload } from "@/lib/cms/content-types";
+import { BrandingMediaControl } from "./branding-media-control";
+
+const DEFAULT_GLOBAL_LOGO = "/images/brand/homyz-logo-dark-v1.svg";
+const DEFAULT_FAVICON = "/favicon.ico";
 
 const ALL_LOCALES = [
   { code: "en", label: "English (en)" },
@@ -18,6 +23,7 @@ const ALL_LOCALES = [
 const CURRENCIES = ["SAR", "USD", "EUR", "AED", "GBP", "QAR", "KWD"];
 
 export function GlobalSettingsClient() {
+  const router = useRouter();
   const { data: session } = useSession();
   const user = session?.user;
   const canEdit = hasPermission(user, PERMISSIONS.CMS_EDIT);
@@ -35,8 +41,8 @@ export function GlobalSettingsClient() {
         if (!res.ok) throw new Error("Failed to load global settings");
         const json = await res.json();
         setSettings(json.data || json);
-      } catch (err: any) {
-        setError(err.message || "Failed to load settings");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to load settings");
       } finally {
         setLoading(false);
       }
@@ -66,8 +72,9 @@ export function GlobalSettingsClient() {
       const updated = await res.json();
       setSettings(updated.data || updated);
       setSuccess("Global website settings updated successfully!");
-    } catch (err: any) {
-      setError(err.message || "Failed to save settings");
+      router.refresh();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to save settings");
     } finally {
       setSaving(false);
     }
@@ -112,9 +119,9 @@ export function GlobalSettingsClient() {
               ← CMS Hub
             </Link>
             <span className="text-zinc-300">/</span>
-            <span className="text-xs font-semibold text-zinc-700">Global Website Settings</span>
+            <span className="text-xs font-medium text-zinc-700">Global Website Settings</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 mt-1">
+          <h1 className="text-xl sm:text-2xl font-medium text-zinc-900 mt-1">
             Global Website Settings
           </h1>
           <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
@@ -127,7 +134,7 @@ export function GlobalSettingsClient() {
             type="submit"
             form="settings-form"
             disabled={saving}
-            className="px-5 py-2 text-xs font-semibold rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 transition disabled:opacity-50 shadow-xs"
+            className="px-5 py-2 text-xs font-medium rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 transition disabled:opacity-50 shadow-xs"
           >
             {saving ? "Saving Changes..." : "Save Settings"}
           </button>
@@ -149,12 +156,12 @@ export function GlobalSettingsClient() {
       <form id="settings-form" onSubmit={handleSave} className="space-y-8">
         {/* Section 1: Site Identity */}
         <div className="p-6 bg-white border border-zinc-200 rounded-2xl shadow-xs space-y-4">
-          <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
+          <h2 className="text-sm font-medium text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
             1. Platform Identity & Branding
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-medium text-zinc-700 mb-1">
                 Website / Platform Name
               </label>
               <input
@@ -167,7 +174,7 @@ export function GlobalSettingsClient() {
             </div>
 
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-medium text-zinc-700 mb-1">
                 Tagline / Slogan
               </label>
               <input
@@ -178,40 +185,119 @@ export function GlobalSettingsClient() {
               />
             </div>
 
-            <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
-                Logo Media URL
-              </label>
-              <input
-                type="text"
-                value={settings.logoUrl || ""}
-                onChange={(e) => setSettings({ ...settings, logoUrl: e.target.value })}
-                className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
-                Favicon URL
-              </label>
-              <input
-                type="text"
-                value={settings.faviconUrl || ""}
-                onChange={(e) => setSettings({ ...settings, faviconUrl: e.target.value })}
-                className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-sm"
-              />
-            </div>
           </div>
         </div>
 
-        {/* Section 2: Legal Entity & Commercial Registration */}
+        {/* Section 2: Global branding and homepage media */}
         <div className="p-6 bg-white border border-zinc-200 rounded-2xl shadow-xs space-y-4">
-          <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
-            2. Company Legal Information
+          <div className="border-b border-zinc-100 pb-2">
+            <h2 className="text-sm font-medium text-zinc-900 uppercase tracking-wider">2. Branding & Homepage Media</h2>
+            <p className="mt-1 text-xs leading-5 text-zinc-500">Upload managed assets to the CMS Media Library. Header-specific logos inherit the global logo when left empty.</p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <BrandingMediaControl
+              label="Global Website Logo"
+              description="Default logo for all public surfaces without an override."
+              value={settings.globalLogoUrl || (settings.logoUrl === DEFAULT_GLOBAL_LOGO ? undefined : settings.logoUrl)}
+              assetId={settings.globalLogoAssetId}
+              kind="branding"
+              disabled={!canEdit}
+              onChange={(asset) => setSettings({ ...settings, globalLogoUrl: asset.url, globalLogoAssetId: asset.assetId, logoUrl: asset.url })}
+              onClear={() => setSettings({ ...settings, globalLogoUrl: undefined, globalLogoAssetId: undefined, logoUrl: DEFAULT_GLOBAL_LOGO })}
+            />
+            <BrandingMediaControl
+              label="Guest Header Logo"
+              description="Optional override for traveler-facing navigation."
+              value={settings.guestHeaderLogoUrl}
+              assetId={settings.guestHeaderLogoAssetId}
+              kind="branding"
+              disabled={!canEdit}
+              onChange={(asset) => setSettings({ ...settings, guestHeaderLogoUrl: asset.url, guestHeaderLogoAssetId: asset.assetId })}
+              onClear={() => setSettings({ ...settings, guestHeaderLogoUrl: undefined, guestHeaderLogoAssetId: undefined })}
+            />
+            <BrandingMediaControl
+              label="Host Header Logo"
+              description="Optional override for host workspace navigation."
+              value={settings.hostHeaderLogoUrl}
+              assetId={settings.hostHeaderLogoAssetId}
+              kind="branding"
+              disabled={!canEdit}
+              onChange={(asset) => setSettings({ ...settings, hostHeaderLogoUrl: asset.url, hostHeaderLogoAssetId: asset.assetId })}
+              onClear={() => setSettings({ ...settings, hostHeaderLogoUrl: undefined, hostHeaderLogoAssetId: undefined })}
+            />
+            <BrandingMediaControl
+              label="Admin Dashboard Logo"
+              description="Optional override for the administrator sidebar."
+              value={settings.adminLogoUrl}
+              assetId={settings.adminLogoAssetId}
+              kind="branding"
+              disabled={!canEdit}
+              onChange={(asset) => setSettings({ ...settings, adminLogoUrl: asset.url, adminLogoAssetId: asset.assetId })}
+              onClear={() => setSettings({ ...settings, adminLogoUrl: undefined, adminLogoAssetId: undefined })}
+            />
+            <BrandingMediaControl
+              label="Mobile Logo"
+              description="Optional mobile-specific logo; falls back to the global logo."
+              value={settings.mobileLogoUrl}
+              assetId={settings.mobileLogoAssetId}
+              kind="branding"
+              disabled={!canEdit}
+              onChange={(asset) => setSettings({ ...settings, mobileLogoUrl: asset.url, mobileLogoAssetId: asset.assetId })}
+              onClear={() => setSettings({ ...settings, mobileLogoUrl: undefined, mobileLogoAssetId: undefined })}
+            />
+            {/* <BrandingMediaControl
+              label="Favicon"
+              description="Browser tab and bookmark icon. PNG, WebP and AVIF are supported."
+              value={settings.faviconUrl === DEFAULT_FAVICON ? undefined : settings.faviconUrl}
+              assetId={settings.faviconAssetId}
+              kind="branding"
+              disabled={!canEdit}
+              onChange={(asset) => setSettings({ ...settings, faviconUrl: asset.url, faviconAssetId: asset.assetId })}
+              onClear={() => setSettings({ ...settings, faviconUrl: DEFAULT_FAVICON, faviconAssetId: undefined })}
+            /> */}
+            <BrandingMediaControl
+              label="Homepage Hero — Desktop"
+              description="Wide homepage image for tablet and desktop visitors."
+              value={settings.homepageHeroDesktopUrl}
+              assetId={settings.homepageHeroDesktopAssetId}
+              kind="homepage"
+              disabled={!canEdit}
+              onChange={(asset) => setSettings({ ...settings, homepageHeroDesktopUrl: asset.url, homepageHeroDesktopAssetId: asset.assetId })}
+              onClear={() => setSettings({ ...settings, homepageHeroDesktopUrl: undefined, homepageHeroDesktopAssetId: undefined })}
+            />
+            <BrandingMediaControl
+              label="Homepage Hero — Mobile"
+              description="Optional portrait/mobile crop. It falls back to the default mobile hero."
+              value={settings.homepageHeroMobileUrl}
+              assetId={settings.homepageHeroMobileAssetId}
+              kind="homepage"
+              disabled={!canEdit}
+              onChange={(asset) => setSettings({ ...settings, homepageHeroMobileUrl: asset.url, homepageHeroMobileAssetId: asset.assetId })}
+              onClear={() => setSettings({ ...settings, homepageHeroMobileUrl: undefined, homepageHeroMobileAssetId: undefined })}
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-4 pt-1 sm:grid-cols-2 text-xs">
+            <label className="block font-medium text-zinc-700">Desktop hero focal position
+              <select value={settings.homepageHeroDesktopPosition || "center"} onChange={(e) => setSettings({ ...settings, homepageHeroDesktopPosition: e.target.value })} disabled={!canEdit} className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm disabled:opacity-60">
+                <option value="center">Center</option><option value="center top">Top</option><option value="center 35%">Upper center</option><option value="center bottom">Bottom</option>
+              </select>
+            </label>
+            <label className="block font-medium text-zinc-700">Mobile hero focal position
+              <select value={settings.homepageHeroMobilePosition || "center 12%"} onChange={(e) => setSettings({ ...settings, homepageHeroMobilePosition: e.target.value })} disabled={!canEdit} className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm disabled:opacity-60">
+                <option value="center">Center</option><option value="center top">Top</option><option value="center 12%">Upper center</option><option value="center bottom">Bottom</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        {/* Section 3: Legal Entity & Commercial Registration */}
+        <div className="p-6 bg-white border border-zinc-200 rounded-2xl shadow-xs space-y-4">
+          <h2 className="text-sm font-medium text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
+            3. Company Legal Information
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-medium text-zinc-700 mb-1">
                 Legal Entity Name
               </label>
               <input
@@ -224,7 +310,7 @@ export function GlobalSettingsClient() {
             </div>
 
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-medium text-zinc-700 mb-1">
                 Commercial Registration / Tax Number (CR/VAT)
               </label>
               <input
@@ -236,7 +322,7 @@ export function GlobalSettingsClient() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-medium text-zinc-700 mb-1">
                 Registered Business Address
               </label>
               <input
@@ -249,14 +335,14 @@ export function GlobalSettingsClient() {
           </div>
         </div>
 
-        {/* Section 3: Official Contact Channels */}
+        {/* Section 4: Official Contact Channels */}
         <div className="p-6 bg-white border border-zinc-200 rounded-2xl shadow-xs space-y-4">
-          <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
-            3. Customer Support & Contact
+          <h2 className="text-sm font-medium text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
+            4. Customer Support & Contact
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-medium text-zinc-700 mb-1">
                 Customer Support Email
               </label>
               <input
@@ -269,7 +355,7 @@ export function GlobalSettingsClient() {
             </div>
 
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-medium text-zinc-700 mb-1">
                 Customer Support Phone
               </label>
               <input
@@ -282,14 +368,14 @@ export function GlobalSettingsClient() {
           </div>
         </div>
 
-        {/* Section 4: Localization & Regional Defaults */}
+        {/* Section 5: Localization & Regional Defaults */}
         <div className="p-6 bg-white border border-zinc-200 rounded-2xl shadow-xs space-y-4">
-          <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
-            4. Languages & Currency Defaults
+          <h2 className="text-sm font-medium text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
+            5. Languages & Currency Defaults
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-medium text-zinc-700 mb-1">
                 Default Platform Language
               </label>
               <select
@@ -306,7 +392,7 @@ export function GlobalSettingsClient() {
             </div>
 
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-medium text-zinc-700 mb-1">
                 Default Currency
               </label>
               <select
@@ -323,7 +409,7 @@ export function GlobalSettingsClient() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block font-semibold text-zinc-700 mb-2">
+              <label className="block font-medium text-zinc-700 mb-2">
                 Active Supported Languages
               </label>
               <div className="flex flex-wrap gap-4">
@@ -346,14 +432,14 @@ export function GlobalSettingsClient() {
           </div>
         </div>
 
-        {/* Section 5: Social Channels */}
+        {/* Section 6: Social Channels */}
         <div className="p-6 bg-white border border-zinc-200 rounded-2xl shadow-xs space-y-4">
-          <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
-            5. Official Social Channels
+          <h2 className="text-sm font-medium text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
+            6. Official Social Channels
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">Facebook URL</label>
+              <label className="block font-medium text-zinc-700 mb-1">Facebook URL</label>
               <input
                 type="url"
                 value={settings.socialMedia?.facebook || ""}
@@ -366,7 +452,7 @@ export function GlobalSettingsClient() {
             </div>
 
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">Twitter / X URL</label>
+              <label className="block font-medium text-zinc-700 mb-1">Twitter / X URL</label>
               <input
                 type="url"
                 value={settings.socialMedia?.twitter || ""}
@@ -379,7 +465,7 @@ export function GlobalSettingsClient() {
             </div>
 
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">Instagram URL</label>
+              <label className="block font-medium text-zinc-700 mb-1">Instagram URL</label>
               <input
                 type="url"
                 value={settings.socialMedia?.instagram || ""}
@@ -392,7 +478,7 @@ export function GlobalSettingsClient() {
             </div>
 
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">LinkedIn URL</label>
+              <label className="block font-medium text-zinc-700 mb-1">LinkedIn URL</label>
               <input
                 type="url"
                 value={settings.socialMedia?.linkedin || ""}
@@ -406,14 +492,14 @@ export function GlobalSettingsClient() {
           </div>
         </div>
 
-        {/* Section 6: SEO Defaults */}
+        {/* Section 7: SEO Defaults */}
         <div className="p-6 bg-white border border-zinc-200 rounded-2xl shadow-xs space-y-4">
-          <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
-            6. Default Search Engine Optimization (SEO)
+          <h2 className="text-sm font-medium text-zinc-900 uppercase tracking-wider border-b border-zinc-100 pb-2">
+            7. Default Search Engine Optimization (SEO)
           </h2>
           <div className="space-y-4 text-xs">
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">Default Meta Title</label>
+              <label className="block font-medium text-zinc-700 mb-1">Default Meta Title</label>
               <input
                 type="text"
                 value={settings.seo?.defaultMetaTitle || ""}
@@ -426,7 +512,7 @@ export function GlobalSettingsClient() {
             </div>
 
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">Default Meta Description</label>
+              <label className="block font-medium text-zinc-700 mb-1">Default Meta Description</label>
               <textarea
                 rows={2}
                 value={settings.seo?.defaultMetaDescription || ""}
@@ -439,7 +525,7 @@ export function GlobalSettingsClient() {
             </div>
 
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">Default OpenGraph Image URL</label>
+              <label className="block font-medium text-zinc-700 mb-1">Default OpenGraph Image URL</label>
               <input
                 type="text"
                 value={settings.seo?.ogImageUrl || ""}
@@ -459,7 +545,7 @@ export function GlobalSettingsClient() {
             <button
               type="submit"
               disabled={saving}
-              className="px-6 py-2.5 text-sm font-semibold rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 transition disabled:opacity-50 shadow-sm"
+              className="px-6 py-2.5 text-sm font-medium rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 transition disabled:opacity-50 shadow-sm"
             >
               {saving ? "Saving Changes..." : "Save Global Settings"}
             </button>
@@ -469,4 +555,3 @@ export function GlobalSettingsClient() {
     </div>
   );
 }
-

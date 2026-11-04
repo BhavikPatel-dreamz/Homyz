@@ -158,11 +158,11 @@ export function AirbnbOrgStaysView({
       <div className="pt-2 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg sm:text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 tracking-tight leading-none">
+            <h2 className="text-lg sm:text-xl font-medium text-[#1F1F1F] dark:text-zinc-100 tracking-tight leading-none">
               {t("host_org_stays_brand_title") || "Homyz.com Stays"}
             </h2>
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold tracking-wide transition-colors ${isEnabled
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium tracking-wide transition-colors ${isEnabled
                   ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800"
                   : "bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700"
                 }`}
@@ -170,7 +170,7 @@ export function AirbnbOrgStaysView({
               [ {isEnabled ? "ON" : "OFF"} ]
             </span>
           </div>
-          <p className="text-sm text-[#E01563] dark:text-rose-400 font-semibold tracking-tight pt-0.5">
+          <p className="text-sm text-[#E01563] dark:text-rose-400 font-medium tracking-tight pt-0.5">
             {t("host_org_stays_brand_sub") || "Homyz.org"}
           </p>
           <p className="text-sm text-[#717171] dark:text-[#727272] font-normal leading-normal">
@@ -180,7 +180,7 @@ export function AirbnbOrgStaysView({
 
         {/* Pill Toggle Switch */}
         <div className="flex items-center gap-3 shrink-0">
-          <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 select-none">
+          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 select-none">
             {isEnabled ? (t("host_org_stays_on_upper") || "ON") : (t("host_org_stays_off_upper") || "OFF")}
           </span>
           <button
@@ -203,7 +203,7 @@ export function AirbnbOrgStaysView({
       {/* 2b. Expandable Configuration Options (Visible when enabled) */}
       {isEnabled && (
         <div className="my-6 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/60 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
-          <p className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 tracking-wide uppercase">
+          <p className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 tracking-wide uppercase">
             {t("host_org_stays_participate_heading") || "How would you like to participate?"}
           </p>
 
@@ -223,7 +223,7 @@ export function AirbnbOrgStaysView({
                 className="mt-0.5 accent-zinc-900 dark:accent-amber-400"
               />
               <div className="text-sm">
-                <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                <span className="font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                   {t("host_org_stays_option_free_title") || "Host for free (100% discount)"}
                 </span>
                 <span className="text-[#727272] dark:text-[#727272] font-normal leading-relaxed block mt-0.5">
@@ -247,7 +247,7 @@ export function AirbnbOrgStaysView({
                 className="mt-0.5 accent-zinc-900 dark:accent-amber-400"
               />
               <div className="text-sm flex-1">
-                <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                <span className="font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                   {t("host_org_stays_option_discount_title") || "Host at a discount"}
                 </span>
                 <span className="text-[#727272] dark:text-[#727272] font-normal leading-relaxed block mt-0.5">
@@ -267,7 +267,7 @@ export function AirbnbOrgStaysView({
                           e.preventDefault();
                           setDiscountPercentage(pct);
                         }}
-                        className={`px-3 py-1 rounded-full text-sm font-semibold transition-all cursor-pointer ${discountPercentage === pct
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-all cursor-pointer ${discountPercentage === pct
                             ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-[#1F1F1F]"
                             : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                           }`}
@@ -282,7 +282,7 @@ export function AirbnbOrgStaysView({
                         max="95"
                         value={discountPercentage}
                         onChange={(e) => setDiscountPercentage(Math.max(5, Math.min(95, Number(e.target.value) || 20)))}
-                        className="w-14 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-700 rounded-md text-center font-semibold text-[#1F1F1F] dark:text-zinc-100 bg-white dark:bg-zinc-800"
+                        className="w-14 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-700 rounded-md text-center font-medium text-[#1F1F1F] dark:text-zinc-100 bg-white dark:bg-zinc-800"
                       />
                       <span className="text-sm text-[#727272] dark:text-[#727272]">%</span>
                     </div>
@@ -296,7 +296,7 @@ export function AirbnbOrgStaysView({
 
       {/* 3. "How homyz.org stays work" Section */}
       <div className="mt-10 pt-2 space-y-4">
-        <h3 className="text-base sm:text-lg font-semibold text-[#222222] dark:text-zinc-100 tracking-tight">
+        <h3 className="text-base sm:text-lg font-medium text-[#222222] dark:text-zinc-100 tracking-tight">
           {t("host_org_stays_how_it_works_heading") || "How homyz.org stays work"}
         </h3>
 
@@ -356,13 +356,13 @@ export function AirbnbOrgStaysView({
           type="button"
           disabled={isSaving}
           onClick={handleCancel}
-          className="rounded-full bg-white dark:bg-zinc-800 border border-[#1f1f1f] dark:border-zinc-700 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-[#1f1f1f] hover:text-white dark:text-zinc-200 font-semibold text-sm px-7 py-2.5 shadow-2xs transition-all duration-300 cursor-pointer"
+          className="rounded-full bg-white dark:bg-zinc-800 border border-[#1f1f1f] dark:border-zinc-700 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-[#1f1f1f] hover:text-white dark:text-zinc-200 font-medium text-sm px-7 py-2.5 shadow-2xs transition-all duration-300 cursor-pointer"
         >
           {t("host_cancel") || "Cancel"}
         </button>
 
         {isSavedSuccess && (
-          <span className="text-sm text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 animate-in fade-in">
+          <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1 animate-in fade-in">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
@@ -395,7 +395,7 @@ export function AirbnbOrgStaysView({
             {/* Modal Header */}
             <div className="sticky top-0 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm z-20 border-b border-zinc-100 dark:border-zinc-800 px-6 py-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-[#E01563] dark:text-rose-400 border border-rose-200 dark:border-rose-900/60">
+                <span className="text-sm font-medium px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-[#E01563] dark:text-rose-400 border border-rose-200 dark:border-rose-900/60">
                   {t("host_org_stays_resource_centre") || "Resource Centre"}
                 </span>
                 <span className="text-sm text-[#727272]">·</span>
@@ -426,7 +426,7 @@ export function AirbnbOrgStaysView({
             {/* Modal Scrollable Content */}
             <div className="p-6 sm:p-8 space-y-6 overflow-y-auto flex-1 text-zinc-800 dark:text-zinc-200 text-sm leading-relaxed">
               <div>
-                <h2 id="learn-more-org-title" className="text-xl sm:text-2xl font-bold text-zinc-950 dark:text-zinc-100 tracking-tight">
+                <h2 id="learn-more-org-title" className="text-xl sm:text-2xl font-medium text-zinc-950 dark:text-zinc-100 tracking-tight">
                   {t("host_org_stays_modal_title") || "About homyz.org and emergency stays"}
                 </h2>
                 <p className="text-[#727272] dark:text-[#727272] text-sm mt-1.5">
@@ -436,7 +436,7 @@ export function AirbnbOrgStaysView({
 
               {/* Card 1: What is homyz.org */}
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 space-y-2">
-                <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-semibold text-sm">
+                <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-medium text-sm">
                   <span className="text-[#E01563] dark:text-rose-400 text-base">❤️</span>
                   <h4>{t("host_org_stays_card1_title") || "What is homyz.org?"}</h4>
                 </div>
@@ -447,7 +447,7 @@ export function AirbnbOrgStaysView({
 
               {/* Card 2: Guest Eligibility */}
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 space-y-2">
-                <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-semibold text-sm">
+                <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-medium text-sm">
                   <span className="text-indigo-600 dark:text-indigo-400 text-base">👥</span>
                   <h4>{t("host_org_stays_card2_title") || "Who stays with homyz.org?"}</h4>
                 </div>
@@ -458,7 +458,7 @@ export function AirbnbOrgStaysView({
 
               {/* Card 3: Partner Vetting */}
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 space-y-2">
-                <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-semibold text-sm">
+                <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-medium text-sm">
                   <span className="text-emerald-600 dark:text-emerald-400 text-base">🏛️</span>
                   <h4>{t("host_org_stays_card3_title") || "Vetted humanitarian partners"}</h4>
                 </div>
@@ -469,7 +469,7 @@ export function AirbnbOrgStaysView({
 
               {/* Card 4: Host Protection */}
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 space-y-2">
-                <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-semibold text-sm">
+                <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-medium text-sm">
                   <span className="text-amber-600 dark:text-amber-400 text-base">🛡️</span>
                   <h4>{t("host_org_stays_card4_title") || "Host Protection for emergency stays"}</h4>
                 </div>
@@ -480,7 +480,7 @@ export function AirbnbOrgStaysView({
 
               {/* Card 5: Your Host Control */}
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 space-y-2">
-                <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-semibold text-sm">
+                <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-medium text-sm">
                   <span className="text-blue-600 dark:text-blue-400 text-base">ℹ️</span>
                   <h4>{t("host_org_stays_card5_title") || "Full control over every request"}</h4>
                 </div>
@@ -495,7 +495,7 @@ export function AirbnbOrgStaysView({
                   href="https://www.homyz.org"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#E01563] dark:text-rose-400 hover:underline"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-[#E01563] dark:text-rose-400 hover:underline"
                 >
                   <span>{t("host_org_stays_visit_website") || "Visit official homyz.org website"}</span>
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -510,7 +510,7 @@ export function AirbnbOrgStaysView({
               <button
                 type="button"
                 onClick={() => setIsLearnMoreOpen(false)}
-                className="px-6 py-2.5 rounded-full bg-zinc-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-[#1F1F1F] text-sm font-semibold cursor-pointer transition-colors shadow-2xs"
+                className="px-6 py-2.5 rounded-full bg-zinc-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-[#1F1F1F] text-sm font-medium cursor-pointer transition-colors shadow-2xs"
               >
                 {t("header_done") || "Done"}
               </button>

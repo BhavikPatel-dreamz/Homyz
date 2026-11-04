@@ -125,10 +125,10 @@ export function AdminReviewDetailModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
               {review.direction === "GUEST_TO_PROPERTY" ? "Guest to Property" : "Host to Guest"}
             </span>
-            <h2 id="review-detail-title" className="text-lg font-bold text-slate-900">
+            <h2 id="review-detail-title" className="text-lg font-medium text-slate-900">
               Review Details &middot; ID: {review.id.slice(0, 8)}...
             </h2>
           </div>
@@ -153,7 +153,7 @@ export function AdminReviewDetailModal({
           {/* Status & Direction Badges */}
           <div className="flex flex-wrap items-center gap-2">
             <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+              className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                 review.status === "PUBLISHED"
                   ? "bg-emerald-100 text-emerald-800"
                   : review.status === "PRIVATE"
@@ -165,7 +165,7 @@ export function AdminReviewDetailModal({
             >
               {review.status}
             </span>
-            <span className="flex items-center text-sm font-bold text-amber-500">
+            <span className="flex items-center text-sm font-medium text-amber-500">
               {"★".repeat(review.rating)}
               <span className="ml-1 text-slate-700">({review.rating}/5)</span>
             </span>
@@ -177,7 +177,7 @@ export function AdminReviewDetailModal({
             {review.moderationCase && (
               <Link
                 href={`/admin/moderation/cases/${review.moderationCase.id}`}
-                className="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-purple-800 hover:underline"
+                className="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 hover:underline"
               >
                 Case: {review.moderationCase.caseReference} ({review.moderationCase.status})
               </Link>
@@ -187,20 +187,20 @@ export function AdminReviewDetailModal({
           {/* Parties */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 rounded-xl bg-slate-50 p-4 border border-slate-100">
             <div>
-              <p className="text-xs font-semibold text-slate-500">Reviewer (Author)</p>
+              <p className="text-xs font-medium text-slate-500">Reviewer (Author)</p>
               <p className="text-sm font-medium text-slate-900">{review.author.name || "Anonymous"}</p>
               <p className="text-xs text-slate-500">{review.author.email || review.author.id}</p>
-              <span className="inline-block mt-1 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-700">
+              <span className="inline-block mt-1 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-700">
                 {review.author.role}
               </span>
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-500">Reviewed Subject (Target)</p>
+              <p className="text-xs font-medium text-slate-500">Reviewed Subject (Target)</p>
               {review.targetUser ? (
                 <>
                   <p className="text-sm font-medium text-slate-900">{review.targetUser.name || "User"}</p>
                   <p className="text-xs text-slate-500">{review.targetUser.email || review.targetUser.id}</p>
-                  <span className="inline-block mt-1 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-700">
+                  <span className="inline-block mt-1 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-700">
                     {review.targetUser.role}
                   </span>
                 </>
@@ -216,7 +216,7 @@ export function AdminReviewDetailModal({
 
           {/* Public Comment */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Public Review Comment</h3>
+            <h3 className="text-xs font-medium uppercase tracking-wider text-slate-500">Public Review Comment</h3>
             <div className="mt-1.5 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800">
               {review.comment ? (
                 <p className="whitespace-pre-wrap">{review.comment}</p>
@@ -231,43 +231,43 @@ export function AdminReviewDetailModal({
             {review.cleanlinessRating && (
               <div className="rounded-lg bg-slate-50 p-2">
                 <span className="text-slate-500">Cleanliness:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.cleanlinessRating}/5</span>
+                <span className="font-medium text-slate-800">{review.cleanlinessRating}/5</span>
               </div>
             )}
             {review.accuracyRating && (
               <div className="rounded-lg bg-slate-50 p-2">
                 <span className="text-slate-500">Accuracy:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.accuracyRating}/5</span>
+                <span className="font-medium text-slate-800">{review.accuracyRating}/5</span>
               </div>
             )}
             {review.communicationRating && (
               <div className="rounded-lg bg-slate-50 p-2">
                 <span className="text-slate-500">Communication:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.communicationRating}/5</span>
+                <span className="font-medium text-slate-800">{review.communicationRating}/5</span>
               </div>
             )}
             {review.checkInRating && (
               <div className="rounded-lg bg-slate-50 p-2">
                 <span className="text-slate-500">Check-in:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.checkInRating}/5</span>
+                <span className="font-medium text-slate-800">{review.checkInRating}/5</span>
               </div>
             )}
             {review.locationRating && (
               <div className="rounded-lg bg-slate-50 p-2">
                 <span className="text-slate-500">Location:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.locationRating}/5</span>
+                <span className="font-medium text-slate-800">{review.locationRating}/5</span>
               </div>
             )}
             {review.valueRating && (
               <div className="rounded-lg bg-slate-50 p-2">
                 <span className="text-slate-500">Value:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.valueRating}/5</span>
+                <span className="font-medium text-slate-800">{review.valueRating}/5</span>
               </div>
             )}
             {review.houseRulesRating && (
               <div className="rounded-lg bg-slate-50 p-2">
                 <span className="text-slate-500">House rules:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.houseRulesRating}/5</span>
+                <span className="font-medium text-slate-800">{review.houseRulesRating}/5</span>
               </div>
             )}
           </div>
@@ -275,16 +275,16 @@ export function AdminReviewDetailModal({
           {/* Private Notes */}
           {(review.privateNoteToHost || review.privateNoteToGuest) && (
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Private Feedback</h3>
+              <h3 className="text-xs font-medium uppercase tracking-wider text-slate-500">Private Feedback</h3>
               <div className="mt-1 rounded-xl border border-amber-200 bg-amber-50/50 p-3 text-xs text-amber-900">
                 {review.privateNoteToHost && (
                   <p>
-                    <span className="font-semibold">Note to Host:</span> {review.privateNoteToHost}
+                    <span className="font-medium">Note to Host:</span> {review.privateNoteToHost}
                   </p>
                 )}
                 {review.privateNoteToGuest && (
                   <p>
-                    <span className="font-semibold">Note to Guest:</span> {review.privateNoteToGuest}
+                    <span className="font-medium">Note to Guest:</span> {review.privateNoteToGuest}
                   </p>
                 )}
               </div>
@@ -294,9 +294,9 @@ export function AdminReviewDetailModal({
           {/* Public Response */}
           {review.response && (
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Public Response</h3>
+              <h3 className="text-xs font-medium uppercase tracking-wider text-slate-500">Public Response</h3>
               <div className="mt-1 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800">
-                <p className="font-semibold text-slate-900">{review.response.author.name || "Respondent"}:</p>
+                <p className="font-medium text-slate-900">{review.response.author.name || "Respondent"}:</p>
                 <p className="mt-1 whitespace-pre-wrap">{review.response.comment}</p>
                 <p className="mt-2 text-[10px] text-slate-400">
                   Responded on {new Date(review.response.createdAt).toLocaleDateString()}
@@ -318,7 +318,7 @@ export function AdminReviewDetailModal({
           {/* Moderation Form (if an action is selected) */}
           {actionType && (
             <div className="rounded-xl border-2 border-slate-900 p-4 space-y-3 bg-slate-50">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+              <h4 className="text-xs font-medium uppercase tracking-wider text-slate-900">
                 Confirm Moderation: {actionType}
               </h4>
               <div>
@@ -346,7 +346,7 @@ export function AdminReviewDetailModal({
                   type="button"
                   disabled={busy}
                   onClick={() => handleModerate(actionType)}
-                  className="rounded-lg bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+                  className="rounded-lg bg-slate-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-50"
                 >
                   {busy ? "Processing..." : `Confirm ${actionType}`}
                 </button>
@@ -354,7 +354,7 @@ export function AdminReviewDetailModal({
                   type="button"
                   disabled={busy}
                   onClick={() => setActionType(null)}
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
                 >
                   Cancel
                 </button>
@@ -372,7 +372,7 @@ export function AdminReviewDetailModal({
                   <button
                     type="button"
                     onClick={() => setActionType("HIDE")}
-                    className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100"
+                    className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-100"
                   >
                     Hide Review
                   </button>
@@ -380,7 +380,7 @@ export function AdminReviewDetailModal({
                   <button
                     type="button"
                     onClick={() => setActionType("RESTORE")}
-                    className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
+                    className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-800 hover:bg-emerald-100"
                   >
                     Restore Review
                   </button>
@@ -389,7 +389,7 @@ export function AdminReviewDetailModal({
                   <button
                     type="button"
                     onClick={() => setActionType("DELETE")}
-                    className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-800 hover:bg-rose-100"
+                    className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-800 hover:bg-rose-100"
                   >
                     Delete Review
                   </button>
@@ -400,7 +400,7 @@ export function AdminReviewDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg bg-slate-200 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-300"
+            className="rounded-lg bg-slate-200 px-4 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-300"
           >
             Close
           </button>

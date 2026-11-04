@@ -78,7 +78,7 @@ export function StepWeekendPrice({
               <div className="mb-5 flex w-full items-center justify-center gap-4">
                 {isEditing ? (
                   <div className="flex items-center justify-center gap-1 border-b-2 border-zinc-900 pb-1">
-                    <span className="text-2xl font-semibold text-[#1F1F1F] sm:text-3xl">{currencySymbol}</span>
+                    <span className="text-2xl font-medium text-[#1F1F1F] sm:text-3xl">{currencySymbol}</span>
                     <input
                       type="number"
                       min={10}
@@ -87,7 +87,7 @@ export function StepWeekendPrice({
                       onChange={handleInputChange}
                       onBlur={() => setIsEditing(false)}
                       autoFocus
-                      className="w-32 bg-transparent text-center text-3xl font-semibold text-[#1F1F1F] outline-none sm:text-4xl"
+                      className="w-32 bg-transparent text-center text-3xl font-medium text-[#1F1F1F] outline-none sm:text-4xl"
                     />
                   </div>
                 ) : (
@@ -159,7 +159,7 @@ export function StepWeekendPrice({
                     />
                   </div>
                   <div className="mt-2.5 flex w-full items-center justify-between text-xs">
-                    <span className="font-semibold text-[#1F1F1F]">+{currentPercentage}%</span>
+                    <span className="font-medium text-[#1F1F1F]">+{currentPercentage}%</span>
                     <button
                       type="button"
                       onClick={() => onChangeWeekendPrice(Math.round(baseWeekday * 1.05))}

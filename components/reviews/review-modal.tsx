@@ -338,7 +338,7 @@ export function ReviewModal({
                       height={80}
                       className="h-16 w-10 shrink-0"
                     />
-                    <span className="text-5xl font-semibold tracking-tight text-[#1f1f1f]">
+                    <span className="text-5xl font-medium tracking-tight text-[#1f1f1f]">
                       {stats.averageRating?.toFixed(2) ?? "—"}
                     </span>
                     <Image
@@ -349,7 +349,7 @@ export function ReviewModal({
                       className="h-16 w-10 shrink-0"
                     />
                   </div>
-                  <h3 className="mt-3 text-xl font-semibold text-[#1f1f1f]">
+                  <h3 className="mt-3 text-xl font-medium text-[#1f1f1f]">
                     {t("listing_detail_guest_favourite", "Guest favourite")}
                   </h3>
                   <p className="mt-1 text-sm text-[#727272]">
@@ -362,7 +362,7 @@ export function ReviewModal({
               ) : (
                 <div className="flex items-center gap-3">
                   <ReviewIcon name="star" className="size-8 fill-zinc-900 text-zinc-900" />
-                  <span className="text-4xl font-semibold tracking-tight text-[#1f1f1f]">
+                  <span className="text-4xl font-medium tracking-tight text-[#1f1f1f]">
                     {stats.averageRating?.toFixed(2) ?? "—"}
                   </span>
                   <span className="text-xl font-normal text-[#727272]">
@@ -387,7 +387,7 @@ export function ReviewModal({
             {/* Mention Chips */}
             {stats.mentions && stats.mentions.length > 0 && (
               <div className="border-t border-zinc-200/80 pt-6">
-                <p className="mb-3 text-sm font-semibold text-[#1f1f1f]">
+                <p className="mb-3 text-sm font-medium text-[#1f1f1f]">
                   {t("reviews_mentions_title", "Guests frequently mention")}
                 </p>
                 <ReviewMentionChips
@@ -430,7 +430,7 @@ export function ReviewModal({
               {/* Toolbar Controls: Count, Badges, Sort & Rating Filter */}
               <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-[#1f1f1f]">
+                  <span className="font-medium text-[#1f1f1f]">
                     {totalFilteredCount}{" "}
                     {totalFilteredCount === 1
                       ? t("reviews_count_singular", "review")
@@ -482,7 +482,7 @@ export function ReviewModal({
                         const val = e.target.value;
                         handleRatingChange(val === "all" ? null : Number(val));
                       }}
-                      className="rounded-lg border border-zinc-300 bg-white py-1.5 pl-2.5 pr-8 text-xs font-semibold text-[#1f1f1f] focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 cursor-pointer"
+                      className="rounded-lg border border-zinc-300 bg-white py-1.5 pl-2.5 pr-8 text-xs font-medium text-[#1f1f1f] focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 cursor-pointer"
                     >
                       <option value="all">{t("reviews_filter_all_ratings", "All reviews")}</option>
                       <option value="5">{t("reviews_filter_5_stars", "5 stars")}</option>
@@ -502,7 +502,7 @@ export function ReviewModal({
                       id="review-sort-select"
                       value={sort}
                       onChange={(e) => handleSortChange(e.target.value as ReviewSortOption)}
-                      className="rounded-lg border border-zinc-300 bg-white py-1.5 pl-2.5 pr-8 text-xs font-semibold text-[#1f1f1f] focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 cursor-pointer"
+                      className="rounded-lg border border-zinc-300 bg-white py-1.5 pl-2.5 pr-8 text-xs font-medium text-[#1f1f1f] focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 cursor-pointer"
                     >
                       <option value="recent">{t("reviews_sort_recent", "Most recent")}</option>
                       <option value="oldest">{t("reviews_sort_oldest", "Oldest first")}</option>
@@ -526,7 +526,7 @@ export function ReviewModal({
                   <button
                     type="button"
                     onClick={() => setRetryCount((c) => c + 1)}
-                    className="mt-2 font-semibold underline hover:text-red-950 cursor-pointer"
+                    className="mt-2 font-medium underline hover:text-red-950 cursor-pointer"
                   >
                     {t("reviews_try_again", "Try again")}
                   </button>
@@ -572,7 +572,7 @@ export function ReviewModal({
                     <button
                       type="button"
                       onClick={handleClearAllFilters}
-                      className="rounded-full border border-zinc-900 px-4 py-2 text-sm font-semibold text-zinc-900 transition-colors hover:bg-zinc-100 cursor-pointer"
+                      className="rounded-full border border-zinc-900 px-4 py-2 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-100 cursor-pointer"
                     >
                       {t("reviews_clear_filters", "Clear all filters")}
                     </button>
@@ -604,7 +604,7 @@ export function ReviewModal({
                     type="button"
                     onClick={handleLoadMore}
                     disabled={loadingMore}
-                    className="rounded-full border border-zinc-900 bg-white px-6 py-3 text-sm font-semibold text-zinc-900 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                    className="rounded-full border border-zinc-900 bg-white px-6 py-3 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                   >
                     {loadingMore
                       ? t("reviews_loading_more", "Loading more reviews...")

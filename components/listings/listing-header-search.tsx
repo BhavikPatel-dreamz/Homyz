@@ -452,7 +452,7 @@ export function ListingHeaderSearch() {
   }) => (
     <div className="flex items-center justify-between py-3 border-b border-zinc-100 last:border-b-0">
       <div>
-        <div className="text-sm font-semibold text-[#1F1F1F]">{label}</div>
+        <div className="text-sm font-medium text-[#1F1F1F]">{label}</div>
         <div className="text-xs text-[#727272]">{desc}</div>
       </div>
       <div className="flex items-center gap-3">
@@ -465,7 +465,7 @@ export function ListingHeaderSearch() {
         >
           −
         </button>
-        <span className="w-5 text-center text-sm font-semibold text-[#1F1F1F]">{value}</span>
+        <span className="w-5 text-center text-sm font-medium text-[#1F1F1F]">{value}</span>
         <button
           type="button"
           disabled={value >= max}
@@ -495,12 +495,12 @@ export function ListingHeaderSearch() {
           aria-label={t("header_search_aria_search_all")}
         >
           {/* Destination */}
-          <div className="max-w-[150px] lg:max-w-[180px] truncate text-xs lg:text-sm font-semibold text-[#1F1F1F] pr-3 border-r border-zinc-200">
+          <div className="max-w-[150px] lg:max-w-[180px] truncate text-xs lg:text-sm font-medium text-[#1F1F1F] pr-3 border-r border-zinc-200">
             {pillDestination}
           </div>
 
           {/* Dates */}
-          <div className="whitespace-nowrap px-3 text-xs lg:text-sm font-semibold text-[#1F1F1F] border-r border-zinc-200">
+          <div className="whitespace-nowrap px-3 text-xs lg:text-sm font-medium text-[#1F1F1F] border-r border-zinc-200">
             {pillDates}
           </div>
 
@@ -536,7 +536,7 @@ export function ListingHeaderSearch() {
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         <div className="flex-1 min-w-0">
-          <div className="truncate text-xs font-semibold text-[#1F1F1F] leading-tight">
+          <div className="truncate text-xs font-medium text-[#1F1F1F] leading-tight">
             {pillDestination}
           </div>
           <div className="truncate text-[10px] text-[#727272] font-normal leading-tight">
@@ -569,7 +569,7 @@ export function ListingHeaderSearch() {
                   desktopTab === "where" ? "bg-amber-100/70 shadow-2xs" : "hover:bg-zinc-100/70"
                 }`}
               >
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-700 cursor-pointer">
+                <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-700 cursor-pointer">
                   {t("header_search_where")}
                 </label>
                 <div className="flex items-center gap-1.5 w-full">
@@ -585,7 +585,7 @@ export function ListingHeaderSearch() {
                         executeSearch();
                       }
                     }}
-                    className="w-full truncate bg-transparent text-sm font-semibold text-[#1F1F1F] placeholder:text-[#727272] outline-none"
+                    className="w-full truncate bg-transparent text-sm font-medium text-[#1F1F1F] placeholder:text-[#727272] outline-none"
                   />
                   {destination && (
                     <button
@@ -613,7 +613,7 @@ export function ListingHeaderSearch() {
                   desktopTab === "checkIn" ? "bg-amber-100/70 shadow-2xs" : "hover:bg-zinc-100/70"
                 }`}
               >
-                <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-700">
+                <div className="text-[11px] font-medium uppercase tracking-wider text-zinc-700">
                   {t("host_checkin")}
                 </div>
                 <div className="truncate text-sm font-medium text-[#1F1F1F]">
@@ -630,7 +630,7 @@ export function ListingHeaderSearch() {
                   desktopTab === "checkOut" ? "bg-amber-100/70 shadow-2xs" : "hover:bg-zinc-100/70"
                 }`}
               >
-                <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-700">
+                <div className="text-[11px] font-medium uppercase tracking-wider text-zinc-700">
                   {t("host_checkout")}
                 </div>
                 <div className="truncate text-sm font-medium text-[#1F1F1F]">
@@ -647,7 +647,7 @@ export function ListingHeaderSearch() {
                   desktopTab === "who" ? "bg-amber-100/70 shadow-2xs" : "hover:bg-zinc-100/70"
                 }`}
               >
-                <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-700">
+                <div className="text-[11px] font-medium uppercase tracking-wider text-zinc-700">
                   {t("header_search_who")}
                 </div>
                 <div className="truncate text-sm font-medium text-[#1F1F1F]">
@@ -659,7 +659,7 @@ export function ListingHeaderSearch() {
               <button
                 type="button"
                 onClick={() => executeSearch()}
-                className="flex items-center gap-2 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white px-5 py-3 font-semibold text-sm transition-all shadow-sm cursor-pointer ml-1"
+                className="flex items-center gap-2 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white px-5 py-3 font-medium text-sm transition-all shadow-sm cursor-pointer ml-1"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-4 w-4">
                   <circle cx="11" cy="11" r="7" />
@@ -695,7 +695,7 @@ export function ListingHeaderSearch() {
                       )}
                     </div>
                     <div>
-                      <div className="text-sm font-semibold text-[#1F1F1F]">{t("header_search_use_cur_loc")}</div>
+                      <div className="text-sm font-medium text-[#1F1F1F]">{t("header_search_use_cur_loc")}</div>
                       <div className="text-xs text-[#727272]">{t("header_search_discover_verified")}</div>
                     </div>
                   </button>
@@ -713,10 +713,10 @@ export function ListingHeaderSearch() {
                             🏙️
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-bold text-[#1F1F1F]">{suggestions.primaryCity.city}</div>
+                            <div className="truncate text-sm font-medium text-[#1F1F1F]">{suggestions.primaryCity.city}</div>
                             <div className="truncate text-xs text-[#727272]">{suggestions.primaryCity.fullLabel}</div>
                           </div>
-                          <span className="text-[10px] font-semibold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full">{t("host_city")}</span>
+                          <span className="text-[10px] font-medium bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full">{t("host_city")}</span>
                         </button>
                       )}
 
@@ -762,7 +762,7 @@ export function ListingHeaderSearch() {
                   {/* Recent Searches Fallback */}
                   {!suggestions && recentSearches.length > 0 && (
                     <div>
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-[#727272] px-2 py-1.5">
+                      <div className="text-[11px] font-medium uppercase tracking-wider text-[#727272] px-2 py-1.5">
                         {t("header_search_recent")}
                       </div>
                       <div className="space-y-1">
@@ -813,14 +813,14 @@ export function ListingHeaderSearch() {
                         setCheckIn("");
                         setCheckOut("");
                       }}
-                      className="text-xs font-semibold text-zinc-600 hover:text-[#1F1F1F] underline cursor-pointer"
+                      className="text-xs font-medium text-zinc-600 hover:text-[#1F1F1F] underline cursor-pointer"
                     >
                       {t("header_search_reset_dates")}
                     </button>
                     <button
                       type="button"
                       onClick={() => setDesktopTab("who")}
-                      className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold px-4 py-2 cursor-pointer transition-colors"
+                      className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium px-4 py-2 cursor-pointer transition-colors"
                     >
                       {t("header_search_next_who")}
                     </button>
@@ -864,14 +864,14 @@ export function ListingHeaderSearch() {
                     <button
                       type="button"
                       onClick={() => setGuests({ adults: 0, children: 0, infants: 0, pets: 0 })}
-                      className="text-xs font-semibold text-zinc-600 hover:text-[#1F1F1F] underline cursor-pointer"
+                      className="text-xs font-medium text-zinc-600 hover:text-[#1F1F1F] underline cursor-pointer"
                     >
                       {t("header_search_reset")}
                     </button>
                     <button
                       type="button"
                       onClick={() => executeSearch()}
-                      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white text-xs font-semibold px-5 py-2 cursor-pointer transition-colors"
+                      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white text-xs font-medium px-5 py-2 cursor-pointer transition-colors"
                     >
                       {t("header_search_btn")}
                     </button>
@@ -891,7 +891,7 @@ export function ListingHeaderSearch() {
           <div className="flex h-[92vh] sm:h-auto sm:max-h-[85vh] w-full flex-col rounded-t-[20px] sm:rounded-[20px] bg-[#D9D9D9] text-[#1F1F1F] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-6 sm:zoom-in-95">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
-              <div className="text-base font-bold text-[#1F1F1F]">{t("header_search_find_stay")}</div>
+              <div className="text-base font-medium text-[#1F1F1F]">{t("header_search_find_stay")}</div>
               <button
                 type="button"
                 onClick={() => setIsMobileDrawerOpen(false)}
@@ -907,7 +907,7 @@ export function ListingHeaderSearch() {
               {/* WHERE SECTION */}
               {mobileStep === "where" ? (
                 <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-xs">
-                  <div className="text-base font-bold text-[#1F1F1F] mb-3">{t("header_search_where_to")}</div>
+                  <div className="text-base font-medium text-[#1F1F1F] mb-3">{t("header_search_where_to")}</div>
                   <div className="flex items-center rounded-full border border-zinc-300 bg-zinc-50 px-4 py-2.5 mb-3 focus-within:border-zinc-900 focus-within:bg-white transition-all">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-[#727272] mr-2 shrink-0">
                       <circle cx="11" cy="11" r="7" />
@@ -918,7 +918,7 @@ export function ListingHeaderSearch() {
                       placeholder={t("header_search_dest_placeholder")}
                       value={destination}
                       onChange={(e) => setDestination(e.target.value)}
-                      className="w-full bg-transparent text-sm font-semibold text-[#1F1F1F] outline-none"
+                      className="w-full bg-transparent text-sm font-medium text-[#1F1F1F] outline-none"
                     />
                     {destination && (
                       <button
@@ -955,7 +955,7 @@ export function ListingHeaderSearch() {
                       )}
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-[#1F1F1F]">{t("header_search_use_cur_loc")}</div>
+                      <div className="text-xs font-medium text-[#1F1F1F]">{t("header_search_use_cur_loc")}</div>
                       <div className="text-[10px] text-[#727272]">{t("header_search_stays_nearby")}</div>
                     </div>
                   </button>
@@ -970,7 +970,7 @@ export function ListingHeaderSearch() {
                           className="flex w-full items-center gap-3 rounded-xl p-2 text-left hover:bg-amber-50/70"
                         >
                           <span className="text-sm">🏙️</span>
-                          <span className="text-xs font-semibold text-[#1F1F1F]">{suggestions.primaryCity.city}</span>
+                          <span className="text-xs font-medium text-[#1F1F1F]">{suggestions.primaryCity.city}</span>
                         </button>
                       )}
                       {suggestions.places?.map((p, idx) => (
@@ -982,7 +982,7 @@ export function ListingHeaderSearch() {
                         >
                           <span className="text-sm">📍</span>
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-xs font-semibold text-[#1F1F1F]">{p.name || p.city}</div>
+                            <div className="truncate text-xs font-medium text-[#1F1F1F]">{p.name || p.city}</div>
                             <div className="truncate text-[10px] text-[#727272]">{p.subtitle}</div>
                           </div>
                         </button>
@@ -990,7 +990,7 @@ export function ListingHeaderSearch() {
                     </div>
                   ) : recentSearches.length > 0 ? (
                     <div className="space-y-1">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#727272]">{t("header_search_recent")}</div>
+                      <div className="text-[10px] font-medium uppercase tracking-wider text-[#727272]">{t("header_search_recent")}</div>
                       {recentSearches.map((term, i) => (
                         <button
                           key={i}
@@ -1016,14 +1016,14 @@ export function ListingHeaderSearch() {
                   className="flex w-full items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-left cursor-pointer"
                 >
                   <span className="text-xs font-medium text-[#727272] uppercase tracking-wider">{t("header_search_where")}</span>
-                  <span className="text-xs font-semibold text-[#1F1F1F] truncate max-w-[180px]">{destination || t("header_search_anywhere")}</span>
+                  <span className="text-xs font-medium text-[#1F1F1F] truncate max-w-[180px]">{destination || t("header_search_anywhere")}</span>
                 </button>
               )}
 
               {/* WHEN SECTION */}
               {mobileStep === "when" ? (
                 <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-xs">
-                  <div className="text-base font-bold text-[#1F1F1F] mb-3">{t("home_when_trip")}</div>
+                  <div className="text-base font-medium text-[#1F1F1F] mb-3">{t("home_when_trip")}</div>
                   <MobileDatePicker
                     desktop={false}
                     checkIn={checkIn}
@@ -1043,14 +1043,14 @@ export function ListingHeaderSearch() {
                   className="flex w-full items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-left cursor-pointer"
                 >
                   <span className="text-xs font-medium text-[#727272] uppercase tracking-wider">{t("home_search_when")}</span>
-                  <span className="text-xs font-semibold text-[#1F1F1F]">{pillDates}</span>
+                  <span className="text-xs font-medium text-[#1F1F1F]">{pillDates}</span>
                 </button>
               )}
 
               {/* WHO SECTION */}
               {mobileStep === "who" ? (
                 <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-xs">
-                  <div className="text-base font-bold text-[#1F1F1F] mb-3">{t("header_search_whos_coming")}</div>
+                  <div className="text-base font-medium text-[#1F1F1F] mb-3">{t("header_search_whos_coming")}</div>
                   <Stepper
                     label={t("home_adults")}
                     desc={t("home_adults_desc")}
@@ -1087,7 +1087,7 @@ export function ListingHeaderSearch() {
                   className="flex w-full items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-left cursor-pointer"
                 >
                   <span className="text-xs font-medium text-[#727272] uppercase tracking-wider">{t("header_search_who")}</span>
-                  <span className="text-xs font-semibold text-[#1F1F1F]">{pillGuests}</span>
+                  <span className="text-xs font-medium text-[#1F1F1F]">{pillGuests}</span>
                 </button>
               )}
             </div>
@@ -1103,7 +1103,7 @@ export function ListingHeaderSearch() {
                   setCheckOut("");
                   setGuests({ adults: 0, children: 0, infants: 0, pets: 0 });
                 }}
-                className="text-xs font-semibold text-zinc-600 underline hover:text-[#1F1F1F] cursor-pointer"
+                className="text-xs font-medium text-zinc-600 underline hover:text-[#1F1F1F] cursor-pointer"
               >
                 {t("header_search_clear_all")}
               </button>
@@ -1111,7 +1111,7 @@ export function ListingHeaderSearch() {
               <button
                 type="button"
                 onClick={() => executeSearch()}
-                className="flex items-center gap-2 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white px-6 py-3 font-semibold text-sm transition-all shadow-sm cursor-pointer"
+                className="flex items-center gap-2 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white px-6 py-3 font-medium text-sm transition-all shadow-sm cursor-pointer"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-4 w-4">
                   <circle cx="11" cy="11" r="7" />

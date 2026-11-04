@@ -7,6 +7,8 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { formatFlexibleDateSummary, MobileDatePicker, initialDatePreferences, type DatePreferences } from "./mobile-date-picker";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { useBranding } from "@/components/branding/branding-provider";
+import { BRANDING_FALLBACKS } from "@/lib/branding/config";
 
 const emptyMobileGuests = { adults: 0, children: 0, infants: 0, pets: 0 };
 const mobileGuestRows = [
@@ -262,6 +264,10 @@ interface HeroSectionProps {
 
 export function HeroSection({ onSearch, isSearching: externalIsSearching = false }: HeroSectionProps) {
   const { t, language } = useLanguage();
+  const branding = useBranding();
+  const [mobileHeroSrc, setMobileHeroSrc] = useState(branding.homepageHeroMobileUrl);
+  const [desktopHeroSrc, setDesktopHeroSrc] = useState(branding.homepageHeroDesktopUrl);
+
   const [internalIsSearching, setInternalIsSearching] = useState(false);
   const isSearching = externalIsSearching || internalIsSearching;
 
@@ -1162,16 +1168,19 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
   return (
     <>
       {/* Mobile Hero Section (screens < md) */}
-      <div className="hidden w-full">
+      <div className="w-full lg:hidden">
         {/* Top Image Card */}
         <div className="relative aspect-[358/512] w-full overflow-hidden rounded-[28px] bg-[#e5e5e5] shadow-xs">
           <Image
-            src="/images/home/hero.png"
+            src={mobileHeroSrc}
             alt="Traveler with backpack planning journey"
             fill
             priority
-            className="object-cover object-[center_12%]"
+            className="object-cover"
+            style={{ objectPosition: branding.homepageHeroMobilePosition }}
             sizes="(max-width: 768px) 100vw, 400px"
+            unoptimized
+            onError={() => setMobileHeroSrc(BRANDING_FALLBACKS.homepageHeroMobile)}
           />
         </div>
 
@@ -1230,10 +1239,13 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
           <Image
             alt="Traveler with backpack planning journey"
             className="object-cover"
-            src="/images/home/hero-banner.png"
+            style={{ objectPosition: branding.homepageHeroDesktopPosition }}
+            src={desktopHeroSrc}
             fill
             sizes="(min-width: 1024px) 1520px, 100vw"
             priority
+            unoptimized
+            onError={() => setDesktopHeroSrc(BRANDING_FALLBACKS.homepageHeroDesktop)}
           />
         </div>
 

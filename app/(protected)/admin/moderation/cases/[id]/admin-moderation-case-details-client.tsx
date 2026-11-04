@@ -240,12 +240,12 @@ export function AdminModerationCaseDetailsClient({
           <Link href="/admin/moderation/cases" className="text-sm font-medium text-indigo-700 hover:underline">
             ← Moderation cases
           </Link>
-          <h1 className="mt-2 text-2xl font-semibold text-slate-900">{caseRecord.caseReference}</h1>
+          <h1 className="mt-2 text-2xl font-medium text-slate-900">{caseRecord.caseReference}</h1>
           <p className="mt-1 text-sm text-slate-600">
             Content moderation investigation · authorized enforcement actions apply only when selected.
           </p>
         </div>
-        <span className={`rounded-full px-3 py-1 text-sm font-semibold ${badge(caseRecord.status)}`}>
+        <span className={`rounded-full px-3 py-1 text-sm font-medium ${badge(caseRecord.status)}`}>
           {title(caseRecord.status)}
         </span>
       </div>
@@ -255,7 +255,7 @@ export function AdminModerationCaseDetailsClient({
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-5">
           <section className="rounded-xl border border-slate-200 bg-white p-5">
-            <h2 className="text-lg font-semibold text-slate-900">Case summary</h2>
+            <h2 className="text-lg font-medium text-slate-900">Case summary</h2>
             <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
               {[
                 ["Content type", title(caseRecord.targetType)],
@@ -274,7 +274,7 @@ export function AdminModerationCaseDetailsClient({
           </section>
 
           <section className="rounded-xl border border-slate-200 bg-white p-5">
-            <h2 className="text-lg font-semibold text-slate-900">Reported content</h2>
+            <h2 className="text-lg font-medium text-slate-900">Reported content</h2>
             {!details.target?.available ? (
               <p className="mt-3 text-sm text-slate-500">
                 This content is unavailable or has been deleted. The case history is preserved.
@@ -288,7 +288,7 @@ export function AdminModerationCaseDetailsClient({
             <section className="rounded-xl border border-blue-200 bg-white p-5 shadow-xs">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900">
+                  <h2 className="text-lg font-medium text-slate-900">
                     Message Investigation &amp; Thread Context
                   </h2>
                   <p className="mt-0.5 text-xs text-slate-500">
@@ -300,14 +300,14 @@ export function AdminModerationCaseDetailsClient({
                     <button
                       type="button"
                       onClick={() => setMessageEnforcementModal({ messageId: caseRecord.targetId, action: "HIDE" })}
-                      className="rounded bg-amber-50 border border-amber-300 px-2.5 py-1 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+                      className="rounded bg-amber-50 border border-amber-300 px-2.5 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
                     >
                       Hide Message
                     </button>
                     <button
                       type="button"
                       onClick={() => setMessageEnforcementModal({ messageId: caseRecord.targetId, action: "REMOVE" })}
-                      className="rounded bg-red-50 border border-red-300 px-2.5 py-1 text-xs font-semibold text-red-900 hover:bg-red-100"
+                      className="rounded bg-red-50 border border-red-300 px-2.5 py-1 text-xs font-medium text-red-900 hover:bg-red-100"
                     >
                       Remove Message
                     </button>
@@ -338,10 +338,10 @@ export function AdminModerationCaseDetailsClient({
                         }`}
                       >
                         <div className="flex flex-wrap items-center justify-between gap-1 pb-1 border-b border-slate-200/50 text-[11px]">
-                          <span className="font-semibold text-slate-800">
+                          <span className="font-medium text-slate-800">
                             {msg.senderName || "User"} {msg.senderRole ? `(${msg.senderRole})` : ""}
                             {isTarget && (
-                              <span className="ml-2 rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                              <span className="ml-2 rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-medium text-white">
                                 REPORTED TARGET
                               </span>
                             )}
@@ -369,7 +369,7 @@ export function AdminModerationCaseDetailsClient({
           )}
 
           <section className="rounded-xl border border-slate-200 bg-white p-5">
-            <h2 className="text-lg font-semibold text-slate-900">
+            <h2 className="text-lg font-medium text-slate-900">
               Individual reports <span className="text-slate-500">({caseRecord.reports.length})</span>
             </h2>
             <div className="mt-4 space-y-3">
@@ -394,7 +394,7 @@ export function AdminModerationCaseDetailsClient({
           <section className="rounded-xl border border-slate-200 bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">
+                <h2 className="text-lg font-medium text-slate-900">
                   Evidence <span className="text-slate-500">({caseRecord.evidence.length})</span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -405,7 +405,7 @@ export function AdminModerationCaseDetailsClient({
                 <button
                   type="button"
                   onClick={() => setUploadModalOpen(true)}
-                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 shadow-sm transition-colors"
+                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 shadow-sm transition-colors"
                 >
                   + Attach Evidence
                 </button>
@@ -432,7 +432,7 @@ export function AdminModerationCaseDetailsClient({
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold text-slate-900">
+                        <span className="font-medium text-slate-900">
                           {evidence.displayName || evidence.metadata?.originalFileName || title(evidence.evidenceType)}
                         </span>
                         <span className="rounded bg-slate-100 px-2 py-0.5 text-[11px] font-mono text-slate-700">
@@ -442,7 +442,7 @@ export function AdminModerationCaseDetailsClient({
                       </div>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                             evidence.accessScope === "ADMIN_ONLY" || evidence.accessScope === "MODERATORS_ONLY"
                               ? "bg-amber-100 text-amber-800"
                               : "bg-blue-100 text-blue-800"
@@ -451,16 +451,16 @@ export function AdminModerationCaseDetailsClient({
                           {evidence.accessScope === "ADMIN_ONLY" || evidence.accessScope === "MODERATORS_ONLY" ? "Moderators Only" : "Case Participants"}
                         </span>
                         {evidence.metadata?.retentionHold && (
-                          <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 border border-amber-300">
+                          <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 border border-amber-300">
                             🔒 Retention Hold
                           </span>
                         )}
                         {evidence.storageReference === "PURGED" && (
-                          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
+                          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
                             Purged
                           </span>
                         )}
-                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
                           Verified Clean
                         </span>
                       </div>
@@ -479,7 +479,7 @@ export function AdminModerationCaseDetailsClient({
                           <button
                             type="button"
                             onClick={() => setPreviewEvidence(evidence)}
-                            className="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
+                            className="font-medium text-indigo-600 hover:text-indigo-800 hover:underline"
                           >
                             Preview
                           </button>
@@ -515,7 +515,7 @@ export function AdminModerationCaseDetailsClient({
           <section className="rounded-xl border border-slate-200 bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">
+                <h2 className="text-lg font-medium text-slate-900">
                   Requests for Information (RFI) <span className="text-slate-500">({rfis.length})</span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -526,7 +526,7 @@ export function AdminModerationCaseDetailsClient({
                 <button
                   type="button"
                   onClick={() => setRfiModalOpen(true)}
-                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 shadow-sm transition-colors"
+                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 shadow-sm transition-colors"
                 >
                   + Request Information
                 </button>
@@ -555,20 +555,20 @@ export function AdminModerationCaseDetailsClient({
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-900">{rfi.subject || "Information Request"}</span>
+                        <span className="font-medium text-slate-900">{rfi.subject || "Information Request"}</span>
                         <span className="text-slate-400">·</span>
                         <span className="text-xs text-slate-600">{recipientLabel}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         {isOverdue && (
-                          <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-800">
+                          <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
                             Overdue
                           </span>
                         )}
                         <span
-                          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                             rfi.status === "RESPONDED"
-                              ? "bg-blue-100 text-blue-800 font-bold"
+                              ? "bg-blue-100 text-blue-800 font-medium"
                               : rfi.status === "REVIEWED"
                               ? "bg-purple-100 text-purple-800"
                               : rfi.status === "CLOSED"
@@ -597,21 +597,21 @@ export function AdminModerationCaseDetailsClient({
                     </div>
 
                     <div className="mt-2.5 rounded-lg bg-slate-50 p-3 text-xs text-slate-800 border border-slate-100">
-                      <p className="font-semibold text-slate-600">Questions / Required Details:</p>
+                      <p className="font-medium text-slate-600">Questions / Required Details:</p>
                       <p className="mt-1 whitespace-pre-wrap">{rfi.questions}</p>
                     </div>
 
                     {rfi.response && (
                       <div className="mt-3 rounded-lg bg-indigo-50/60 border border-indigo-200 p-3 text-xs">
                         <div className="flex items-center justify-between">
-                          <p className="font-semibold text-indigo-900">Participant Response:</p>
+                          <p className="font-medium text-indigo-900">Participant Response:</p>
                           <time className="text-indigo-600">{formatDate(rfi.response.respondedAt)}</time>
                         </div>
                         <p className="mt-1.5 whitespace-pre-wrap text-slate-900">{rfi.response.explanation}</p>
 
                         {rfi.response.evidenceIds && rfi.response.evidenceIds.length > 0 && (
                           <div className="mt-2 pt-2 border-t border-indigo-100">
-                            <p className="font-semibold text-indigo-900 mb-1">
+                            <p className="font-medium text-indigo-900 mb-1">
                               Attached Evidence ({rfi.response.evidenceIds.length}):
                             </p>
                             <div className="flex flex-wrap gap-2">
@@ -656,7 +656,7 @@ export function AdminModerationCaseDetailsClient({
                                 setSaving(false);
                               }
                             }}
-                            className="rounded bg-indigo-600 px-3 py-1 font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                            className="rounded bg-indigo-600 px-3 py-1 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                           >
                             Mark as Reviewed
                           </button>
@@ -704,7 +704,7 @@ export function AdminModerationCaseDetailsClient({
           <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">
+                <h2 className="text-lg font-medium text-slate-900">
                   Moderation Appeals <span className="text-slate-500">({appeals.length})</span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -713,7 +713,7 @@ export function AdminModerationCaseDetailsClient({
               </div>
               <Link
                 href="/admin/moderation/appeals"
-                className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:underline"
+                className="text-xs font-medium text-indigo-700 hover:text-indigo-900 hover:underline"
               >
                 View Appeals Queue →
               </Link>
@@ -734,14 +734,14 @@ export function AdminModerationCaseDetailsClient({
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/60 pb-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-indigo-700">{appeal.id}</span>
+                        <span className="font-mono font-medium text-indigo-700">{appeal.id}</span>
                         <span className="text-slate-300">·</span>
-                        <span className="font-semibold text-slate-800">
+                        <span className="font-medium text-slate-800">
                           {appeal.appellantName || appeal.appellantEmail || "Appellant"} ({appeal.appellantRole})
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                        <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
                           appeal.status === "SUBMITTED"
                             ? "bg-amber-100 text-amber-800"
                             : appeal.status === "UNDER_REVIEW"
@@ -753,7 +753,7 @@ export function AdminModerationCaseDetailsClient({
                           {appeal.status.replaceAll("_", " ")}
                         </span>
                         {appeal.decision !== "PENDING" && (
-                          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
                             appeal.decision === "APPROVED"
                               ? "bg-emerald-100 text-emerald-800"
                               : appeal.decision === "PARTIALLY_APPROVED"
@@ -770,11 +770,11 @@ export function AdminModerationCaseDetailsClient({
                       <div className="grid gap-2 sm:grid-cols-2">
                         <div>
                           <span className="text-slate-500 font-medium">Appeal Reason:</span>
-                          <p className="font-semibold text-slate-900">{appeal.reason.replaceAll("_", " ")}</p>
+                          <p className="font-medium text-slate-900">{appeal.reason.replaceAll("_", " ")}</p>
                         </div>
                         <div>
                           <span className="text-slate-500 font-medium">Policy:</span>
-                          <p className="font-semibold text-slate-900">{appeal.policyName || appeal.policyCode || "Standard policy"}</p>
+                          <p className="font-medium text-slate-900">{appeal.policyName || appeal.policyCode || "Standard policy"}</p>
                         </div>
                       </div>
 
@@ -833,7 +833,7 @@ export function AdminModerationCaseDetailsClient({
                               ))}
                             </select>
                           ) : (
-                            <span className="font-semibold text-slate-800">
+                            <span className="font-medium text-slate-800">
                               {appeal.assignedReviewerName || "Unassigned"}
                             </span>
                           )}
@@ -851,7 +851,7 @@ export function AdminModerationCaseDetailsClient({
                               setAppealReopenCase(true);
                               setAppealDecisionError(null);
                             }}
-                            className="rounded-md bg-indigo-600 px-3 py-1.5 font-semibold text-white shadow-xs hover:bg-indigo-700"
+                            className="rounded-md bg-indigo-600 px-3 py-1.5 font-medium text-white shadow-xs hover:bg-indigo-700"
                           >
                             Decide Appeal →
                           </button>
@@ -860,7 +860,7 @@ export function AdminModerationCaseDetailsClient({
 
                       {isDecided && (
                         <div className="mt-2 rounded-lg bg-purple-50/70 p-3 border border-purple-200 text-xs space-y-1">
-                          <p className="font-bold text-purple-950">
+                          <p className="font-medium text-purple-950">
                             Decision Recorded: {appeal.decision}
                           </p>
                           {appeal.decisionReason && (
@@ -887,7 +887,7 @@ export function AdminModerationCaseDetailsClient({
           </section>
 
           <section className="rounded-xl border border-slate-200 bg-white p-5">
-            <h2 className="text-lg font-semibold text-slate-900">Investigation timeline</h2>
+            <h2 className="text-lg font-medium text-slate-900">Investigation timeline</h2>
             <ol className="mt-4 space-y-4 border-l border-slate-200 pl-5">
               {caseRecord.activities.map((activity: any) => (
                 <li
@@ -912,7 +912,7 @@ export function AdminModerationCaseDetailsClient({
 
         <aside className="space-y-5">
           <section className="rounded-xl border border-slate-200 bg-white p-5">
-            <h2 className="font-semibold text-slate-900">Investigation controls</h2>
+            <h2 className="font-medium text-slate-900">Investigation controls</h2>
             <div className="mt-4 space-y-4 text-sm">
               <label className="block">
                 Severity
@@ -965,7 +965,7 @@ export function AdminModerationCaseDetailsClient({
 
           {canUpdate && (
             <section className="rounded-xl border border-slate-200 bg-white p-5">
-              <h2 className="font-semibold text-slate-900">Workflow</h2>
+              <h2 className="font-medium text-slate-900">Workflow</h2>
               <div className="mt-3 flex flex-col gap-2">
                 {caseRecord.status === "NEW" && (
                   <ActionButton label="Start review" disabled={saving} onClick={() => void update({ status: "IN_REVIEW" })} />
@@ -1007,7 +1007,7 @@ export function AdminModerationCaseDetailsClient({
 
           {canDecide && (
             <section className="rounded-xl border border-slate-200 bg-white p-5">
-              <h2 className="font-semibold text-slate-900">Internal note</h2>
+              <h2 className="font-medium text-slate-900">Internal note</h2>
               <form onSubmit={addNote} className="mt-3 space-y-2">
                 <label className="sr-only" htmlFor="moderation-note">
                   Private moderator note
@@ -1034,8 +1034,8 @@ export function AdminModerationCaseDetailsClient({
           {canEnforce && (
             <section className="rounded-xl border border-rose-200 bg-rose-50/30 p-5">
               <div className="flex items-center justify-between">
-                <h2 className="font-semibold text-rose-950">Trust &amp; Safety Enforcement</h2>
-                <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-800">AUTHORIZED</span>
+                <h2 className="font-medium text-rose-950">Trust &amp; Safety Enforcement</h2>
+                <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-medium text-rose-800">AUTHORIZED</span>
               </div>
               <p className="mt-1 text-xs text-rose-800/80">
                 Execute account-level or content-level enforcement linked directly to this case.
@@ -1044,7 +1044,7 @@ export function AdminModerationCaseDetailsClient({
               {candidates.length > 0 ? (
                 <div className="mt-3 space-y-2">
                   <div className="text-xs font-medium text-slate-700">
-                    Subject: <span className="font-semibold text-slate-900">{candidates[0].name}</span>
+                    Subject: <span className="font-medium text-slate-900">{candidates[0].name}</span>
                   </div>
 
                   <div className="grid grid-cols-1 gap-2 pt-1">
@@ -1052,7 +1052,7 @@ export function AdminModerationCaseDetailsClient({
                       type="button"
                       disabled={saving}
                       onClick={() => setEnforcementModal({ action: "WARN", targetUser: candidates[0] })}
-                      className="rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-left text-xs font-semibold text-amber-900 hover:bg-amber-100 disabled:opacity-50"
+                      className="rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-left text-xs font-medium text-amber-900 hover:bg-amber-100 disabled:opacity-50"
                     >
                       ⚠️ Issue Account Warning
                     </button>
@@ -1060,7 +1060,7 @@ export function AdminModerationCaseDetailsClient({
                       type="button"
                       disabled={saving}
                       onClick={() => setEnforcementModal({ action: "RESTRICT", targetUser: candidates[0] })}
-                      className="rounded-md border border-orange-300 bg-orange-50 px-3 py-1.5 text-left text-xs font-semibold text-orange-900 hover:bg-orange-100 disabled:opacity-50"
+                      className="rounded-md border border-orange-300 bg-orange-50 px-3 py-1.5 text-left text-xs font-medium text-orange-900 hover:bg-orange-100 disabled:opacity-50"
                     >
                       ⏳ Apply Temporary Restriction
                     </button>
@@ -1068,7 +1068,7 @@ export function AdminModerationCaseDetailsClient({
                       type="button"
                       disabled={saving}
                       onClick={() => setEnforcementModal({ action: "SUSPEND", targetUser: candidates[0] })}
-                      className="rounded-md border border-red-300 bg-red-50 px-3 py-1.5 text-left text-xs font-semibold text-red-900 hover:bg-red-100 disabled:opacity-50"
+                      className="rounded-md border border-red-300 bg-red-50 px-3 py-1.5 text-left text-xs font-medium text-red-900 hover:bg-red-100 disabled:opacity-50"
                     >
                       🛑 Suspend User Account
                     </button>
@@ -1271,7 +1271,7 @@ function DecisionDialog({
     >
       <div className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl space-y-4">
         <div>
-          <h2 id="moderation-decision-title" className="text-lg font-semibold text-slate-900">
+          <h2 id="moderation-decision-title" className="text-lg font-medium text-slate-900">
             {status === "RESOLVED" ? "Resolve" : "Dismiss"} moderation case
           </h2>
           <p className="mt-1 text-xs text-slate-600">
@@ -1279,7 +1279,7 @@ function DecisionDialog({
           </p>
         </div>
 
-        <label className="block text-xs font-semibold text-slate-700">
+        <label className="block text-xs font-medium text-slate-700">
           Resolution category <span className="text-red-500">*</span>
           <select
             value={category}
@@ -1295,7 +1295,7 @@ function DecisionDialog({
         </label>
 
         {targetType === "REVIEW" && status === "RESOLVED" && (
-          <label className="block text-xs font-semibold text-slate-700">
+          <label className="block text-xs font-medium text-slate-700">
             Review enforcement action
             <select
               value={reviewAction}
@@ -1314,7 +1314,7 @@ function DecisionDialog({
         )}
 
         {targetType === "LISTING" && status === "RESOLVED" && (
-          <label className="block text-xs font-semibold text-slate-700">
+          <label className="block text-xs font-medium text-slate-700">
             Listing moderation action
             <select
               value={listingAction}
@@ -1335,7 +1335,7 @@ function DecisionDialog({
         )}
 
         {targetType === "LISTING_PHOTO" && status === "RESOLVED" && (
-          <label className="block text-xs font-semibold text-slate-700">
+          <label className="block text-xs font-medium text-slate-700">
             Photo moderation action
             <select
               value={mediaAction}
@@ -1355,7 +1355,7 @@ function DecisionDialog({
         )}
 
         {(targetType === "PROFILE" || targetType === "USER") && status === "RESOLVED" && (
-          <label className="block text-xs font-semibold text-slate-700">
+          <label className="block text-xs font-medium text-slate-700">
             Profile photo moderation action
             <select
               value={mediaAction}
@@ -1373,7 +1373,7 @@ function DecisionDialog({
           </label>
         )}
 
-        <label className="block text-xs font-semibold text-slate-700">
+        <label className="block text-xs font-medium text-slate-700">
           Internal decision rationale
           <textarea
             value={notes}
@@ -1414,43 +1414,43 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
       <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-800">
+            <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-800">
               {data.direction === "HOST_TO_GUEST" ? "Host to Guest Review" : "Guest to Property Review"}
             </span>
             <span className="text-xs text-slate-500">ID: {data.id}</span>
           </div>
-          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge(data.status)}`}>
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${badge(data.status)}`}>
             {data.status}
           </span>
         </div>
 
         <div className="grid gap-2 text-xs sm:grid-cols-2">
           <div>
-            <span className="font-semibold text-slate-600">Review Author: </span>
+            <span className="font-medium text-slate-600">Review Author: </span>
             <span className="text-slate-900">{data.author?.name || "Unknown"} ({data.author?.email || "No email"})</span>
           </div>
           {data.targetUser && (
             <div>
-              <span className="font-semibold text-slate-600">Reviewed Subject: </span>
+              <span className="font-medium text-slate-600">Reviewed Subject: </span>
               <span className="text-slate-900">{data.targetUser.name || "Unknown"} ({data.targetUser.email || "No email"})</span>
             </div>
           )}
           {data.listing && (
             <div>
-              <span className="font-semibold text-slate-600">Listing: </span>
+              <span className="font-medium text-slate-600">Listing: </span>
               <span className="text-slate-900">{data.listing.title} ({data.listing.city || "N/A"})</span>
             </div>
           )}
           {data.booking && (
             <div>
-              <span className="font-semibold text-slate-600">Booking: </span>
+              <span className="font-medium text-slate-600">Booking: </span>
               <span className="font-mono text-slate-900">{data.bookingId} ({data.booking.status})</span>
             </div>
           )}
         </div>
 
         <div className="rounded-lg bg-white p-3 border border-slate-200">
-          <div className="flex items-center gap-1 font-semibold text-amber-600 text-sm">
+          <div className="flex items-center gap-1 font-medium text-amber-600 text-sm">
             <span>★ {data.rating} / 5</span>
             {data.cleanliness && (
               <span className="ml-2 text-xs font-normal text-slate-500">
@@ -1465,7 +1465,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
 
         {data.response && (
           <div className="rounded-lg bg-indigo-50/70 p-3 border border-indigo-100 text-xs">
-            <p className="font-semibold text-indigo-900">
+            <p className="font-medium text-indigo-900">
               Public Response from {data.response.author?.name || "Counterpart"}:
             </p>
             <p className="mt-1 text-slate-800 whitespace-pre-wrap">{data.response.comment}</p>
@@ -1491,10 +1491,10 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
       <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold text-slate-900">{data.title}</span>
+            <span className="font-medium text-slate-900">{data.title}</span>
             <span className="text-xs text-slate-500">ID: {data.id}</span>
           </div>
-          <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs font-medium">
             <span className={`rounded-full px-2.5 py-0.5 ${badge(data.status)}`}>
               {data.status}
             </span>
@@ -1530,7 +1530,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
           )}
 
           <div className="space-y-1.5 text-xs">
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm font-medium text-slate-900">
               ${(data.price / 100).toFixed(2)} <span className="text-xs font-normal text-slate-500">/ night</span>
             </p>
             <p className="text-slate-700">
@@ -1543,7 +1543,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
             </p>
             <p className="text-slate-700">
               <span className="font-medium text-slate-500">Host: </span>
-              <span className="font-semibold text-slate-900">{data.host?.name || "Host"}</span> ({data.host?.email || "No email"}) · Status: {data.host?.status || "ACTIVE"}
+              <span className="font-medium text-slate-900">{data.host?.name || "Host"}</span> ({data.host?.email || "No email"}) · Status: {data.host?.status || "ACTIVE"}
             </p>
           </div>
         </div>
@@ -1551,7 +1551,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
         {/* Description snippet */}
         {data.description && (
           <div className="rounded-lg bg-white p-3 border border-slate-200 text-xs text-slate-700">
-            <span className="font-semibold text-slate-900 block mb-1">Listing Description:</span>
+            <span className="font-medium text-slate-900 block mb-1">Listing Description:</span>
             <p className="line-clamp-3 whitespace-pre-wrap">{data.description}</p>
           </div>
         )}
@@ -1559,14 +1559,14 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
         {/* Amenities preview */}
         {data.amenities?.length > 0 && (
           <div className="text-xs">
-            <span className="font-semibold text-slate-600 mr-2">Amenities:</span>
+            <span className="font-medium text-slate-600 mr-2">Amenities:</span>
             <span className="text-slate-700">{data.amenities.slice(0, 8).join(" · ")}{data.amenities.length > 8 ? ` +${data.amenities.length - 8} more` : ""}</span>
           </div>
         )}
 
         {/* Active & Upcoming Reservations */}
         <div className="rounded-lg bg-white p-3 border border-slate-200 text-xs">
-          <p className="font-semibold text-slate-900">
+          <p className="font-medium text-slate-900">
             Active &amp; Upcoming Reservations ({data.bookings?.length || 0})
           </p>
           {data.bookings?.length ? (
@@ -1580,7 +1580,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${badge(booking.status)}`}>
+                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${badge(booking.status)}`}>
                       {booking.status}
                     </span>
                     <span className="text-slate-600 font-mono text-[11px]">
@@ -1598,7 +1598,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
         {/* Prior Quality Incidents */}
         {data.qualityIncidents?.length > 0 && (
           <div className="rounded-lg bg-amber-50/70 p-3 border border-amber-200 text-xs">
-            <p className="font-semibold text-amber-900">
+            <p className="font-medium text-amber-900">
               Prior Quality Incidents / Disputes ({data.qualityIncidents.length})
             </p>
             <div className="mt-1.5 space-y-1.5">
@@ -1617,7 +1617,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
         {/* Prior Moderation Cases */}
         {data.relatedCases?.length > 1 && (
           <div className="rounded-lg bg-indigo-50/70 p-3 border border-indigo-200 text-xs">
-            <p className="font-semibold text-indigo-900">
+            <p className="font-medium text-indigo-900">
               Other Moderation Cases for this Property ({data.relatedCases.length - 1})
             </p>
             <div className="mt-1.5 space-y-1">
@@ -1651,16 +1651,16 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
       <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-purple-800">
+            <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
               Listing Photo
             </span>
             {isCover && (
-              <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800">
+              <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
                 Cover Photo
               </span>
             )}
           </div>
-          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${data.isCurrentlyInGallery ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${data.isCurrentlyInGallery ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
             {data.isCurrentlyInGallery ? "Active in Gallery" : "Removed / Not in Gallery"}
           </span>
         </div>
@@ -1717,7 +1717,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
         {/* Gallery Thumbnails Comparison */}
         {data.photos && data.photos.length > 0 && (
           <div className="pt-2 border-t border-slate-200">
-            <p className="text-xs font-semibold text-slate-700 mb-2">
+            <p className="text-xs font-medium text-slate-700 mb-2">
               Listing Gallery Context ({data.photos.length} photos)
             </p>
             <div className="flex flex-wrap gap-2">
@@ -1737,7 +1737,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
                       unoptimized
                     />
                     {isReported && (
-                      <span className="absolute bottom-0 inset-x-0 bg-red-600 text-white text-[9px] text-center font-bold">
+                      <span className="absolute bottom-0 inset-x-0 bg-red-600 text-white text-[9px] text-center font-medium">
                         Reported
                       </span>
                     )}
@@ -1760,10 +1760,10 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
     return (
       <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
-          <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800">
+          <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
             User Profile
           </span>
-          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${data.photoUrl ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${data.photoUrl ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
             {data.photoUrl ? "Active Avatar" : "No Avatar / Removed"}
           </span>
         </div>
@@ -1780,7 +1780,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
               />
             </div>
           ) : (
-            <div className="flex size-20 items-center justify-center rounded-full bg-slate-200 text-2xl font-bold text-slate-500">
+            <div className="flex size-20 items-center justify-center rounded-full bg-slate-200 text-2xl font-medium text-slate-500">
               {data.name?.[0]?.toUpperCase() || "U"}
             </div>
           )}
@@ -1868,7 +1868,7 @@ function UploadEvidenceDialog({
     >
       <div className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl space-y-4">
         <div>
-          <h2 id="upload-evidence-title" className="text-lg font-semibold text-slate-900">
+          <h2 id="upload-evidence-title" className="text-lg font-medium text-slate-900">
             Attach Moderation Evidence
           </h2>
           <p className="mt-1 text-xs text-slate-600">
@@ -1884,7 +1884,7 @@ function UploadEvidenceDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4 text-sm">
           <div>
-            <label className="block text-xs font-semibold text-slate-700">
+            <label className="block text-xs font-medium text-slate-700">
               Select File <span className="text-red-500">*</span>
             </label>
             <input
@@ -1898,7 +1898,7 @@ function UploadEvidenceDialog({
                   setDisplayName(selected.name);
                 }
               }}
-              className="mt-1 w-full text-xs text-slate-500 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-slate-700 hover:file:bg-slate-200"
+              className="mt-1 w-full text-xs text-slate-500 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200"
             />
             <p className="mt-1 text-[11px] text-slate-500">
               Supported formats: JPEG, PNG, WebP, PDF (max 15MB). Magic bytes signature validated.
@@ -1906,7 +1906,7 @@ function UploadEvidenceDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">
+            <label className="block text-xs font-medium text-slate-700">
               Display Name
             </label>
             <input
@@ -1919,7 +1919,7 @@ function UploadEvidenceDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">
+            <label className="block text-xs font-medium text-slate-700">
               Access Visibility
             </label>
             <select
@@ -1933,7 +1933,7 @@ function UploadEvidenceDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">
+            <label className="block text-xs font-medium text-slate-700">
               Description / Investigative Context
             </label>
             <textarea
@@ -1957,7 +1957,7 @@ function UploadEvidenceDialog({
             <button
               type="submit"
               disabled={uploading || saving || !file}
-              className="rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+              className="rounded-md bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
             >
               {uploading ? "Uploading & Scanning..." : "Upload Evidence"}
             </button>
@@ -1994,7 +1994,7 @@ function PreviewEvidenceDialog({
       <div className="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-xl bg-white shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
           <div>
-            <h2 id="preview-evidence-title" className="text-sm font-semibold text-slate-900">
+            <h2 id="preview-evidence-title" className="text-sm font-medium text-slate-900">
               {evidence.displayName || "Evidence Preview"}
             </h2>
             <p className="text-xs text-slate-500">
@@ -2005,7 +2005,7 @@ function PreviewEvidenceDialog({
             <a
               href={`${streamUrl}?download=true`}
               download
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
             >
               Download
             </a>
@@ -2110,7 +2110,7 @@ function CreateRfiDialog({
     >
       <div className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl space-y-4">
         <div>
-          <h2 id="create-rfi-title" className="text-lg font-semibold text-slate-900">
+          <h2 id="create-rfi-title" className="text-lg font-medium text-slate-900">
             Request Additional Information (RFI)
           </h2>
           <p className="mt-1 text-xs text-slate-600">
@@ -2127,7 +2127,7 @@ function CreateRfiDialog({
         <form onSubmit={handleSubmit} className="space-y-4 text-sm">
           <div>
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-semibold text-slate-700">
+              <label className="block text-xs font-medium text-slate-700">
                 Recipient Participant <span className="text-red-500">*</span>
               </label>
               <button
@@ -2165,7 +2165,7 @@ function CreateRfiDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">
+            <label className="block text-xs font-medium text-slate-700">
               Subject / Topic
             </label>
             <input
@@ -2178,7 +2178,7 @@ function CreateRfiDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">
+            <label className="block text-xs font-medium text-slate-700">
               Inquiry / Required Evidence <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -2192,7 +2192,7 @@ function CreateRfiDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">
+            <label className="block text-xs font-medium text-slate-700">
               Response Deadline
             </label>
             <select
@@ -2219,7 +2219,7 @@ function CreateRfiDialog({
             <button
               type="submit"
               disabled={submitting || saving}
-              className="rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+              className="rounded-md bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
             >
               {submitting ? "Sending Request..." : "Send Request for Information"}
             </button>
@@ -2281,11 +2281,11 @@ function AdminAppealDecisionDialog({
       >
         <div className="flex items-start justify-between border-b border-slate-200 pb-3">
           <div>
-            <h2 id="appeal-decision-title" className="text-lg font-bold text-slate-900">
+            <h2 id="appeal-decision-title" className="text-lg font-medium text-slate-900">
               Decide Moderation Appeal: {appeal.id}
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Appellant: <span className="font-semibold text-slate-800">{appeal.appellantName || appeal.appellantEmail || "User"}</span> ({appeal.appellantRole})
+              Appellant: <span className="font-medium text-slate-800">{appeal.appellantName || appeal.appellantEmail || "User"}</span> ({appeal.appellantRole})
             </p>
           </div>
           <button
@@ -2313,17 +2313,17 @@ function AdminAppealDecisionDialog({
           className="mt-4 space-y-4 text-xs"
         >
           <div className="rounded-lg bg-slate-50 p-3 border border-slate-200 space-y-1">
-            <span className="font-semibold text-slate-700">Appellant Statement:</span>
+            <span className="font-medium text-slate-700">Appellant Statement:</span>
             <p className="text-slate-800 whitespace-pre-wrap">{appeal.explanation}</p>
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 mb-1.5">Appeal Outcome *</label>
+            <label className="block font-medium text-slate-700 mb-1.5">Appeal Outcome *</label>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setDecision("APPROVED")}
-                className={`rounded-lg border p-2 text-xs font-semibold transition ${
+                className={`rounded-lg border p-2 text-xs font-medium transition ${
                   decision === "APPROVED"
                     ? "border-emerald-600 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500"
                     : "border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -2334,7 +2334,7 @@ function AdminAppealDecisionDialog({
               <button
                 type="button"
                 onClick={() => setDecision("PARTIALLY_APPROVED")}
-                className={`rounded-lg border p-2 text-xs font-semibold transition ${
+                className={`rounded-lg border p-2 text-xs font-medium transition ${
                   decision === "PARTIALLY_APPROVED"
                     ? "border-teal-600 bg-teal-50 text-teal-800 ring-2 ring-teal-500"
                     : "border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -2345,7 +2345,7 @@ function AdminAppealDecisionDialog({
               <button
                 type="button"
                 onClick={() => setDecision("REJECTED")}
-                className={`rounded-lg border p-2 text-xs font-semibold transition ${
+                className={`rounded-lg border p-2 text-xs font-medium transition ${
                   decision === "REJECTED"
                     ? "border-red-600 bg-red-50 text-red-800 ring-2 ring-red-500"
                     : "border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -2380,7 +2380,7 @@ function AdminAppealDecisionDialog({
           )}
 
           <div>
-            <label className="block font-semibold text-slate-700">
+            <label className="block font-medium text-slate-700">
               Decision Explanation (Shared with appellant) *
             </label>
             <textarea
@@ -2394,7 +2394,7 @@ function AdminAppealDecisionDialog({
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700">
+            <label className="block font-medium text-slate-700">
               Internal Review Notes (Admin only, optional)
             </label>
             <textarea
@@ -2418,7 +2418,7 @@ function AdminAppealDecisionDialog({
             <button
               type="submit"
               disabled={submitting || decisionReason.trim().length < 5}
-              className="rounded-md bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+              className="rounded-md bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
             >
               {submitting ? "Recording Decision..." : "Record Appeal Decision"}
             </button>
@@ -2547,7 +2547,7 @@ function EnforcementDialog({
     >
       <div className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl space-y-4">
         <div>
-          <h2 id="enforcement-modal-title" className="text-lg font-semibold text-slate-900">
+          <h2 id="enforcement-modal-title" className="text-lg font-medium text-slate-900">
             {titleText}
           </h2>
           <p className="mt-1 text-xs text-slate-600">
@@ -2561,7 +2561,7 @@ function EnforcementDialog({
           {action === "RESTRICT" && (
             <div className="space-y-3 rounded-lg bg-amber-50/50 p-3.5 border border-amber-200">
               <div>
-                <label className="block font-semibold text-slate-700">Restriction Scope *</label>
+                <label className="block font-medium text-slate-700">Restriction Scope *</label>
                 <select
                   value={restrictionType}
                   onChange={(e) => setRestrictionType(e.target.value)}
@@ -2575,7 +2575,7 @@ function EnforcementDialog({
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700">Duration *</label>
+                <label className="block font-medium text-slate-700">Duration *</label>
                 <select
                   value={durationHours === null ? "indefinite" : String(durationHours)}
                   onChange={(e) => {
@@ -2596,7 +2596,7 @@ function EnforcementDialog({
 
           {action === "SUSPEND" && (
             <div className="space-y-3 rounded-lg bg-rose-50/70 p-3.5 border border-rose-200">
-              <p className="font-semibold text-rose-950">Pre-Flight Reservation Safeguard</p>
+              <p className="font-medium text-rose-950">Pre-Flight Reservation Safeguard</p>
               {impactLoading ? (
                 <p className="text-slate-500">Checking active reservations...</p>
               ) : impactData ? (
@@ -2604,11 +2604,11 @@ function EnforcementDialog({
                   <div className="grid grid-cols-2 gap-2 text-[11px]">
                     <div className="rounded bg-white p-2 border border-rose-200/60">
                       <span className="text-slate-500">Active Reservations:</span>
-                      <p className="font-bold text-slate-900">{impactData.activeCount}</p>
+                      <p className="font-medium text-slate-900">{impactData.activeCount}</p>
                     </div>
                     <div className="rounded bg-white p-2 border border-rose-200/60">
                       <span className="text-slate-500">Active Value:</span>
-                      <p className="font-bold text-slate-900">${impactData.totalActiveRevenueOrSpend || 0}</p>
+                      <p className="font-medium text-slate-900">${impactData.totalActiveRevenueOrSpend || 0}</p>
                     </div>
                   </div>
 
@@ -2637,7 +2637,7 @@ function EnforcementDialog({
           )}
 
           <div>
-            <label className="block font-semibold text-slate-700">Enforcement Reason *</label>
+            <label className="block font-medium text-slate-700">Enforcement Reason *</label>
             <textarea
               required
               rows={3}
@@ -2649,7 +2649,7 @@ function EnforcementDialog({
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700">Policy Code (Optional)</label>
+            <label className="block font-medium text-slate-700">Policy Code (Optional)</label>
             <input
               type="text"
               value={policyCode}
@@ -2671,7 +2671,7 @@ function EnforcementDialog({
             <button
               type="submit"
               disabled={submitting || reason.trim().length < 5 || (action === "SUSPEND" && impactData?.activeCount > 0 && !impactAcknowledged)}
-              className="rounded-md bg-rose-600 px-4 py-2 font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
+              className="rounded-md bg-rose-600 px-4 py-2 font-medium text-white hover:bg-rose-700 disabled:opacity-50"
             >
               {submitting ? "Executing..." : "Execute Enforcement"}
             </button>
@@ -2717,7 +2717,7 @@ function BookingImpactDialog({
       <div className="max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
-            <h2 id="booking-impact-title" className="text-lg font-semibold text-slate-900">
+            <h2 id="booking-impact-title" className="text-lg font-medium text-slate-900">
               Booking &amp; Reservation Impact Assessment
             </h2>
             <p className="mt-0.5 text-xs text-slate-500">
@@ -2740,30 +2740,30 @@ function BookingImpactDialog({
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                 <span className="text-slate-500">Active Bookings</span>
-                <p className="text-lg font-bold text-slate-900">{impact.activeCount}</p>
+                <p className="text-lg font-medium text-slate-900">{impact.activeCount}</p>
               </div>
               <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                 <span className="text-slate-500">Active Volume</span>
-                <p className="text-lg font-bold text-slate-900">${impact.totalActiveRevenueOrSpend || 0}</p>
+                <p className="text-lg font-medium text-slate-900">${impact.totalActiveRevenueOrSpend || 0}</p>
               </div>
               <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                 <span className="text-slate-500">Past Bookings</span>
-                <p className="text-lg font-bold text-slate-900">{impact.pastCount}</p>
+                <p className="text-lg font-medium text-slate-900">{impact.pastCount}</p>
               </div>
               <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                 <span className="text-slate-500">Cancelled</span>
-                <p className="text-lg font-bold text-slate-900">{impact.cancelledCount}</p>
+                <p className="text-lg font-medium text-slate-900">{impact.cancelledCount}</p>
               </div>
             </div>
 
             {impact.activeBookings?.length > 0 ? (
               <div>
-                <h3 className="font-semibold text-slate-800 mb-2">Active &amp; Upcoming Reservations ({impact.activeBookings.length})</h3>
+                <h3 className="font-medium text-slate-800 mb-2">Active &amp; Upcoming Reservations ({impact.activeBookings.length})</h3>
                 <div className="space-y-2">
                   {impact.activeBookings.map((b: any) => (
                     <div key={b.id} className="rounded-lg border border-slate-200 p-3 bg-white">
                       <div className="flex flex-wrap items-center justify-between gap-1 pb-1 border-b border-slate-100">
-                        <span className="font-semibold text-slate-900">{b.listingTitle}</span>
+                        <span className="font-medium text-slate-900">{b.listingTitle}</span>
                         <span className="rounded bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
                           {b.status} · ${b.totalPrice} {b.currency}
                         </span>
@@ -2837,7 +2837,7 @@ function ViolationHistoryDialog({
       <div className="max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
-            <h2 id="violation-history-title" className="text-lg font-semibold text-slate-900">
+            <h2 id="violation-history-title" className="text-lg font-medium text-slate-900">
               Repeat-Violation &amp; Enforcement History
             </h2>
             <p className="mt-0.5 text-xs text-slate-500">
@@ -2860,28 +2860,28 @@ function ViolationHistoryDialog({
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <div className="rounded-lg bg-rose-50 p-3 border border-rose-200">
                 <span className="text-rose-700 font-medium">Total Violations</span>
-                <p className="text-xl font-bold text-rose-900">{history.totalViolationsCount}</p>
+                <p className="text-xl font-medium text-rose-900">{history.totalViolationsCount}</p>
               </div>
               <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                 <span className="text-slate-500 font-medium">Moderation Cases</span>
-                <p className="text-xl font-bold text-slate-900">{history.casesCount}</p>
+                <p className="text-xl font-medium text-slate-900">{history.casesCount}</p>
               </div>
               <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                 <span className="text-slate-500 font-medium">Active Warnings</span>
-                <p className="text-xl font-bold text-slate-900">
+                <p className="text-xl font-medium text-slate-900">
                   {history.warnings?.filter((w: any) => w.status === "ACTIVE").length || 0}
                 </p>
               </div>
               <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                 <span className="text-slate-500 font-medium">Restrictions</span>
-                <p className="text-xl font-bold text-slate-900">{history.restrictions?.length || 0}</p>
+                <p className="text-xl font-medium text-slate-900">{history.restrictions?.length || 0}</p>
               </div>
             </div>
 
             {/* Warnings list */}
             {history.warnings?.length > 0 && (
               <div>
-                <h3 className="font-semibold text-slate-800 mb-1.5">Account Warnings ({history.warnings.length})</h3>
+                <h3 className="font-medium text-slate-800 mb-1.5">Account Warnings ({history.warnings.length})</h3>
                 <div className="space-y-1.5">
                   {history.warnings.map((w: any) => (
                     <div key={w.id} className="rounded-lg border border-amber-200 bg-amber-50/40 p-2.5">
@@ -2898,7 +2898,7 @@ function ViolationHistoryDialog({
             {/* Restrictions list */}
             {history.restrictions?.length > 0 && (
               <div>
-                <h3 className="font-semibold text-slate-800 mb-1.5">Account Restrictions ({history.restrictions.length})</h3>
+                <h3 className="font-medium text-slate-800 mb-1.5">Account Restrictions ({history.restrictions.length})</h3>
                 <div className="space-y-1.5">
                   {history.restrictions.map((r: any) => (
                     <div key={r.id} className="rounded-lg border border-orange-200 bg-orange-50/40 p-2.5">
@@ -2915,12 +2915,12 @@ function ViolationHistoryDialog({
             {/* Cases list */}
             {history.cases?.length > 0 && (
               <div>
-                <h3 className="font-semibold text-slate-800 mb-1.5">Past Cases Linked to Subject ({history.cases.length})</h3>
+                <h3 className="font-medium text-slate-800 mb-1.5">Past Cases Linked to Subject ({history.cases.length})</h3>
                 <div className="space-y-1.5">
                   {history.cases.map((c: any) => (
                     <div key={c.id} className="rounded-lg border border-slate-200 p-2.5 bg-white flex items-center justify-between">
                       <div>
-                        <Link href={`/admin/moderation/cases/${c.id}`} className="font-semibold text-indigo-700 hover:underline">
+                        <Link href={`/admin/moderation/cases/${c.id}`} className="font-medium text-indigo-700 hover:underline">
                           {c.caseReference}
                         </Link>
                         <span className="text-slate-500 ml-2">({c.targetType} · {c.category})</span>
@@ -3016,7 +3016,7 @@ function MessageEnforcementDialog({
     >
       <div className="max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-xl bg-white p-6 shadow-xl space-y-4">
         <div>
-          <h2 id="message-enforcement-title" className="text-lg font-semibold text-slate-900">
+          <h2 id="message-enforcement-title" className="text-lg font-medium text-slate-900">
             {actionTitle}
           </h2>
           <p className="mt-1 text-xs text-slate-600">
@@ -3028,7 +3028,7 @@ function MessageEnforcementDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="block font-semibold text-slate-700">Enforcement Reason *</label>
+            <label className="block font-medium text-slate-700">Enforcement Reason *</label>
             <textarea
               required
               rows={3}
@@ -3040,7 +3040,7 @@ function MessageEnforcementDialog({
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700">Policy Code (Optional)</label>
+            <label className="block font-medium text-slate-700">Policy Code (Optional)</label>
             <input
               type="text"
               value={policyCode}
@@ -3062,7 +3062,7 @@ function MessageEnforcementDialog({
             <button
               type="submit"
               disabled={submitting || reason.trim().length < 5}
-              className={`rounded-md px-4 py-2 font-semibold text-white disabled:opacity-50 ${
+              className={`rounded-md px-4 py-2 font-medium text-white disabled:opacity-50 ${
                 action === "REMOVE" ? "bg-red-600 hover:bg-red-700" : "bg-indigo-600 hover:bg-indigo-700"
               }`}
             >

@@ -40,7 +40,7 @@ export default async function FinancialPermissionsPage() {
                 <PermissionsShieldIcon size={24} />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="text-lg font-semibold text-zinc-950">
+                <h2 className="text-lg font-medium text-zinc-950">
                   Role-Based Financial Access & Delegation
                 </h2>
                 <p className="mt-1 text-sm text-zinc-600 leading-relaxed">
@@ -50,10 +50,10 @@ export default async function FinancialPermissionsPage() {
                 <div className="mt-6 space-y-4">
                   <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-zinc-900 text-sm">
+                      <span className="font-medium text-zinc-900 text-sm">
                         Primary Host Account Role
                       </span>
-                      <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+                      <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
                         {actor.role}
                       </span>
                     </div>
@@ -63,7 +63,7 @@ export default async function FinancialPermissionsPage() {
                   </div>
 
                   <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4">
-                    <h3 className="text-sm font-semibold text-zinc-900">
+                    <h3 className="text-sm font-medium text-zinc-900">
                       Co-Host Financial Permission Delegation
                     </h3>
                     <p className="mt-1 text-xs sm:text-sm text-zinc-600">
@@ -75,7 +75,7 @@ export default async function FinancialPermissionsPage() {
                 <div className="mt-8 rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-indigo-950">
+                      <p className="text-sm font-medium text-indigo-950">
                         Scheduled for Phase 7 Implementation
                       </p>
                       <p className="mt-0.5 text-xs text-indigo-800">
@@ -84,7 +84,7 @@ export default async function FinancialPermissionsPage() {
                     </div>
                     <Link
                       href="/host/co-host"
-                      className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-zinc-950 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition-colors shrink-0"
+                      className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-zinc-950 px-4 py-2 text-xs font-medium text-white hover:bg-zinc-800 transition-colors shrink-0"
                     >
                       <span>Manage Co-Hosts</span>
                       <ExternalLinkIcon size={13} />

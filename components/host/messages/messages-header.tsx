@@ -1,10 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
+import { BrandLogo } from "@/components/branding/brand-logo";
+import { useBranding } from "@/components/branding/branding-provider";
 
 const links: { href: string; labelKey: TranslationKey; fallback: string }[] = [
   { href: "/host/today", labelKey: "host_nav_today", fallback: "Today" },
@@ -14,6 +16,7 @@ const links: { href: string; labelKey: TranslationKey; fallback: string }[] = [
 ];
 
 export function MessagesHeader() {
+  const branding = useBranding();
   const pathname = usePathname();
   const { data: session } = useSession();
   const user = session?.user;
@@ -23,16 +26,18 @@ export function MessagesHeader() {
     <header className="sticky top-0 z-40 bg-white/95 text-[#1F1F1F] backdrop-blur">
       <div className="mx-auto flex h-[76px] w-full max-w-[1520px] items-center justify-between px-5 sm:px-6 lg:h-[88px]">
         <Link href="/" aria-label="Homyz home" className="shrink-0">
-          <Image
-            src="/images/brand/homyz-logo-dark-v1.svg"
+          <BrandLogo
+            src={branding.hostHeaderLogoUrl}
+            fallbackSrc="/images/brand/homyz-logo-dark-v1.svg"
             alt="Homyz"
             width={198}
             height={72}
             className="hidden h-[72px] w-[198px] sm:block"
             priority
           />
-          <Image
-            src="/images/brand/homyz-logo-dark-v2.svg"
+          <BrandLogo
+            src={branding.mobileLogoUrl}
+            fallbackSrc="/images/brand/homyz-logo-dark-v2.svg"
             alt="Stay like a homie."
             width={200}
             height={53}
@@ -41,7 +46,7 @@ export function MessagesHeader() {
           />
         </Link>
         <nav
-          aria-label={t("header_aria_host_navigation" as any, "Host navigation")}
+          aria-label={t("header_aria_host_navigation" as TranslationKey, "Host navigation")}
           className="hidden items-center gap-5 text-base text-[#727272] font-medium md:flex xl:gap-8"
         >
           {links.map((link) => (

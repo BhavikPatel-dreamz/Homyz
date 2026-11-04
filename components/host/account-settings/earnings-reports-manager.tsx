@@ -194,7 +194,7 @@ export function EarningsReportsManager({
       <div className="rounded-3xl border border-zinc-200/90 bg-white p-5 shadow-xs sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-bold text-[#1f1f1f]">
+            <h2 className="text-lg font-medium text-[#1f1f1f]">
               Filter Reporting Scope
             </h2>
             <p className="text-xs text-[#727272]">
@@ -337,7 +337,7 @@ export function EarningsReportsManager({
             <span className="text-[11px] font-medium text-[#727272] block">
               Gross Earnings
             </span>
-            <p className="mt-1 font-mono text-sm sm:text-base font-bold text-[#1f1f1f] truncate">
+            <p className="mt-1 font-mono text-sm sm:text-base font-medium text-[#1f1f1f] truncate">
               {formatNative(data.yearlySummary.grossEarnings, activeCurrency)}
             </p>
             <span className="mt-1 text-[10px] text-[#727272] block">
@@ -350,7 +350,7 @@ export function EarningsReportsManager({
             <span className="text-[11px] font-medium text-[#727272] block">
               Service Fees
             </span>
-            <p className="mt-1 font-mono text-sm sm:text-base font-bold text-rose-700 truncate">
+            <p className="mt-1 font-mono text-sm sm:text-base font-medium text-rose-700 truncate">
               -{formatNative(data.yearlySummary.platformFee, activeCurrency)}
             </p>
             <span className="mt-1 text-[10px] text-[#727272] block">
@@ -363,7 +363,7 @@ export function EarningsReportsManager({
             <span className="text-[11px] font-medium text-[#727272] block">
               Adjustments
             </span>
-            <p className="mt-1 font-mono text-sm sm:text-base font-bold text-[#1f1f1f] truncate">
+            <p className="mt-1 font-mono text-sm sm:text-base font-medium text-[#1f1f1f] truncate">
               {data.yearlySummary.adjustments >= 0 ? "+" : ""}
               {formatNative(data.yearlySummary.adjustments, activeCurrency)}
             </p>
@@ -377,7 +377,7 @@ export function EarningsReportsManager({
             <span className="text-[11px] font-medium text-zinc-300 block">
               Net Earnings
             </span>
-            <p className="mt-1 font-mono text-sm sm:text-base font-bold text-white truncate">
+            <p className="mt-1 font-mono text-sm sm:text-base font-medium text-white truncate">
               {formatNative(data.yearlySummary.netEarnings, activeCurrency)}
             </p>
             <span className="mt-1 text-[10px] text-[#727272] block">
@@ -390,7 +390,7 @@ export function EarningsReportsManager({
             <span className="text-[11px] font-medium text-emerald-800 block">
               Paid Out
             </span>
-            <p className="mt-1 font-mono text-sm sm:text-base font-bold text-emerald-950 truncate">
+            <p className="mt-1 font-mono text-sm sm:text-base font-medium text-emerald-950 truncate">
               {formatNative(data.yearlySummary.paidPayouts, activeCurrency)}
             </p>
             <span className="mt-1 text-[10px] text-emerald-700 block">
@@ -403,7 +403,7 @@ export function EarningsReportsManager({
             <span className="text-[11px] font-medium text-amber-800 block">
               Upcoming
             </span>
-            <p className="mt-1 font-mono text-sm sm:text-base font-bold text-amber-950 truncate">
+            <p className="mt-1 font-mono text-sm sm:text-base font-medium text-amber-950 truncate">
               {formatNative(data.yearlySummary.upcomingPayouts, activeCurrency)}
             </p>
             <span className="mt-1 text-[10px] text-amber-700 block">
@@ -421,7 +421,7 @@ export function EarningsReportsManager({
               Gross ({formatNative(data.yearlySummary.grossEarnings, activeCurrency)}) -
               Fees ({formatNative(data.yearlySummary.platformFee, activeCurrency)}) +
               Adjustments ({formatNative(data.yearlySummary.adjustments, activeCurrency)}) ={" "}
-              <span className="font-bold text-[#1f1f1f]">
+              <span className="font-medium text-[#1f1f1f]">
                 Net Earnings ({formatNative(data.yearlySummary.netEarnings, activeCurrency)})
               </span>
             </p>
@@ -433,7 +433,7 @@ export function EarningsReportsManager({
       <div className="rounded-3xl border border-zinc-200/90 bg-white p-6 shadow-xs sm:p-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 pb-4">
           <div>
-            <h3 className="text-lg font-bold text-[#1f1f1f]">
+            <h3 className="text-lg font-medium text-[#1f1f1f]">
               Monthly Earnings Statements
             </h3>
             <p className="text-xs text-[#727272]">
@@ -473,7 +473,7 @@ export function EarningsReportsManager({
                       <div>
                         <Link
                           href={`/host/earnings/reports/monthly/${month.year}/${month.month}`}
-                          className="font-bold text-[#1f1f1f] hover:underline"
+                          className="font-medium text-[#1f1f1f] hover:underline"
                         >
                           {month.monthName}
                         </Link>
@@ -496,7 +496,7 @@ export function EarningsReportsManager({
                       {month.platformFee > 0 ? `-${formatNative(month.platformFee, month.currency)}` : "—"}
                     </td>
 
-                    <td className="py-3.5 px-3 text-right font-mono font-bold text-[#1f1f1f]">
+                    <td className="py-3.5 px-3 text-right font-mono font-medium text-[#1f1f1f]">
                       {formatNative(month.netEarnings, month.currency)}
                     </td>
 
@@ -563,7 +563,7 @@ export function EarningsReportsManager({
             <FileTextIcon size={24} />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-lg font-bold text-[#1f1f1f]">
+            <h3 className="text-lg font-medium text-[#1f1f1f]">
               Annual Financial Documents & Accounting Exports
             </h3>
             <p className="mt-1 text-sm text-[#727272] leading-relaxed">

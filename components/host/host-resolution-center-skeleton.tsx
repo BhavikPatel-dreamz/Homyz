@@ -12,13 +12,13 @@ export function HostResolutionCenterSkeleton() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider">
+            <span className="text-xs font-medium text-amber-800 uppercase tracking-wider">
               {t("host_res_center_breadcrumb_ops", "Host Operations")}
             </span>
             <span className="text-zinc-300">/</span>
             <span className="text-xs sm:text-sm text-[#727272]">{t("host_res_center_title", "Resolution Center")}</span>
           </div>
-          <h1 className="mt-1.5 text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#1F1F1F]">
+          <h1 className="mt-1.5 text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-[#1F1F1F]">
             {t("host_res_center_title", "Resolution Center")}
           </h1>
           <p className="mt-1.5 text-sm sm:text-base text-[#727272] max-w-2xl leading-relaxed">
@@ -30,28 +30,28 @@ export function HostResolutionCenterSkeleton() {
       {/* 4 KPI Summary Cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <div className="rounded-[20px] border border-zinc-200 bg-white p-5 sm:p-6 shadow-xs">
-          <span className="text-xs uppercase font-bold tracking-wider text-[#727272]">
+          <span className="text-xs uppercase font-medium tracking-wider text-[#727272]">
             {t("host_res_center_kpi_total", "Total Disputes")}
           </span>
           <div className="mt-3 h-9 sm:h-10 w-20 rounded-xl bg-zinc-200 skeleton-shimmer" />
         </div>
 
         <div className="rounded-[20px] border border-amber-300 bg-amber-50/70 p-5 sm:p-6 shadow-xs">
-          <span className="text-xs uppercase font-bold tracking-wider text-amber-900">
+          <span className="text-xs uppercase font-medium tracking-wider text-amber-900">
             {t("host_res_center_kpi_response_req", "Response Required")}
           </span>
           <div className="mt-3 h-9 sm:h-10 w-16 rounded-xl bg-amber-200/80 skeleton-shimmer" />
         </div>
 
         <div className="rounded-[20px] border border-blue-200 bg-blue-50/70 p-5 sm:p-6 shadow-xs">
-          <span className="text-xs uppercase font-bold tracking-wider text-blue-900">
+          <span className="text-xs uppercase font-medium tracking-wider text-blue-900">
             {t("host_res_center_kpi_under_review", "Under Review")}
           </span>
           <div className="mt-3 h-9 sm:h-10 w-16 rounded-xl bg-blue-200/80 skeleton-shimmer" />
         </div>
 
         <div className="rounded-[20px] border border-emerald-200 bg-emerald-50/70 p-5 sm:p-6 shadow-xs">
-          <span className="text-xs uppercase font-bold tracking-wider text-emerald-900">
+          <span className="text-xs uppercase font-medium tracking-wider text-emerald-900">
             {t("host_res_center_kpi_resolved", "Resolved")}
           </span>
           <div className="mt-3 h-9 sm:h-10 w-16 rounded-xl bg-emerald-200/80 skeleton-shimmer" />

@@ -181,9 +181,9 @@ export function PayoutMethodDetailClient({
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-xl font-bold text-zinc-950">{method.bankName}</h2>
+              <h2 className="text-xl font-medium text-zinc-950">{method.bankName}</h2>
               {method.isDefault && (
-                <span className="rounded-full bg-zinc-900 px-2.5 py-0.5 text-xs font-semibold text-white">
+                <span className="rounded-full bg-zinc-900 px-2.5 py-0.5 text-xs font-medium text-white">
                   Default Method
                 </span>
               )}
@@ -212,11 +212,11 @@ export function PayoutMethodDetailClient({
             {!isEditing ? (
               <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 border-t border-zinc-100 pt-6">
                 <div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Account Holder</span>
+                  <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">Account Holder</span>
                   <p className="mt-1 font-medium text-zinc-900 text-sm">{method.accountHolderName}</p>
                 </div>
                 <div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Currency & Rail</span>
+                  <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">Currency & Rail</span>
                   <p className="mt-1 font-medium text-zinc-900 text-sm">
                     {method.type === "PAYPAL"
                       ? `${method.currency} · PayPal Payouts (SAMA Peg: 3.75 SAR/USD)`
@@ -224,7 +224,7 @@ export function PayoutMethodDetailClient({
                   </p>
                 </div>
                 <div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
                     {method.type === "PAYPAL" ? "Provider Identifier" : "Bank Code"}
                   </span>
                   <p className="mt-1 font-medium text-zinc-900 text-sm">
@@ -232,24 +232,24 @@ export function PayoutMethodDetailClient({
                   </p>
                 </div>
                 <div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Country</span>
+                  <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">Country</span>
                   <p className="mt-1 font-medium text-zinc-900 text-sm">{method.country || "Saudi Arabia (SA)"}</p>
                 </div>
                 {method.routingCode && (
                   <div className="sm:col-span-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Nickname / Routing Reference</span>
+                    <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">Nickname / Routing Reference</span>
                     <p className="mt-1 font-medium text-zinc-900 text-sm">{method.routingCode}</p>
                   </div>
                 )}
                 <div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Registered On</span>
+                  <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">Registered On</span>
                   <p className="mt-1 font-medium text-zinc-900 text-sm">
                     {new Date(method.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
                   </p>
                 </div>
                 {method.verifiedAt && (
                   <div>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Verified On</span>
+                    <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">Verified On</span>
                     <p className="mt-1 font-medium text-zinc-900 text-sm">
                       {new Date(method.verifiedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
                     </p>
@@ -259,7 +259,7 @@ export function PayoutMethodDetailClient({
             ) : (
               <form onSubmit={handleSaveEdits} className="mt-6 border-t border-zinc-100 pt-6 space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 mb-1">
+                  <label className="block text-xs font-medium uppercase tracking-wider text-zinc-600 mb-1">
                     Beneficiary Name *
                   </label>
                   <input
@@ -270,7 +270,7 @@ export function PayoutMethodDetailClient({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 mb-1">
+                  <label className="block text-xs font-medium uppercase tracking-wider text-zinc-600 mb-1">
                     Nickname / Reference Note
                   </label>
                   <input
@@ -285,7 +285,7 @@ export function PayoutMethodDetailClient({
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="rounded-full bg-zinc-950 px-5 py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                    className="rounded-full bg-zinc-950 px-5 py-2 text-xs font-medium text-white hover:bg-zinc-800 transition-colors disabled:opacity-50"
                   >
                     {isSaving ? "Saving..." : "Save Changes"}
                   </button>
@@ -296,7 +296,7 @@ export function PayoutMethodDetailClient({
                       setAccountHolderName(method.accountHolderName);
                       setRoutingCode(method.routingCode || "");
                     }}
-                    className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+                    className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -315,7 +315,7 @@ export function PayoutMethodDetailClient({
                   <AlertTriangleIcon size={20} className="text-amber-600 shrink-0 mt-0.5" />
                 )}
                 <div className="text-xs sm:text-sm text-zinc-700">
-                  <p className="font-semibold text-zinc-900">
+                  <p className="font-medium text-zinc-900">
                     {method.status === "VERIFIED"
                       ? "Verified for SARIE Disbursements"
                       : method.status === "REJECTED"
@@ -339,7 +339,7 @@ export function PayoutMethodDetailClient({
                 <button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
+                  className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-800 hover:bg-zinc-50 transition-colors"
                 >
                   Edit Beneficiary Name / Note
                 </button>
@@ -350,7 +350,7 @@ export function PayoutMethodDetailClient({
                   type="button"
                   onClick={handleSetDefault}
                   disabled={Boolean(actionLoading)}
-                  className="rounded-full bg-zinc-950 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                  className="rounded-full bg-zinc-950 px-4 py-2 text-xs font-medium text-white hover:bg-zinc-800 transition-colors disabled:opacity-50"
                 >
                   {actionLoading === "default" ? "Updating..." : "Set as Default Method"}
                 </button>
@@ -360,7 +360,7 @@ export function PayoutMethodDetailClient({
                 type="button"
                 onClick={() => setShowDeleteModal(true)}
                 disabled={Boolean(actionLoading)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition-colors disabled:opacity-50 ml-auto"
+                className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-medium text-rose-700 hover:bg-rose-50 transition-colors disabled:opacity-50 ml-auto"
               >
                 <TrashIcon size={14} />
                 <span>Remove Account</span>
@@ -374,7 +374,7 @@ export function PayoutMethodDetailClient({
       <div className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 text-xs text-zinc-600 flex items-start gap-3">
         <LockIcon size={18} className="text-zinc-500 shrink-0 mt-0.5" />
         <div>
-          <p className="font-semibold text-zinc-900">IBAN Immutability Compliance</p>
+          <p className="font-medium text-zinc-900">IBAN Immutability Compliance</p>
           <p className="mt-0.5">
             Under SAMA regulatory policies, IBAN account numbers cannot be directly modified once created. If your bank details change, please add a new payout method and designate it as your primary account.
           </p>
@@ -396,7 +396,7 @@ export function PayoutMethodDetailClient({
             <div className="flex size-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
               <TrashIcon size={22} />
             </div>
-            <h3 className="mt-4 text-lg font-bold text-zinc-950">
+            <h3 className="mt-4 text-lg font-medium text-zinc-950">
               Remove Payout Method?
             </h3>
             <p className="mt-2 text-xs sm:text-sm text-zinc-600 leading-relaxed">
@@ -412,7 +412,7 @@ export function PayoutMethodDetailClient({
               <button
                 type="button"
                 onClick={() => setShowDeleteModal(false)}
-                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
               >
                 Cancel
               </button>
@@ -420,7 +420,7 @@ export function PayoutMethodDetailClient({
                 type="button"
                 onClick={handleDelete}
                 disabled={Boolean(actionLoading)}
-                className="rounded-full bg-rose-600 px-5 py-2 text-xs font-semibold text-white hover:bg-rose-700 transition-colors disabled:opacity-50"
+                className="rounded-full bg-rose-600 px-5 py-2 text-xs font-medium text-white hover:bg-rose-700 transition-colors disabled:opacity-50"
               >
                 {actionLoading === "delete" ? "Removing..." : "Confirm Removal"}
               </button>

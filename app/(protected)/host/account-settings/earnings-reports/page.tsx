@@ -61,7 +61,7 @@ export default async function EarningsReportsSettingsPage({
             actions={
               <Link
                 href="/host/earnings/reports"
-                className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-4 py-2 text-xs sm:text-sm font-semibold text-white hover:bg-zinc-800 transition-colors shadow-xs"
+                className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-4 py-2 text-xs sm:text-sm font-medium text-white hover:bg-zinc-800 transition-colors shadow-xs"
               >
                 <span>Full Reports Hub</span>
                 <ExternalLinkIcon size={14} />

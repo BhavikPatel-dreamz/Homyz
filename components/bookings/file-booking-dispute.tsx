@@ -98,7 +98,7 @@ export function FileBookingDispute({ bookingId, variant = "guest" }: FileBooking
 
             {submitted ? (
               <div className="py-6">
-                <div className="inline-flex size-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-semibold mb-3">✓</div>
+                <div className="inline-flex size-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-medium mb-3">✓</div>
                 <p className="text-base font-medium text-emerald-800">{t("booking_dispute_submitted_title", "Your report has been submitted.")}</p>
                 <p className="mt-1 text-sm text-[#727272]">{t("booking_dispute_submitted_desc", "We will review the case and may contact you for more information.")}</p>
                 <button

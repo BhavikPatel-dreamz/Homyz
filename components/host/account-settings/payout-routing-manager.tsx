@@ -260,7 +260,7 @@ export function PayoutRoutingManager({
           <div className="flex-1">{errorMsg}</div>
           <button
             onClick={() => setErrorMsg(null)}
-            className="text-red-700 hover:text-red-950 text-xs font-semibold"
+            className="text-red-700 hover:text-red-950 text-xs font-medium"
           >
             Dismiss
           </button>
@@ -273,7 +273,7 @@ export function PayoutRoutingManager({
           <div className="flex-1">{successMsg}</div>
           <button
             onClick={() => setSuccessMsg(null)}
-            className="text-emerald-700 hover:text-emerald-950 text-xs font-semibold"
+            className="text-emerald-700 hover:text-emerald-950 text-xs font-medium"
           >
             Dismiss
           </button>
@@ -289,7 +289,7 @@ export function PayoutRoutingManager({
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg font-semibold text-zinc-950">Default Payout Destination</h2>
+                <h2 className="text-lg font-medium text-zinc-950">Default Payout Destination</h2>
                 <SettingsStatusBadge label="Account Default" variant="success" />
               </div>
               <p className="mt-1 text-sm text-zinc-600">
@@ -299,7 +299,7 @@ export function PayoutRoutingManager({
           </div>
           <Link
             href="/host/account-settings/payouts"
-            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors shrink-0 self-start"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-800 hover:bg-zinc-50 transition-colors shrink-0 self-start"
           >
             <span>Manage Methods</span>
             <ExternalLinkIcon size={14} />
@@ -310,7 +310,7 @@ export function PayoutRoutingManager({
           {defaultPayoutMethod ? (
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-zinc-950">
+                <p className="text-sm font-medium text-zinc-950">
                   {defaultPayoutMethod.bankName || "Commercial Bank"}
                 </p>
                 <p className="mt-0.5 text-xs text-zinc-600 font-mono">
@@ -321,7 +321,7 @@ export function PayoutRoutingManager({
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-full">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-full">
                   <CheckCircleIcon size={13} />
                   Verified & Active
                 </span>
@@ -334,7 +334,7 @@ export function PayoutRoutingManager({
                 <span>No verified default bank account set. </span>
                 <Link
                   href="/host/account-settings/payouts/add"
-                  className="font-semibold underline hover:text-amber-950"
+                  className="font-medium underline hover:text-amber-950"
                 >
                   Add a Saudi IBAN payout method
                 </Link>
@@ -352,7 +352,7 @@ export function PayoutRoutingManager({
               <div className="flex size-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-900">
                 <SplitIcon size={20} />
               </div>
-              <h2 className="text-lg font-semibold text-zinc-950">
+              <h2 className="text-lg font-medium text-zinc-950">
                 Listing Routing & Split Rules
               </h2>
             </div>
@@ -377,14 +377,14 @@ export function PayoutRoutingManager({
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2.5 flex-wrap">
-                        <h3 className="text-sm font-semibold text-zinc-950 truncate">
+                        <h3 className="text-sm font-medium text-zinc-950 truncate">
                           {listing.title}
                         </h3>
                         {listing.city && (
                           <span className="text-xs text-zinc-500">({listing.city})</span>
                         )}
                         {isCustom ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-900">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-900">
                             <SplitIcon size={12} />
                             {activeRules.length > 1
                               ? `Split (${activeRules.map((r) => `${r.allocationPercentage}%`).join(" / ")})`
@@ -407,19 +407,19 @@ export function PayoutRoutingManager({
                                 className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 text-xs"
                               >
                                 <div className="flex items-center justify-between">
-                                  <span className="font-semibold text-zinc-900 flex items-center gap-1">
+                                  <span className="font-medium text-zinc-900 flex items-center gap-1">
                                     {r.recipientName || "Recipient"}
                                     {r.isCoHost ? (
-                                      <span className="rounded bg-amber-100 px-1 py-0.2 text-[10px] font-semibold text-amber-900">
+                                      <span className="rounded bg-amber-100 px-1 py-0.2 text-[10px] font-medium text-amber-900">
                                         Co-Host
                                       </span>
                                     ) : (
-                                      <span className="rounded bg-zinc-200 px-1 py-0.2 text-[10px] font-semibold text-zinc-800">
+                                      <span className="rounded bg-zinc-200 px-1 py-0.2 text-[10px] font-medium text-zinc-800">
                                         Host
                                       </span>
                                     )}
                                   </span>
-                                  <span className="font-bold text-indigo-950">
+                                  <span className="font-medium text-indigo-950">
                                     {r.allocationPercentage}%
                                   </span>
                                 </div>
@@ -443,7 +443,7 @@ export function PayoutRoutingManager({
                     <div className="flex items-center gap-2 shrink-0 self-start">
                       <button
                         onClick={() => openConfigureDrawer(listing)}
-                        className="rounded-full border border-zinc-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors shadow-2xs"
+                        className="rounded-full border border-zinc-300 bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-800 hover:bg-zinc-50 transition-colors shadow-2xs"
                       >
                         {isCustom ? "Edit Routing" : "Configure Routing"}
                       </button>
@@ -451,7 +451,7 @@ export function PayoutRoutingManager({
                       {isCustom && (
                         <button
                           onClick={() => setRevertingListing(listing)}
-                          className="rounded-full border border-red-200 bg-red-50/50 px-3.5 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                          className="rounded-full border border-red-200 bg-red-50/50 px-3.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 transition-colors"
                         >
                           Revert
                         </button>
@@ -479,7 +479,7 @@ export function PayoutRoutingManager({
           >
             <div className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-4">
               <div>
-                <h3 className="text-lg font-semibold text-zinc-950">
+                <h3 className="text-lg font-medium text-zinc-950">
                   Configure Payout Routing
                 </h3>
                 <p className="mt-0.5 text-xs text-zinc-600">
@@ -501,7 +501,7 @@ export function PayoutRoutingManager({
             ) : (
               <div className="mt-6 space-y-6">
                 <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  <h4 className="text-xs font-medium uppercase tracking-wider text-zinc-500">
                     Recipients & Revenue Splits
                   </h4>
                   <p className="mt-0.5 text-xs text-zinc-600">
@@ -534,11 +534,11 @@ export function PayoutRoutingManager({
                           />
                           <div>
                             <div className="flex items-center gap-1.5">
-                              <span className="text-sm font-semibold text-zinc-950">
+                              <span className="text-sm font-medium text-zinc-950">
                                 {rec.name}
                               </span>
                               <span
-                                className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                                className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
                                   rec.role === "PRIMARY_HOST"
                                     ? "bg-zinc-200 text-zinc-800"
                                     : "bg-amber-100 text-amber-900"
@@ -562,9 +562,9 @@ export function PayoutRoutingManager({
                               onChange={(e) =>
                                 handlePercentageChange(rec.userId, parseInt(e.target.value) || 0)
                               }
-                              className="w-18 rounded-xl border border-zinc-300 px-2.5 py-1.5 text-right text-sm font-semibold text-zinc-950 focus:border-indigo-500 focus:outline-none"
+                              className="w-18 rounded-xl border border-zinc-300 px-2.5 py-1.5 text-right text-sm font-medium text-zinc-950 focus:border-indigo-500 focus:outline-none"
                             />
-                            <span className="text-xs font-semibold text-zinc-700">%</span>
+                            <span className="text-xs font-medium text-zinc-700">%</span>
                           </div>
                         )}
                       </div>
@@ -602,9 +602,9 @@ export function PayoutRoutingManager({
                 {/* Live Percentage Validation Bar */}
                 <div className="rounded-2xl border border-zinc-200 bg-white p-4">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-zinc-900">Total Allocation:</span>
+                    <span className="font-medium text-zinc-900">Total Allocation:</span>
                     <span
-                      className={`font-bold ${
+                      className={`font-medium ${
                         totalPercentage === 100
                           ? "text-emerald-700"
                           : totalPercentage < 100
@@ -651,14 +651,14 @@ export function PayoutRoutingManager({
                 <div className="flex items-center justify-end gap-3 border-t border-zinc-200 pt-4">
                   <button
                     onClick={closeConfigureDrawer}
-                    className="rounded-full px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors"
+                    className="rounded-full px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-100 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSaveRules}
                     disabled={!isValidAllocation || actionLoading === "SAVE"}
-                    className="rounded-full bg-zinc-950 px-5 py-2 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="rounded-full bg-zinc-950 px-5 py-2 text-xs font-medium text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {actionLoading === "SAVE" ? "Saving..." : "Save Routing Rule"}
                   </button>
@@ -681,7 +681,7 @@ export function PayoutRoutingManager({
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-zinc-100"
           >
-            <h3 className="text-base font-semibold text-zinc-950">
+            <h3 className="text-base font-medium text-zinc-950">
               Revert to Default Payout Destination?
             </h3>
             <p className="mt-2 text-xs sm:text-sm text-zinc-600 leading-relaxed">
@@ -691,14 +691,14 @@ export function PayoutRoutingManager({
             <div className="mt-6 flex items-center justify-end gap-3">
               <button
                 onClick={() => setRevertingListing(null)}
-                className="rounded-full px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors"
+                className="rounded-full px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-100 transition-colors"
               >
                 Keep Custom Rules
               </button>
               <button
                 onClick={handleRevertRules}
                 disabled={actionLoading === "REVERT"}
-                className="rounded-full bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+                className="rounded-full bg-red-600 px-4 py-2 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
               >
                 {actionLoading === "REVERT" ? "Reverting..." : "Yes, Revert to Default"}
               </button>

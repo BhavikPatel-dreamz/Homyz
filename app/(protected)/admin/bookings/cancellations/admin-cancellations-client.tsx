@@ -403,7 +403,7 @@ export function AdminCancellationsClient({
             type="button"
             onClick={exportCSV}
             disabled={cancellations.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all disabled:opacity-50"
           >
             <svg className="w-3.5 h-3.5 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -416,7 +416,7 @@ export function AdminCancellationsClient({
             type="button"
             onClick={() => fetchCancellations(pagination.page)}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-4 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-4 py-2 text-xs font-medium shadow-2xs transition-all disabled:opacity-50"
           >
             <svg
               className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
@@ -438,7 +438,7 @@ export function AdminCancellationsClient({
           <button
             type="button"
             onClick={() => fetchCancellations(1)}
-            className="font-semibold underline ml-2 hover:opacity-80"
+            className="font-medium underline ml-2 hover:opacity-80"
           >
             Retry
           </button>
@@ -458,7 +458,7 @@ export function AdminCancellationsClient({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Total Cancellations</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Total Cancellations</span>
             <span className="p-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -466,7 +466,7 @@ export function AdminCancellationsClient({
             </span>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-bold tracking-tight text-foreground font-mono">
+            <p className="text-2xl font-medium tracking-tight text-foreground font-mono">
               {summary.totalCancellations ?? 0}
             </p>
             <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">
@@ -486,13 +486,13 @@ export function AdminCancellationsClient({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Guest Initiated</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Guest Initiated</span>
             <span className="p-1.5 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-sm">
               👤
             </span>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-bold tracking-tight text-foreground font-mono">
+            <p className="text-2xl font-medium tracking-tight text-foreground font-mono">
               {summary.guestCancellations ?? 0}
             </p>
             <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">Cancelled by guests</p>
@@ -510,13 +510,13 @@ export function AdminCancellationsClient({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Host Initiated</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Host Initiated</span>
             <span className="p-1.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-sm">
               🏠
             </span>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-bold tracking-tight text-foreground font-mono">
+            <p className="text-2xl font-medium tracking-tight text-foreground font-mono">
               {summary.hostCancellations ?? 0}
             </p>
             <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">Confirmed stays cancelled by hosts</p>
@@ -534,13 +534,13 @@ export function AdminCancellationsClient({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Admin Initiated</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Admin Initiated</span>
             <span className="p-1.5 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-sm">
               🛡️
             </span>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-bold tracking-tight text-foreground font-mono">
+            <p className="text-2xl font-medium tracking-tight text-foreground font-mono">
               {summary.adminCancellations ?? 0}
             </p>
             <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">Administrative interventions</p>
@@ -558,13 +558,13 @@ export function AdminCancellationsClient({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">Needs Review</span>
+            <span className="text-xs font-medium text-rose-600 dark:text-rose-400">Needs Review</span>
             <span className="p-1.5 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 text-sm">
               ⚠️
             </span>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 font-mono">
+            <p className="text-2xl font-medium tracking-tight text-rose-600 dark:text-rose-400 font-mono">
               {summary.requiresAttention ?? 0}
             </p>
             <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">Pending refunds or payment issues</p>
@@ -587,9 +587,9 @@ export function AdminCancellationsClient({
               key={tab.key}
               type="button"
               onClick={() => handleTabChange(tab.key)}
-              className={`inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl transition-all whitespace-nowrap ${
+              className={`inline-flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-xl transition-all whitespace-nowrap ${
                 isActive
-                  ? "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-2xs font-bold"
+                  ? "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-2xs font-medium"
                   : "text-[var(--muted-foreground)] hover:text-foreground hover:bg-[var(--surface-secondary)]"
               }`}
             >
@@ -664,7 +664,7 @@ export function AdminCancellationsClient({
           <button
             type="button"
             onClick={() => setFilterDrawerOpen(true)}
-            className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all ${
+            className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-medium shadow-2xs transition-all ${
               activeDrawerFilterCount > 0
                 ? "border-[var(--accent)] bg-[var(--accent)]/10 text-foreground"
                 : "border-[var(--border)] bg-[var(--surface)] text-foreground hover:bg-[var(--surface-secondary)]"
@@ -675,7 +675,7 @@ export function AdminCancellationsClient({
             </svg>
             <span>Filters</span>
             {activeDrawerFilterCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] text-[10px] flex items-center justify-center font-bold">
+              <span className="w-4 h-4 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] text-[10px] flex items-center justify-center font-medium">
                 {activeDrawerFilterCount}
               </span>
             )}
@@ -710,7 +710,7 @@ export function AdminCancellationsClient({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h4 className="text-sm font-bold text-foreground">No cancellations found</h4>
+            <h4 className="text-sm font-medium text-foreground">No cancellations found</h4>
             <p className="text-xs text-[var(--muted-foreground)] mt-1 max-w-sm mx-auto">
               {activeDrawerFilterCount > 0 || searchInput || activeTab !== "all"
                 ? "No cancellation records match the current filter criteria."
@@ -720,7 +720,7 @@ export function AdminCancellationsClient({
               <button
                 type="button"
                 onClick={handleResetAllFilters}
-                className="mt-4 px-4 py-2 rounded-xl bg-[var(--surface-secondary)] hover:bg-[var(--surface)] text-foreground text-xs font-semibold border border-[var(--border)] transition-all"
+                className="mt-4 px-4 py-2 rounded-xl bg-[var(--surface-secondary)] hover:bg-[var(--surface)] text-foreground text-xs font-medium border border-[var(--border)] transition-all"
               >
                 Reset All Filters
               </button>
@@ -729,7 +729,7 @@ export function AdminCancellationsClient({
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="border-b border-[var(--border)] bg-[var(--surface-secondary)]/50 text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+              <thead className="border-b border-[var(--border)] bg-[var(--surface-secondary)]/50 text-[11px] font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
                 <tr>
                   <th className="px-3.5 py-3.5">Booking ID</th>
                   <th className="px-3.5 py-3.5">Property</th>
@@ -751,25 +751,25 @@ export function AdminCancellationsClient({
                   const initiator = item.cancellation.cancelledBy || "UNKNOWN";
 
                   let initiatorBadge = (
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                       ⏳ Unknown / Historical
                     </span>
                   );
                   if (initiator === "GUEST") {
                     initiatorBadge = (
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300">
                         👤 Guest
                       </span>
                     );
                   } else if (initiator === "HOST") {
                     initiatorBadge = (
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
                         🏠 Host
                       </span>
                     );
                   } else if (initiator === "ADMIN") {
                     initiatorBadge = (
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300">
                         🛡️ Admin
                       </span>
                     );
@@ -806,9 +806,9 @@ export function AdminCancellationsClient({
                     >
                       {/* Booking ID */}
                       <td className="px-3.5 py-3.5 font-mono text-[11px] text-foreground whitespace-nowrap">
-                        <span className="font-semibold">{item.id.slice(0, 10)}</span>
+                        <span className="font-medium">{item.id.slice(0, 10)}</span>
                         {item.requiresAttention && (
-                          <span className="ml-1.5 text-[9px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 font-bold">
+                          <span className="ml-1.5 text-[9px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 font-medium">
                             Alert
                           </span>
                         )}
@@ -829,7 +829,7 @@ export function AdminCancellationsClient({
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-foreground truncate">{item.listing.title}</p>
+                            <p className="font-medium text-foreground truncate">{item.listing.title}</p>
                             <p className="text-[10px] text-[var(--muted-foreground)] truncate">
                               {item.listing.city || item.listing.country || "Location N/A"}
                             </p>
@@ -839,13 +839,13 @@ export function AdminCancellationsClient({
 
                       {/* Guest */}
                       <td className="px-3.5 py-3.5 min-w-[130px]">
-                        <p className="font-semibold text-foreground truncate">{item.user.name || "Guest"}</p>
+                        <p className="font-medium text-foreground truncate">{item.user.name || "Guest"}</p>
                         <p className="text-[10px] text-[var(--muted-foreground)] truncate">{item.user.email || "No email"}</p>
                       </td>
 
                       {/* Host */}
                       <td className="px-3.5 py-3.5 min-w-[130px]">
-                        <p className="font-semibold text-foreground truncate">{item.listing.host.name || "Host"}</p>
+                        <p className="font-medium text-foreground truncate">{item.listing.host.name || "Host"}</p>
                         <p className="text-[10px] text-[var(--muted-foreground)] truncate">{item.listing.host.email || "No email"}</p>
                       </td>
 
@@ -878,21 +878,21 @@ export function AdminCancellationsClient({
 
                       {/* Booking Status */}
                       <td className="px-3.5 py-3.5 whitespace-nowrap">
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
                           {item.status}
                         </span>
                       </td>
 
                       {/* Payment Status */}
                       <td className="px-3.5 py-3.5 whitespace-nowrap">
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${payBadgeClass}`}>
+                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${payBadgeClass}`}>
                           {item.paymentStatus}
                         </span>
                       </td>
 
                       {/* Refund Status */}
                       <td className="px-3.5 py-3.5 whitespace-nowrap">
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${refBadgeClass}`}>
+                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${refBadgeClass}`}>
                           {item.refundStatus}
                         </span>
                       </td>
@@ -902,7 +902,7 @@ export function AdminCancellationsClient({
                         <button
                           type="button"
                           onClick={() => setSelectedItem(item)}
-                          className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground text-xs font-semibold shadow-2xs transition-all"
+                          className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground text-xs font-medium shadow-2xs transition-all"
                         >
                           View Details
                         </button>
@@ -927,18 +927,18 @@ export function AdminCancellationsClient({
               type="button"
               onClick={() => fetchCancellations(pagination.page - 1)}
               disabled={pagination.page <= 1 || loading}
-              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-semibold"
+              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-medium"
             >
               ← Previous
             </button>
-            <span className="font-semibold text-foreground px-1">
+            <span className="font-medium text-foreground px-1">
               Page {pagination.page} of {pagination.totalPages}
             </span>
             <button
               type="button"
               onClick={() => fetchCancellations(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages || loading}
-              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-semibold"
+              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-medium"
             >
               Next →
             </button>
@@ -952,7 +952,7 @@ export function AdminCancellationsClient({
           <div className="relative w-full max-w-sm bg-[var(--surface)] h-full p-6 shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-200 overflow-y-auto">
             <div>
               <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
-                <h3 className="text-base font-bold text-foreground">Filter Cancellations</h3>
+                <h3 className="text-base font-medium text-foreground">Filter Cancellations</h3>
                 <button
                   type="button"
                   onClick={() => setFilterDrawerOpen(false)}
@@ -965,7 +965,7 @@ export function AdminCancellationsClient({
               <div className="mt-5 space-y-4 text-xs">
                 {/* Cancellation Date Preset */}
                 <div>
-                  <label className="font-semibold text-foreground block mb-1.5">
+                  <label className="font-medium text-foreground block mb-1.5">
                     Cancellation Date Filter
                   </label>
                   <select
@@ -985,7 +985,7 @@ export function AdminCancellationsClient({
                 {/* Custom Cancellation Date Range */}
                 {datePreset === "CUSTOM" && (
                   <div>
-                    <label className="font-semibold text-foreground block mb-1.5">
+                    <label className="font-medium text-foreground block mb-1.5">
                       Custom Cancellation Date Range
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -1007,7 +1007,7 @@ export function AdminCancellationsClient({
 
                 {/* Cancellation Policy Filter */}
                 <div>
-                  <label className="font-semibold text-foreground block mb-1.5">
+                  <label className="font-medium text-foreground block mb-1.5">
                     Cancellation Policy
                   </label>
                   <select
@@ -1025,7 +1025,7 @@ export function AdminCancellationsClient({
 
                 {/* Stay Check-In Range */}
                 <div>
-                  <label className="font-semibold text-foreground block mb-1.5">
+                  <label className="font-medium text-foreground block mb-1.5">
                     Original Stay Check-In Range
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -1047,7 +1047,7 @@ export function AdminCancellationsClient({
                 {/* City and Country Filters */}
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="font-semibold text-foreground block mb-1.5">City</label>
+                    <label className="font-medium text-foreground block mb-1.5">City</label>
                     <input
                       type="text"
                       placeholder="e.g. Riyadh"
@@ -1057,7 +1057,7 @@ export function AdminCancellationsClient({
                     />
                   </div>
                   <div>
-                    <label className="font-semibold text-foreground block mb-1.5">Country</label>
+                    <label className="font-medium text-foreground block mb-1.5">Country</label>
                     <input
                       type="text"
                       placeholder="e.g. Saudi Arabia"
@@ -1070,7 +1070,7 @@ export function AdminCancellationsClient({
 
                 {/* Payment Status Filter */}
                 <div>
-                  <label className="font-semibold text-foreground block mb-1.5">Payment Status</label>
+                  <label className="font-medium text-foreground block mb-1.5">Payment Status</label>
                   <select
                     value={filterPaymentStatus}
                     onChange={(e) => setFilterPaymentStatus(e.target.value)}
@@ -1089,7 +1089,7 @@ export function AdminCancellationsClient({
 
                 {/* Refund Status Filter */}
                 <div>
-                  <label className="font-semibold text-foreground block mb-1.5">Refund Status</label>
+                  <label className="font-medium text-foreground block mb-1.5">Refund Status</label>
                   <select
                     value={filterRefundStatus}
                     onChange={(e) => setFilterRefundStatus(e.target.value)}
@@ -1106,7 +1106,7 @@ export function AdminCancellationsClient({
 
                 {/* Sort By Field */}
                 <div>
-                  <label className="font-semibold text-foreground block mb-1.5">Sort By</label>
+                  <label className="font-medium text-foreground block mb-1.5">Sort By</label>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
@@ -1120,7 +1120,7 @@ export function AdminCancellationsClient({
 
                 {/* Sort Direction */}
                 <div>
-                  <label className="font-semibold text-foreground block mb-1.5">Sort Direction</label>
+                  <label className="font-medium text-foreground block mb-1.5">Sort Direction</label>
                   <select
                     value={sortOrder}
                     onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
@@ -1137,7 +1137,7 @@ export function AdminCancellationsClient({
               <button
                 type="button"
                 onClick={handleResetAllFilters}
-                className="px-3.5 py-2 rounded-xl border border-[var(--border)] text-foreground text-xs font-semibold hover:bg-[var(--surface-secondary)]"
+                className="px-3.5 py-2 rounded-xl border border-[var(--border)] text-foreground text-xs font-medium hover:bg-[var(--surface-secondary)]"
               >
                 Reset All
               </button>
@@ -1147,7 +1147,7 @@ export function AdminCancellationsClient({
                   setFilterDrawerOpen(false);
                   fetchCancellations(1);
                 }}
-                className="px-4 py-2 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] text-xs font-semibold shadow-2xs"
+                className="px-4 py-2 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] text-xs font-medium shadow-2xs"
               >
                 Apply Filters
               </button>
@@ -1164,14 +1164,14 @@ export function AdminCancellationsClient({
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+                  <span className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
                     Cancelled
                   </span>
                   <span className="text-xs font-mono text-[var(--muted-foreground)]">
                     Ref: {selectedItem.id}
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-foreground mt-1">
+                <h3 className="text-lg font-medium text-foreground mt-1">
                   Cancellation Audit Record
                 </h3>
               </div>
@@ -1190,8 +1190,8 @@ export function AdminCancellationsClient({
             {/* Cancellation Details Banner */}
             <div className="mt-4 p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/40 text-xs space-y-2">
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-[var(--muted-foreground)]">Canceled By:</span>
-                <span className="font-bold text-foreground">
+                <span className="font-medium text-[var(--muted-foreground)]">Canceled By:</span>
+                <span className="font-medium text-foreground">
                   {selectedItem.cancellation.cancelledBy === "ADMIN"
                     ? `Administrator (${selectedItem.cancellation.adminEmail || "Admin"})`
                     : selectedItem.cancellation.cancelledBy === "GUEST"
@@ -1202,20 +1202,20 @@ export function AdminCancellationsClient({
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-[var(--muted-foreground)]">Canceled Timestamp:</span>
+                <span className="font-medium text-[var(--muted-foreground)]">Canceled Timestamp:</span>
                 <span className="font-mono text-foreground">
                   {selectedItem.cancellation.cancelledAt ? formatDateTime(selectedItem.cancellation.cancelledAt) : "Not recorded"}
                 </span>
               </div>
               <div>
-                <span className="font-semibold text-[var(--muted-foreground)] block mb-1">Cancellation Reason:</span>
+                <span className="font-medium text-[var(--muted-foreground)] block mb-1">Cancellation Reason:</span>
                 <p className="p-2.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] font-medium text-foreground">
                   {selectedItem.cancellation.reason || "No explicit reason was given upon cancellation."}
                 </p>
               </div>
               {selectedItem.cancellation.notes && (
                 <div>
-                  <span className="font-semibold text-[var(--muted-foreground)] block mb-1">Administrative Notes:</span>
+                  <span className="font-medium text-[var(--muted-foreground)] block mb-1">Administrative Notes:</span>
                   <p className="p-2.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--muted-foreground)]">
                     {selectedItem.cancellation.notes}
                   </p>
@@ -1226,19 +1226,19 @@ export function AdminCancellationsClient({
             {/* Property & Parties */}
             <div className="mt-4 grid grid-cols-2 gap-4 border-b border-[var(--border)] pb-4 text-xs">
               <div>
-                <span className="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+                <span className="text-[11px] font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
                   Property
                 </span>
-                <p className="font-bold text-foreground mt-1 truncate">{selectedItem.listing.title}</p>
+                <p className="font-medium text-foreground mt-1 truncate">{selectedItem.listing.title}</p>
                 <p className="text-[var(--muted-foreground)]">{selectedItem.listing.city || selectedItem.listing.country || "Location N/A"}</p>
                 <p className="text-[var(--muted-foreground)] mt-0.5">Host: {selectedItem.listing.host.name || "Unknown"}</p>
               </div>
 
               <div>
-                <span className="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+                <span className="text-[11px] font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
                   Guest
                 </span>
-                <p className="font-bold text-foreground mt-1">{selectedItem.user.name || "Guest"}</p>
+                <p className="font-medium text-foreground mt-1">{selectedItem.user.name || "Guest"}</p>
                 <p className="text-[var(--muted-foreground)]">{selectedItem.user.email || "No email"}</p>
                 {selectedItem.user.phone && <p className="text-[var(--muted-foreground)]">{selectedItem.user.phone}</p>}
               </div>
@@ -1248,15 +1248,15 @@ export function AdminCancellationsClient({
             <div className="mt-4 grid grid-cols-3 gap-3 border-b border-[var(--border)] pb-4 text-xs">
               <div className="rounded-xl bg-[var(--surface-secondary)]/50 p-2.5">
                 <span className="text-[10px] text-[var(--muted-foreground)] block">Check-In</span>
-                <span className="font-bold text-foreground font-mono">{formatDate(selectedItem.startDate)}</span>
+                <span className="font-medium text-foreground font-mono">{formatDate(selectedItem.startDate)}</span>
               </div>
               <div className="rounded-xl bg-[var(--surface-secondary)]/50 p-2.5">
                 <span className="text-[10px] text-[var(--muted-foreground)] block">Check-Out</span>
-                <span className="font-bold text-foreground font-mono">{formatDate(selectedItem.endDate)}</span>
+                <span className="font-medium text-foreground font-mono">{formatDate(selectedItem.endDate)}</span>
               </div>
               <div className="rounded-xl bg-[var(--surface-secondary)]/50 p-2.5">
                 <span className="text-[10px] text-[var(--muted-foreground)] block">Reservation Policy</span>
-                <span className="font-bold text-foreground">{selectedItem.cancellationPolicy || "Flexible"}</span>
+                <span className="font-medium text-foreground">{selectedItem.cancellationPolicy || "Flexible"}</span>
               </div>
             </div>
 
@@ -1272,7 +1272,7 @@ export function AdminCancellationsClient({
               {selectedItem.cancellation.guestRefundAmount !== null && (
                 <div className="text-right">
                   <span className="text-[11px] text-[var(--muted-foreground)]">Calculated Refund</span>
-                  <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                  <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 font-mono">
                     {formatPrice(selectedItem.cancellation.guestRefundAmount || 0, selectedItem.currency)}
                   </p>
                 </div>
@@ -1282,7 +1282,7 @@ export function AdminCancellationsClient({
             {/* Payment & Refund Records */}
             {selectedItem.payments && selectedItem.payments.length > 0 && (
               <div className="mt-4 text-xs">
-                <span className="font-semibold text-foreground block mb-2">Payment Records</span>
+                <span className="font-medium text-foreground block mb-2">Payment Records</span>
                 <div className="space-y-1.5">
                   {selectedItem.payments.map((p) => (
                     <div
@@ -1292,7 +1292,7 @@ export function AdminCancellationsClient({
                       <span>
                         {p.status} ({p.provider || "GATEWAY"})
                       </span>
-                      <span className="font-bold text-foreground">
+                      <span className="font-medium text-foreground">
                         {formatPrice(p.amount, selectedItem.currency)}
                       </span>
                     </div>
@@ -1303,7 +1303,7 @@ export function AdminCancellationsClient({
 
             {selectedItem.refunds && selectedItem.refunds.length > 0 && (
               <div className="mt-4 text-xs">
-                <span className="font-semibold text-foreground block mb-2">Refund Records</span>
+                <span className="font-medium text-foreground block mb-2">Refund Records</span>
                 <div className="space-y-1.5">
                   {selectedItem.refunds.map((r) => (
                     <div
@@ -1313,7 +1313,7 @@ export function AdminCancellationsClient({
                       <span>
                         {r.status} {r.reason ? `• ${r.reason}` : ""}
                       </span>
-                      <span className="font-bold text-foreground">
+                      <span className="font-medium text-foreground">
                         {formatPrice(r.amount, selectedItem.currency)}
                       </span>
                     </div>
@@ -1327,13 +1327,13 @@ export function AdminCancellationsClient({
               <button
                 type="button"
                 onClick={() => setSelectedItem(null)}
-                className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-foreground text-xs font-semibold hover:bg-[var(--surface-secondary)] transition-all"
+                className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-foreground text-xs font-medium hover:bg-[var(--surface-secondary)] transition-all"
               >
                 Close
               </button>
               <Link
                 href={`/admin/bookings/all?search=${encodeURIComponent(selectedItem.id)}`}
-                className="px-4 py-2.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] text-xs font-semibold shadow-2xs transition-all"
+                className="px-4 py-2.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] text-xs font-medium shadow-2xs transition-all"
               >
                 View Full Booking
               </Link>

@@ -154,7 +154,7 @@ export const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
 
           {currencyPosition === "suffix" && (
             <span
-              className={`font-bold text-zinc-500 dark:text-zinc-400 select-none shrink-0 ${currencyBadgeSize}`}
+              className={`font-medium text-zinc-500 dark:text-zinc-400 select-none shrink-0 ${currencyBadgeSize}`}
               aria-hidden="true"
             >
               {normalizedCurrency}

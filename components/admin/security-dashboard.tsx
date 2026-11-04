@@ -37,7 +37,7 @@ export function SecurityDashboard({
             <span>24h Logins</span>
             <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20" />
           </div>
-          <p className="mt-3 text-3xl font-semibold text-muted-foreground">
+          <p className="mt-3 text-3xl font-medium text-muted-foreground">
             {stats.successfulLogins24h}
           </p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">
@@ -55,7 +55,7 @@ export function SecurityDashboard({
               }`}
             />
           </div>
-          <p className="mt-3 text-3xl font-semibold text-muted-foreground">
+          <p className="mt-3 text-3xl font-medium text-muted-foreground">
             {stats.failedLogins24h}
           </p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">
@@ -69,7 +69,7 @@ export function SecurityDashboard({
             <span>Privilege Changes (7d)</span>
             <span className="h-2.5 w-2.5 rounded-full bg-blue-500 ring-4 ring-blue-500/20" />
           </div>
-          <p className="mt-3 text-3xl font-semibold text-muted-foreground">
+          <p className="mt-3 text-3xl font-medium text-muted-foreground">
             {stats.privilegeChanges7d}
           </p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">
@@ -83,7 +83,7 @@ export function SecurityDashboard({
             <span>Active Sessions</span>
             <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20" />
           </div>
-          <p className="mt-3 text-3xl font-semibold text-muted-foreground">
+          <p className="mt-3 text-3xl font-medium text-muted-foreground">
             {stats.activeSessionsCount}
           </p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">
@@ -107,10 +107,10 @@ export function SecurityDashboard({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="font-semibold text-muted-foreground">
+              <span className="font-medium text-muted-foreground">
                 Brute-Force & Rate Limiting
               </span>
-              <span className="text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 px-2.5 py-0.5 rounded-full text-[10px] font-semibold">
+              <span className="text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 px-2.5 py-0.5 rounded-full text-[10px] font-medium">
                 Active
               </span>
             </div>
@@ -121,10 +121,10 @@ export function SecurityDashboard({
 
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="font-semibold text-muted-foreground">
+              <span className="font-medium text-muted-foreground">
                 Password Complexity
               </span>
-              <span className="text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 px-2.5 py-0.5 rounded-full text-[10px] font-semibold">
+              <span className="text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 px-2.5 py-0.5 rounded-full text-[10px] font-medium">
                 Enforced
               </span>
             </div>
@@ -135,10 +135,10 @@ export function SecurityDashboard({
 
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="font-semibold text-muted-foreground">
+              <span className="font-medium text-muted-foreground">
                 Privilege Escalation Protection
               </span>
-              <span className="text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 px-2.5 py-0.5 rounded-full text-[10px] font-semibold">
+              <span className="text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 px-2.5 py-0.5 rounded-full text-[10px] font-medium">
                 Enforced
               </span>
             </div>
@@ -149,10 +149,10 @@ export function SecurityDashboard({
 
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="font-semibold text-muted-foreground">
+              <span className="font-medium text-muted-foreground">
                 Session Revocation on State Change
               </span>
-              <span className="text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 px-2.5 py-0.5 rounded-full text-[10px] font-semibold">
+              <span className="text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 px-2.5 py-0.5 rounded-full text-[10px] font-medium">
                 Active
               </span>
             </div>
@@ -167,14 +167,14 @@ export function SecurityDashboard({
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <div className="p-4 sm:p-5 border-b border-[var(--border-subtle)] flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-muted-foreground">
+            <h2 className="text-sm font-medium text-muted-foreground">
               Authentication Failures & Security Alerts
             </h2>
             <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
               Live audit stream of failed authentication attempts and suspicious security transactions.
             </p>
           </div>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-950 dark:bg-amber-500/20 dark:text-amber-300">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-amber-100 text-amber-950 dark:bg-amber-500/20 dark:text-amber-300">
             <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
             Live Monitor
           </span>
@@ -193,7 +193,7 @@ export function SecurityDashboard({
               >
                 <div className="flex items-center gap-3">
                   <span className="h-2 w-2 rounded-full bg-rose-500 shrink-0" />
-                  <span className="font-semibold text-xs text-muted-foreground">
+                  <span className="font-medium text-xs text-muted-foreground">
                     {event.action}
                   </span>
                   <span className="text-xs text-[var(--muted-foreground)]">

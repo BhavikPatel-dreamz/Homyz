@@ -284,27 +284,27 @@ export function AdminDisputesClient({
         <div className="flex flex-wrap items-center gap-2.5">
           <Link
             href="/admin/bookings/refunds"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>Refunds</span>
           </Link>
           <Link
             href="/admin/bookings/payments"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>Payments</span>
           </Link>
           <button
             type="button"
             onClick={() => setCreateModalOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>+ File New Case</span>
           </button>
           <button
             type="button"
             onClick={clearFilters}
-            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)]"
+            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)]"
           >
             Clear filters
           </button>
@@ -312,7 +312,7 @@ export function AdminDisputesClient({
             type="button"
             onClick={exportCSV}
             disabled={disputes.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all disabled:opacity-50"
           >
             <span>Export CSV</span>
           </button>
@@ -322,66 +322,66 @@ export function AdminDisputesClient({
       {/* 12.2 — 8 KPI Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Total Cases
           </p>
-          <p className="text-lg font-bold text-foreground mt-1">{summary.totalCases}</p>
+          <p className="text-lg font-medium text-foreground mt-1">{summary.totalCases}</p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">All time</p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             New Cases
           </p>
-          <p className="text-lg font-bold text-amber-600 mt-1">{summary.newCases}</p>
+          <p className="text-lg font-medium text-amber-600 mt-1">{summary.newCases}</p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">Unreviewed</p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Open Cases
           </p>
-          <p className="text-lg font-bold text-sky-600 mt-1">{summary.openCases}</p>
+          <p className="text-lg font-medium text-sky-600 mt-1">{summary.openCases}</p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">Active</p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Investigating
           </p>
-          <p className="text-lg font-bold text-blue-600 mt-1">{summary.underInvestigationCount}</p>
+          <p className="text-lg font-medium text-blue-600 mt-1">{summary.underInvestigationCount}</p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">Assigned</p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Awaiting Info
           </p>
-          <p className="text-lg font-bold text-purple-600 mt-1">{summary.awaitingInfoCount}</p>
+          <p className="text-lg font-medium text-purple-600 mt-1">{summary.awaitingInfoCount}</p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">Party pending</p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Resolved
           </p>
-          <p className="text-lg font-bold text-emerald-600 mt-1">{summary.resolvedCases}</p>
+          <p className="text-lg font-medium text-emerald-600 mt-1">{summary.resolvedCases}</p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">Settled</p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Closed
           </p>
-          <p className="text-lg font-bold text-zinc-600 mt-1">{summary.closedCases}</p>
+          <p className="text-lg font-medium text-zinc-600 mt-1">{summary.closedCases}</p>
           <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">Completed</p>
         </div>
 
         <div className="rounded-xl border border-rose-200 bg-rose-50/50 dark:bg-rose-950/20 p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-rose-700 dark:text-rose-400 uppercase tracking-wider">
+          <p className="text-2xs font-medium text-rose-700 dark:text-rose-400 uppercase tracking-wider">
             Attention
           </p>
-          <p className="text-lg font-bold text-rose-700 dark:text-rose-300 mt-1">{summary.attentionCases}</p>
+          <p className="text-lg font-medium text-rose-700 dark:text-rose-300 mt-1">{summary.attentionCases}</p>
           <p className="text-2xs text-rose-600/80 mt-0.5">Critical / Stale</p>
         </div>
       </div>
@@ -394,7 +394,7 @@ export function AdminDisputesClient({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all shrink-0 ${
                 isActive
                   ? "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-2xs"
                   : "text-[var(--muted-foreground)] hover:text-foreground hover:bg-[var(--surface-secondary)]"
@@ -444,7 +444,7 @@ export function AdminDisputesClient({
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-foreground"
+            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-medium text-foreground"
           >
             <option value="ALL">All Categories</option>
             <option value="CLEANLINESS">Cleanliness</option>
@@ -482,7 +482,7 @@ export function AdminDisputesClient({
           <select
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-foreground"
+            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-medium text-foreground"
           >
             <option value="ALL">All Priorities</option>
             <option value="CRITICAL">Critical</option>
@@ -495,7 +495,7 @@ export function AdminDisputesClient({
             type="button"
             onClick={() => fetchDisputes(pagination.page)}
             disabled={loading}
-            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50"
+            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50"
           >
             Refresh
           </button>
@@ -506,7 +506,7 @@ export function AdminDisputesClient({
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[var(--surface-secondary)]/50 text-[var(--muted-foreground)] font-semibold border-b border-[var(--border)]">
+            <thead className="bg-[var(--surface-secondary)]/50 text-[var(--muted-foreground)] font-medium border-b border-[var(--border)]">
               <tr>
                 <th className="py-3 px-4">Case Reference</th>
                 <th className="py-3 px-4">Booking</th>
@@ -538,7 +538,7 @@ export function AdminDisputesClient({
               ) : (
                 disputes.map((d) => (
                   <tr key={d.id} className="hover:bg-[var(--surface-secondary)]/40 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-semibold text-foreground">
+                    <td className="py-3.5 px-4 font-mono font-medium text-foreground">
                       <Link href={`/admin/bookings/disputes/${d.id}`} className="hover:underline">
                         {d.caseReference}
                       </Link>
@@ -553,7 +553,7 @@ export function AdminDisputesClient({
                       )}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="font-semibold text-foreground block">
+                      <span className="font-medium text-foreground block">
                         {d.category.replace(/_/g, " ")}
                       </span>
                     </td>
@@ -561,21 +561,21 @@ export function AdminDisputesClient({
                       {d.listing?.title || "Property"}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="font-semibold text-foreground block truncate">
+                      <span className="font-medium text-foreground block truncate">
                         {d.reportedBy?.name || "User"}
                       </span>
-                      <span className="text-3xs text-[var(--muted-foreground)] block uppercase font-bold">
+                      <span className="text-3xs text-[var(--muted-foreground)] block uppercase font-medium">
                         {d.reporterRole}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="font-semibold text-foreground block truncate max-w-32">
+                      <span className="font-medium text-foreground block truncate max-w-32">
                         {d.listing?.host?.name || "—"}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-2xs font-bold uppercase ${
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-2xs font-medium uppercase ${
                           d.severity === "CRITICAL"
                             ? "bg-rose-500/10 text-rose-700 border border-rose-500/20"
                             : d.severity === "HIGH"
@@ -588,7 +588,7 @@ export function AdminDisputesClient({
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-semibold uppercase ${
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-medium uppercase ${
                           d.status === "RESOLVED"
                             ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
                             : d.status === "PENDING"
@@ -611,7 +611,7 @@ export function AdminDisputesClient({
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <Link
                         href={`/admin/bookings/disputes/${d.id}`}
-                        className="px-2.5 py-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-xs font-semibold text-foreground transition-all"
+                        className="px-2.5 py-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-xs font-medium text-foreground transition-all"
                       >
                         View Case
                       </Link>
@@ -647,14 +647,14 @@ export function AdminDisputesClient({
             <button
               onClick={() => fetchDisputes(pagination.page - 1)}
               disabled={pagination.page <= 1 || loading}
-              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-semibold"
+              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-medium"
             >
               ← Prev
             </button>
             <button
               onClick={() => fetchDisputes(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages || loading}
-              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-semibold"
+              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-medium"
             >
               Next →
             </button>
@@ -667,10 +667,10 @@ export function AdminDisputesClient({
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-bold text-foreground">File Dispute / Complaint</h3>
+              <h3 className="text-base font-medium text-foreground">File Dispute / Complaint</h3>
               <button
                 onClick={() => setCreateModalOpen(false)}
-                className="text-[var(--muted-foreground)] hover:text-foreground text-sm font-bold"
+                className="text-[var(--muted-foreground)] hover:text-foreground text-sm font-medium"
               >
                 ✕
               </button>
@@ -684,7 +684,7 @@ export function AdminDisputesClient({
 
             <form onSubmit={handleCreateDispute} className="space-y-3.5 text-xs">
               <div>
-                <label className="block font-semibold text-foreground mb-1">
+                <label className="block font-medium text-foreground mb-1">
                   Booking ID <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -699,7 +699,7 @@ export function AdminDisputesClient({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-foreground mb-1">Category</label>
+                  <label className="block font-medium text-foreground mb-1">Category</label>
                   <select
                     value={createCategory}
                     onChange={(e) => setCreateCategory(e.target.value)}
@@ -715,7 +715,7 @@ export function AdminDisputesClient({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-foreground mb-1">Priority</label>
+                  <label className="block font-medium text-foreground mb-1">Priority</label>
                   <select
                     value={createSeverity}
                     onChange={(e) => setCreateSeverity(e.target.value)}
@@ -730,7 +730,7 @@ export function AdminDisputesClient({
               </div>
 
               <div>
-                <label className="block font-semibold text-foreground mb-1">
+                <label className="block font-medium text-foreground mb-1">
                   Complaint Description <span className="text-rose-500">*</span>
                 </label>
                 <textarea
@@ -747,14 +747,14 @@ export function AdminDisputesClient({
                 <button
                   type="button"
                   onClick={() => setCreateModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)]"
+                  className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={createSubmitting}
-                  className="px-4 py-2 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-semibold disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-medium disabled:opacity-50"
                 >
                   {createSubmitting ? "Submitting..." : "Submit Case"}
                 </button>

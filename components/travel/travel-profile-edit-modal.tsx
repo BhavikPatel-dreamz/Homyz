@@ -128,7 +128,7 @@ export function TravelProfileEditModal({
       <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
           <div>
-            <h3 className="text-lg font-semibold text-zinc-900 tracking-tight">
+            <h3 className="text-lg font-medium text-zinc-900 tracking-tight">
               Edit Travel Profile
             </h3>
             <p className="text-xs text-zinc-500 mt-0.5">
@@ -151,7 +151,7 @@ export function TravelProfileEditModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-zinc-50 rounded-2xl border border-zinc-200">
             {/* Avatar Photo */}
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
+              <label className="block text-xs font-medium text-zinc-700 mb-1.5">
                 Profile Photo
               </label>
               <div className="flex items-center gap-3">
@@ -177,7 +177,7 @@ export function TravelProfileEditModal({
 
             {/* Cover Banner */}
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
+              <label className="block text-xs font-medium text-zinc-700 mb-1.5">
                 Cover Banner
               </label>
               <div className="flex items-center gap-3">
@@ -295,7 +295,7 @@ export function TravelProfileEditModal({
                 onClick={() => setVisibility("PUBLIC")}
                 className={`p-2.5 rounded-xl border text-left transition cursor-pointer ${
                   visibility === "PUBLIC"
-                    ? "border-amber-400 bg-amber-50/50 font-semibold text-zinc-900"
+                    ? "border-amber-400 bg-amber-50/50 font-medium text-zinc-900"
                     : "border-zinc-200 bg-zinc-50/50 text-zinc-600 hover:bg-zinc-100"
                 }`}
               >
@@ -313,7 +313,7 @@ export function TravelProfileEditModal({
                 onClick={() => setVisibility("PRIVATE")}
                 className={`p-2.5 rounded-xl border text-left transition cursor-pointer ${
                   visibility === "PRIVATE"
-                    ? "border-amber-400 bg-amber-50/50 font-semibold text-zinc-900"
+                    ? "border-amber-400 bg-amber-50/50 font-medium text-zinc-900"
                     : "border-zinc-200 bg-zinc-50/50 text-zinc-600 hover:bg-zinc-100"
                 }`}
               >
@@ -340,7 +340,7 @@ export function TravelProfileEditModal({
             <button
               type="submit"
               disabled={isSaving || Boolean(handleError)}
-              className="bg-[#FCDF9C] hover:bg-[#F7D37D] text-zinc-900 text-xs font-semibold px-6 py-2 rounded-full transition shadow-2xs disabled:opacity-50 cursor-pointer"
+              className="bg-[#FCDF9C] hover:bg-[#F7D37D] text-zinc-900 text-xs font-medium px-6 py-2 rounded-full transition shadow-2xs disabled:opacity-50 cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save Changes"}
             </button>

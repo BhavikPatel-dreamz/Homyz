@@ -82,7 +82,7 @@ export function BookingStatusTimeline({ events, className = "" }: BookingStatusT
 
               {/* Node Icon */}
               <div
-                className={`relative z-10 flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold shadow-2xs ${indicatorClasses}`}
+                className={`relative z-10 flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium shadow-2xs ${indicatorClasses}`}
               >
                 {evt.state === "completed" && (
                   <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

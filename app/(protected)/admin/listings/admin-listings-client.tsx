@@ -713,7 +713,7 @@ export function AdminListingsClient({
           type="button"
           onClick={exportCSV}
           disabled={filtered.length === 0}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-5 py-2.5 text-xs font-semibold transition-all shadow-md shrink-0 disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-5 py-2.5 text-xs font-medium transition-all shadow-md shrink-0 disabled:opacity-50"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -734,7 +734,7 @@ export function AdminListingsClient({
               : "border-[var(--border)] bg-[var(--surface)]"
           }`}
         >
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Total Listings</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--muted-foreground)]">Total Listings</p>
           <p className="mt-1.5 text-2xl sm:text-3xl font-black text-muted-foreground">{metrics.total}</p>
         </button>
 
@@ -748,7 +748,7 @@ export function AdminListingsClient({
               : "border-[var(--border)] bg-[var(--surface)]"
           }`}
         >
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Active & Live</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Active & Live</p>
           <p className="mt-1.5 text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">{metrics.published}</p>
         </button>
 
@@ -762,7 +762,7 @@ export function AdminListingsClient({
               : "border-[var(--border)] bg-[var(--surface)]"
           }`}
         >
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">Featured ★</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-amber-600 dark:text-amber-400">Featured ★</p>
           <p className="mt-1.5 text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400">{metrics.featured}</p>
         </button>
 
@@ -776,7 +776,7 @@ export function AdminListingsClient({
               : "border-[var(--border)] bg-[var(--surface)]"
           }`}
         >
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-500">Disabled / Paused</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-rose-500">Disabled / Paused</p>
           <p className="mt-1.5 text-2xl sm:text-3xl font-black text-rose-500">{metrics.paused}</p>
         </button>
 
@@ -790,7 +790,7 @@ export function AdminListingsClient({
               : "border-[var(--border)] bg-[var(--surface)]"
           }`}
         >
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Drafts / Review</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--muted-foreground)]">Drafts / Review</p>
           <p className="mt-1.5 text-2xl sm:text-3xl font-black text-muted-foreground">{metrics.draft}</p>
         </button>
       </div>
@@ -824,7 +824,7 @@ export function AdminListingsClient({
           <select
             value={statusFilter}
             onChange={(e) => handleStatusFilterChange(e.target.value)}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground outline-none cursor-pointer"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-medium text-muted-foreground outline-none cursor-pointer"
           >
             <option value="ALL">Status: All Properties ({metrics.total})</option>
             <option value="PUBLISHED">Published & Active ({metrics.published})</option>
@@ -841,10 +841,10 @@ export function AdminListingsClient({
       {selectedListingIds.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-5 py-3 text-xs text-amber-900 dark:text-amber-200 animate-in fade-in slide-in-from-top-2 shadow-sm">
           <div className="flex items-center gap-2.5">
-            <span className="inline-flex size-6 items-center justify-center rounded-full bg-amber-500 text-zinc-950 font-bold text-[11px]">
+            <span className="inline-flex size-6 items-center justify-center rounded-full bg-amber-500 text-zinc-950 font-medium text-[11px]">
               {selectedListingIds.length}
             </span>
-            <span className="font-semibold text-sm text-[var(--foreground)]">
+            <span className="font-medium text-sm text-[var(--foreground)]">
               {selectedListingIds.length} propert{selectedListingIds.length === 1 ? "y" : "ies"} selected
             </span>
           </div>
@@ -852,14 +852,14 @@ export function AdminListingsClient({
             <button
               type="button"
               onClick={clearSelection}
-              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors"
+              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-medium text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors"
             >
               Clear selection
             </button>
             <button
               type="button"
               onClick={() => setShowBulkDeleteModal(true)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white px-4 py-1.5 text-xs font-semibold shadow-xs transition-all"
+              className="inline-flex items-center gap-1.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white px-4 py-1.5 text-xs font-medium shadow-xs transition-all"
             >
               🗑 Delete Selected ({selectedListingIds.length})
             </button>
@@ -871,7 +871,7 @@ export function AdminListingsClient({
       <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
+            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-medium uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4 w-10">
                   <input
@@ -922,11 +922,11 @@ export function AdminListingsClient({
                           className="size-4 rounded border-[var(--border)] text-amber-600 focus:ring-amber-500 cursor-pointer accent-amber-600"
                         />
                       </td>
-                      <td className="py-3.5 px-4 whitespace-nowrap font-mono text-[11px] text-[var(--muted-foreground)] font-semibold">
+                      <td className="py-3.5 px-4 whitespace-nowrap font-mono text-[11px] text-[var(--muted-foreground)] font-medium">
                         #{item.id.slice(-8)}
                       </td>
 
-                      <td className="py-3.5 px-4 font-semibold text-muted-foreground">
+                      <td className="py-3.5 px-4 font-medium text-muted-foreground">
                         <div className="flex items-center gap-3">
                           {item.photos && item.photos.length > 0 ? (
                             <img src={item.photos[0]} alt={item.title} className="w-10 h-10 rounded-lg object-cover border border-[var(--border-subtle)]" />
@@ -934,7 +934,7 @@ export function AdminListingsClient({
                             <div className="w-10 h-10 rounded-lg bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-xs">🏡</div>
                           )}
                           <div className="flex flex-col">
-                            <span className="truncate max-w-[200px] font-semibold text-xs">{item.title}</span>
+                            <span className="truncate max-w-[200px] font-medium text-xs">{item.title}</span>
                             <span className="text-[10px] text-[var(--muted-foreground)] font-normal">{item.city ? `${item.city}, ${item.country}` : "Location pending"}</span>
                           </div>
                         </div>
@@ -942,18 +942,18 @@ export function AdminListingsClient({
 
                       <td className="py-3.5 px-4 text-muted-foreground">
                         <div className="flex flex-col">
-                          <span className="font-semibold text-xs">{item.host.name || "Host"}</span>
+                          <span className="font-medium text-xs">{item.host.name || "Host"}</span>
                           <span className="text-[10px] text-[var(--muted-foreground)]">{item.host.email}</span>
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-muted-foreground font-mono text-xs">
+                      <td className="py-3.5 px-4 whitespace-nowrap font-medium text-muted-foreground font-mono text-xs">
                         {formatPrice(item.price, getCurrencyForCountry(item.country))}
                       </td>
 
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${
                             item.published
                               ? "bg-emerald-500/20 text-emerald-700 border-emerald-500/30 dark:text-emerald-300"
                               : item.isPaused
@@ -973,7 +973,7 @@ export function AdminListingsClient({
                             </span>
                           )}
                           {item.isPaused && (
-                            <span className="rounded-full bg-rose-500/20 px-2 py-0.5 text-[9px] font-semibold text-rose-500 border border-rose-500/30">
+                            <span className="rounded-full bg-rose-500/20 px-2 py-0.5 text-[9px] font-medium text-rose-500 border border-rose-500/30">
                               Paused
                             </span>
                           )}
@@ -985,7 +985,7 @@ export function AdminListingsClient({
                           <Link
                             href={`/admin/listings/${item.id}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center justify-center rounded-full bg-amber-500 px-3.5 py-1 text-[11px] font-semibold text-zinc-950 hover:bg-amber-400 transition-all shadow-xs"
+                            className="inline-flex items-center justify-center rounded-full bg-amber-500 px-3.5 py-1 text-[11px] font-medium text-zinc-950 hover:bg-amber-400 transition-all shadow-xs"
                           >
                             Manage Listing →
                           </Link>
@@ -997,7 +997,7 @@ export function AdminListingsClient({
                               setShowDeleteModal(true);
                             }}
                             title="Delete Listing"
-                            className="inline-flex items-center justify-center rounded-full bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 text-[11px] font-semibold transition-all shadow-xs"
+                            className="inline-flex items-center justify-center rounded-full bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 text-[11px] font-medium transition-all shadow-xs"
                           >
                             🗑 Delete
                           </button>
@@ -1038,27 +1038,27 @@ export function AdminListingsClient({
                   />
                   <div>
                     <span className="font-mono text-[10px] text-[var(--muted-foreground)] block">#{item.id.slice(-8)}</span>
-                    <h3 className="font-semibold text-xs text-muted-foreground mt-0.5">{item.title}</h3>
+                    <h3 className="font-medium text-xs text-muted-foreground mt-0.5">{item.title}</h3>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {item.isFeatured && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/20 text-amber-700 dark:text-amber-300">
                       ★ Featured
                     </span>
                   )}
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${item.published ? "bg-emerald-500/20 text-emerald-600" : "bg-amber-500/20 text-amber-600"}`}>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${item.published ? "bg-emerald-500/20 text-emerald-600" : "bg-amber-500/20 text-amber-600"}`}>
                     {item.published ? "ACTIVE" : item.status}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-xs pt-2 border-t border-[var(--border-subtle)] font-mono font-semibold">
+              <div className="flex items-center justify-between text-xs pt-2 border-t border-[var(--border-subtle)] font-mono font-medium">
                 <span>{formatPrice(item.price, getCurrencyForCountry(item.country))} / night</span>
                 <Link
                   href={`/admin/listings/${item.id}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="rounded-full bg-amber-500 hover:bg-amber-400 px-3 py-1 text-xs font-semibold text-zinc-950 transition-colors"
+                  className="rounded-full bg-amber-500 hover:bg-amber-400 px-3 py-1 text-xs font-medium text-zinc-950 transition-colors"
                 >
                   Manage →
                 </Link>
@@ -1089,13 +1089,13 @@ export function AdminListingsClient({
             <div className="flex items-start justify-between border-b border-[var(--border)] pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-[var(--muted-foreground)] font-semibold">#{selectedListing.id.slice(-10)}</span>
+                  <span className="font-mono text-xs text-[var(--muted-foreground)] font-medium">#{selectedListing.id.slice(-10)}</span>
                   {selectedListing.isFeatured && (
                     <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-black text-amber-600 dark:text-amber-300">
                       ★ FEATURED
                     </span>
                   )}
-                  <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${selectedListing.published ? "bg-emerald-500/20 text-emerald-600" : "bg-amber-500/20 text-amber-600"}`}>
+                  <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium ${selectedListing.published ? "bg-emerald-500/20 text-emerald-600" : "bg-amber-500/20 text-amber-600"}`}>
                     {selectedListing.published ? "PUBLISHED" : selectedListing.status}
                   </span>
                 </div>
@@ -1114,13 +1114,13 @@ export function AdminListingsClient({
 
             {/* Notification Alert Banner */}
             {feedbackMsg && (
-              <div className={`rounded-2xl p-3.5 text-xs font-semibold ${feedbackMsg.type === "success" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30" : "bg-rose-500/10 text-rose-600 border border-rose-500/30"}`}>
+              <div className={`rounded-2xl p-3.5 text-xs font-medium ${feedbackMsg.type === "success" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30" : "bg-rose-500/10 text-rose-600 border border-rose-500/30"}`}>
                 {feedbackMsg.text}
               </div>
             )}
 
             {/* Navigation Tabs */}
-            <div className="flex gap-1.5 border-b border-[var(--border)] pb-2 overflow-x-auto text-xs font-semibold scrollbar-none">
+            <div className="flex gap-1.5 border-b border-[var(--border)] pb-2 overflow-x-auto text-xs font-medium scrollbar-none">
               {[
                 { id: "overview", label: "1. Overview & Controls" },
                 { id: "details", label: "2. Edit Details & Rules" },
@@ -1153,43 +1153,43 @@ export function AdminListingsClient({
                     <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Visibility & Administrative Override Controls</h3>
                     
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-muted-foreground">Publish / Unpublish Listing</span>
+                      <span className="text-xs font-medium text-muted-foreground">Publish / Unpublish Listing</span>
                       <button
                         type="button"
                         disabled={isSaving}
                         onClick={handleToggleVisibility}
-                        className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${selectedListing.published ? "bg-emerald-600 text-white" : "bg-zinc-700 text-zinc-200"}`}
+                        className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${selectedListing.published ? "bg-emerald-600 text-white" : "bg-zinc-700 text-zinc-200"}`}
                       >
                         {selectedListing.published ? "✓ Published (Live)" : "Unpublished"}
                       </button>
                     </div>
 
                     <div className="flex items-center justify-between pt-3 border-t border-[var(--border-subtle)]">
-                      <span className="text-xs font-semibold text-muted-foreground">Disable / Pause Listing</span>
+                      <span className="text-xs font-medium text-muted-foreground">Disable / Pause Listing</span>
                       <button
                         type="button"
                         disabled={isSaving}
                         onClick={handleToggleDisable}
-                        className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${selectedListing.isPaused ? "bg-rose-600 text-white" : "bg-emerald-600 text-white"}`}
+                        className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${selectedListing.isPaused ? "bg-rose-600 text-white" : "bg-emerald-600 text-white"}`}
                       >
                         {selectedListing.isPaused ? "⏸ Listing Paused" : "Active / Enabled"}
                       </button>
                     </div>
 
                     <div className="flex items-center justify-between pt-3 border-t border-[var(--border-subtle)]">
-                      <span className="text-xs font-semibold text-muted-foreground">Feature on Homepage</span>
+                      <span className="text-xs font-medium text-muted-foreground">Feature on Homepage</span>
                       <button
                         type="button"
                         disabled={isSaving}
                         onClick={handleToggleFeature}
-                        className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${selectedListing.isFeatured ? "bg-amber-500 text-zinc-950 shadow-xs" : "bg-zinc-700 text-zinc-200"}`}
+                        className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${selectedListing.isFeatured ? "bg-amber-500 text-zinc-950 shadow-xs" : "bg-zinc-700 text-zinc-200"}`}
                       >
                         {selectedListing.isFeatured ? "★ Featured Property" : "Not Featured"}
                       </button>
                     </div>
 
                     <div className="flex items-center justify-between pt-3 border-t border-[var(--border-subtle)]">
-                      <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">Permanently Delete Listing</span>
+                      <span className="text-xs font-medium text-rose-600 dark:text-rose-400">Permanently Delete Listing</span>
                       <button
                         type="button"
                         disabled={isSaving || isDeleting}
@@ -1197,7 +1197,7 @@ export function AdminListingsClient({
                           setListingToDelete(selectedListing);
                           setShowDeleteModal(true);
                         }}
-                        className="rounded-full px-4 py-1.5 text-xs font-semibold transition-all bg-rose-600 text-white hover:bg-rose-700 shadow-xs"
+                        className="rounded-full px-4 py-1.5 text-xs font-medium transition-all bg-rose-600 text-white hover:bg-rose-700 shadow-xs"
                       >
                         🗑 Delete Listing
                       </button>
@@ -1222,7 +1222,7 @@ export function AdminListingsClient({
               <div className="space-y-4 animate-in fade-in text-xs">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="sm:col-span-2">
-                    <label className="block font-semibold text-muted-foreground">Title *</label>
+                    <label className="block font-medium text-muted-foreground">Title *</label>
                     <input
                       type="text"
                       value={editTitle}
@@ -1232,7 +1232,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block font-semibold text-muted-foreground">Detailed Description *</label>
+                    <label className="block font-medium text-muted-foreground">Detailed Description *</label>
                     <textarea
                       rows={3}
                       value={editDescription}
@@ -1242,7 +1242,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Property Type</label>
+                    <label className="block font-medium text-muted-foreground">Property Type</label>
                     <input
                       type="text"
                       value={editPropertyType}
@@ -1252,7 +1252,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Listing Type</label>
+                    <label className="block font-medium text-muted-foreground">Listing Type</label>
                     <input
                       type="text"
                       value={editListingType}
@@ -1262,7 +1262,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Address</label>
+                    <label className="block font-medium text-muted-foreground">Address</label>
                     <input
                       type="text"
                       value={editAddress}
@@ -1272,7 +1272,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Apt, Suite, Bldg (optional)</label>
+                    <label className="block font-medium text-muted-foreground">Apt, Suite, Bldg (optional)</label>
                     <input
                       type="text"
                       value={editApartment}
@@ -1282,7 +1282,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">City</label>
+                    <label className="block font-medium text-muted-foreground">City</label>
                     <input
                       type="text"
                       value={editCity}
@@ -1293,7 +1293,7 @@ export function AdminListingsClient({
 
                   <div className="grid grid-cols-4 gap-2 sm:col-span-2">
                     <div>
-                      <label className="block font-semibold text-muted-foreground">Guests</label>
+                      <label className="block font-medium text-muted-foreground">Guests</label>
                       <input
                         type="number"
                         min={1}
@@ -1303,7 +1303,7 @@ export function AdminListingsClient({
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-muted-foreground">Bedrooms</label>
+                      <label className="block font-medium text-muted-foreground">Bedrooms</label>
                       <input
                         type="number"
                         min={1}
@@ -1313,7 +1313,7 @@ export function AdminListingsClient({
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-muted-foreground">Beds</label>
+                      <label className="block font-medium text-muted-foreground">Beds</label>
                       <input
                         type="number"
                         min={1}
@@ -1323,7 +1323,7 @@ export function AdminListingsClient({
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-muted-foreground">Bathrooms</label>
+                      <label className="block font-medium text-muted-foreground">Bathrooms</label>
                       <input
                         type="number"
                         min={1}
@@ -1336,7 +1336,7 @@ export function AdminListingsClient({
 
                   {/* Amenities Chips Selector */}
                   <div className="sm:col-span-2 space-y-1.5">
-                    <label className="block font-semibold text-muted-foreground">Amenities</label>
+                    <label className="block font-medium text-muted-foreground">Amenities</label>
                     <div className="flex flex-wrap gap-1.5">
                       {COMMON_AMENITIES.map((am) => {
                         const active = editAmenities.includes(am);
@@ -1345,7 +1345,7 @@ export function AdminListingsClient({
                             key={am}
                             type="button"
                             onClick={() => toggleAmenityChip(am)}
-                            className={`rounded-full px-3 py-1 text-[10px] font-semibold border transition-all ${
+                            className={`rounded-full px-3 py-1 text-[10px] font-medium border transition-all ${
                               active
                                 ? "bg-amber-500 text-zinc-950 border-amber-500"
                                 : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] border-[var(--border)]"
@@ -1360,7 +1360,7 @@ export function AdminListingsClient({
 
                   {/* House Rules Selector */}
                   <div className="sm:col-span-2 space-y-1.5 pt-2 border-t border-[var(--border-subtle)]">
-                    <label className="block font-semibold text-muted-foreground">House Rules</label>
+                    <label className="block font-medium text-muted-foreground">House Rules</label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {HOUSE_RULE_OPTIONS.map((rule) => {
                         const active = editHouseRules.includes(rule);
@@ -1371,7 +1371,7 @@ export function AdminListingsClient({
                             onClick={() => toggleHouseRuleChip(rule)}
                             className={`flex items-center gap-2 p-2 rounded-xl border text-left text-xs transition-all ${
                               active
-                                ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-300 font-semibold"
+                                ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-300 font-medium"
                                 : "border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground"
                             }`}
                           >
@@ -1389,7 +1389,7 @@ export function AdminListingsClient({
                     type="button"
                     disabled={isSaving}
                     onClick={handleSaveDetails}
-                    className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-semibold text-zinc-950 hover:bg-amber-400 shadow-md"
+                    className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-medium text-zinc-950 hover:bg-amber-400 shadow-md"
                   >
                     {isSaving ? "Saving Details..." : "Save Property Details"}
                   </button>
@@ -1402,19 +1402,19 @@ export function AdminListingsClient({
               <div className="space-y-4 animate-in fade-in text-xs">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-sm text-muted-foreground">Property Photos & Media Gallery</h3>
+                    <h3 className="font-medium text-sm text-muted-foreground">Property Photos & Media Gallery</h3>
                     <p className="text-[11px] text-[var(--muted-foreground)]">
                       Admin can upload new photo files directly or add image URLs. Minimum 5 photos required for approval.
                     </p>
                   </div>
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold border ${editPhotos.length >= 5 ? "bg-emerald-500/20 text-emerald-600 border-emerald-500/30" : "bg-amber-500/20 text-amber-600 border-amber-500/30"}`}>
+                  <span className={`rounded-full px-3 py-1 text-xs font-medium border ${editPhotos.length >= 5 ? "bg-emerald-500/20 text-emerald-600 border-emerald-500/30" : "bg-amber-500/20 text-amber-600 border-amber-500/30"}`}>
                     {editPhotos.length} / 5 photos minimum
                   </span>
                 </div>
 
                 {/* File Upload Button & URL Input */}
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <label className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-[#1F1F1F] font-semibold px-4 py-2.5 hover:opacity-90 transition-all shrink-0">
+                  <label className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-[#1F1F1F] font-medium px-4 py-2.5 hover:opacity-90 transition-all shrink-0">
                     <span>📁 Upload Photo File</span>
                     <input
                       type="file"
@@ -1461,7 +1461,7 @@ export function AdminListingsClient({
                         setEditPhotos([...editPhotos, newPhotoUrl.trim()]);
                         setNewPhotoUrl("");
                       }}
-                      className="rounded-xl bg-amber-500 text-zinc-950 font-semibold px-4 py-2 hover:bg-amber-400 transition-all shrink-0"
+                      className="rounded-xl bg-amber-500 text-zinc-950 font-medium px-4 py-2 hover:bg-amber-400 transition-all shrink-0"
                     >
                       + Add URL
                     </button>
@@ -1485,7 +1485,7 @@ export function AdminListingsClient({
                               const updated = editPhotos.filter((_, i) => i !== idx);
                               setEditPhotos(updated);
                             }}
-                            className="bg-rose-600 text-white rounded-full px-3 py-1 text-xs font-semibold"
+                            className="bg-rose-600 text-white rounded-full px-3 py-1 text-xs font-medium"
                           >
                             🗑 Remove
                           </button>
@@ -1503,7 +1503,7 @@ export function AdminListingsClient({
                     type="button"
                     disabled={isSaving}
                     onClick={handleSavePhotos}
-                    className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-semibold text-zinc-950 hover:bg-amber-400 shadow-md"
+                    className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-medium text-zinc-950 hover:bg-amber-400 shadow-md"
                   >
                     {isSaving ? "Saving Photos..." : "Save Property Gallery"}
                   </button>
@@ -1516,7 +1516,7 @@ export function AdminListingsClient({
               <div className="space-y-4 animate-in fade-in text-xs">
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Check-in Method</label>
+                    <label className="block font-medium text-muted-foreground">Check-in Method</label>
                     <input
                       type="text"
                       value={editCheckInMethod}
@@ -1526,7 +1526,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Check-in Window</label>
+                    <label className="block font-medium text-muted-foreground">Check-in Window</label>
                     <div className="flex items-center gap-2 mt-1">
                       <input
                         type="time"
@@ -1545,7 +1545,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Checkout Time</label>
+                    <label className="block font-medium text-muted-foreground">Checkout Time</label>
                     <input
                       type="time"
                       value={editCheckOutTime}
@@ -1555,7 +1555,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Cancellation Policy</label>
+                    <label className="block font-medium text-muted-foreground">Cancellation Policy</label>
                     <select
                       value={editCancellationPolicy}
                       onChange={(e) => setEditCancellationPolicy(e.target.value)}
@@ -1568,7 +1568,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Min Nights Stay</label>
+                    <label className="block font-medium text-muted-foreground">Min Nights Stay</label>
                     <input
                       type="number"
                       min={1}
@@ -1579,11 +1579,11 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Instant Booking</label>
+                    <label className="block font-medium text-muted-foreground">Instant Booking</label>
                     <button
                       type="button"
                       onClick={() => setEditInstantBook(!editInstantBook)}
-                      className={`mt-1 w-full rounded-2xl py-2.5 text-xs font-semibold transition-all border ${editInstantBook ? "bg-emerald-500/20 text-emerald-600 border-emerald-500/30" : "bg-zinc-700 text-white"}`}
+                      className={`mt-1 w-full rounded-2xl py-2.5 text-xs font-medium transition-all border ${editInstantBook ? "bg-emerald-500/20 text-emerald-600 border-emerald-500/30" : "bg-zinc-700 text-white"}`}
                     >
                       {editInstantBook ? "✓ Instant Book Enabled" : "Manual Host Approval Required"}
                     </button>
@@ -1592,13 +1592,13 @@ export function AdminListingsClient({
 
                 {/* Blocked Dates Manager */}
                 <div className="pt-3 border-t border-[var(--border-subtle)] space-y-2">
-                  <h4 className="font-semibold text-muted-foreground">Calendar Blocked Dates ({editBlockedDates.length})</h4>
+                  <h4 className="font-medium text-muted-foreground">Calendar Blocked Dates ({editBlockedDates.length})</h4>
                   <div className="flex gap-2">
                     <input
                       type="date"
                       value={newBlockedDate}
                       onChange={(e) => setNewBlockedDate(e.target.value)}
-                      className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-semibold"
+                      className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-medium"
                     />
                     <button
                       type="button"
@@ -1607,7 +1607,7 @@ export function AdminListingsClient({
                         setEditBlockedDates([...editBlockedDates, newBlockedDate].sort());
                         setNewBlockedDate("");
                       }}
-                      className="rounded-xl bg-amber-500 text-zinc-950 font-semibold px-4 py-2 text-xs"
+                      className="rounded-xl bg-amber-500 text-zinc-950 font-medium px-4 py-2 text-xs"
                     >
                       + Block Date
                     </button>
@@ -1615,7 +1615,7 @@ export function AdminListingsClient({
 
                   <div className="flex flex-wrap gap-2 pt-2">
                     {editBlockedDates.map((dateStr) => (
-                      <span key={dateStr} className="inline-flex items-center gap-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 px-3 py-1 text-xs font-mono font-semibold">
+                      <span key={dateStr} className="inline-flex items-center gap-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 px-3 py-1 text-xs font-mono font-medium">
                         📅 {dateStr}
                         <button
                           type="button"
@@ -1634,7 +1634,7 @@ export function AdminListingsClient({
                     type="button"
                     disabled={isSaving}
                     onClick={handleSavePolicies}
-                    className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-semibold text-zinc-950 hover:bg-amber-400 shadow-md"
+                    className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-medium text-zinc-950 hover:bg-amber-400 shadow-md"
                   >
                     {isSaving ? "Saving Policies..." : "Save Policies & Availability"}
                   </button>
@@ -1647,19 +1647,19 @@ export function AdminListingsClient({
               <div className="space-y-4 animate-in fade-in text-xs">
                 <div className="grid gap-3 sm:grid-cols-4">
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Nightly Price ({getCurrencyForCountry(selectedListing.country)}) *</label>
+                    <label className="block font-medium text-muted-foreground">Nightly Price ({getCurrencyForCountry(selectedListing.country)}) *</label>
                     <input
                       type="number"
                       step="0.01"
                       min="0"
                       value={editPrice}
                       onChange={(e) => setEditPrice(Number(e.target.value))}
-                      className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-mono font-semibold focus:border-amber-500 focus:outline-none"
+                      className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-mono font-medium focus:border-amber-500 focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Weekend Price ({getCurrencyForCountry(selectedListing.country)})</label>
+                    <label className="block font-medium text-muted-foreground">Weekend Price ({getCurrencyForCountry(selectedListing.country)})</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1671,7 +1671,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Security Deposit ({getCurrencyForCountry(selectedListing.country)})</label>
+                    <label className="block font-medium text-muted-foreground">Security Deposit ({getCurrencyForCountry(selectedListing.country)})</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1688,7 +1688,7 @@ export function AdminListingsClient({
                     type="button"
                     disabled={isSaving}
                     onClick={handleSavePricing}
-                    className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-semibold text-zinc-950 hover:bg-amber-400 shadow-md"
+                    className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-medium text-zinc-950 hover:bg-amber-400 shadow-md"
                   >
                     {isSaving ? "Saving Pricing..." : "Save Pricing & Fees"}
                   </button>
@@ -1701,21 +1701,21 @@ export function AdminListingsClient({
               <div className="space-y-4 animate-in fade-in text-xs">
                 {/* Moderation Checklist */}
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)]/50 p-4 space-y-2">
-                  <h4 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Quality Moderation Checklist</h4>
+                  <h4 className="font-medium text-xs uppercase tracking-wider text-muted-foreground">Quality Moderation Checklist</h4>
                   <div className="flex items-center justify-between text-xs pt-1">
                     <span>Minimum 5 High-Resolution Photos:</span>
-                    <span className={`font-semibold ${editPhotos.length >= 5 ? "text-emerald-600" : "text-amber-600"}`}>
+                    <span className={`font-medium ${editPhotos.length >= 5 ? "text-emerald-600" : "text-amber-600"}`}>
                       {editPhotos.length >= 5 ? "✓ PASSED (Has 5+ photos)" : `⚠️ FAILED (${editPhotos.length} / 5 photos)`}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs border-t border-[var(--border-subtle)] pt-1">
                     <span>Valid Nightly Rate & Location:</span>
-                    <span className="font-semibold text-emerald-600">✓ PASSED ({getCurrencyForCountry(selectedListing.country)} {editPrice}/night, {selectedListing.city})</span>
+                    <span className="font-medium text-emerald-600">✓ PASSED ({getCurrencyForCountry(selectedListing.country)} {editPrice}/night, {selectedListing.city})</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-muted-foreground">Moderation Feedback / Rejection Notes</label>
+                  <label className="block font-medium text-muted-foreground">Moderation Feedback / Rejection Notes</label>
                   <textarea
                     rows={3}
                     value={modReason}
@@ -1730,7 +1730,7 @@ export function AdminListingsClient({
                     type="button"
                     disabled={isSaving}
                     onClick={() => handleModerate("REJECT")}
-                    className="rounded-full bg-rose-600 px-5 py-2 text-xs font-semibold text-white hover:bg-rose-700"
+                    className="rounded-full bg-rose-600 px-5 py-2 text-xs font-medium text-white hover:bg-rose-700"
                   >
                     Reject Listing
                   </button>
@@ -1739,7 +1739,7 @@ export function AdminListingsClient({
                     type="button"
                     disabled={isSaving}
                     onClick={() => handleModerate("REQUEST_CHANGES")}
-                    className="rounded-full bg-amber-500 px-5 py-2 text-xs font-semibold text-zinc-950 hover:bg-amber-400"
+                    className="rounded-full bg-amber-500 px-5 py-2 text-xs font-medium text-zinc-950 hover:bg-amber-400"
                   >
                     Request Changes
                   </button>
@@ -1748,7 +1748,7 @@ export function AdminListingsClient({
                     type="button"
                     disabled={isSaving}
                     onClick={() => handleModerate("APPROVE")}
-                    className="rounded-full bg-emerald-600 px-6 py-2 text-xs font-semibold text-white hover:bg-emerald-700 shadow-md"
+                    className="rounded-full bg-emerald-600 px-6 py-2 text-xs font-medium text-white hover:bg-emerald-700 shadow-md"
                   >
                     Approve Listing
                   </button>
@@ -1760,7 +1760,7 @@ export function AdminListingsClient({
               <button
                 type="button"
                 onClick={() => setSelectedListing(null)}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] px-6 py-2 text-xs font-semibold text-muted-foreground"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] px-6 py-2 text-xs font-medium text-muted-foreground"
               >
                 Close Drawer
               </button>
@@ -1774,7 +1774,7 @@ export function AdminListingsClient({
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] animate-in zoom-in-95">
             <div className="flex items-center gap-3 text-rose-600">
-              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-semibold text-lg">
+              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-medium text-lg">
                 ⚠️
               </div>
               <h3 className="text-base font-medium text-muted-foreground">Permanently Delete Listing?</h3>
@@ -1795,7 +1795,7 @@ export function AdminListingsClient({
                   setShowDeleteModal(false);
                   setListingToDelete(null);
                 }}
-                className="rounded-full px-5 py-2 text-xs font-semibold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-muted-foreground"
+                className="rounded-full px-5 py-2 text-xs font-medium border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-muted-foreground"
               >
                 Cancel
               </button>
@@ -1803,7 +1803,7 @@ export function AdminListingsClient({
                 type="button"
                 disabled={isDeleting}
                 onClick={handleDeleteListing}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-semibold transition-all shadow-sm"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-medium transition-all shadow-sm"
               >
                 {isDeleting ? "Deleting..." : "Yes, Delete Permanently"}
               </button>
@@ -1817,7 +1817,7 @@ export function AdminListingsClient({
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] animate-in zoom-in-95 max-h-[90vh] flex flex-col">
             <div className="flex items-center gap-3 text-rose-600 shrink-0">
-              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-semibold text-lg">
+              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-medium text-lg">
                 ⚠️
               </div>
               <div>
@@ -1842,13 +1842,13 @@ export function AdminListingsClient({
               {selectedListings.map((item) => (
                 <div key={item.id} className="flex items-center justify-between py-2 px-2 gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold truncate text-[var(--foreground)]">{item.title}</p>
+                    <p className="font-medium truncate text-[var(--foreground)]">{item.title}</p>
                     <p className="text-[10px] text-[var(--muted-foreground)]">
                       ID: <span className="font-mono">{item.id.slice(-8)}</span> · {item.city || "No city"} · {item.bookingCount} bookings
                     </p>
                   </div>
                   <span
-                    className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                    className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full font-medium ${
                       item.bookingCount > 0
                         ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
                         : "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300"
@@ -1865,7 +1865,7 @@ export function AdminListingsClient({
                 type="button"
                 disabled={isBulkDeleting}
                 onClick={() => setShowBulkDeleteModal(false)}
-                className="rounded-full px-5 py-2 text-xs font-semibold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-muted-foreground"
+                className="rounded-full px-5 py-2 text-xs font-medium border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-muted-foreground"
               >
                 Cancel
               </button>
@@ -1873,7 +1873,7 @@ export function AdminListingsClient({
                 type="button"
                 disabled={isBulkDeleting}
                 onClick={handleBulkDelete}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-semibold transition-all shadow-sm"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-medium transition-all shadow-sm"
               >
                 {isBulkDeleting
                   ? `Deleting ${selectedListingIds.length} properties...`

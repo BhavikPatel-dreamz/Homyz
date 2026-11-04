@@ -65,7 +65,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
       {/* Back navigation */}
       <Link
         href={backLinkHref}
-        className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-zinc-700 underline underline-offset-4 hover:text-[#1F1F1F] transition-colors"
+        className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-zinc-700 underline underline-offset-4 hover:text-[#1F1F1F] transition-colors"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -111,7 +111,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
                   <h2 className="text-base font-medium text-[#1F1F1F]">Your reservation reports</h2>
                   <p className="mt-1 text-sm text-zinc-600">Reports you filed for this reservation and their current review status.</p>
                 </div>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-zinc-700 shadow-2xs">
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-2xs">
                   {disputes.length} {disputes.length === 1 ? t("dispute_case_single", "case") : t("dispute_case_plural", "cases")}
                 </span>
               </div>
@@ -119,8 +119,8 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
                 {disputes.map((dispute) => (
                   <div key={dispute.id} className="rounded-xl border border-amber-100 bg-white p-4 text-sm">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-mono font-semibold text-[#1F1F1F]">{dispute.caseReference}</p>
-                      <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-900">
+                      <p className="font-mono font-medium text-[#1F1F1F]">{dispute.caseReference}</p>
+                      <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-900">
                         {dispute.workflowStatus.replaceAll("_", " ")}
                       </span>
                     </div>
@@ -164,13 +164,13 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
           {data.guestMessage && (
             <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 shadow-2xs">
               <div className="flex items-center justify-between gap-3 border-b border-zinc-200 pb-3">
-                <h3 className="text-sm font-semibold text-zinc-900">
+                <h3 className="text-sm font-medium text-zinc-900">
                   {t("booking_details_message_to_host", { hostName: listing.host.name || "the host" }, `Your message to ${listing.host.name || "the host"}`)}
                 </h3>
                 {data.conversationId && (
                   <Link
                     href={`/messages?id=${data.conversationId}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-900 hover:text-zinc-600 underline underline-offset-4"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-900 hover:text-zinc-600 underline underline-offset-4"
                   >
                     {t("booking_details_open_conversation", "Open conversation")}
                   </Link>
@@ -271,7 +271,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
-                <h3 className="font-semibold text-base text-[#1F1F1F]">{t("booking_details_message_host_card", "Message your host")}</h3>
+                <h3 className="font-medium text-base text-[#1F1F1F]">{t("booking_details_message_host_card", "Message your host")}</h3>
                 <p className="mt-1 text-sm text-[#727272]">
                   {t("booking_details_message_host_card_desc", "Have questions about arrival, luggage drop-off, key exchange, or check-in?")}
                 </p>
@@ -285,7 +285,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
               </div>
 
               <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
-                <h3 className="font-semibold text-base text-[#1F1F1F]">{t("booking_details_concierge_title", "24/7 Concierge Support")}</h3>
+                <h3 className="font-medium text-base text-[#1F1F1F]">{t("booking_details_concierge_title", "24/7 Concierge Support")}</h3>
                 <p className="mt-1 text-sm text-[#727272]">
                   {t("booking_details_concierge_desc", "Our customer care team is available around the clock to support your stay.")}
                 </p>

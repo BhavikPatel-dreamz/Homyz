@@ -12,7 +12,7 @@ export function SuperhostBadge({ active, compact = false, label = "Superhost", c
   return (
     <span
       {...props}
-      className={`inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 font-semibold text-sky-950 ${
+      className={`inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 font-medium text-sky-950 ${
         compact ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs"
       } ${className}`}
     >

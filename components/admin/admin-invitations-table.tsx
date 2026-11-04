@@ -412,35 +412,35 @@ export function AdminInvitationsTable({
     switch (status) {
       case "PENDING":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50 shadow-2xs">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
             Pending
           </span>
         );
       case "ACCEPTED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50 shadow-2xs">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             Accepted
           </span>
         );
       case "EXPIRED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 shadow-2xs">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
             Expired
           </span>
         );
       case "REVOKED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800/50 shadow-2xs">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800/50 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
             Revoked
           </span>
         );
       case "FAILED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950/80 dark:text-red-300 border border-red-200 dark:border-red-800/50 shadow-2xs">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-950/80 dark:text-red-300 border border-red-200 dark:border-red-800/50 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
             Delivery Failed
           </span>
@@ -475,14 +475,14 @@ export function AdminInvitationsTable({
           }`}
         >
           <div className="flex items-center justify-between text-[var(--muted-foreground)]">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Sent</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Total Sent</span>
             <span className="p-1.5 rounded-lg bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
               <svg className="w-4 h-4 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </span>
           </div>
-          <span className="text-2xl sm:text-3xl font-bold tracking-tight text-muted-foreground mt-2">
+          <span className="text-2xl sm:text-3xl font-medium tracking-tight text-muted-foreground mt-2">
             {stats.total}
           </span>
           <span className="text-[11px] text-[var(--muted-foreground)] mt-1">
@@ -504,14 +504,14 @@ export function AdminInvitationsTable({
           }`}
         >
           <div className="flex items-center justify-between text-[var(--muted-foreground)]">
-            <span className="text-xs font-semibold uppercase tracking-wider">Pending</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Pending</span>
             <span className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-900/50">
               <svg className="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </span>
           </div>
-          <span className="text-2xl sm:text-3xl font-bold tracking-tight text-muted-foreground mt-2">
+          <span className="text-2xl sm:text-3xl font-medium tracking-tight text-muted-foreground mt-2">
             {stats.pending}
           </span>
           <span className="text-[11px] text-[var(--muted-foreground)] mt-1">
@@ -533,14 +533,14 @@ export function AdminInvitationsTable({
           }`}
         >
           <div className="flex items-center justify-between text-[var(--muted-foreground)]">
-            <span className="text-xs font-semibold uppercase tracking-wider">Accepted</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Accepted</span>
             <span className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-900/50">
               <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </span>
           </div>
-          <span className="text-2xl sm:text-3xl font-bold tracking-tight text-muted-foreground mt-2">
+          <span className="text-2xl sm:text-3xl font-medium tracking-tight text-muted-foreground mt-2">
             {stats.accepted}
           </span>
           <span className="text-[11px] text-[var(--muted-foreground)] mt-1">
@@ -562,14 +562,14 @@ export function AdminInvitationsTable({
           }`}
         >
           <div className="flex items-center justify-between text-[var(--muted-foreground)]">
-            <span className="text-xs font-semibold uppercase tracking-wider">Expired / Revoked</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Expired / Revoked</span>
             <span className="p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
               <svg className="w-4 h-4 text-zinc-600 dark:text-[#727272]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
               </svg>
             </span>
           </div>
-          <span className="text-2xl sm:text-3xl font-bold tracking-tight text-muted-foreground mt-2">
+          <span className="text-2xl sm:text-3xl font-medium tracking-tight text-muted-foreground mt-2">
             {stats.expiredRevoked}
           </span>
           <span className="text-[11px] text-[var(--muted-foreground)] mt-1">
@@ -667,7 +667,7 @@ export function AdminInvitationsTable({
             type="button"
             onClick={handleExportCsv}
             disabled={invitations.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-2 text-xs font-semibold text-muted-foreground transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-2 text-xs font-medium text-muted-foreground transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
             title="Export invitations to CSV"
           >
             <svg className="h-3.5 w-3.5 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -679,7 +679,7 @@ export function AdminInvitationsTable({
           <button
             type="button"
             onClick={() => setShowInviteModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] font-semibold text-xs rounded-full shadow-2xs transition-all shrink-0 cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] font-medium text-xs rounded-full shadow-2xs transition-all shrink-0 cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -693,7 +693,7 @@ export function AdminInvitationsTable({
       <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-muted-foreground">
-            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
+            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-medium uppercase tracking-wider">
               <tr>
                 <th className="px-4 py-3.5">Invited Admin</th>
                 <th className="px-4 py-3.5">Assigned Role</th>
@@ -715,7 +715,7 @@ export function AdminInvitationsTable({
                         <button
                           type="button"
                           onClick={handleResetFilters}
-                          className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] cursor-pointer shadow-2xs"
+                          className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] text-xs font-medium text-muted-foreground hover:bg-[var(--surface-secondary)] cursor-pointer shadow-2xs"
                         >
                           Clear all filters
                         </button>
@@ -727,7 +727,7 @@ export function AdminInvitationsTable({
                 invitations.map((inv) => (
                   <tr key={inv.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                     <td className="px-4 py-3.5">
-                      <div className="font-semibold text-muted-foreground">
+                      <div className="font-medium text-muted-foreground">
                         {inv.name || "—"}
                       </div>
                       <div className="text-xs text-[var(--muted-foreground)] font-mono">
@@ -735,7 +735,7 @@ export function AdminInvitationsTable({
                       </div>
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-[var(--surface-secondary)] text-muted-foreground text-[11px] font-semibold border border-[var(--border-subtle)]">
+                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-[var(--surface-secondary)] text-muted-foreground text-[11px] font-medium border border-[var(--border-subtle)]">
                         {inv.adminRoleName || inv.role}
                       </span>
                     </td>
@@ -761,7 +761,7 @@ export function AdminInvitationsTable({
                           type="button"
                           onClick={() => handleResend(inv)}
                           disabled={pending || actionLoadingId === `${inv.id}_resend`}
-                          className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-2.5 py-1 text-[11px] font-semibold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
+                          className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-2.5 py-1 text-[11px] font-medium transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                         >
                           {actionLoadingId === `${inv.id}_resend` && (
                             <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -776,7 +776,7 @@ export function AdminInvitationsTable({
                           type="button"
                           onClick={() => handleRevoke(inv)}
                           disabled={pending || actionLoadingId === `${inv.id}_revoke`}
-                          className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-[11px] font-semibold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
+                          className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-[11px] font-medium transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                         >
                           {actionLoadingId === `${inv.id}_revoke` && (
                             <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -790,7 +790,7 @@ export function AdminInvitationsTable({
                         type="button"
                         onClick={() => setSelectedDetails(inv)}
                         disabled={pending}
-                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer"
+                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer"
                       >
                         Details
                       </button>
@@ -813,7 +813,7 @@ export function AdminInvitationsTable({
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] cursor-pointer shadow-2xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] text-xs font-medium text-muted-foreground hover:bg-[var(--surface-secondary)] cursor-pointer shadow-2xs"
                 >
                   Clear all filters
                 </button>
@@ -828,7 +828,7 @@ export function AdminInvitationsTable({
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h3 className="font-semibold text-xs text-muted-foreground">{inv.name || "Administrator"}</h3>
+                  <h3 className="font-medium text-xs text-muted-foreground">{inv.name || "Administrator"}</h3>
                   <p className="text-xs text-[var(--muted-foreground)] font-mono">{inv.email}</p>
                 </div>
                 {getStatusBadge(inv.status)}
@@ -836,17 +836,17 @@ export function AdminInvitationsTable({
 
               <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-[var(--border-subtle)]">
                 <div>
-                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Role</span>
-                  <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full bg-[var(--surface-secondary)] text-muted-foreground text-[10px] font-semibold border border-[var(--border-subtle)]">
+                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-medium">Role</span>
+                  <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full bg-[var(--surface-secondary)] text-muted-foreground text-[10px] font-medium border border-[var(--border-subtle)]">
                     {inv.adminRoleName || inv.role}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Invited By</span>
+                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-medium">Invited By</span>
                   <span className="text-muted-foreground truncate block">{inv.invitedByName || inv.invitedByEmail || "System"}</span>
                 </div>
                 <div className="col-span-2">
-                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Sent</span>
+                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-medium">Sent</span>
                   <span className="font-mono text-[var(--muted-foreground)]" suppressHydrationWarning>
                     {formatUTCDateTime(inv.createdAt)}
                   </span>
@@ -859,7 +859,7 @@ export function AdminInvitationsTable({
                     type="button"
                     onClick={() => handleResend(inv)}
                     disabled={pending || actionLoadingId === `${inv.id}_resend`}
-                    className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-2.5 py-1 text-xs font-semibold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
+                    className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-2.5 py-1 text-xs font-medium transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                   >
                     {actionLoadingId === `${inv.id}_resend` && (
                       <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -872,7 +872,7 @@ export function AdminInvitationsTable({
                     type="button"
                     onClick={() => handleRevoke(inv)}
                     disabled={pending || actionLoadingId === `${inv.id}_revoke`}
-                    className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-xs font-semibold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
+                    className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-xs font-medium transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                   >
                     {actionLoadingId === `${inv.id}_revoke` && (
                       <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -884,7 +884,7 @@ export function AdminInvitationsTable({
                   type="button"
                   onClick={() => setSelectedDetails(inv)}
                   disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer"
                 >
                   Details
                 </button>
@@ -911,7 +911,7 @@ export function AdminInvitationsTable({
         <ModalOverlay className="fixed inset-0 z-9999 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-[var(--surface)] text-muted-foreground border border-[var(--border)] rounded-2xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-muted-foreground">
+              <h2 className="text-xl font-medium text-muted-foreground">
                 Invite New Administrator
               </h2>
               <button
@@ -928,7 +928,7 @@ export function AdminInvitationsTable({
 
             <form onSubmit={handleSendInvite} className="flex flex-col gap-4">
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Full Name
                 </label>
                 <input
@@ -942,7 +942,7 @@ export function AdminInvitationsTable({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Email Address
                 </label>
                 <input
@@ -956,7 +956,7 @@ export function AdminInvitationsTable({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Assigned Admin Role
                 </label>
                 <select
@@ -971,7 +971,7 @@ export function AdminInvitationsTable({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Invitation Note / Message (Optional)
                 </label>
                 <textarea
@@ -987,14 +987,14 @@ export function AdminInvitationsTable({
                 <button
                   type="button"
                   onClick={() => setShowInviteModal(false)}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-5 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
+                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-5 py-2 text-xs font-medium shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {pending ? "Sending Invitation…" : "Send Invitation Email"}
                 </button>
@@ -1010,7 +1010,7 @@ export function AdminInvitationsTable({
           <div className="bg-[var(--surface)] text-muted-foreground border border-[var(--border)] rounded-2xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--border-subtle)]">
               <div>
-                <h2 className="text-lg font-semibold text-muted-foreground">
+                <h2 className="text-lg font-medium text-muted-foreground">
                   Invitation Details
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)] font-mono">{selectedDetails.id}</p>
@@ -1025,48 +1025,48 @@ export function AdminInvitationsTable({
 
             <div className="flex flex-col gap-3.5 text-xs">
               <div className="grid grid-cols-3 gap-2">
-                <span className="font-semibold text-[var(--muted-foreground)]">Invited Name</span>
+                <span className="font-medium text-[var(--muted-foreground)]">Invited Name</span>
                 <span className="col-span-2 font-medium text-muted-foreground">{selectedDetails.name || "—"}</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <span className="font-semibold text-[var(--muted-foreground)]">Email</span>
+                <span className="font-medium text-[var(--muted-foreground)]">Email</span>
                 <span className="col-span-2 font-mono text-muted-foreground">{selectedDetails.email}</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <span className="font-semibold text-[var(--muted-foreground)]">Assigned Role</span>
+                <span className="font-medium text-[var(--muted-foreground)]">Assigned Role</span>
                 <span className="col-span-2 font-medium text-muted-foreground">{selectedDetails.adminRoleName || selectedDetails.role}</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <span className="font-semibold text-[var(--muted-foreground)]">Status</span>
+                <span className="font-medium text-[var(--muted-foreground)]">Status</span>
                 <span className="col-span-2">{getStatusBadge(selectedDetails.status)}</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <span className="font-semibold text-[var(--muted-foreground)]">Invited By</span>
+                <span className="font-medium text-[var(--muted-foreground)]">Invited By</span>
                 <span className="col-span-2 text-[var(--muted-foreground)]">{selectedDetails.invitedByName || selectedDetails.invitedByEmail || "System"}</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <span className="font-semibold text-[var(--muted-foreground)]">Sent At</span>
+                <span className="font-medium text-[var(--muted-foreground)]">Sent At</span>
                 <span className="col-span-2 text-[var(--muted-foreground)] font-mono" suppressHydrationWarning>{formatUTCDateTime(selectedDetails.createdAt)}</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <span className="font-semibold text-[var(--muted-foreground)]">Expires At</span>
+                <span className="font-medium text-[var(--muted-foreground)]">Expires At</span>
                 <span className="col-span-2 text-[var(--muted-foreground)] font-mono" suppressHydrationWarning>{formatUTCDateTime(selectedDetails.expiresAt)}</span>
               </div>
               {selectedDetails.acceptedAt && (
                 <div className="grid grid-cols-3 gap-2">
-                  <span className="font-semibold text-[var(--muted-foreground)]">Accepted At</span>
-                  <span className="col-span-2 text-emerald-600 dark:text-emerald-400 font-semibold font-mono" suppressHydrationWarning>{formatUTCDateTime(selectedDetails.acceptedAt)}</span>
+                  <span className="font-medium text-[var(--muted-foreground)]">Accepted At</span>
+                  <span className="col-span-2 text-emerald-600 dark:text-emerald-400 font-medium font-mono" suppressHydrationWarning>{formatUTCDateTime(selectedDetails.acceptedAt)}</span>
                 </div>
               )}
               {selectedDetails.lastResentAt && (
                 <div className="grid grid-cols-3 gap-2">
-                  <span className="font-semibold text-[var(--muted-foreground)]">Last Resent At</span>
+                  <span className="font-medium text-[var(--muted-foreground)]">Last Resent At</span>
                   <span className="col-span-2 text-[var(--muted-foreground)] font-mono" suppressHydrationWarning>{formatUTCDateTime(selectedDetails.lastResentAt)}</span>
                 </div>
               )}
               {selectedDetails.message && (
                 <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[var(--border-subtle)]">
-                  <span className="font-semibold text-[var(--muted-foreground)]">Custom Message</span>
+                  <span className="font-medium text-[var(--muted-foreground)]">Custom Message</span>
                   <span className="col-span-2 italic text-muted-foreground bg-[var(--surface-secondary)] p-2.5 rounded-lg border border-[var(--border-subtle)]">{selectedDetails.message}</span>
                 </div>
               )}
@@ -1077,7 +1077,7 @@ export function AdminInvitationsTable({
               <button
                 type="button"
                 onClick={() => setSelectedDetails(null)}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer"
               >
                 Close
               </button>
@@ -1117,7 +1117,7 @@ export function AdminInvitationsTable({
                 type="button"
                 onClick={() => setRevokeConfirmInv(null)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50 cursor-pointer"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
@@ -1125,7 +1125,7 @@ export function AdminInvitationsTable({
                 type="button"
                 onClick={confirmRevokeInvitation}
                 disabled={pending}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 text-xs font-semibold transition-colors disabled:opacity-50 inline-flex items-center gap-1.5 cursor-pointer"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 text-xs font-medium transition-colors disabled:opacity-50 inline-flex items-center gap-1.5 cursor-pointer"
               >
                 {pending && (
                   <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />

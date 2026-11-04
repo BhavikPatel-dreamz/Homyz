@@ -648,12 +648,12 @@ export function HostAboutHostView({
   };
 
   return (
-    <div className="mx-auto w-full max-w-[760px] pb-24 text-[#1f1f1f] dark:text-zinc-100 font-sans">
+    <div className="w-full max-w-2xl space-y-6 pb-24 text-[#1f1f1f] dark:text-zinc-100 font-sans">
       {/* ------------------------------------------------------------------- */}
       {/* Top Header & Mode Switcher */}
       {/* ------------------------------------------------------------------- */}
       <div className="flex items-center justify-between pb-6">
-        <h1 className="text-[30px] sm:text-[34px] font-bold tracking-tight text-[#1F1F1F] dark:text-white">
+        <h1 className="text-2xl sm:text-[28px] font-medium tracking-tight text-[#1F1F1F] dark:text-white">
           {t("host_about_host_title", "About the host")}
         </h1>
 
@@ -975,7 +975,7 @@ export function HostAboutHostView({
 
             <p className="mt-6 max-w-lg text-sm text-[#727272] leading-relaxed">
               {t("host_about_intro_trust_desc", "Hosts and guests can see your profile and it may appear across Homyz to help us build trust in our community.")}{" "}
-              <a href="#learn-more" onClick={(e) => e.preventDefault()} className="underline font-semibold text-[#1F1F1F] dark:text-zinc-200">
+              <a href="#learn-more" onClick={(e) => e.preventDefault()} className="underline font-medium text-[#1F1F1F] dark:text-zinc-200">
                 {t("host_about_learn_more", "Learn more")}
               </a>
             </p>
@@ -1022,7 +1022,7 @@ export function HostAboutHostView({
 
           {/* About Me Section (Screenshot 2) */}
           <div className="space-y-4 pt-2">
-            <h2 className="text-xl font-semibold text-[#1F1F1F] dark:text-white">
+            <h2 className="text-xl font-medium text-[#1F1F1F] dark:text-white">
               {t("host_about_me_title", "About me")}
             </h2>
 
@@ -1052,7 +1052,7 @@ export function HostAboutHostView({
 
           {/* My Interests Section (Screenshots 1 & 5) */}
           <div className="space-y-4 border-t border-zinc-200 pt-8 dark:border-zinc-800">
-            <h2 className="text-xl font-semibold text-[#1F1F1F] dark:text-white">
+            <h2 className="text-xl font-medium text-[#1F1F1F] dark:text-white">
               {t("host_about_interests_title", "My interests")}
             </h2>
 
@@ -1122,7 +1122,7 @@ export function HostAboutHostView({
             </div>
 
             <div className="py-5">
-              <label className="block text-xs font-semibold text-[#727272] uppercase tracking-wider mb-2">
+              <label className="block text-xs font-medium text-[#727272] uppercase tracking-wider mb-2">
                 {t("host_about_modal_your_answer", "Your Answer")}
               </label>
               <input

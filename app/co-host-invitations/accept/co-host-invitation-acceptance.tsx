@@ -73,7 +73,7 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
               <div className="flex size-13 items-center justify-center rounded-2xl bg-white shadow-sm sm:size-15">
                 <CoHostIcon />
               </div>
-              <p className="mt-7 text-xs font-semibold uppercase tracking-[0.16em] text-[#63501C]">
+              <p className="mt-7 text-xs font-medium uppercase tracking-[0.16em] text-[#63501C]">
                 {t("cohost_inv_badge", "You're invited")}
               </p>
               <h1 className="mt-3 max-w-sm">
@@ -102,10 +102,10 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
 
           <section className="flex items-center px-7 py-9 sm:px-10 sm:py-12 lg:px-12 lg:py-14">
             <div className="w-full max-w-md">
-              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#717171]">
+              <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#717171]">
                 {t("cohost_inv_brand", "Homyz co-hosting")}
               </p>
-              <h2 className="mt-3 text-[28px] font-semibold leading-tight tracking-[-0.035em] sm:text-[34px]">
+              <h2 className="mt-3 text-[28px] font-medium leading-tight tracking-[-0.035em] sm:text-[34px]">
                 {t("cohost_inv_accept_title", "Accept your invitation")}
               </h2>
               <p className="mt-3 text-sm leading-6 text-[#717171]">
@@ -125,7 +125,7 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
                     {t("cohost_inv_accepted_title", "Invitation accepted")}
                   </h3>
                   <p className="mt-1 text-sm leading-6 text-emerald-900">{result.message}</p>
-                  <Link href="/dashboard" className="mt-5 inline-flex rounded-full bg-[#1F1F1F] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#3f3f3f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900">
+                  <Link href="/dashboard" className="mt-5 inline-flex rounded-full bg-[#1F1F1F] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#3f3f3f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900">
                     {t("cohost_inv_go_dashboard", "Go to dashboard")}
                   </Link>
                 </div>
@@ -133,9 +133,9 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
                 <>
                   <ol className="mt-7 space-y-3" aria-label="How to accept your invitation">
                     <li className="flex gap-3 rounded-2xl border border-zinc-200 bg-[#FAFAFA] p-4">
-                      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#1F1F1F] text-xs font-semibold text-white">1</span>
+                      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#1F1F1F] text-xs font-medium text-white">1</span>
                       <div>
-                        <p className="text-sm font-semibold">
+                        <p className="text-sm font-medium">
                           {t("cohost_inv_step_1_title", "Sign in to your Homyz account")}
                         </p>
                         <p className="mt-0.5 text-xs leading-5 text-[#717171]">
@@ -144,9 +144,9 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
                       </div>
                     </li>
                     <li className="flex gap-3 rounded-2xl border border-zinc-200 bg-[#FAFAFA] p-4">
-                      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#1F1F1F] text-xs font-semibold text-white">2</span>
+                      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#1F1F1F] text-xs font-medium text-white">2</span>
                       <div>
-                        <p className="text-sm font-semibold">
+                        <p className="text-sm font-medium">
                           {t("cohost_inv_step_2_title", "Accept this co-host invitation")}
                         </p>
                         <p className="mt-0.5 text-xs leading-5 text-[#717171]">
@@ -168,7 +168,7 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
                             type="button"
                             onClick={switchAccount}
                             disabled={switchingAccount}
-                            className="mt-3 inline-flex rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-rose-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700 disabled:cursor-wait disabled:opacity-60 cursor-pointer"
+                            className="mt-3 inline-flex rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-rose-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700 disabled:cursor-wait disabled:opacity-60 cursor-pointer"
                           >
                             {switchingAccount ? t("cohost_inv_signing_out", "Signing out…") : t("cohost_inv_btn_switch_acc", "Switch account")}
                           </button>
@@ -185,13 +185,13 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
                         type="button"
                         onClick={accept}
                         disabled={pending}
-                        className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-6 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-wait disabled:opacity-60 cursor-pointer"
+                        className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-6 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-wait disabled:opacity-60 cursor-pointer"
                       >
                         {pending ? t("cohost_inv_btn_accepting", "Accepting invitation…") : t("cohost_inv_btn_accept", "Accept invitation")}
                       </button>
                     ) : (
                       <div className="flex flex-wrap items-center gap-3">
-                        <Link href={signInHref} className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-6 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900">
+                        <Link href={signInHref} className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-6 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900">
                           {t("cohost_inv_btn_signin", "Sign in to accept")}
                         </Link>
                         <Link href={signUpHref} className="px-2 text-sm font-medium underline underline-offset-4 transition-colors hover:text-[#717171]">

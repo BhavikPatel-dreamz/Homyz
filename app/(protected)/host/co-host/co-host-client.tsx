@@ -29,7 +29,7 @@ export function CoHostClient() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 space-y-2">
                 <span className="text-2xl" aria-hidden="true">💬</span>
-                <h3 className="text-sm font-semibold text-[#1F1F1F]">
+                <h3 className="text-sm font-medium text-[#1F1F1F]">
                   {t("host_cohost_feature_comm_title", "Guest Communication")}
                 </h3>
                 <p className="text-xs text-[#727272]">
@@ -38,7 +38,7 @@ export function CoHostClient() {
               </div>
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 space-y-2">
                 <span className="text-2xl" aria-hidden="true">🧹</span>
-                <h3 className="text-sm font-semibold text-[#1F1F1F]">
+                <h3 className="text-sm font-medium text-[#1F1F1F]">
                   {t("host_cohost_feature_clean_title", "Cleaning & Staging")}
                 </h3>
                 <p className="text-xs text-[#727272]">
@@ -47,7 +47,7 @@ export function CoHostClient() {
               </div>
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 space-y-2">
                 <span className="text-2xl" aria-hidden="true">📈</span>
-                <h3 className="text-sm font-semibold text-[#1F1F1F]">
+                <h3 className="text-sm font-medium text-[#1F1F1F]">
                   {t("host_cohost_feature_price_title", "Dynamic Pricing")}
                 </h3>
                 <p className="text-xs text-[#727272]">
@@ -59,7 +59,7 @@ export function CoHostClient() {
             <div>
               <Link
                 href="/host/listings"
-                className="inline-flex rounded-full bg-[#1F1F1F] text-white px-8 py-3.5 text-sm font-semibold hover:bg-zinc-800 transition-colors"
+                className="inline-flex rounded-full bg-[#1F1F1F] text-white px-8 py-3.5 text-sm font-medium hover:bg-zinc-800 transition-colors"
               >
                 {t("host_cohost_btn_manage_listings", "Manage Your Listings")}
               </Link>

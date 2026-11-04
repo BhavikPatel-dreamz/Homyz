@@ -222,8 +222,27 @@ export const FooterConfigPayloadSchema = z.object({
 export const GlobalSettingsPayloadSchema = z.object({
   siteName: z.string().min(1).default("Homyz"),
   tagline: z.string().default("Travel & Hospitality Platform"),
-  logoUrl: z.string().optional().default("/images/home/homyz-logo.png"),
+  logoUrl: z.string().optional().default("/images/brand/homyz-logo-dark-v1.svg"),
   faviconUrl: z.string().optional().default("/favicon.ico"),
+  // Branding asset URLs are intentionally optional: an unset section inherits
+  // the global brand asset, then falls back to the bundled artwork.
+  globalLogoUrl: z.string().optional(),
+  globalLogoAssetId: z.string().optional(),
+  guestHeaderLogoUrl: z.string().optional(),
+  guestHeaderLogoAssetId: z.string().optional(),
+  hostHeaderLogoUrl: z.string().optional(),
+  hostHeaderLogoAssetId: z.string().optional(),
+  adminLogoUrl: z.string().optional(),
+  adminLogoAssetId: z.string().optional(),
+  mobileLogoUrl: z.string().optional(),
+  mobileLogoAssetId: z.string().optional(),
+  faviconAssetId: z.string().optional(),
+  homepageHeroDesktopUrl: z.string().optional(),
+  homepageHeroDesktopAssetId: z.string().optional(),
+  homepageHeroDesktopPosition: z.string().optional().default("center"),
+  homepageHeroMobileUrl: z.string().optional(),
+  homepageHeroMobileAssetId: z.string().optional(),
+  homepageHeroMobilePosition: z.string().optional().default("center 12%"),
   supportEmail: z.string().email().default("support@homyz.com"),
   supportPhone: z.string().default("+966 11 000 0000"),
   legalEntityName: z.string().default("Homyz Hospitality Ltd."),
@@ -275,7 +294,7 @@ export interface ContentTypeDefinition {
   type: CmsContentTypeEnum;
   displayName: string;
   description: string;
-  schema: z.ZodType<any>;
+  schema: z.ZodType<unknown>;
   supportsSlug: boolean;
   supportsScheduling: boolean;
   supportsPreview: boolean;
@@ -581,4 +600,3 @@ export function validateContentPayload(type: CmsContentTypeEnum, payload: unknow
   const def = getContentTypeDefinition(type);
   return def.schema.parse(payload);
 }
-

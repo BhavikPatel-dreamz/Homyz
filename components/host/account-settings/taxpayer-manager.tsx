@@ -204,7 +204,7 @@ export function TaxpayerManager({
           <div className="flex-1">{errorMsg}</div>
           <button
             onClick={() => setErrorMsg(null)}
-            className="text-red-700 hover:text-red-950 text-xs font-semibold"
+            className="text-red-700 hover:text-red-950 text-xs font-medium"
           >
             Dismiss
           </button>
@@ -217,7 +217,7 @@ export function TaxpayerManager({
           <div className="flex-1">{successMsg}</div>
           <button
             onClick={() => setSuccessMsg(null)}
-            className="text-emerald-700 hover:text-emerald-950 text-xs font-semibold"
+            className="text-emerald-700 hover:text-emerald-950 text-xs font-medium"
           >
             Dismiss
           </button>
@@ -229,7 +229,7 @@ export function TaxpayerManager({
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-lg font-semibold text-zinc-950">Taxpayer information</h2>
+              <h2 className="text-lg font-medium text-zinc-950">Taxpayer information</h2>
               {profile && (
                 <SettingsStatusBadge
                   label={
@@ -256,7 +256,7 @@ export function TaxpayerManager({
               setErrorMsg(null);
               setSuccessMsg(null);
             }}
-            className="rounded-full bg-zinc-950 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition-colors shrink-0 self-start"
+            className="rounded-full bg-zinc-950 px-4 py-2 text-xs font-medium text-white hover:bg-zinc-800 transition-colors shrink-0 self-start"
           >
             {profile ? "Edit Info" : "Add tax info"}
           </button>
@@ -267,9 +267,9 @@ export function TaxpayerManager({
           <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-5 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 pb-4">
               <div>
-                <p className="text-sm font-semibold text-zinc-950">{profile.legalName}</p>
+                <p className="text-sm font-medium text-zinc-950">{profile.legalName}</p>
                 <div className="mt-1 flex items-center gap-2">
-                  <span className="rounded bg-zinc-200 px-2 py-0.5 text-[11px] font-semibold text-zinc-800">
+                  <span className="rounded bg-zinc-200 px-2 py-0.5 text-[11px] font-medium text-zinc-800">
                     {profile.taxpayerType === "INDIVIDUAL" ? "Individual Taxpayer" : "Business Entity"}
                   </span>
                   {profile.businessName && (
@@ -337,7 +337,7 @@ export function TaxpayerManager({
         ) : (
           <div className="mt-6 rounded-2xl border border-dashed border-zinc-300 p-6 text-center">
             <ReceiptTaxIcon size={28} className="mx-auto text-zinc-400" />
-            <p className="mt-2 text-sm font-semibold text-zinc-900">No taxpayer profile added</p>
+            <p className="mt-2 text-sm font-medium text-zinc-900">No taxpayer profile added</p>
             <p className="mt-1 text-xs text-zinc-500 max-w-md mx-auto">
               Adding your taxpayer information ensures compliant reporting and prepares your account for annual tax statements.
             </p>
@@ -350,7 +350,7 @@ export function TaxpayerManager({
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-lg font-semibold text-zinc-950">Value Added Tax (VAT) / GST</h2>
+              <h2 className="text-lg font-medium text-zinc-950">Value Added Tax (VAT) / GST</h2>
               {activeVat && (
                 <SettingsStatusBadge
                   label={
@@ -377,7 +377,7 @@ export function TaxpayerManager({
               setErrorMsg(null);
               setSuccessMsg(null);
             }}
-            className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors shrink-0 self-start"
+            className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-800 hover:bg-zinc-50 transition-colors shrink-0 self-start"
           >
             {activeVat ? "Edit VAT/GST" : "Add VAT/GST Number"}
           </button>
@@ -388,10 +388,10 @@ export function TaxpayerManager({
           <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-5 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 pb-3">
               <div>
-                <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">
+                <p className="text-xs text-zinc-500 uppercase tracking-wider font-medium">
                   Saudi ZATCA VAT Registration
                 </p>
-                <p className="mt-1 text-base font-mono font-bold text-zinc-950">
+                <p className="mt-1 text-base font-mono font-medium text-zinc-950">
                   {activeVat.registrationNumberMasked}
                 </p>
               </div>
@@ -447,7 +447,7 @@ export function TaxpayerManager({
             {/* Pinned Header */}
             <div className="shrink-0 flex items-start justify-between gap-4 border-b border-zinc-200 px-6 py-5 sm:px-8 sm:py-6 bg-white">
               <div>
-                <h3 id="taxpayer-modal-title" className="text-lg font-semibold text-zinc-950">
+                <h3 id="taxpayer-modal-title" className="text-lg font-medium text-zinc-950">
                   {profile ? "Edit Taxpayer Information" : "Add Taxpayer Information"}
                 </h3>
                 <p className="mt-0.5 text-xs text-zinc-600">
@@ -472,7 +472,7 @@ export function TaxpayerManager({
             >
               {/* Classification Toggle */}
               <div>
-                <label className="text-xs font-semibold text-zinc-900 block mb-2">
+                <label className="text-xs font-medium text-zinc-900 block mb-2">
                   Taxpayer Classification
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -485,7 +485,7 @@ export function TaxpayerManager({
                         : "border-zinc-200 bg-white hover:border-zinc-300"
                     }`}
                   >
-                    <p className="text-xs font-bold text-zinc-950">Individual</p>
+                    <p className="text-xs font-medium text-zinc-950">Individual</p>
                     <p className="mt-0.5 text-[11px] text-zinc-500">Hosting as a private individual</p>
                   </button>
 
@@ -498,7 +498,7 @@ export function TaxpayerManager({
                         : "border-zinc-200 bg-white hover:border-zinc-300"
                     }`}
                   >
-                    <p className="text-xs font-bold text-zinc-950">Business Entity</p>
+                    <p className="text-xs font-medium text-zinc-950">Business Entity</p>
                     <p className="mt-0.5 text-[11px] text-zinc-500">Commercial company / establishment</p>
                   </button>
                 </div>
@@ -506,7 +506,7 @@ export function TaxpayerManager({
 
               {/* Legal Name */}
               <div>
-                <label className="text-xs font-semibold text-zinc-900 block">
+                <label className="text-xs font-medium text-zinc-900 block">
                   Legal Full Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -523,7 +523,7 @@ export function TaxpayerManager({
               {taxpayerType === "BUSINESS" && (
                 <>
                   <div>
-                    <label className="text-xs font-semibold text-zinc-900 block">
+                    <label className="text-xs font-medium text-zinc-900 block">
                       Registered Business Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -537,7 +537,7 @@ export function TaxpayerManager({
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-zinc-900 block">
+                    <label className="text-xs font-medium text-zinc-900 block">
                       Commercial Registration (CR) Number
                     </label>
                     <input
@@ -554,7 +554,7 @@ export function TaxpayerManager({
               {/* Country & ID Type */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-zinc-900 block">
+                  <label className="text-xs font-medium text-zinc-900 block">
                     Tax Country
                   </label>
                   <select
@@ -572,7 +572,7 @@ export function TaxpayerManager({
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-zinc-900 block">
+                  <label className="text-xs font-medium text-zinc-900 block">
                     Identifier Type
                   </label>
                   <select
@@ -596,7 +596,7 @@ export function TaxpayerManager({
 
               {/* Tax Identifier Input */}
               <div>
-                <label className="text-xs font-semibold text-zinc-900 block">
+                <label className="text-xs font-medium text-zinc-900 block">
                   {taxIdentifierType === "NIN"
                     ? "National ID Number (10 digits starting with 1)"
                     : taxIdentifierType === "IQAMA"
@@ -635,7 +635,7 @@ export function TaxpayerManager({
               {/* Address Details */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-zinc-900 block">City</label>
+                  <label className="text-xs font-medium text-zinc-900 block">City</label>
                   <input
                     type="text"
                     value={city}
@@ -645,7 +645,7 @@ export function TaxpayerManager({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-zinc-900 block">Postal Code</label>
+                  <label className="text-xs font-medium text-zinc-900 block">Postal Code</label>
                   <input
                     type="text"
                     value={postalCode}
@@ -663,7 +663,7 @@ export function TaxpayerManager({
                 type="button"
                 onClick={() => setActiveDrawer(null)}
                 disabled={actionLoading}
-                className="rounded-full px-5 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-200/70 transition-colors cursor-pointer"
+                className="rounded-full px-5 py-2.5 text-xs font-medium text-zinc-700 hover:bg-zinc-200/70 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -671,7 +671,7 @@ export function TaxpayerManager({
                 type="submit"
                 form="taxpayer-profile-form"
                 disabled={!isTaxpayerFormValid || actionLoading}
-                className="rounded-full bg-zinc-950 px-6 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="rounded-full bg-zinc-950 px-6 py-2.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 {actionLoading ? "Saving..." : "Save Information"}
               </button>
@@ -696,7 +696,7 @@ export function TaxpayerManager({
             {/* Pinned Header */}
             <div className="shrink-0 flex items-start justify-between gap-4 border-b border-zinc-200 px-6 py-5 sm:px-8 sm:py-6 bg-white">
               <div>
-                <h3 id="vat-modal-title" className="text-lg font-semibold text-zinc-950">
+                <h3 id="vat-modal-title" className="text-lg font-medium text-zinc-950">
                   VAT / GST Registration
                 </h3>
                 <p className="mt-0.5 text-xs text-zinc-600">
@@ -729,7 +729,7 @@ export function TaxpayerManager({
                     className="size-4 mt-0.5 rounded text-zinc-950 focus:ring-zinc-950"
                   />
                   <div>
-                    <span className="text-xs font-semibold text-zinc-950">
+                    <span className="text-xs font-medium text-zinc-950">
                       I am registered for VAT / GST in this jurisdiction
                     </span>
                     <p className="mt-0.5 text-[11px] text-zinc-500 leading-relaxed">
@@ -743,7 +743,7 @@ export function TaxpayerManager({
                 <>
                   {/* VAT Number */}
                   <div>
-                    <label className="text-xs font-semibold text-zinc-900 block">
+                    <label className="text-xs font-medium text-zinc-900 block">
                       Saudi ZATCA 15-Digit VAT Registration Number <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -770,7 +770,7 @@ export function TaxpayerManager({
 
                   {/* Registered Business Name */}
                   <div>
-                    <label className="text-xs font-semibold text-zinc-900 block">
+                    <label className="text-xs font-medium text-zinc-900 block">
                       Registered Business / Tax Name
                     </label>
                     <input
@@ -784,7 +784,7 @@ export function TaxpayerManager({
 
                   {/* Document URL */}
                   <div>
-                    <label className="text-xs font-semibold text-zinc-900 block">
+                    <label className="text-xs font-medium text-zinc-900 block">
                       VAT Certificate Document URL (Optional)
                     </label>
                     <input
@@ -805,7 +805,7 @@ export function TaxpayerManager({
                 type="button"
                 onClick={() => setActiveDrawer(null)}
                 disabled={actionLoading}
-                className="rounded-full px-5 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-200/70 transition-colors cursor-pointer"
+                className="rounded-full px-5 py-2.5 text-xs font-medium text-zinc-700 hover:bg-zinc-200/70 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -813,7 +813,7 @@ export function TaxpayerManager({
                 type="submit"
                 form="vat-registration-form"
                 disabled={!isVatFormValid || actionLoading}
-                className="rounded-full bg-zinc-950 px-6 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="rounded-full bg-zinc-950 px-6 py-2.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 {actionLoading ? "Saving..." : "Save VAT Registration"}
               </button>

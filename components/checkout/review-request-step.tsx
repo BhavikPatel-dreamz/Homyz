@@ -65,7 +65,7 @@ export function ReviewRequestStep({
             )}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-zinc-900">{property.title}</p>
+            <p className="truncate text-sm font-medium text-zinc-900">{property.title}</p>
             <p className="mt-1 truncate text-sm text-zinc-600">{property.location}</p>
           </div>
         </div>
@@ -136,7 +136,7 @@ export function ReviewRequestStep({
               <dd className="shrink-0 font-medium text-zinc-900">{row.subtract ? "−" : ""}{formatMoney(row.amount, 2)}</dd>
             </div>
           ))}
-          <div className="flex items-center justify-between gap-4 border-t border-zinc-300 pt-3 font-semibold text-zinc-950">
+          <div className="flex items-center justify-between gap-4 border-t border-zinc-300 pt-3 font-medium text-zinc-950">
             <dt>{t("book_total", { currency: displayCurrency }, `Total (${displayCurrency})`)}</dt>
             <dd>{formatMoney(data.pricing.total, 2)}</dd>
           </div>
@@ -146,19 +146,19 @@ export function ReviewRequestStep({
       <div className="pt-5 space-y-4">
         {data.isNonRefundable && (
           <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950" role="note" aria-label="Non-refundable policy acknowledgment">
-            <p className="font-semibold">{t("book_non_refundable_notice_title", "Non-refundable rate")}</p>
+            <p className="font-medium">{t("book_non_refundable_notice_title", "Non-refundable rate")}</p>
             <p>{t("book_non_refundable_notice_desc", "You have selected the non-refundable rate. If you cancel this reservation, you will not receive a refund.")}</p>
           </div>
         )}
         <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-950">
           {isInstantBook ? (
             <>
-              <p className="font-semibold">{t("book_instant_confirmation_notice", "Your booking will be confirmed immediately after you continue.")}</p>
+              <p className="font-medium">{t("book_instant_confirmation_notice", "Your booking will be confirmed immediately after you continue.")}</p>
               <p>{t("book_no_real_payment_notice", "No real payment will be processed in the current deferred payment mode.")}</p>
             </>
           ) : (
             <>
-              <p className="font-semibold">{t("book_request_confirmation_notice", "The host will review your request before the booking is confirmed.")}</p>
+              <p className="font-medium">{t("book_request_confirmation_notice", "The host will review your request before the booking is confirmed.")}</p>
               <p>{t("book_host_24h_response_notice", "The host has 24 hours to respond. No real payment is processed when you send the request.")}</p>
             </>
           )}

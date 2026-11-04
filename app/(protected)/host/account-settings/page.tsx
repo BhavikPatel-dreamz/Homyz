@@ -24,10 +24,10 @@ export default async function HostAccountSettingsPage() {
       <div className="mb-8 flex flex-col gap-4 border-b border-zinc-200/80 pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F] sm:text-3xl">
+            <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F] sm:text-3xl">
               Host Account Settings
             </h1>
-            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900">
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900">
               {actor.role === Role.ADMIN ? "Admin (Hosting Mode)" : "Host"}
             </span>
           </div>
@@ -39,7 +39,7 @@ export default async function HostAccountSettingsPage() {
         <div className="flex shrink-0 items-center gap-3">
           <Link
             href="/host/earnings"
-            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs sm:text-sm font-semibold text-zinc-800 shadow-2xs hover:bg-zinc-50 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs sm:text-sm font-medium text-zinc-800 shadow-2xs hover:bg-zinc-50 transition-colors"
           >
             <span>View Earnings Hub</span>
             <ExternalLinkIcon size={14} className="text-zinc-500" />

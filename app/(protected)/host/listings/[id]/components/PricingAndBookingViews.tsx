@@ -207,8 +207,7 @@ export function PricingAndBookingViews({
       {/* VIEW: PRICING */}
       {/* --------------------------------------------------------- */}
       {activeSection === "pricing" && (
-        <div className="w-full max-w-[491px] mx-auto space-y-5 animate-in fade-in pb-10 font-sans">
-          {/* Header & Back Button */}
+        <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
           <div className="space-y-1">
             <div className="flex items-start gap-6">
               <BackButton onClick={() => setActiveSection("description")} className="mt-2" />
@@ -290,7 +289,7 @@ export function PricingAndBookingViews({
               </div>
 
               {!smartPricing && (
-                <>
+                <div className="contents">
                   {/* 2. Weekend adjustment */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -392,12 +391,10 @@ export function PricingAndBookingViews({
                               }
                             }}
                             placeholder="10"
-                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                            className="w-14 text-center text-xl font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
                           />
-                          <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
                         <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
-                          {t("host_weekly_average_prefix")} {formatMajor(Math.max(0, (editPrice || 0) * 7 * (1 - (weeklyDiscount || 0) / 100)), currency)}
                         </span>
                       </div>
                     </div>
@@ -457,15 +454,15 @@ export function PricingAndBookingViews({
                               }
                             }}
                             placeholder="25"
-                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                            className="w-14 text-center text-xl font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
                           />
-                          <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
+                          <span className="text-xl font-medium text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
                         <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
                           {t("host_monthly_average_prefix")} {formatMajor(Math.max(0, (editPrice || 0) * 30 * (1 - (monthlyDiscount || 0) / 100)), currency)}
                         </span>
                       </div>
-                    </div>
+                  </div>
                   </div>
 
                   {/* 3. Promotions section */}
@@ -532,16 +529,15 @@ export function PricingAndBookingViews({
                               }
                             }}
                             placeholder="20"
-                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                            className="w-14 text-center text-xl font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
                           />
-                          <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
+                          <span className="text-xl font-medium text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
                         <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
                           {t("host_guest_pays_per_night", { amount: formatMajor(Math.max(0, (editPrice || 0) * (1 - (newListingDiscount || 0) / 100)), currency) }, `Guest pays ${formatMajor(Math.max(0, (editPrice || 0) * (1 - (newListingDiscount || 0) / 100)), currency)} / night`)}
                         </span>
                       </div>
                     </div>
-
                     {/* Last-minute discount card */}
                     <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
                       <div className="flex items-start justify-between gap-4">
@@ -598,9 +594,9 @@ export function PricingAndBookingViews({
                                 }
                               }}
                               placeholder="15"
-                              className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                              className="w-14 text-center text-xl font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
                             />
-                            <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
+                            <span className="text-xl font-medium text-[#1F1F1F] dark:text-zinc-100">%</span>
                           </div>
 
                           {/* Days before arrival selector */}
@@ -609,7 +605,6 @@ export function PricingAndBookingViews({
                               ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900"
                               : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
                           }`}>
-                            <span className="text-xs text-[#727272] dark:text-zinc-400">{t("host_discount_within", "Within")}</span>
                             <input
                               type="number"
                               min={1}
@@ -620,7 +615,7 @@ export function PricingAndBookingViews({
                                 const num = Number(e.target.value);
                                 setLastMinuteDaysBefore?.(isNaN(num) ? 2 : Math.max(1, Math.min(14, num)));
                               }}
-                              className="w-8 text-center text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                              className="w-8 text-center text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
                             />
                             <span className="text-xs text-[#727272] dark:text-zinc-400">{t("host_discount_days", "days")}</span>
                           </div>
@@ -688,9 +683,9 @@ export function PricingAndBookingViews({
                                 }
                               }}
                               placeholder="10"
-                              className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                              className="w-14 text-center text-xl font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
                             />
-                            <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
+                            <span className="text-xl font-medium text-[#1F1F1F] dark:text-zinc-100">%</span>
                           </div>
 
                           {/* Days in advance selector */}
@@ -699,10 +694,8 @@ export function PricingAndBookingViews({
                               ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900"
                               : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
                           }`}>
-                            <span className="text-xs text-[#727272] dark:text-zinc-400">{t("host_discount_made", "Made")}</span>
                             <input
                               type="number"
-                              min={7}
                               max={365}
                               disabled={!earlyBirdEnabled}
                               value={earlyBirdDaysInAdvance || 30}
@@ -710,7 +703,7 @@ export function PricingAndBookingViews({
                                 const num = Number(e.target.value);
                                 setEarlyBirdDaysInAdvance?.(isNaN(num) ? 30 : Math.max(1, Math.min(365, num)));
                               }}
-                              className="w-10 text-center text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                              className="w-10 text-center text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
                             />
                             <span className="text-xs text-[#727272] dark:text-zinc-400">{t("host_discount_days_ahead", "+ days ahead")}</span>
                           </div>
@@ -777,9 +770,9 @@ export function PricingAndBookingViews({
                               }
                             }}
                             placeholder="15"
-                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                            className="w-14 text-center text-xl font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
                           />
-                          <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
+                          <span className="text-xl font-medium text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
                         <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
                           {t("host_guest_pays_per_night", { amount: formatMajor(Math.max(0, (editPrice || 0) * (1 - (customPromoDiscount || 0) / 100)), currency) }, `Guest pays ${formatMajor(Math.max(0, (editPrice || 0) * (1 - (customPromoDiscount || 0) / 100)), currency)} / night`)}
@@ -787,7 +780,7 @@ export function PricingAndBookingViews({
                       </div>
                     </div>
                   </div>
-                </>
+                </div>
               )}
 
               {/* 4. Additional Host Charges section */}
@@ -811,7 +804,7 @@ export function PricingAndBookingViews({
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                     <div className="flex items-center gap-1 rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100 transition-all">
-                      <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{displayCurrency}</span>
+                      <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">{displayCurrency}</span>
                       <input
                         type="number"
                         min={0}
@@ -822,7 +815,7 @@ export function PricingAndBookingViews({
                           setCleaningFee?.(val === "" ? 0 : Math.max(0, toSourceMajor(Number(val))));
                         }}
                         placeholder="0"
-                        className="w-20 text-center text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-20 text-center text-lg font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                     </div>
                     <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
@@ -839,7 +832,6 @@ export function PricingAndBookingViews({
                 <span className="text-base text-[#1f1f1f] dark:text-zinc-100 font-normal">{t("host_calendar_notice")}</span>
               </div>
 
-              {/* Save & Discard Buttons */}
               <div className="mt-10 flex items-center gap-4 pt-2">
                 <button
                   type="button"
@@ -869,7 +861,7 @@ export function PricingAndBookingViews({
       {/* VIEW: AVAILABILITY */}
       {/* --------------------------------------------------------- */}
       {activeSection === "availability" && (
-        <div className="w-full max-w-[491px] mx-auto space-y-5 animate-in fade-in pb-10 font-sans">
+        <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
           {/* Header & Back Button */}
           <div className="space-y-1">
             <div className="flex items-start gap-6">
@@ -1075,7 +1067,7 @@ export function PricingAndBookingViews({
       {/* VIEW: BOOKING SETTINGS (Matches Figma Screenshots 100%) */}
       {/* --------------------------------------------------------- */}
       {activeSection === "booking-settings" && (
-        <div className="xl:max-w-[608px] md:max-w-[80%] mx-auto space-y-4 pb-10 font-sans animate-in fade-in">
+        <div className="w-full max-w-2xl space-y-6 pb-10 font-sans animate-in fade-in">
           <div className="flex items-center gap-6">
             <BackButton onClick={() => handleBack("pricing")} />
             <h1>{t("host_booking_settings_title")}</h1>
@@ -1094,7 +1086,6 @@ export function PricingAndBookingViews({
                   <svg aria-hidden="true" className="mt-0.5 size-8 shrink-0 text-[#1F1F1F] dark:text-zinc-100" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m13 2-8 12h6l-1 8 9-13h-6l0-7Z" /></svg>
                 </button>
 
-                <div className="my-5 border-t border-zinc-200 dark:border-zinc-700" />
                 <div className="space-y-5">
                   <div className="flex items-center justify-between gap-4">
                     <div>
@@ -1169,15 +1160,19 @@ export function PricingAndBookingViews({
         return isLoading ? (
           <CustomLinkSkeleton />
         ) : (
-          <div className="animate-in fade-in max-w-xl min-h-[420px] mx-auto flex flex-col items-center justify-center font-sans">
-            <div className="flex flex-col items-center justify-center space-y-6 w-full py-12">
+          <div className="w-full max-w-2xl space-y-6 pb-10 font-sans animate-in fade-in">
+            <div className="flex items-center gap-6">
+              <BackButton onClick={() => handleBack("pricing")} />
+              <h1>{t("host_custom_link_title", "Custom link")}</h1>
+            </div>
+            <div className="flex flex-col items-center justify-center space-y-6 w-full py-8">
               {/* Counter text */}
               <span className="text-base font-medium text-[#727272] dark:text-zinc-300 tracking-tight">
                 {Math.max(0, 100 - (customSlug?.length || 0))}/100 {t("host_characters_available")}
               </span>
 
               {/* homyz/stay/ slug input field */}
-              <div className="flex items-center justify-center text-3xl sm:text-4xl font-semibold text-[#1F1F1F] dark:text-zinc-100 tracking-tight">
+              <div className="flex items-center justify-center text-3xl sm:text-4xl font-medium text-[#1F1F1F] dark:text-zinc-100 tracking-tight">
                 <span className="text-[#727272] dark:text-[#727272]">homyz.com/stay/</span>
                 <input
                   type="text"
@@ -1186,7 +1181,7 @@ export function PricingAndBookingViews({
                     setCustomSlug?.(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
                   }
                   placeholder="your-space"
-                  className="outline-none bg-transparent border-b-2 border-transparent focus:border-amber-400 text-[#1F1F1F] dark:text-zinc-100 font-semibold min-w-[60px] max-w-[280px] pl-2.5 sm:pl-3 placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
+                  className="outline-none bg-transparent border-b-2 border-transparent focus:border-amber-400 text-[#1F1F1F] dark:text-zinc-100 font-medium min-w-[60px] max-w-[280px] pl-2.5 sm:pl-3 placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
                   autoFocus
                 />
               </div>
@@ -1209,7 +1204,6 @@ export function PricingAndBookingViews({
                   <span className="text-[#727272] dark:text-[#727272] font-normal">{t("host_custom_link_desc")}</span>
                 )}
               </div>
-
               {/* Save pill button */}
               <button
                 type="button"

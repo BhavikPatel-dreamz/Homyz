@@ -322,7 +322,7 @@ function GuidebookModal({
 
   return (
     <ModalOverlay
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/35 sm:items-center sm:p-5"
+      className="fixed inset-0 z-999 flex items-end justify-center bg-black/35 sm:items-center sm:p-5"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -335,7 +335,7 @@ function GuidebookModal({
       >
         <header className={`flex shrink-0 items-center justify-between px-6 sm:px-8 ${title ? "pt-4 pb-2 sm:pt-5" : "pt-3.5 pb-0 sm:pt-4"}`}>
           {title ? (
-            <h2 className="text-lg sm:text-xl font-semibold leading-tight text-[#1f1f1f] dark:text-zinc-100">
+            <h2 className="text-lg sm:text-xl font-medium leading-tight text-[#1f1f1f] dark:text-zinc-100">
               {title}
             </h2>
           ) : <div />}
@@ -578,7 +578,7 @@ function GuidebookRecommendationForm({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[12px] font-semibold uppercase tracking-wider text-[#717171]">
+            <p className="text-[12px] font-medium uppercase tracking-wider text-[#717171]">
               {isPlace ? t("host_guidebook_poi_label", "Point of interest") : t("host_guidebook_neighbourhood_label", "Neighbourhood")}
             </p>
             <input
@@ -586,7 +586,7 @@ function GuidebookRecommendationForm({
               value={title}
               maxLength={150}
               onChange={(event) => setTitle(event.target.value)}
-              className="mt-0.5 w-full border-0 border-b border-transparent py-0.5 text-xl sm:text-2xl font-semibold text-[#1f1f1f] outline-none placeholder:text-zinc-400 focus:border-zinc-400"
+              className="mt-0.5 w-full border-0 border-b border-transparent py-0.5 text-xl sm:text-2xl font-medium text-[#1f1f1f] outline-none placeholder:text-zinc-400 focus:border-zinc-400"
               placeholder={isPlace ? t("host_guidebook_place_name_ph", "Place name") : t("host_guidebook_neighbourhood_name_ph", "Neighbourhood name")}
             />
             <div className="mt-3">
@@ -614,7 +614,7 @@ function GuidebookRecommendationForm({
 
         <div>
           <label className="block">
-            <span className="mb-2 block text-base sm:text-lg font-semibold text-[#1f1f1f]">
+            <span className="mb-2 block text-base sm:text-lg font-medium text-[#1f1f1f]">
               {isPlace ? t("host_guidebook_why_recommend_place", "Why do you recommend this place?") : t("host_guidebook_why_recommend_neighbourhood", "Why do you recommend this neighbourhood?")}
             </span>
             <textarea
@@ -633,7 +633,7 @@ function GuidebookRecommendationForm({
         </div>
 
         <div>
-          <h3 className="text-base sm:text-lg font-semibold text-[#1f1f1f]">
+          <h3 className="text-base sm:text-lg font-medium text-[#1f1f1f]">
             {isPlace ? t("host_guidebook_categorise_place", "Categorise this place (Required)") : t("host_guidebook_categorise_neighbourhood", "Categorise this neighbourhood (Required)")}
           </h3>
           <p className="mb-3.5 mt-1 text-sm text-[#717171]">
@@ -1164,7 +1164,7 @@ export function GuidebooksManager({
                     )}
                   </div>
                   <div className="p-5">
-                    <h2 className="text-xl font-semibold">{item.title}</h2>
+                    <h2 className="text-xl font-medium">{item.title}</h2>
                     <p className="mt-1 text-sm text-[#727272]">
                       {t("host_guidebooks_recs_count", "{count} recommendations").replace("{count}", String(item.itemsCount || 0))} ·{" "}
                       {item.listings?.length || 0} {item.listings?.length === 1 ? t("host_listing_singular", "listing") : t("host_listings_plural", "listings")}
@@ -1215,7 +1215,7 @@ export function GuidebooksManager({
             className="space-y-6 rounded-3xl border border-zinc-200 bg-white p-7"
           >
             <label className="block">
-              <span className="mb-2 block font-semibold">{t("host_guidebook_title_label", "Guidebook title")}</span>
+              <span className="mb-2 block font-medium">{t("host_guidebook_title_label", "Guidebook title")}</span>
               <input
                 required
                 minLength={2}
@@ -1227,7 +1227,7 @@ export function GuidebooksManager({
               />
             </label>
             <label className="relative block">
-              <span className="mb-2 block font-semibold">{t("host_guidebook_primary_location", "Primary location")}</span>
+              <span className="mb-2 block font-medium">{t("host_guidebook_primary_location", "Primary location")}</span>
               <input
                 value={createLocation}
                 onChange={(event) => {
@@ -1263,13 +1263,13 @@ export function GuidebooksManager({
               <button
                 type="button"
                 onClick={() => setView("list")}
-                className="px-5 py-3 text-sm font-semibold underline"
+                className="px-5 py-3 text-sm font-medium underline"
               >
                 {t("host_cancel", "Cancel")}
               </button>
               <button
                 disabled={saving || createTitle.trim().length < 2}
-                className="rounded-xl bg-[#1f1f1f] px-6 py-3 text-sm font-semibold text-white disabled:bg-zinc-200"
+                className="rounded-xl bg-[#1f1f1f] px-6 py-3 text-sm font-medium text-white disabled:bg-zinc-200"
               >
                 {saving ? t("host_guidebook_creating", "Creating…") : t("host_create_guidebook", "Create guidebook")}
               </button>
@@ -1366,7 +1366,7 @@ export function GuidebooksManager({
               <button
                 type="button"
                 onClick={openAddMenu}
-                className="mt-7 rounded-xl bg-[#1f1f1f] px-7 py-3 text-sm font-semibold text-white"
+                className="mt-7 rounded-xl bg-[#1f1f1f] px-7 py-3 text-sm font-medium text-white"
               >
                 {t("host_guidebook_add_to_guidebook", "Add to guidebook")}
               </button>
@@ -1374,11 +1374,11 @@ export function GuidebooksManager({
           ) : (
             <>
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-semibold">{t("host_guidebook_recommendations_heading", "Recommendations")}</h2>
+                <h2 className="text-2xl font-medium">{t("host_guidebook_recommendations_heading", "Recommendations")}</h2>
                 <button
                   type="button"
                   onClick={openAddMenu}
-                  className="rounded-xl bg-[#1f1f1f] px-6 py-3 text-sm font-semibold text-white"
+                  className="rounded-xl bg-[#1f1f1f] px-6 py-3 text-sm font-medium text-white"
                 >
                   {t("host_guidebook_add_to_guidebook", "Add to guidebook")}
                 </button>
@@ -1387,7 +1387,7 @@ export function GuidebooksManager({
                 (group) =>
                   groupedItems[group].length > 0 && (
                     <section key={group} className="space-y-4">
-                      <h3 className="text-xl font-semibold">
+                      <h3 className="text-xl font-medium">
                         {group === "PLACE"
                           ? t("host_guidebook_group_places", "Places")
                           : group === "NEIGHBORHOOD"
@@ -1427,7 +1427,7 @@ export function GuidebooksManager({
                                 {item.categoryLabel ||
                                   getCategoryLabel(item.category)}
                               </p>
-                              <h4 className="mt-1 truncate text-lg font-semibold">
+                              <h4 className="mt-1 truncate text-lg font-medium">
                                 {item.title}
                               </h4>
                               <p className="mt-2 line-clamp-2 text-sm text-[#727272]">
@@ -1568,7 +1568,7 @@ export function GuidebooksManager({
           </div>
           <div className="mt-8 space-y-6">
             <label className="block">
-              <span className="mb-2 block text-base sm:text-lg font-semibold text-[#1f1f1f]">
+              <span className="mb-2 block text-base sm:text-lg font-medium text-[#1f1f1f]">
                 {t("host_guidebook_advice_title_label", "Advice title")}
               </span>
               <input
@@ -1580,7 +1580,7 @@ export function GuidebooksManager({
               />
             </label>
             <label className="block">
-              <span className="mb-2 block text-base sm:text-lg font-semibold text-[#1f1f1f]">
+              <span className="mb-2 block text-base sm:text-lg font-medium text-[#1f1f1f]">
                 {t("host_guidebook_your_advice_label", "Your advice")}
               </span>
               <textarea

@@ -39,7 +39,7 @@ export function HomyzLogo({ size = 28, className = "", ...props }: HomyzLogoProp
 
 export function HomyzBrandLogo({
   className = "",
-  textClassName = "text-xl font-semibold tracking-tight text-[#1F1F1F]",
+  textClassName = "text-xl font-medium tracking-tight text-[#1F1F1F]",
 }: {
   className?: string;
   textClassName?: string;

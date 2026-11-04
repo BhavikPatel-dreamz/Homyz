@@ -754,12 +754,12 @@ export function GuestMessagesWorkspace({
                           className="size-12 rounded-full object-cover border border-zinc-200"
                         />
                       ) : (
-                          <div className="size-10 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-base border border-amber-300">
+                          <div className="size-10 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center font-medium text-base border border-amber-300">
                           (conv.host.name || t("messages_guest_default_host_name"))[0]?.toUpperCase()
                         </div>
                       )}
                       {hasUnread && (
-                        <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-xs">
+                        <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white shadow-xs">
                           {conv.unreadCount}
                         </span>
                       )}
@@ -767,7 +767,7 @@ export function GuestMessagesWorkspace({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <span className={`text-sm truncate ${hasUnread ? "font-semibold text-[#1F1F1F]" : "font-medium text-zinc-800"}`}>
+                        <span className={`text-sm truncate ${hasUnread ? "font-medium text-[#1F1F1F]" : "font-medium text-zinc-800"}`}>
                           {conv.host.name || t("messages_guest_default_host_name")}
                         </span>
                         <span className="text-xs text-[#727272] shrink-0">
@@ -824,7 +824,7 @@ export function GuestMessagesWorkspace({
                       className="size-11 rounded-full object-cover border border-zinc-200"
                     />
                   ) : (
-                    <div className="size-11 rounded-full bg-zinc-200 text-zinc-800 flex items-center justify-center font-bold text-base">
+                    <div className="size-11 rounded-full bg-zinc-200 text-zinc-800 flex items-center justify-center font-medium text-base">
                       (selectedConversation.host.name || t("messages_guest_default_host_name"))[0]?.toUpperCase()
                     </div>
                   )}
@@ -979,7 +979,7 @@ export function GuestMessagesWorkspace({
                           <div className="max-w-md w-full rounded-lg border-2 border-amber-300 bg-amber-50 p-5 shadow-sm space-y-3">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
+                                <span className="text-xs font-medium text-amber-900 uppercase tracking-wider">
                                   {t("messages_guest_so_from_host")}
                                 </span>
                                 {hasBooking ? (
@@ -1019,7 +1019,7 @@ export function GuestMessagesWorkspace({
                                 </div>
                                 <div>
                                   <span className="text-zinc-500 block">{t("messages_guest_special_price_label")}</span>
-                                  <span className="font-bold text-amber-900 text-sm">
+                                  <span className="font-medium text-amber-900 text-sm">
                                     {formatPrice(subtotalPrice, currency, 2)}
                                   </span>
                                 </div>
@@ -1082,7 +1082,7 @@ export function GuestMessagesWorkspace({
                       return (
                         <div key={m.id} className="flex justify-center my-3">
                           <div className="max-w-md w-full rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-2xs space-y-2 text-center">
-                            <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">
+                            <span className="text-xs font-medium text-emerald-800 uppercase tracking-wider block">
                               {t("messages_guest_preapproved_title")}
                             </span>
                             <p className="text-xs sm:text-sm text-emerald-950">{m.content}</p>
@@ -1102,7 +1102,7 @@ export function GuestMessagesWorkspace({
                       return (
                         <div key={m.id} className="flex justify-center my-3">
                           <div className="max-w-md w-full rounded-2xl border border-zinc-200 bg-zinc-100 p-3.5 shadow-2xs text-center space-y-1">
-                            <span className="text-xs font-bold text-zinc-700 uppercase tracking-wider">
+                            <span className="text-xs font-medium text-zinc-700 uppercase tracking-wider">
                               {t("messages_declined_notice")}
                             </span>
                             <p className="text-xs sm:text-sm text-zinc-700">{m.content}</p>
@@ -1305,7 +1305,7 @@ export function GuestMessagesWorkspace({
                               </div>
                             )}
                             {s.status === "FAILED" && (
-                              <div className="absolute inset-0 bg-red-500/60 flex items-center justify-center text-white text-[10px] font-bold">
+                              <div className="absolute inset-0 bg-red-500/60 flex items-center justify-center text-white text-[10px] font-medium">
                                 !
                               </div>
                             )}
@@ -1444,7 +1444,7 @@ export function GuestMessagesWorkspace({
                 <button
                   type="button"
                   onClick={() => setLightboxAttachment(null)}
-                  className="size-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors font-bold"
+                  className="size-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors font-medium"
                 >
                   ✕
                 </button>

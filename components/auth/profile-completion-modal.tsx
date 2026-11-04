@@ -161,7 +161,7 @@ function ProfileCompletionDialog({
         className="max-h-[calc(100dvh-2rem)] w-full max-w-[520px] overflow-y-auto overscroll-contain rounded-[24px] bg-white text-[#1F1F1F] shadow-2xl"
       >
         <div className="border-b border-zinc-200 px-6 py-5 text-center sm:px-8">
-          <h2 id="profile-completion-title" className="text-xl font-semibold tracking-tight">
+          <h2 id="profile-completion-title" className="text-xl font-medium tracking-tight">
             {t("profile_completion_title", "Let's complete your profile")}
           </h2>
           <p id="profile-completion-description" className="mt-1 text-sm text-[#727272]">
@@ -178,7 +178,7 @@ function ProfileCompletionDialog({
 
           {/* Full name */}
           <div>
-            <label htmlFor="profile-full-name" className="mb-2 block text-sm font-semibold">
+            <label htmlFor="profile-full-name" className="mb-2 block text-sm font-medium">
               {t("profile_completion_name_label", "Full name")} <span aria-hidden="true">*</span>
             </label>
             <input
@@ -197,7 +197,7 @@ function ProfileCompletionDialog({
 
           {/* Birth date */}
           <div>
-            <label htmlFor="profile-birth-date" className="mb-2 block text-sm font-semibold">
+            <label htmlFor="profile-birth-date" className="mb-2 block text-sm font-medium">
               {t("profile_completion_birth_date_label", "Birth date")} <span aria-hidden="true">*</span>
             </label>
             <input
@@ -217,7 +217,7 @@ function ProfileCompletionDialog({
           {/* Email (optional field) */}
           {needsEmail ? (
             <div>
-              <label htmlFor="profile-email" className="mb-2 block text-sm font-semibold">
+              <label htmlFor="profile-email" className="mb-2 block text-sm font-medium">
                 {t("profile_completion_email_label", "Email address")} <span aria-hidden="true">*</span>
               </label>
               <input
@@ -239,7 +239,7 @@ function ProfileCompletionDialog({
           {/* Mobile number — country code dropdown + local number (mirrors login page) */}
           {needsPhone ? (
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-sm font-medium">
                 {t("profile_completion_phone_label", "Mobile number")} <span aria-hidden="true">*</span>
               </label>
 
@@ -310,7 +310,7 @@ function ProfileCompletionDialog({
           <button
             type="submit"
             disabled={pending}
-            className="flex h-12 w-full items-center justify-center rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-wait disabled:opacity-65"
+            className="flex h-12 w-full items-center justify-center rounded-xl bg-[#1F1F1F] px-5 text-sm font-medium text-white transition hover:bg-black disabled:cursor-wait disabled:opacity-65"
           >
             {pending ? t("profile_completion_btn_saving", "Saving profile…") : t("profile_completion_btn_save", "Save and continue")}
           </button>

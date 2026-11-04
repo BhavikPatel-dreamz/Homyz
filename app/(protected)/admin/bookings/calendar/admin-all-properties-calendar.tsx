@@ -254,20 +254,20 @@ export function AdminAllPropertiesCalendar({
           </p>
         </div>
         {/* <div className="flex flex-wrap gap-2">
-          <Link href="/admin/bookings/all" className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)]">All Bookings</Link>
-          <Link href="/admin/bookings/cancellations" className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)]">Cancellations</Link>
-          <button type="button" onClick={() => load(new URLSearchParams(searchParams.toString()))} disabled={loading} className="rounded-xl bg-[var(--accent)] px-3.5 py-2 text-xs font-semibold text-[var(--accent-foreground)] disabled:opacity-60">{loading ? "Syncing…" : "Refresh"}</button>
+          <Link href="/admin/bookings/all" className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)]">All Bookings</Link>
+          <Link href="/admin/bookings/cancellations" className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)]">Cancellations</Link>
+          <button type="button" onClick={() => load(new URLSearchParams(searchParams.toString()))} disabled={loading} className="rounded-xl bg-[var(--accent)] px-3.5 py-2 text-xs font-medium text-[var(--accent-foreground)] disabled:opacity-60">{loading ? "Syncing…" : "Refresh"}</button>
         </div> */}
       </div>
 
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-2 shadow-2xs">
-        <button type="button" className="rounded-xl bg-[var(--accent)] px-4 py-2 text-xs font-bold text-[var(--accent-foreground)]">All Properties</button>
-        <button type="button" onClick={() => onSelectProperty(data?.properties[0]?.id || "")} disabled={!data?.properties.length} className="rounded-xl px-4 py-2 text-xs font-semibold text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50">Single Property</button>
+        <button type="button" className="rounded-xl bg-[var(--accent)] px-4 py-2 text-xs font-medium text-[var(--accent-foreground)]">All Properties</button>
+        <button type="button" onClick={() => onSelectProperty(data?.properties[0]?.id || "")} disabled={!data?.properties.length} className="rounded-xl px-4 py-2 text-xs font-medium text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50">Single Property</button>
         <span className="ml-auto px-2 text-[11px] font-medium text-[var(--muted-foreground)]">Admin view only — availability changes are managed by hosts.</span>
       </div>
 
       <section aria-label="Calendar filters" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
-        <div className="mb-3 flex items-center justify-between gap-3"><div><h2 className="text-sm font-bold text-foreground">Filter properties</h2><p className="text-[11px] text-[var(--muted-foreground)]">Selections apply together and update the calendar immediately.</p></div><button type="button" onClick={clearAllFilters} className="text-xs font-semibold text-[var(--accent)] hover:underline">Clear all</button></div>
+        <div className="mb-3 flex items-center justify-between gap-3"><div><h2 className="text-sm font-medium text-foreground">Filter properties</h2><p className="text-[11px] text-[var(--muted-foreground)]">Selections apply together and update the calendar immediately.</p></div><button type="button" onClick={clearAllFilters} className="text-xs font-medium text-[var(--accent)] hover:underline">Clear all</button></div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <SearchableFilterCombobox label="Property" placeholder="All properties" value={searchParams.get("filterListingId") || ""} onChange={(value) => setFilter("filterListingId", value)} loadOptions={(search, page, signal, selected) => loadFilterOptions("properties", search, page, signal, selected)} />
           <SearchableFilterCombobox label="Host" placeholder="All hosts" value={searchParams.get("hostId") || ""} onChange={(value) => setFilter("hostId", value)} loadOptions={(search, page, signal, selected) => loadFilterOptions("hosts", search, page, signal, selected)} />
@@ -281,13 +281,13 @@ export function AdminAllPropertiesCalendar({
 
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => moveRange(-1)} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-bold text-foreground">←</button>
-          <button type="button" onClick={() => changeRange(rangeMode, dateKey(new Date()))} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-foreground">{t("host_calendar_today", "Today")}</button>
-          <button type="button" onClick={() => moveRange(1)} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-bold text-foreground">→</button>
-          <h2 className="ml-1 text-base font-bold text-foreground">{timelineLabel}</h2>
+          <button type="button" onClick={() => moveRange(-1)} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-medium text-foreground">←</button>
+          <button type="button" onClick={() => changeRange(rangeMode, dateKey(new Date()))} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-medium text-foreground">{t("host_calendar_today", "Today")}</button>
+          <button type="button" onClick={() => moveRange(1)} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-medium text-foreground">→</button>
+          <h2 className="ml-1 text-base font-medium text-foreground">{timelineLabel}</h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {(["7", "14", "month"] as const).map((mode) => <button key={mode} type="button" onClick={() => changeRange(mode)} className={`rounded-xl px-3 py-2 text-xs font-semibold ${rangeMode === mode ? "bg-[var(--accent)] text-[var(--accent-foreground)]" : "border border-[var(--border)] bg-[var(--surface)] text-foreground"}`}>{mode === "month" ? t("host_calendar_view_month", "Month") : `${mode} days`}</button>)}
+          {(["7", "14", "month"] as const).map((mode) => <button key={mode} type="button" onClick={() => changeRange(mode)} className={`rounded-xl px-3 py-2 text-xs font-medium ${rangeMode === mode ? "bg-[var(--accent)] text-[var(--accent-foreground)]" : "border border-[var(--border)] bg-[var(--surface)] text-foreground"}`}>{mode === "month" ? t("host_calendar_view_month", "Month") : `${mode} days`}</button>)}
           <span className="ml-1 text-[11px] font-medium"><span className="text-emerald-600">■</span> Confirmed <span className="ml-2 text-amber-600">■</span> Hold <span className="ml-2 text-zinc-500">▨</span> Blocked</span>
         </div>
       </div>
@@ -297,9 +297,9 @@ export function AdminAllPropertiesCalendar({
       <div className="overflow-x-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xs">
         <div className="min-w-[900px]">
           <div className="sticky top-0 z-10 flex border-b border-[var(--border)] bg-[var(--surface)]">
-            <div className="w-64 shrink-0 border-r border-[var(--border)] px-4 py-3 text-xs font-bold text-foreground">Property</div>
+            <div className="w-64 shrink-0 border-r border-[var(--border)] px-4 py-3 text-xs font-medium text-foreground">Property</div>
             <div className="grid flex-1" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(56px, 1fr))` }}>
-              {days.map((day) => { const date = parseDateKey(day); return <div key={day} className={`border-r border-[var(--border)] px-1 py-2 text-center text-[10px] ${date.getUTCDay() === 0 || date.getUTCDay() === 6 ? "bg-[var(--surface-secondary)]/60" : ""}`}><div className="font-semibold text-[var(--muted-foreground)]">{date.toLocaleDateString("en", { weekday: "short", timeZone: "UTC" })}</div><div className="font-bold text-foreground">{date.getUTCDate()}</div></div>; })}
+              {days.map((day) => { const date = parseDateKey(day); return <div key={day} className={`border-r border-[var(--border)] px-1 py-2 text-center text-[10px] ${date.getUTCDay() === 0 || date.getUTCDay() === 6 ? "bg-[var(--surface-secondary)]/60" : ""}`}><div className="font-medium text-[var(--muted-foreground)]">{date.toLocaleDateString("en", { weekday: "short", timeZone: "UTC" })}</div><div className="font-medium text-foreground">{date.getUTCDate()}</div></div>; })}
             </div>
           </div>
           {loading && !data ? <div className="p-8 text-center text-sm">Loading properties…</div> : data?.properties.map((property) => {
@@ -308,7 +308,7 @@ export function AdminAllPropertiesCalendar({
             return <div key={property.id} className="flex border-b border-[var(--border)] last:border-0" style={{ minHeight: rowHeight }}>
               <button type="button" onClick={() => onSelectProperty(property.id)} className="flex w-64 shrink-0 items-center gap-3 border-r border-[var(--border)] px-3 text-left hover:bg-[var(--surface-secondary)]/50">
                 <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-[var(--surface-secondary)]">{property.photos[0] && <Image src={property.photos[0]} alt="" fill unoptimized className="object-cover" />}</div>
-                <span className="min-w-0"><span className="block truncate text-xs font-bold text-foreground">{property.title}</span><span className="block truncate text-[10px] text-[var(--muted-foreground)]">{property.city || "Location unavailable"} · {property.host.name || property.host.email || "Host unavailable"}</span></span>
+                <span className="min-w-0"><span className="block truncate text-xs font-medium text-foreground">{property.title}</span><span className="block truncate text-[10px] text-[var(--muted-foreground)]">{property.city || "Location unavailable"} · {property.host.name || property.host.email || "Host unavailable"}</span></span>
               </button>
               <div className="relative flex-1" style={{ minHeight: rowHeight }}>
                 <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(56px, 1fr))` }}>{days.map((day) => <div key={day} title={property.blockedDates.includes(day) ? "Host blocked date" : "Available"} className={`border-r border-[var(--border)] ${property.blockedDates.includes(day) ? "bg-zinc-300/60 dark:bg-zinc-700/60" : "bg-[var(--surface)]"}`} />)}</div>
@@ -316,7 +316,7 @@ export function AdminAllPropertiesCalendar({
                   const startIndex = Math.max(0, daysBetween(range.startDate, booking.startDate));
                   const endIndex = Math.min(days.length, daysBetween(range.startDate, booking.endDate));
                   const width = Math.max(1, endIndex - startIndex);
-                  return <button key={booking.id} type="button" onClick={() => setPreview({ booking, propertyTitle: property.title })} title={`${booking.user.name || "Guest"}: ${booking.startDate} to ${booking.endDate}`} className={`absolute z-[1] truncate rounded-md px-2 text-left text-[10px] font-bold shadow-sm ${booking.isPendingHold ? "bg-amber-200 text-amber-950 hover:bg-amber-300 dark:bg-amber-900 dark:text-amber-100" : "bg-emerald-200 text-emerald-950 hover:bg-emerald-300 dark:bg-emerald-900 dark:text-emerald-100"}`} style={{ top: 8 + lane * 26, left: `calc(${(startIndex / days.length) * 100}% + 2px)`, width: `calc(${(width / days.length) * 100}% - 4px)`, height: 21 }}>{booking.isPendingHold ? "⏳ " : "● "}{booking.user.name || "Guest"}</button>;
+                  return <button key={booking.id} type="button" onClick={() => setPreview({ booking, propertyTitle: property.title })} title={`${booking.user.name || "Guest"}: ${booking.startDate} to ${booking.endDate}`} className={`absolute z-[1] truncate rounded-md px-2 text-left text-[10px] font-medium shadow-sm ${booking.isPendingHold ? "bg-amber-200 text-amber-950 hover:bg-amber-300 dark:bg-amber-900 dark:text-amber-100" : "bg-emerald-200 text-emerald-950 hover:bg-emerald-300 dark:bg-emerald-900 dark:text-emerald-100"}`} style={{ top: 8 + lane * 26, left: `calc(${(startIndex / days.length) * 100}% + 2px)`, width: `calc(${(width / days.length) * 100}% - 4px)`, height: 21 }}>{booking.isPendingHold ? "⏳ " : "● "}{booking.user.name || "Guest"}</button>;
                 })}
               </div>
             </div>;
@@ -334,14 +334,14 @@ export function AdminAllPropertiesCalendar({
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl">
             <div className="flex items-start justify-between border-b border-[var(--border)] pb-4">
-              <div><p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">{preview.propertyTitle}</p><h3 className="mt-1 text-lg font-bold text-foreground">Reservation preview</h3></div>
+              <div><p className="text-[10px] font-medium uppercase tracking-wider text-[var(--muted-foreground)]">{preview.propertyTitle}</p><h3 className="mt-1 text-lg font-medium text-foreground">Reservation preview</h3></div>
               <button type="button" onClick={() => setPreview(null)} className="rounded-lg p-1 text-lg text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)]">×</button>
             </div>
-            <div className="mt-4 flex flex-wrap gap-2"><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${preview.booking.isPendingHold ? "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200"}`}>{preview.booking.isPendingHold ? "Pending hold (24h)" : "Confirmed reservation"}</span><span className="rounded-full bg-[var(--surface-secondary)] px-2.5 py-1 font-mono text-[10px] text-[var(--muted-foreground)]">Ref {preview.booking.id.slice(0, 12)}</span></div>
-            <div className="mt-5 grid grid-cols-2 gap-4 text-xs"><div><p className="text-[var(--muted-foreground)]">Guest</p><p className="mt-1 font-bold text-foreground">{preview.booking.user.name || "Unknown guest"}</p><p>{preview.booking.user.email || "No email available"}</p></div><div><p className="text-[var(--muted-foreground)]">Payment status</p><p className="mt-1 font-bold text-foreground">{preview.booking.payments?.[0]?.status?.replace(/_/g, " ") || "Unavailable"}</p><p>{preview.booking.bookingType.replace(/_/g, " ")}</p></div></div>
-            <div className="mt-4 grid grid-cols-3 gap-2 border-y border-[var(--border)] py-4 text-xs"><div><p className="text-[var(--muted-foreground)]">Check-in</p><p className="mt-1 font-bold text-foreground">{preview.booking.startDate}</p></div><div><p className="text-[var(--muted-foreground)]">Check-out</p><p className="mt-1 font-bold text-foreground">{preview.booking.endDate}</p></div><div><p className="text-[var(--muted-foreground)]">Total</p><p className="mt-1 font-bold text-foreground">{formatPrice(preview.booking.totalPrice || 0, preview.booking.currency || "SAR")}</p></div></div>
+            <div className="mt-4 flex flex-wrap gap-2"><span className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${preview.booking.isPendingHold ? "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200"}`}>{preview.booking.isPendingHold ? "Pending hold (24h)" : "Confirmed reservation"}</span><span className="rounded-full bg-[var(--surface-secondary)] px-2.5 py-1 font-mono text-[10px] text-[var(--muted-foreground)]">Ref {preview.booking.id.slice(0, 12)}</span></div>
+            <div className="mt-5 grid grid-cols-2 gap-4 text-xs"><div><p className="text-[var(--muted-foreground)]">Guest</p><p className="mt-1 font-medium text-foreground">{preview.booking.user.name || "Unknown guest"}</p><p>{preview.booking.user.email || "No email available"}</p></div><div><p className="text-[var(--muted-foreground)]">Payment status</p><p className="mt-1 font-medium text-foreground">{preview.booking.payments?.[0]?.status?.replace(/_/g, " ") || "Unavailable"}</p><p>{preview.booking.bookingType.replace(/_/g, " ")}</p></div></div>
+            <div className="mt-4 grid grid-cols-3 gap-2 border-y border-[var(--border)] py-4 text-xs"><div><p className="text-[var(--muted-foreground)]">Check-in</p><p className="mt-1 font-medium text-foreground">{preview.booking.startDate}</p></div><div><p className="text-[var(--muted-foreground)]">Check-out</p><p className="mt-1 font-medium text-foreground">{preview.booking.endDate}</p></div><div><p className="text-[var(--muted-foreground)]">Total</p><p className="mt-1 font-medium text-foreground">{formatPrice(preview.booking.totalPrice || 0, preview.booking.currency || "SAR")}</p></div></div>
             {preview.booking.isPendingHold && <p className="mt-4 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-200">This is an active hold and will release automatically if it expires. {preview.booking.countdownText || ""}</p>}
-            <div className="mt-6 flex justify-end gap-2"><button type="button" onClick={() => setPreview(null)} className="rounded-xl border border-[var(--border)] px-4 py-2 text-xs font-semibold text-foreground">Close</button><Link href={`/admin/bookings/all?search=${encodeURIComponent(preview.booking.id)}`} className="rounded-xl bg-[var(--accent)] px-4 py-2 text-xs font-semibold text-[var(--accent-foreground)]">View booking details</Link></div>
+            <div className="mt-6 flex justify-end gap-2"><button type="button" onClick={() => setPreview(null)} className="rounded-xl border border-[var(--border)] px-4 py-2 text-xs font-medium text-foreground">Close</button><Link href={`/admin/bookings/all?search=${encodeURIComponent(preview.booking.id)}`} className="rounded-xl bg-[var(--accent)] px-4 py-2 text-xs font-medium text-[var(--accent-foreground)]">View booking details</Link></div>
           </div>
         </ModalOverlay>
       )}

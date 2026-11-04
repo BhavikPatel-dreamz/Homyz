@@ -13,6 +13,8 @@ import path from "node:path";
  */
 
 export type PublicMediaKind =
+  | "branding"
+  | "homepage"
   | "listing-photos"
   | "guidebook-photos"
   | "cms-media"
@@ -32,6 +34,8 @@ export type PrivateMediaKind =
 export type MediaKind = PublicMediaKind | PrivateMediaKind;
 
 export const PUBLIC_KINDS = new Set<string>([
+  "branding",
+  "homepage",
   "listing-photos",
   "guidebook-photos",
   "cms-media",
@@ -389,6 +393,26 @@ async function writeObject(options: {
         key,
       };
     } catch (err) {
+      // Older deployed media services may not yet recognise the newer
+      // branding/homepage namespaces. Keep uploads functional during a rolling
+      // deployment by falling back to the long-established CMS public bucket.
+      if (
+        (options.kind === "branding" || options.kind === "homepage") &&
+        err instanceof Error &&
+        err.message.includes("(404)")
+      ) {
+        const compatibilityKey = objectKey("cms-media", fileName);
+        const saved = await putMediaServer({
+          key: compatibilityKey,
+          body: options.body,
+          contentType: options.contentType,
+        });
+        return {
+          url: publicMediaUrl(compatibilityKey, saved.publicUrl),
+          fileName,
+          key: compatibilityKey,
+        };
+      }
       if (wireKind !== options.kind) {
         const originalKey = objectKey(options.kind, fileName);
         const saved = await putMediaServer({

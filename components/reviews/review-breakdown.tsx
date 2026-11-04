@@ -56,7 +56,7 @@ export function ReviewBreakdown({
       <div className={`w-full space-y-6 ${className}`} aria-label="Rating breakdown">
         {/* Overall rating distribution (5 to 1) */}
         <div>
-          <p className="text-sm font-semibold text-[#1f1f1f]">
+          <p className="text-sm font-medium text-[#1f1f1f]">
             {t("reviews_overall_rating", "Overall rating")}
           </p>
           <div className="mt-3 space-y-2" aria-label="Rating star distribution">
@@ -71,7 +71,7 @@ export function ReviewBreakdown({
                     onSelectRating ? "hover:bg-zinc-100 cursor-pointer" : ""
                   } ${
                     isSelected
-                      ? "bg-zinc-100 font-semibold ring-1 ring-zinc-300"
+                      ? "bg-zinc-100 font-medium ring-1 ring-zinc-300"
                       : "text-zinc-600"
                   }`}
                 >
@@ -126,7 +126,7 @@ export function ReviewBreakdown({
                       {t(labelKey, defaultLabel)}
                     </span>
                   </div>
-                  <span className="shrink-0 text-sm font-semibold tabular-nums text-[#1f1f1f]">
+                  <span className="shrink-0 text-sm font-medium tabular-nums text-[#1f1f1f]">
                     {formattedScore}
                   </span>
                 </div>
@@ -147,7 +147,7 @@ export function ReviewBreakdown({
         <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-4 space-y-3.5">
           <div className="flex items-center gap-2">
             <ReviewIcon name="star" className="size-5 fill-zinc-900 text-zinc-900" />
-            <span className="text-xl font-bold tracking-tight text-[#1f1f1f]">
+            <span className="text-xl font-medium tracking-tight text-[#1f1f1f]">
               {displayAverageRating}
             </span>
             <span className="text-sm font-medium text-[#727272]">
@@ -212,7 +212,7 @@ export function ReviewBreakdown({
       <div className="hidden md:block lg:hidden space-y-6">
         {/* Separated Overall Rating Histogram */}
         <div className="max-w-sm rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-5">
-          <p className="text-sm font-semibold text-[#1f1f1f]">
+          <p className="text-sm font-medium text-[#1f1f1f]">
             {t("reviews_overall_rating", "Overall rating")}
           </p>
           <div className="mt-3 space-y-2" aria-label="Rating star distribution">
@@ -251,7 +251,7 @@ export function ReviewBreakdown({
                   <p className="truncate text-sm font-medium text-[#1f1f1f]" title={t(labelKey, defaultLabel)}>
                     {t(labelKey, defaultLabel)}
                   </p>
-                  <p className="mt-1 text-xl font-semibold tracking-tight text-[#1f1f1f]">
+                  <p className="mt-1 text-xl font-medium tracking-tight text-[#1f1f1f]">
                     {formattedScore}
                   </p>
                 </div>
@@ -303,7 +303,7 @@ export function ReviewBreakdown({
                 <p className="text-sm font-medium text-[#1f1f1f] truncate" title={t(labelKey, defaultLabel)}>
                   {t(labelKey, defaultLabel)}
                 </p>
-                <p className="mt-1 text-lg font-semibold tracking-tight text-[#1f1f1f]">
+                <p className="mt-1 text-lg font-medium tracking-tight text-[#1f1f1f]">
                   {formattedScore}
                 </p>
               </div>

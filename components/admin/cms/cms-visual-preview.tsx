@@ -33,7 +33,7 @@ export function CmsVisualPreview({
     <div className={`space-y-4 ${className}`}>
       {/* Viewport Control Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 bg-zinc-100 p-2 rounded-xl text-xs">
-        <div className="flex items-center gap-2 font-semibold text-zinc-700">
+        <div className="flex items-center gap-2 font-medium text-zinc-700">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span>Visual Renderer</span>
           {versionNumber !== undefined && (
@@ -208,7 +208,7 @@ function BannerRenderer({
         }`}
       >
         <div className={`space-y-3 ${viewport === "mobile" ? "w-full" : "max-w-xl"}`}>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-white/10 backdrop-blur-xs border border-white/10">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium tracking-wider uppercase bg-white/10 backdrop-blur-xs border border-white/10">
             Featured Highlight
           </div>
 
@@ -242,7 +242,7 @@ function BannerRenderer({
         {buttonText && (
           <div className="shrink-0">
             <span
-              className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold text-sm shadow-md transition transform hover:scale-105"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-medium text-sm shadow-md transition transform hover:scale-105"
               style={{
                 backgroundColor: textColor === "#FFFFFF" || textColor === "#ffffff" ? "#FFFFFF" : "#1F1F1F",
                 color: textColor === "#FFFFFF" || textColor === "#ffffff" ? "#1F1F1F" : "#FFFFFF",
@@ -283,12 +283,12 @@ function HeroSectionRenderer({
         <img src={bg} alt="Hero" className="w-full h-full object-cover" />
       </div>
       <div className="relative z-10 max-w-lg space-y-3">
-        <h1 className="text-2xl sm:text-3xl font-bold">{heading}</h1>
+        <h1 className="text-2xl sm:text-3xl font-medium">{heading}</h1>
         {subheading && <p className="text-xs sm:text-sm text-zinc-200">{subheading}</p>}
         {payload.showSearchBar && (
           <div className="bg-white/95 rounded-full p-2 max-w-sm mx-auto shadow-lg flex items-center justify-between text-xs text-zinc-400 px-4">
             <span>Anywhere • Any week • Add guests</span>
-            <span className="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold">
+            <span className="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center font-medium">
               🔍
             </span>
           </div>
@@ -308,18 +308,18 @@ function PromoRenderer({
   return (
     <div className="border border-amber-200 bg-amber-50 rounded-2xl p-6 space-y-3">
       <div className="flex items-center justify-between">
-        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white uppercase">
+        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-500 text-white uppercase">
           {payload.discountPercent ? `${payload.discountPercent}% OFF` : "PROMOTION"}
         </span>
         {payload.promoCode && (
-          <span className="font-mono text-xs font-bold text-amber-900 bg-amber-200/60 px-2 py-0.5 rounded">
+          <span className="font-mono text-xs font-medium text-amber-900 bg-amber-200/60 px-2 py-0.5 rounded">
             CODE: {payload.promoCode}
           </span>
         )}
       </div>
-      <h3 className="text-lg font-bold text-zinc-900">{payload.headline || payload.campaignName}</h3>
+      <h3 className="text-lg font-medium text-zinc-900">{payload.headline || payload.campaignName}</h3>
       {payload.subheadline && <p className="text-xs text-zinc-600">{payload.subheadline}</p>}
-      <button type="button" className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-semibold">
+      <button type="button" className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium">
         {payload.ctaText || "Book Now"}
       </button>
     </div>
@@ -335,14 +335,14 @@ function StaticPageRenderer({
   return (
     <div className="bg-white rounded-2xl p-6 space-y-4 border border-zinc-200">
       <div className="border-b border-zinc-100 pb-3">
-        <h2 className="text-xl font-bold text-zinc-900">{payload.heroTitle || "Page Title"}</h2>
+        <h2 className="text-xl font-medium text-zinc-900">{payload.heroTitle || "Page Title"}</h2>
         {payload.heroSubtitle && <p className="text-xs text-zinc-500 mt-1">{payload.heroSubtitle}</p>}
       </div>
       {Array.isArray(payload.sections) && payload.sections.length > 0 && (
         <div className="space-y-3">
           {payload.sections.map((s: any, idx: number) => (
             <div key={idx} className="space-y-1">
-              <h4 className="font-bold text-sm text-zinc-800">{s.title}</h4>
+              <h4 className="font-medium text-sm text-zinc-800">{s.title}</h4>
               <p className="text-xs text-zinc-600 leading-relaxed">{s.body}</p>
             </div>
           ))}
@@ -358,7 +358,7 @@ function FaqItemRenderer({ payload }: { payload: Record<string, any> }) {
     <div className="border border-zinc-200 rounded-xl p-4 bg-white space-y-2">
       <div
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between cursor-pointer font-bold text-sm text-zinc-900"
+        className="flex items-center justify-between cursor-pointer font-medium text-sm text-zinc-900"
       >
         <span>{payload.question || "Frequently Asked Question"}</span>
         <span>{open ? "−" : "+"}</span>
@@ -382,7 +382,7 @@ function GenericRenderer({
   return (
     <div className="bg-white rounded-2xl p-6 border border-zinc-200 space-y-3">
       <div className="flex items-center gap-2">
-        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-zinc-100 text-zinc-700 uppercase">
+        <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-zinc-100 text-zinc-700 uppercase">
           {type}
         </span>
         <span className="text-xs text-zinc-500">Live preview structured attributes</span>
@@ -390,7 +390,7 @@ function GenericRenderer({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
         {Object.entries(payload).map(([k, v]) => (
           <div key={k} className="p-2 bg-zinc-50 rounded-lg border border-zinc-100">
-            <span className="font-semibold text-zinc-500 block text-[10px]">{k}</span>
+            <span className="font-medium text-zinc-500 block text-[10px]">{k}</span>
             <span className="text-zinc-800 truncate block">
               {typeof v === "object" ? JSON.stringify(v) : String(v)}
             </span>

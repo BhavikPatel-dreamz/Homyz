@@ -57,9 +57,11 @@ export class CmsSettingsService {
         value: JSON.stringify(validated),
         description: "CMS Global Website Identity, Contact, Social, and Appearance Settings",
         dataType: "JSON",
+        updatedBy: actor.id,
       },
       update: {
         value: JSON.stringify(validated),
+        updatedBy: actor.id,
       },
     });
 
@@ -73,6 +75,16 @@ export class CmsSettingsService {
       metadata: {
         siteName: validated.siteName,
         defaultLocale: validated.defaultLocale,
+        brandingAssets: [
+          validated.globalLogoAssetId,
+          validated.guestHeaderLogoAssetId,
+          validated.hostHeaderLogoAssetId,
+          validated.adminLogoAssetId,
+          validated.mobileLogoAssetId,
+          validated.faviconAssetId,
+          validated.homepageHeroDesktopAssetId,
+          validated.homepageHeroMobileAssetId,
+        ].filter(Boolean),
       },
     });
 
@@ -80,6 +92,9 @@ export class CmsSettingsService {
       revalidateTag("app-settings", "max");
       revalidateTag("cms-content", "max");
       revalidatePath("/", "layout");
+      revalidatePath("/", "page");
+      revalidatePath("/host", "layout");
+      revalidatePath("/admin", "layout");
     } catch (err) {
       console.warn("[CmsSettingsService] Cache revalidation warning:", err);
     }
@@ -89,4 +104,3 @@ export class CmsSettingsService {
 }
 
 export const cmsSettingsService = new CmsSettingsService();
-

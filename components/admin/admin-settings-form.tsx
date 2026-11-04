@@ -155,8 +155,8 @@ export function AdminSettingsForm({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4 mb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-base font-bold text-muted-foreground">Global Guest Service Fee</h2>
-              <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600">
+              <h2 className="text-base font-medium text-muted-foreground">Global Guest Service Fee</h2>
+              <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-medium text-emerald-600">
                 Active Fee: {savedFee}%
               </span>
             </div>
@@ -170,9 +170,9 @@ export function AdminSettingsForm({
           {/* Controls Column */}
           <div className="lg:col-span-7 flex flex-col gap-5">
             <div className="flex flex-col gap-2">
-              <label htmlFor="host-service-fee-input" className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
+              <label htmlFor="host-service-fee-input" className="text-xs font-medium text-muted-foreground flex items-center justify-between">
                 <span>Fee Percentage (%)</span>
-                <span className="text-xs font-bold text-amber-500">{hostServiceFee}%</span>
+                <span className="text-xs font-medium text-amber-500">{hostServiceFee}%</span>
               </label>
 
               <div className="flex items-center gap-4">
@@ -186,9 +186,9 @@ export function AdminSettingsForm({
                     value={hostServiceFee}
                     onChange={(e) => setHostServiceFee(Number(e.target.value))}
                     required
-                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 pr-10 text-sm font-bold text-muted-foreground outline-none focus:border-[var(--accent)] transition-all font-mono"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 pr-10 text-sm font-medium text-muted-foreground outline-none focus:border-[var(--accent)] transition-all font-mono"
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#727272] pointer-events-none">
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-[#727272] pointer-events-none">
                     %
                   </span>
                 </div>
@@ -201,7 +201,7 @@ export function AdminSettingsForm({
                       onClick={() => setHostServiceFee(preset)}
                       className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all cursor-pointer ${
                         hostServiceFee === preset
-                          ? "bg-amber-500 text-zinc-950 font-bold shadow-xs"
+                          ? "bg-amber-500 text-zinc-950 font-medium shadow-xs"
                           : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-foreground border border-[var(--border-subtle)]"
                       }`}
                     >
@@ -235,7 +235,7 @@ export function AdminSettingsForm({
 
             {/* Non-Taxable Protection Guarantee Alert */}
             <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-xs space-y-1">
-              <div className="flex items-center gap-1.5 font-bold text-emerald-600">
+              <div className="flex items-center gap-1.5 font-medium text-emerald-600">
                 <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
@@ -250,7 +250,7 @@ export function AdminSettingsForm({
               <button
                 type="submit"
                 disabled={isFeeSaving || hostServiceFee === savedFee}
-                className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-6 py-2.5 text-xs font-semibold text-[var(--accent-foreground)] transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-2 cursor-pointer"
+                className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-6 py-2.5 text-xs font-medium text-[var(--accent-foreground)] transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-2 cursor-pointer"
               >
                 {isFeeSaving && (
                   <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -263,7 +263,7 @@ export function AdminSettingsForm({
           {/* Live Preview Column */}
           <div className="lg:col-span-5 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4 flex flex-col justify-between text-xs">
             <div>
-              <span className="font-bold text-muted-foreground block mb-2">Live Calculation Simulation</span>
+              <span className="font-medium text-muted-foreground block mb-2">Live Calculation Simulation</span>
               <p className="text-[11px] text-[var(--muted-foreground)] mb-4">
                 Example booking with a stay amount of {formatPrice(100_000, "SAR", 2)}:
               </p>
@@ -275,13 +275,13 @@ export function AdminSettingsForm({
                 </div>
                 <div className="flex justify-between py-1 border-b border-[var(--border-subtle)]">
                   <dt className="text-[var(--muted-foreground)]">Guest Service Fee ({hostServiceFee}%)</dt>
-                  <dd className="font-mono font-bold text-rose-500">
+                  <dd className="font-mono font-medium text-rose-500">
                     - {formatPrice(Math.round(100_000 * (hostServiceFee / 100)), "SAR", 2)}
                   </dd>
                 </div>
                 <div className="flex justify-between py-1 border-b border-[var(--border-subtle)]">
                   <dt className="text-[var(--muted-foreground)]">Host Net Payout</dt>
-                  <dd className="font-mono font-bold text-emerald-600">
+                  <dd className="font-mono font-medium text-emerald-600">
                     {formatPrice(Math.round(100_000 * (1 - hostServiceFee / 100)), "SAR", 2)}
                   </dd>
                 </div>
@@ -301,13 +301,13 @@ export function AdminSettingsForm({
 
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
         <div className="mb-5 space-y-1">
-          <h2 className="text-base font-bold text-muted-foreground">Non-refundable booking discount</h2>
+          <h2 className="text-base font-medium text-muted-foreground">Non-refundable booking discount</h2>
           <p className="text-xs text-[var(--muted-foreground)] max-w-2xl">
             This percentage is applied by the server after all applicable listing discounts when a guest knowingly selects a non-refundable reservation. No rate is assumed until you configure one.
           </p>
         </div>
         <form onSubmit={handleSaveNonRefundableDiscount} className="flex flex-wrap items-end gap-3">
-          <label htmlFor="non-refundable-discount" className="flex flex-col gap-1.5 text-xs font-semibold text-muted-foreground">
+          <label htmlFor="non-refundable-discount" className="flex flex-col gap-1.5 text-xs font-medium text-muted-foreground">
             Discount percentage (%)
             <input
               id="non-refundable-discount"
@@ -319,13 +319,13 @@ export function AdminSettingsForm({
               onChange={(e) => setNonRefundableDiscount(e.target.value)}
               placeholder="Set a percentage"
               required
-              className="w-48 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-sm font-bold text-muted-foreground outline-none focus:border-[var(--accent)]"
+              className="w-48 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-sm font-medium text-muted-foreground outline-none focus:border-[var(--accent)]"
             />
           </label>
           <button
             type="submit"
             disabled={isNonRefundableSaving || (savedNonRefundableDiscount !== null && Number(nonRefundableDiscount) === savedNonRefundableDiscount)}
-            className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-xs font-semibold text-[var(--accent-foreground)] shadow-2xs disabled:opacity-50"
+            className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-xs font-medium text-[var(--accent-foreground)] shadow-2xs disabled:opacity-50"
           >
             {isNonRefundableSaving ? "Saving..." : "Save non-refundable discount"}
           </button>
@@ -337,7 +337,7 @@ export function AdminSettingsForm({
 
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
         <div className="mb-5 space-y-1">
-          <h2 className="text-base font-bold text-muted-foreground">Popular homes section</h2>
+          <h2 className="text-base font-medium text-muted-foreground">Popular homes section</h2>
           <p className="text-xs text-[var(--muted-foreground)] max-w-2xl">
             Configure the homepage’s popular homes section. Choose a fixed city, a user-location-based city, or a user-IP-based selection, and save the section title shown to visitors.
           </p>
@@ -345,12 +345,12 @@ export function AdminSettingsForm({
 
         <form onSubmit={handleSavePopularHomes} className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           <div className="lg:col-span-3 flex flex-col gap-2">
-            <label htmlFor="popular-homes-enabled" className="text-xs font-semibold text-muted-foreground">Enabled</label>
+            <label htmlFor="popular-homes-enabled" className="text-xs font-medium text-muted-foreground">Enabled</label>
             <button
               id="popular-homes-enabled"
               type="button"
               onClick={() => setPopularHomesEnabled((current) => !current)}
-              className={`inline-flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all ${
+              className={`inline-flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-xs font-medium transition-all ${
                 popularHomesEnabled ? "border-emerald-500 bg-emerald-500/10 text-emerald-700" : "border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)]"
               }`}
             >
@@ -362,7 +362,7 @@ export function AdminSettingsForm({
           </div>
 
           <div className="lg:col-span-3 flex flex-col gap-2">
-            <label htmlFor="popular-homes-mode" className="text-xs font-semibold text-muted-foreground">Selection mode</label>
+            <label htmlFor="popular-homes-mode" className="text-xs font-medium text-muted-foreground">Selection mode</label>
             <select
               id="popular-homes-mode"
               value={popularHomesMode}
@@ -376,7 +376,7 @@ export function AdminSettingsForm({
           </div>
 
           <div className="lg:col-span-3 flex flex-col gap-2">
-            <label htmlFor="popular-homes-city" className="text-xs font-semibold text-muted-foreground">City</label>
+            <label htmlFor="popular-homes-city" className="text-xs font-medium text-muted-foreground">City</label>
             <input
               id="popular-homes-city"
               value={popularHomesCity}
@@ -387,7 +387,7 @@ export function AdminSettingsForm({
           </div>
 
           <div className="lg:col-span-3 flex flex-col gap-2">
-            <label htmlFor="popular-homes-title" className="text-xs font-semibold text-muted-foreground">Section title</label>
+            <label htmlFor="popular-homes-title" className="text-xs font-medium text-muted-foreground">Section title</label>
             <input
               id="popular-homes-title"
               value={popularHomesTitle}
@@ -409,7 +409,7 @@ export function AdminSettingsForm({
                 popularHomesTitle === savedPopularHomesConfig.title &&
                 popularHomesEnabled === savedPopularHomesConfig.enabled
               )}
-              className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-xs font-semibold text-[var(--accent-foreground)] shadow-2xs disabled:opacity-50"
+              className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-xs font-medium text-[var(--accent-foreground)] shadow-2xs disabled:opacity-50"
             >
               {isPopularHomesSaving ? "Saving..." : "Save popular homes section"}
             </button>
@@ -429,7 +429,7 @@ export function AdminSettingsForm({
 
         <form onSubmit={handleChangePassword} className="flex flex-col gap-4 max-w-lg">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Current Password *
             </label>
             <div className="relative">
@@ -461,7 +461,7 @@ export function AdminSettingsForm({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               New Password *
             </label>
             <div className="relative">
@@ -493,7 +493,7 @@ export function AdminSettingsForm({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Confirm New Password *
             </label>
             <div className="relative">
@@ -526,29 +526,29 @@ export function AdminSettingsForm({
 
           {/* Password policy indicator */}
           <div className="rounded-xl bg-[var(--surface-secondary)] p-3.5 text-[11px] text-[var(--muted-foreground)] flex flex-col gap-1.5 border border-[var(--border-subtle)]">
-            <div className="font-semibold text-muted-foreground mb-0.5">
+            <div className="font-medium text-muted-foreground mb-0.5">
               Password Requirements:
             </div>
             <div className="flex items-center gap-2">
-              <span className={hasMinLength ? "text-emerald-600 font-semibold" : "text-[var(--muted-foreground)] opacity-40"}>
+              <span className={hasMinLength ? "text-emerald-600 font-medium" : "text-[var(--muted-foreground)] opacity-40"}>
                 {hasMinLength ? "✓" : "○"}
               </span>
               <span>Minimum 8 characters</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className={hasUppercase ? "text-emerald-600 font-semibold" : "text-[var(--muted-foreground)] opacity-40"}>
+              <span className={hasUppercase ? "text-emerald-600 font-medium" : "text-[var(--muted-foreground)] opacity-40"}>
                 {hasUppercase ? "✓" : "○"}
               </span>
               <span>At least one uppercase letter (A-Z)</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className={hasNumber ? "text-emerald-600 font-semibold" : "text-[var(--muted-foreground)] opacity-40"}>
+              <span className={hasNumber ? "text-emerald-600 font-medium" : "text-[var(--muted-foreground)] opacity-40"}>
                 {hasNumber ? "✓" : "○"}
               </span>
               <span>At least one number (0-9)</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className={passwordsMatch ? "text-emerald-600 font-semibold" : "text-[var(--muted-foreground)] opacity-40"}>
+              <span className={passwordsMatch ? "text-emerald-600 font-medium" : "text-[var(--muted-foreground)] opacity-40"}>
                 {passwordsMatch ? "✓" : "○"}
               </span>
               <span>Passwords match</span>
@@ -559,7 +559,7 @@ export function AdminSettingsForm({
             <button
               type="submit"
               disabled={pending || !hasMinLength || !hasUppercase || !hasNumber || !passwordsMatch}
-              className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-6 py-2.5 text-xs font-semibold text-[var(--accent-foreground)] transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-2"
+              className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-6 py-2.5 text-xs font-medium text-[var(--accent-foreground)] transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-2"
             >
               {pending && (
                 <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -572,25 +572,25 @@ export function AdminSettingsForm({
 
       {/* Security Policies Sidebar */}
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs flex flex-col gap-4 text-xs">
-        <h3 className="text-sm font-semibold text-muted-foreground">
+        <h3 className="text-sm font-medium text-muted-foreground">
           Environment & Security Parameters
         </h3>
 
         <div className="flex flex-col gap-2.5 text-[var(--muted-foreground)] leading-relaxed">
           <div>
-            <strong className="text-muted-foreground font-semibold">Access Token TTL:</strong> 900 seconds (15 min)
+            <strong className="text-muted-foreground font-medium">Access Token TTL:</strong> 900 seconds (15 min)
           </div>
           <div>
-            <strong className="text-muted-foreground font-semibold">Refresh Token TTL:</strong> 30 days (auto-rotated)
+            <strong className="text-muted-foreground font-medium">Refresh Token TTL:</strong> 30 days (auto-rotated)
           </div>
           <div>
-            <strong className="text-muted-foreground font-semibold">Rate Limiter Window:</strong> 15 minutes
+            <strong className="text-muted-foreground font-medium">Rate Limiter Window:</strong> 15 minutes
           </div>
           <div>
-            <strong className="text-muted-foreground font-semibold">Max Login Failures:</strong> 10 attempts
+            <strong className="text-muted-foreground font-medium">Max Login Failures:</strong> 10 attempts
           </div>
           <div>
-            <strong className="text-muted-foreground font-semibold">OTP Code Lifespan:</strong> 5 minutes (capped to 5 attempts)
+            <strong className="text-muted-foreground font-medium">OTP Code Lifespan:</strong> 5 minutes (capped to 5 attempts)
           </div>
         </div>
 

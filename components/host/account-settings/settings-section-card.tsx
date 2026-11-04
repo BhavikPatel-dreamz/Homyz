@@ -49,7 +49,7 @@ export function SettingsSectionCard({
         </div>
 
         <div className="mt-5">
-          <h2 className="text-lg font-semibold tracking-tight text-[#1F1F1F] group-hover:text-black">
+          <h2 className="text-lg font-medium tracking-tight text-[#1F1F1F] group-hover:text-black">
             {title}
           </h2>
           <p className="mt-1.5 text-sm leading-relaxed text-[#727272]">

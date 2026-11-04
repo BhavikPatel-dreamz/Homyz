@@ -130,7 +130,7 @@ export function CmsMediaPickerModal({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
           <div>
-            <h3 className="text-base font-bold text-zinc-900">{title}</h3>
+            <h3 className="text-base font-medium text-zinc-900">{title}</h3>
             <p className="text-xs text-zinc-500">
               Choose an existing asset from the library or upload a new photo.
             </p>
@@ -159,7 +159,7 @@ export function CmsMediaPickerModal({
 
           <div className="flex items-center gap-2">
             {canUpload && (
-              <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 text-white rounded-xl font-semibold cursor-pointer hover:bg-zinc-800 transition">
+              <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 text-white rounded-xl font-medium cursor-pointer hover:bg-zinc-800 transition">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
@@ -221,11 +221,11 @@ export function CmsMediaPickerModal({
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center text-zinc-400 p-2 text-center h-full bg-zinc-100">
-                        <span className="text-[10px] font-semibold">Missing</span>
+                        <span className="text-[10px] font-medium">Missing</span>
                       </div>
                     )}
                     {isSelected && (
-                      <div className="absolute top-1 right-1 bg-emerald-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow-xs">
+                      <div className="absolute top-1 right-1 bg-emerald-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-medium shadow-xs">
                         ✓
                       </div>
                     )}
@@ -255,7 +255,7 @@ export function CmsMediaPickerModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 border border-zinc-200 text-zinc-600 rounded-xl font-semibold hover:bg-zinc-100 transition"
+              className="px-3.5 py-1.5 border border-zinc-200 text-zinc-600 rounded-xl font-medium hover:bg-zinc-100 transition"
             >
               Cancel
             </button>
@@ -263,7 +263,7 @@ export function CmsMediaPickerModal({
               type="button"
               disabled={!selectedAsset}
               onClick={handleConfirmSelect}
-              className="px-4 py-1.5 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 disabled:opacity-40 transition"
+              className="px-4 py-1.5 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 disabled:opacity-40 transition"
             >
               Insert Selected Image
             </button>

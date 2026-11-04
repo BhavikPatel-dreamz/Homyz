@@ -1898,7 +1898,7 @@ export function ProfileManagementClient({
 
                           {/* Photo Count Pill */}
                           <div
-                            className={`absolute top-3 right-3 backdrop-blur-xs text-xs font-semibold px-2.5 py-1 rounded-full ${
+                            className={`absolute top-3 right-3 backdrop-blur-xs text-xs font-medium px-2.5 py-1 rounded-full ${
                               isFull
                                 ? "bg-amber-500/90 text-white"
                                 : "bg-black/70 text-white"
@@ -1910,7 +1910,7 @@ export function ProfileManagementClient({
 
                         <div className="p-4 flex-1 flex flex-col justify-between">
                           <div>
-                            <h4 className="font-semibold text-base text-[#1F1F1F] truncate">{trip.title}</h4>
+                            <h4 className="font-medium text-base text-[#1F1F1F] truncate">{trip.title}</h4>
                             {trip.destinationId && (
                               <p className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5">
                                 <span>📍</span> {trip.destinationId}
@@ -2767,10 +2767,10 @@ function LightboxModal({
           </div>
           {isOwner && (
             <div className="flex shrink-0 gap-2">
-              <button type="button" onClick={onEdit} className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-800 hover:bg-zinc-100">
+              <button type="button" onClick={onEdit} className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-100">
                 Edit photo
               </button>
-              <button type="button" onClick={onDelete} className="rounded-full border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50">
+              <button type="button" onClick={onDelete} className="rounded-full border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50">
                 Remove image
               </button>
             </div>

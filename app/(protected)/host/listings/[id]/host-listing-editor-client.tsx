@@ -7,7 +7,6 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { updateListingAction, deleteListingAction, publishListingAction, unpublishListingAction } from "@/actions/host/listings";
-import { HostHeader } from "@/components/host/host-header";
 import { RealMap } from "@/components/ui/real-map";
 import { Container } from "@/components/ui/container";
 import { toast } from "@/components/ui/toast";
@@ -212,9 +211,8 @@ export function HostListingEditorClient({
         ? "arrival"
         : "space"
   );
-  // Start with the mobile navigation surface so a listing never flashes its
-  // form before the host chooses a section from the Editor Sidebar.
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(true);
+  // Mobile navigation drawer state; starts closed so desktop renders the static sidebar immediately
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const activeSectionRef = useRef(activeSection);
   const editorContentScrollRef = useRef<HTMLElement>(null);
   const requestSectionNavigationRef = useRef<(section: SectionKey, fromHistory?: boolean) => void>(() => {});
@@ -717,6 +715,15 @@ export function HostListingEditorClient({
   useEffect(() => {
     requestSectionNavigationRef.current = requestSectionNavigation;
   }, [requestSectionNavigation]);
+
+  // A retained `[id]` layout can receive a new child route without remounting
+  // this editor. Keep the visible panel in sync with that route while leaving
+  // the loaded sidebar and listing state in place.
+  useEffect(() => {
+    if (initialSection && initialSection !== activeSectionRef.current) {
+      requestSectionNavigationRef.current(initialSection, true);
+    }
+  }, [initialSection]);
 
   useEffect(() => {
     requestBrowserLeaveRef.current = requestBrowserLeave;
@@ -1514,12 +1521,6 @@ export function HostListingEditorClient({
       suppressHydrationWarning
       className={`flex min-h-screen min-w-0 flex-col overflow-x-clip bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] selection:text-[#1F1F1F] lg:h-dvh lg:min-h-0 lg:overflow-hidden lg:pb-0 ${presentation === "admin" ? "admin-listing-editor" : ""}`}
     >
-      {/* 1. TOP HEADER (Matches Figma Header Bar) */}
-      {presentation === "host" && (
-      <div className="hidden shrink-0 lg:block">
-        <HostHeader user={listing.host} />
-      </div>)}
-
       <div className="flex justify-end px-8 sm:pt-10 pt-5 lg:hidden">
         <button
           type="button"
@@ -1541,14 +1542,14 @@ export function HostListingEditorClient({
           {/* ============================================================ */}
           <main ref={editorContentScrollRef} className={`flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 ${presentation === "admin" ? "admin-editor-content lg:order-2 lg:pt-0 lg:h-full lg:max-h-full lg:overflow-y-auto lg:pl-3 custom-scrollbar" : "lg:order-2 lg:pt-10 lg:h-full lg:max-h-full lg:overflow-y-auto lg:overscroll-contain lg:pl-4 custom-scrollbar"}`}>
             {/* Mobile/Tablet Arrival Guide Progress Banner */}
-            {editorTab === "arrival" && (
+            {/* {editorTab === "arrival" && (
               <div className="block lg:hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#1F1F1F]">{t("host_editor_arrival_guide_progress", "Arrival Guide Progress")}</span>
+                  <span className="text-xs font-medium text-[#1F1F1F]">{t("host_editor_arrival_guide_progress", "Arrival Guide Progress")}</span>
                   <button
                     type="button"
                     onClick={() => setIsMobileSidebarOpen(true)}
-                    className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 cursor-pointer"
+                    className="text-xs font-medium text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 cursor-pointer"
                   >
                     {t("host_editor_completed_view_all", { count: arrivalGuideCompletedCount })}
                   </button>
@@ -1560,7 +1561,7 @@ export function HostListingEditorClient({
                   />
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* Persistent Status Indicator Banner across all edit sections */}
             {activeSection !== "listing-status" && activeSection !== "listingstatus" && (
@@ -1570,9 +1571,9 @@ export function HostListingEditorClient({
                     <div className="flex items-start gap-3">
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse mt-1 shrink-0" />
                       <div>
-                        <div className="font-semibold text-amber-950 text-sm flex items-center gap-2">
+                        <div className="font-medium text-amber-950 text-sm flex items-center gap-2">
                           <span>{t("host_editor_status_pending", "Listing Status: Pending Admin Approval")}</span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 uppercase">{t("host_editor_under_review", "Under Review")}</span>
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 uppercase">{t("host_editor_under_review", "Under Review")}</span>
                         </div>
                         <p className="text-amber-900 mt-1 leading-relaxed">
                           This listing has already been submitted for approval. You can continue reviewing your listing details, but the property will not become publicly available until the admin approves it.
@@ -1582,7 +1583,7 @@ export function HostListingEditorClient({
                     <button
                       type="button"
                       onClick={() => setActiveSection("listing-status")}
-                      className="shrink-0 px-4 py-2 rounded-xl bg-white border border-amber-300 hover:bg-amber-100/60 font-semibold text-amber-950 transition-all cursor-pointer text-xs"
+                      className="shrink-0 px-4 py-2 rounded-xl bg-white border border-amber-300 hover:bg-amber-100/60 font-medium text-amber-950 transition-all cursor-pointer text-xs"
                     >
                       View Status →
                     </button>
@@ -1594,9 +1595,9 @@ export function HostListingEditorClient({
                     <div className="flex items-start gap-3">
                       <span className="w-2.5 h-2.5 rounded-full bg-rose-500 mt-1 shrink-0" />
                       <div>
-                        <div className="font-semibold text-rose-950 text-sm flex items-center gap-2">
+                        <div className="font-medium text-rose-950 text-sm flex items-center gap-2">
                           <span>{t("host_editor_status_changes_req", "Listing Status: Changes Required")}</span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 uppercase">{t("host_editor_action_needed", "Action Needed")}</span>
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 uppercase">{t("host_editor_action_needed", "Action Needed")}</span>
                         </div>
                         <p className="text-rose-900 mt-1 leading-relaxed line-clamp-2">
                           The admin requested updates before this listing can be approved:{" "}
@@ -1607,7 +1608,7 @@ export function HostListingEditorClient({
                     <button
                       type="button"
                       onClick={() => setActiveSection("listing-status")}
-                      className="shrink-0 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold transition-all cursor-pointer text-xs"
+                      className="shrink-0 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-medium transition-all cursor-pointer text-xs"
                     >
                       View Feedback & Resubmit →
                     </button>
@@ -1624,7 +1625,7 @@ export function HostListingEditorClient({
                     <button
                       type="button"
                       onClick={() => setActiveSection("listing-status")}
-                      className="font-semibold text-emerald-800 hover:underline cursor-pointer"
+                      className="font-medium text-emerald-800 hover:underline cursor-pointer"
                     >
                       Manage Status →
                     </button>
@@ -1636,7 +1637,7 @@ export function HostListingEditorClient({
                   <div className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-xs text-zinc-700 animate-in fade-in">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-zinc-400" />
-                      <span className="font-semibold">Listing Status: Draft (Incomplete)</span>
+                      <span className="font-medium">Listing Status: Draft (Incomplete)</span>
                       <span className="text-[#727272] font-normal hidden sm:inline">
                         — {missingRequirements.length} required {missingRequirements.length === 1 ? "section" : "sections"} remaining
                       </span>
@@ -1644,7 +1645,7 @@ export function HostListingEditorClient({
                     <button
                       type="button"
                       onClick={() => setActiveSection("listing-status")}
-                      className="font-semibold text-[#1F1F1F] hover:underline cursor-pointer"
+                      className="font-medium text-[#1F1F1F] hover:underline cursor-pointer"
                     >
                       View Checklist →
                     </button>
@@ -2048,7 +2049,7 @@ export function HostListingEditorClient({
             {(activeSection === "remove-listing" || activeSection === "removelisting") && (
               <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 space-y-4 text-xs font-sans animate-in fade-in shadow-2xs">
                 <div className="flex items-center gap-3 text-[#1F1F1F]">
-                  <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-semibold text-lg text-zinc-600">
+                  <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-medium text-lg text-zinc-600">
                     🏠
                   </div>
                   <div>
@@ -2063,7 +2064,7 @@ export function HostListingEditorClient({
                   <button
                     type="button"
                     onClick={() => setIsRemoveListingModalOpen(true)}
-                    className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-2.5 text-xs transition-all shadow-2xs cursor-pointer"
+                    className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-medium px-6 py-2.5 text-xs transition-all shadow-2xs cursor-pointer"
                   >
                     {t("host_remove_listing_btn") || "Remove listing"}
                   </button>
@@ -2186,7 +2187,7 @@ export function HostListingEditorClient({
             >
               <CloseIcon className="size-4" />
             </button>
-            <h2 id="unsaved-preferences-title" className="text-lg font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
+            <h2 id="unsaved-preferences-title" className="text-lg font-medium tracking-tight text-zinc-950 dark:text-zinc-100">
               {t("host_editor_unsaved_title")}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-[#727272]">
@@ -2232,7 +2233,7 @@ export function HostListingEditorClient({
               type="button"
               disabled={isSaving}
               onClick={() => setIsTurnOffInstantBookModalOpen(false)}
-              className="absolute top-6 right-6 cursor-pointer p-1 text-xl font-semibold text-[#1f1f1f] hover:text-[#727272] disabled:cursor-wait disabled:opacity-50 transition duration-300"
+              className="absolute top-6 right-6 cursor-pointer p-1 text-xl font-medium text-[#1f1f1f] hover:text-[#727272] disabled:cursor-wait disabled:opacity-50 transition duration-300"
             >
               ✕
             </button>
@@ -2337,7 +2338,7 @@ export function HostListingEditorClient({
               type="button"
               disabled={isSaving}
               onClick={() => setIsCustomMessageModalOpen(false)}
-              className="absolute top-6 right-6 text-[#1f1f1f] hover:text-[#727272] font-semibold text-lg cursor-pointer p-1 disabled:cursor-not-allowed disabled:opacity-50 transition duration-300"
+              className="absolute top-6 right-6 text-[#1f1f1f] hover:text-[#727272] font-medium text-lg cursor-pointer p-1 disabled:cursor-not-allowed disabled:opacity-50 transition duration-300"
             >
               ✕
             </button>
@@ -2400,7 +2401,7 @@ export function HostListingEditorClient({
             <button
               type="button"
               onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 dark:text-[#727272] hover:text-zinc-950 dark:hover:text-white font-semibold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 dark:text-[#727272] hover:text-zinc-950 dark:hover:text-white font-medium text-sm cursor-pointer p-1"
             >
               <CloseIcon className="size-5 stroke-[2.5]" />
             </button>

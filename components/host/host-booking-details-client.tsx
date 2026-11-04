@@ -218,7 +218,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                       className="object-cover"
                     />
                   ) : (
-                    <div className="size-full flex items-center justify-center text-xl font-bold bg-amber-100 text-amber-900">
+                    <div className="size-full flex items-center justify-center text-xl font-medium bg-amber-100 text-amber-900">
                       {(details.guest.name || "G").charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -375,7 +375,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
 
               <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-medium text-[#1f1f1f]">
                 <dt>{t("host_booking_details_total", { currency: displayCurrency })}</dt>
-                <dd className="text-lg text-emerald-800 font-semibold">
+                <dd className="text-lg text-emerald-800 font-medium">
                   {formatMoney(totalPrice, details.currency)}
                 </dd>
               </div>
@@ -438,7 +438,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
       {isAcceptModalOpen && (
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center overflow-y-auto bg-black/40 p-4">
           <div className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-5 text-[#1F1F1F] shadow-2xl sm:p-8">
-            <h3 className="text-xl font-bold text-zinc-900">{t("host_booking_details_accept_modal_title", "Accept booking request?")}</h3>
+            <h3 className="text-xl font-medium text-zinc-900">{t("host_booking_details_accept_modal_title", "Accept booking request?")}</h3>
             <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
               {t("host_booking_details_accept_modal_desc", "Confirming this request will permanently book your property for {name} from {start} to {end}.")
                 .replace("{name}", details.guest.name || "the guest")
@@ -465,7 +465,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleAccept}
-                className="w-full rounded-full bg-[#FCDF9C] px-6 py-2.5 text-sm font-bold text-zinc-900 shadow-2xs transition-colors hover:bg-amber-400 disabled:opacity-50 sm:w-auto"
+                className="w-full rounded-full bg-[#FCDF9C] px-6 py-2.5 text-sm font-medium text-zinc-900 shadow-2xs transition-colors hover:bg-amber-400 disabled:opacity-50 sm:w-auto"
               >
                 {isSubmitting ? t("host_booking_details_confirming", "Confirming...") : t("host_booking_details_confirm_accept", "Confirm & Accept")}
               </button>
@@ -478,7 +478,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
       {isDeclineModalOpen && (
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center overflow-y-auto bg-black/40 p-4">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-8 shadow-2xl text-[#1F1F1F]">
-            <h3 className="text-xl font-bold text-zinc-900">{t("host_booking_details_decline_modal_title", "Decline booking request?")}</h3>
+            <h3 className="text-xl font-medium text-zinc-900">{t("host_booking_details_decline_modal_title", "Decline booking request?")}</h3>
             <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
               {t("host_booking_details_decline_modal_desc", "Declining will immediately release the held calendar dates back to other guests.")}
             </p>
@@ -516,7 +516,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleDecline}
-                className="w-full rounded-full bg-rose-600 px-6 py-2.5 text-sm font-bold text-white shadow-2xs transition-colors hover:bg-rose-700 disabled:opacity-50 sm:w-auto"
+                className="w-full rounded-full bg-rose-600 px-6 py-2.5 text-sm font-medium text-white shadow-2xs transition-colors hover:bg-rose-700 disabled:opacity-50 sm:w-auto"
               >
                 {isSubmitting ? t("host_booking_details_declining", "Declining...") : t("host_booking_details_confirm_decline", "Decline request")}
               </button>

@@ -167,7 +167,7 @@ export function TravelStampsSection({
       {/* Header & Visibility Switch (Matching Figma Screenshot 1 & Image 2) */}
       <div className="flex items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-zinc-900 tracking-tight">
+          <h2 className="text-lg sm:text-xl font-medium text-zinc-900 tracking-tight">
             Where I&apos;ve been
           </h2>
           <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
@@ -181,7 +181,7 @@ export function TravelStampsSection({
             <button
               type="button"
               onClick={() => setIsManagerOpen(true)}
-              className="rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-black cursor-pointer"
+              className="rounded-full bg-zinc-900 px-4 py-2 text-xs font-medium text-white shadow-2xs transition hover:bg-black cursor-pointer"
             >
               Add travel stamp
             </button>
@@ -256,7 +256,7 @@ export function TravelStampsSection({
                         {userStamp.isPinned && (
                           <span
                             title="Featured Stamp"
-                            className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-white shadow"
+                            className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-amber-400 text-[10px] font-medium text-white shadow"
                           >
                             ★
                           </span>
@@ -295,17 +295,17 @@ export function TravelStampsSection({
                       </div>
                     )}
                     {stamp.isCustom && (
-                      <span className="mt-1 rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-800">
+                      <span className="mt-1 rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-amber-800">
                         Personal
                       </span>
                     )}
                     {userStamp.isSystemAwarded && (
-                      <span className="mt-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-800">
+                      <span className="mt-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-emerald-800">
                         Verified stay
                       </span>
                     )}
                     {!userStamp.isSystemAwarded && !stamp.isCustom && (
-                      <span className="mt-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-zinc-600">
+                      <span className="mt-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-zinc-600">
                         Selected
                       </span>
                     )}
@@ -319,7 +319,7 @@ export function TravelStampsSection({
               <button
                 type="button"
                 onClick={() => setIsExpanded((value) => !value)}
-                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50"
+                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50"
               >
                 {isExpanded
                   ? "Show less"
@@ -330,7 +330,7 @@ export function TravelStampsSection({
                   type="button"
                   onClick={handleLoadMore}
                   disabled={isLoadingMore}
-                  className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50"
+                  className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50"
                 >
                   {isLoadingMore ? "Loading…" : "Load more"}
                 </button>
@@ -344,7 +344,7 @@ export function TravelStampsSection({
           <div className="size-14 mx-auto mb-3 rounded-full bg-amber-100 flex items-center justify-center text-2xl">
             🛂
           </div>
-          <h4 className="text-base font-bold text-zinc-900">
+          <h4 className="text-base font-medium text-zinc-900">
             Choose or Add Travel Stamps
           </h4>
           <p className="text-xs text-zinc-500 max-w-sm mx-auto mt-1">
@@ -354,7 +354,7 @@ export function TravelStampsSection({
             <button
               type="button"
               onClick={() => setIsManagerOpen(true)}
-              className="mt-4 rounded-full bg-zinc-900 px-5 py-2.5 text-xs font-semibold text-white shadow hover:bg-black transition cursor-pointer"
+              className="mt-4 rounded-full bg-zinc-900 px-5 py-2.5 text-xs font-medium text-white shadow hover:bg-black transition cursor-pointer"
             >
               Choose or Add Travel Stamps
             </button>
@@ -401,7 +401,7 @@ export function TravelStampsSection({
           >
             <h3
               id="remove-stamp-title"
-              className="text-lg font-bold text-zinc-900"
+              className="text-lg font-medium text-zinc-900"
             >
               Remove Travel Stamp?
             </h3>
@@ -414,7 +414,7 @@ export function TravelStampsSection({
                 type="button"
                 onClick={() => setStampPendingRemoval(null)}
                 disabled={isRemoving}
-                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50"
+                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50"
               >
                 Cancel
               </button>
@@ -422,7 +422,7 @@ export function TravelStampsSection({
                 type="button"
                 onClick={handleRemoveStamp}
                 disabled={isRemoving}
-                className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-700 disabled:opacity-50"
+                className="rounded-full bg-rose-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-rose-700 disabled:opacity-50"
               >
                 {isRemoving ? "Removing…" : "Remove"}
               </button>

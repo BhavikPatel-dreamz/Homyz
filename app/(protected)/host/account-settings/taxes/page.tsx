@@ -55,9 +55,9 @@ export default async function TaxInformationPage({ searchParams }: TaxInformatio
           <div className="mb-8 flex items-center border-b border-zinc-200">
             <Link
               href="/host/account-settings/taxes?tab=taxpayers"
-              className={`inline-flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-colors ${
+              className={`inline-flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-medium transition-colors ${
                 currentTab === "taxpayers"
-                  ? "border-zinc-950 text-zinc-950 font-bold"
+                  ? "border-zinc-950 text-zinc-950 font-medium"
                   : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-800"
               }`}
             >
@@ -72,9 +72,9 @@ export default async function TaxInformationPage({ searchParams }: TaxInformatio
 
             <Link
               href="/host/account-settings/taxes?tab=documents"
-              className={`inline-flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-colors ${
+              className={`inline-flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-medium transition-colors ${
                 currentTab === "documents"
-                  ? "border-zinc-950 text-zinc-950 font-bold"
+                  ? "border-zinc-950 text-zinc-950 font-medium"
                   : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-800"
               }`}
             >

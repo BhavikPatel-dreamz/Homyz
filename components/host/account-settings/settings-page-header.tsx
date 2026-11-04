@@ -78,7 +78,7 @@ export function SettingsPageHeader({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F] sm:text-3xl">
+            <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F] sm:text-3xl">
               {title}
             </h1>
             {badge && (

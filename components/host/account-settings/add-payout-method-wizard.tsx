@@ -280,7 +280,7 @@ export function AddPayoutMethodWizard() {
     <div className="space-y-6">
       {/* Wizard Step Progress Tracker */}
       <div className="rounded-2xl border border-zinc-200/90 bg-white p-4 shadow-2xs">
-        <div className="flex items-center justify-between text-xs font-semibold text-zinc-500 mb-2">
+        <div className="flex items-center justify-between text-xs font-medium text-zinc-500 mb-2">
           <span>Step {currentStep} of 5</span>
           <span className="text-zinc-900 font-medium">
             {currentStep === 1 && "Select Billing Country"}
@@ -312,7 +312,7 @@ export function AddPayoutMethodWizard() {
       {/* STEP 1: Country Selection */}
       {currentStep === 1 && (
         <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs">
-          <h2 className="text-lg font-bold text-zinc-950">Where is your payout account located?</h2>
+          <h2 className="text-lg font-medium text-zinc-950">Where is your payout account located?</h2>
           <p className="mt-1 text-xs sm:text-sm text-zinc-600">
             Select the country of your financial institution or PayPal account. Saudi Arabia is fully supported with direct Saudi IBAN deposits (SAR) and PayPal account payouts (USD).
           </p>
@@ -329,8 +329,8 @@ export function AddPayoutMethodWizard() {
                 <span className="text-2xl">🇸🇦</span>
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold text-zinc-950 text-sm">Saudi Arabia (المملكة العربية السعودية)</p>
-                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">Supported</span>
+                    <p className="font-medium text-zinc-950 text-sm">Saudi Arabia (المملكة العربية السعودية)</p>
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800">Supported</span>
                   </div>
                   <p className="text-xs text-zinc-500">Supports Saudi IBAN (SARIE) and PayPal (USD)</p>
                 </div>
@@ -350,7 +350,7 @@ export function AddPayoutMethodWizard() {
             <button
               type="button"
               onClick={handleNextFromStep1}
-              className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-6 py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-zinc-800 transition-colors shadow-2xs"
+              className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-6 py-2.5 text-xs sm:text-sm font-medium text-white hover:bg-zinc-800 transition-colors shadow-2xs"
             >
               <span>Continue</span>
               <ChevronRightIcon size={16} />
@@ -362,7 +362,7 @@ export function AddPayoutMethodWizard() {
       {/* STEP 2: Payout Method Type */}
       {currentStep === 2 && (
         <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs">
-          <h2 className="text-lg font-bold text-zinc-950">Choose how you want to get paid</h2>
+          <h2 className="text-lg font-medium text-zinc-950">Choose how you want to get paid</h2>
           <p className="mt-1 text-xs sm:text-sm text-zinc-600">
             Select your preferred payout method. Both Saudi IBAN bank accounts and PayPal are supported in Saudi Arabia.
           </p>
@@ -382,8 +382,8 @@ export function AddPayoutMethodWizard() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold text-zinc-950 text-sm">Bank account (Saudi IBAN)</p>
-                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">Recommended</span>
+                    <p className="font-medium text-zinc-950 text-sm">Bank account (Saudi IBAN)</p>
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800">Recommended</span>
                   </div>
                   <p className="text-xs text-zinc-500">Fast SARIE transfer in SAR · Zero platform fees · Direct local deposit</p>
                 </div>
@@ -418,12 +418,12 @@ export function AddPayoutMethodWizard() {
                   </div>
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-zinc-950 text-sm">PayPal</p>
-                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 border border-blue-200/80">
+                      <p className="font-medium text-zinc-950 text-sm">PayPal</p>
+                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 border border-blue-200/80">
                         Supported in Saudi Arabia
                       </span>
                       {paypalStatus.isConfigured ? (
-                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800">
                           Available (USD)
                         </span>
                       ) : (
@@ -468,14 +468,14 @@ export function AddPayoutMethodWizard() {
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
-              className="rounded-full border border-zinc-200 px-5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+              className="rounded-full border border-zinc-200 px-5 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
             >
               Back
             </button>
             <button
               type="button"
               onClick={handleNextFromStep2}
-              className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-6 py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-zinc-800 transition-colors shadow-2xs"
+              className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-6 py-2.5 text-xs sm:text-sm font-medium text-white hover:bg-zinc-800 transition-colors shadow-2xs"
             >
               <span>Continue</span>
               <ChevronRightIcon size={16} />
@@ -487,14 +487,14 @@ export function AddPayoutMethodWizard() {
       {/* STEP 3: Details Input (Saudi IBAN or PayPal) */}
       {currentStep === 3 && payoutType === "SAUDI_IBAN" && (
         <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs">
-          <h2 className="text-lg font-bold text-zinc-950">Enter your Saudi Bank details</h2>
+          <h2 className="text-lg font-medium text-zinc-950">Enter your Saudi Bank details</h2>
           <p className="mt-1 text-xs sm:text-sm text-zinc-600">
             For anti-money laundering and SAMA regulatory compliance, the beneficiary name must match your legal identity.
           </p>
 
           <div className="mt-6 space-y-5">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 mb-1.5">
+              <label className="block text-xs font-medium uppercase tracking-wider text-zinc-600 mb-1.5">
                 Beneficiary Legal Name *
               </label>
               <input
@@ -510,7 +510,7 @@ export function AddPayoutMethodWizard() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 mb-1.5">
+              <label className="block text-xs font-medium uppercase tracking-wider text-zinc-600 mb-1.5">
                 Saudi IBAN *
               </label>
               <div className="relative">
@@ -539,7 +539,7 @@ export function AddPayoutMethodWizard() {
               {ibanCheck.bankName && (
                 <div className="mt-2 flex items-center gap-2 rounded-xl bg-zinc-50 px-3 py-1.5 border border-zinc-200 text-xs text-zinc-800">
                   <BuildingBankIcon size={16} className="text-zinc-600" />
-                  <span className="font-semibold text-zinc-900">{ibanCheck.bankName}</span>
+                  <span className="font-medium text-zinc-900">{ibanCheck.bankName}</span>
                 </div>
               )}
 
@@ -552,7 +552,7 @@ export function AddPayoutMethodWizard() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 mb-1.5">
+              <label className="block text-xs font-medium uppercase tracking-wider text-zinc-600 mb-1.5">
                 Account Nickname / Routing Reference (Optional)
               </label>
               <input
@@ -584,7 +584,7 @@ export function AddPayoutMethodWizard() {
             <button
               type="button"
               onClick={() => setCurrentStep(2)}
-              className="rounded-full border border-zinc-200 px-5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+              className="rounded-full border border-zinc-200 px-5 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
             >
               Back
             </button>
@@ -592,7 +592,7 @@ export function AddPayoutMethodWizard() {
               type="button"
               onClick={handleNextFromStep3}
               disabled={!ibanCheck.valid || !accountHolderName.trim()}
-              className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-6 py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-zinc-800 transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-6 py-2.5 text-xs sm:text-sm font-medium text-white hover:bg-zinc-800 transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span>Review Details</span>
               <ChevronRightIcon size={16} />
@@ -604,14 +604,14 @@ export function AddPayoutMethodWizard() {
       {/* STEP 3 (Alternate): PayPal Account Details */}
       {currentStep === 3 && payoutType === "PAYPAL" && (
         <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs">
-          <h2 className="text-lg font-bold text-zinc-950">Enter your PayPal account details</h2>
+          <h2 className="text-lg font-medium text-zinc-950">Enter your PayPal account details</h2>
           <p className="mt-1 text-xs sm:text-sm text-zinc-600">
             Disbursements will be calculated from your SAR booking earnings and issued to your PayPal balance in USD at the SAMA official exchange rate.
           </p>
 
           <div className="mt-6 space-y-5">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 mb-1.5">
+              <label className="block text-xs font-medium uppercase tracking-wider text-zinc-600 mb-1.5">
                 Beneficiary Legal Name *
               </label>
               <input
@@ -627,7 +627,7 @@ export function AddPayoutMethodWizard() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 mb-1.5">
+              <label className="block text-xs font-medium uppercase tracking-wider text-zinc-600 mb-1.5">
                 PayPal Recipient Email *
               </label>
               <div className="relative">
@@ -659,7 +659,7 @@ export function AddPayoutMethodWizard() {
 
             {/* Currency & Peg Notice */}
             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-xs text-zinc-700 space-y-1.5">
-              <div className="flex items-center justify-between font-semibold text-zinc-900 pb-1 border-b border-zinc-200/80">
+              <div className="flex items-center justify-between font-medium text-zinc-900 pb-1 border-b border-zinc-200/80">
                 <span>Disbursement Currency</span>
                 <span className="font-mono text-xs">USD (US Dollars)</span>
               </div>
@@ -688,7 +688,7 @@ export function AddPayoutMethodWizard() {
             <button
               type="button"
               onClick={() => setCurrentStep(2)}
-              className="rounded-full border border-zinc-200 px-5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+              className="rounded-full border border-zinc-200 px-5 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
             >
               Back
             </button>
@@ -696,7 +696,7 @@ export function AddPayoutMethodWizard() {
               type="button"
               onClick={handleNextFromStep3}
               disabled={!paypalCheck.valid || !accountHolderName.trim()}
-              className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-6 py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-zinc-800 transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-6 py-2.5 text-xs sm:text-sm font-medium text-white hover:bg-zinc-800 transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span>Review Details</span>
               <ChevronRightIcon size={16} />
@@ -708,7 +708,7 @@ export function AddPayoutMethodWizard() {
       {/* STEP 4: Review & Confirm */}
       {currentStep === 4 && (
         <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs">
-          <h2 className="text-lg font-bold text-zinc-950">Review and confirm payout method</h2>
+          <h2 className="text-lg font-medium text-zinc-950">Review and confirm payout method</h2>
           <p className="mt-1 text-xs sm:text-sm text-zinc-600">
             Please verify all details before submitting. In accordance with security protocol, payout account identifiers cannot be edited after registration.
           </p>
@@ -717,23 +717,23 @@ export function AddPayoutMethodWizard() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 text-xs sm:text-sm">
               <div>
                 <span className="text-zinc-500 font-medium">Payout Provider:</span>
-                <p className="font-semibold text-zinc-950 mt-0.5">
+                <p className="font-medium text-zinc-950 mt-0.5">
                   {payoutType === "PAYPAL" ? "PayPal" : ibanCheck.bankName || "Commercial Bank"}
                 </p>
               </div>
               <div>
                 <span className="text-zinc-500 font-medium">Beneficiary Name:</span>
-                <p className="font-semibold text-zinc-950 mt-0.5">{accountHolderName}</p>
+                <p className="font-medium text-zinc-950 mt-0.5">{accountHolderName}</p>
               </div>
               <div>
                 <span className="text-zinc-500 font-medium">Account Identifier:</span>
-                <p className="font-mono font-semibold text-zinc-950 mt-0.5">
+                <p className="font-mono font-medium text-zinc-950 mt-0.5">
                   {payoutType === "PAYPAL" ? paypalCheck.clean : ibanCheck.formatted}
                 </p>
               </div>
               <div>
                 <span className="text-zinc-500 font-medium">Currency & Rail:</span>
-                <p className="font-semibold text-zinc-950 mt-0.5">
+                <p className="font-medium text-zinc-950 mt-0.5">
                   {payoutType === "PAYPAL"
                     ? "USD (US Dollars) · PayPal Payouts (SAMA Peg: 3.75 SAR/USD)"
                     : "SAR (Saudi Arabian Riyal) · SARIE Direct Deposit"}
@@ -743,7 +743,7 @@ export function AddPayoutMethodWizard() {
 
             <div className="border-t border-zinc-200/80 pt-3 flex items-center justify-between text-xs">
               <span className="text-zinc-600">Designated as Default:</span>
-              <span className={`font-semibold ${isDefault ? "text-emerald-700" : "text-zinc-700"}`}>
+              <span className={`font-medium ${isDefault ? "text-emerald-700" : "text-zinc-700"}`}>
                 {isDefault ? "Yes, primary account" : "No, auxiliary method"}
               </span>
             </div>
@@ -771,7 +771,7 @@ export function AddPayoutMethodWizard() {
               type="button"
               onClick={() => setCurrentStep(3)}
               disabled={loading}
-              className="rounded-full border border-zinc-200 px-5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-50"
+              className="rounded-full border border-zinc-200 px-5 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-50"
             >
               Back
             </button>
@@ -779,7 +779,7 @@ export function AddPayoutMethodWizard() {
               type="button"
               onClick={handleSubmit}
               disabled={!confirmedCertification || loading}
-              className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-6 py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-zinc-800 transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-6 py-2.5 text-xs sm:text-sm font-medium text-white hover:bg-zinc-800 transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <LockIcon size={15} />
               <span>{loading ? "Registering Account..." : "Save Payout Method"}</span>
@@ -795,7 +795,7 @@ export function AddPayoutMethodWizard() {
             <CheckCircleIcon size={32} />
           </div>
 
-          <h2 className="text-xl font-bold text-zinc-950">
+          <h2 className="text-xl font-medium text-zinc-950">
             Payout Method Registered Successfully!
           </h2>
 
@@ -807,7 +807,7 @@ export function AddPayoutMethodWizard() {
           <div className="mt-6 max-w-lg mx-auto rounded-2xl bg-zinc-50 p-4 border border-zinc-200 text-left text-xs sm:text-sm">
             <div className="flex items-center justify-between pb-2 border-b border-zinc-200">
               <span className="text-zinc-500">Status</span>
-              <span className="font-semibold text-emerald-700">
+              <span className="font-medium text-emerald-700">
                 {createdMethod?.status === "VERIFIED" ? "Verified for Disbursements" : "Pending Verification"}
               </span>
             </div>
@@ -821,13 +821,13 @@ export function AddPayoutMethodWizard() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/host/account-settings/payouts"
-              className="rounded-full bg-zinc-950 px-6 py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-zinc-800 transition-colors shadow-2xs"
+              className="rounded-full bg-zinc-950 px-6 py-2.5 text-xs sm:text-sm font-medium text-white hover:bg-zinc-800 transition-colors shadow-2xs"
             >
               View Payout Settings
             </Link>
             <Link
               href="/host/earnings"
-              className="rounded-full border border-zinc-300 bg-white px-6 py-2.5 text-xs sm:text-sm font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
+              className="rounded-full border border-zinc-300 bg-white px-6 py-2.5 text-xs sm:text-sm font-medium text-zinc-800 hover:bg-zinc-50 transition-colors"
             >
               Open Earnings Hub
             </Link>

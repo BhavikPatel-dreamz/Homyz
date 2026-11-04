@@ -10,6 +10,7 @@ import { RealMap } from "@/components/ui/real-map";
 import { AmenityIcon } from "@/components/ui/amenity-icon";
 import { getAmenityMeta, getAmenityTranslationKey } from "@/lib/constants/amenities";
 import { formatTimeDisplay } from "../section-helpers";
+import { EditorSidebarSkeleton } from "./YourSpaceSkeletons";
 import {
   cancellationPolicyLabel,
   listingTypeLabel,
@@ -209,7 +210,7 @@ function AdminEditorSidebar({
         <div className="flex items-center justify-between gap-2">
           <Link
             href={routeBase || "/admin/listings"}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-2.5 py-1 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface)] transition-all cursor-pointer shadow-2xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-2.5 py-1 text-xs font-medium text-[var(--foreground)] hover:bg-[var(--surface)] transition-all cursor-pointer shadow-2xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
           >
             <svg className="h-3.5 w-3.5 text-[var(--muted-foreground)] dark:text-[#727272]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 19l-7-7 7-7" />
@@ -217,7 +218,7 @@ function AdminEditorSidebar({
             <span>{t("host_back", "Back")}</span>
           </Link>
 
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border shrink-0 ${statusBg}`}>
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium border shrink-0 ${statusBg}`}>
             {statusLabel}
           </span>
         </div>
@@ -233,7 +234,7 @@ function AdminEditorSidebar({
               {t("editor_listing_nav", "Listing navigation")}
             </p>
           </div>
-          <p className="truncate text-sm font-bold text-[var(--foreground)]" title={listing.title || "Untitled listing"}>
+          <p className="truncate text-sm font-medium text-[var(--foreground)]" title={listing.title || "Untitled listing"}>
             {listing.title || "Untitled listing"}
           </p>
         </div>
@@ -264,8 +265,8 @@ function AdminEditorSidebar({
                   key={id}
                   type="button"
                   onClick={() => setActiveSection(id)}
-                  className={`group relative flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold transition-all duration-150 ${active
-                    ? "bg-amber-500 text-zinc-950 font-bold shadow-2xs"
+                  className={`group relative flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-medium transition-all duration-150 ${active
+                    ? "bg-amber-500 text-zinc-950 font-medium shadow-2xs"
                     : destructive
                       ? "text-rose-600 hover:bg-rose-50/80 hover:text-rose-700"
                       : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)] hover:translate-x-0.5"
@@ -466,6 +467,10 @@ export function EditorSidebar({
     hasInteractionPref,
   ].filter(Boolean).length;
 
+  if (isLoading) {
+    return <EditorSidebarSkeleton tab={editorTab} />;
+  }
+
   if (presentation === "admin") {
     return <AdminEditorSidebar activeSection={activeSection} setActiveSection={setActiveSection} listing={listing} routeBase={routeBase} />;
   }
@@ -511,32 +516,32 @@ export function EditorSidebar({
           </div>
           <div className="mt-1.5 hidden items-center gap-1.5">
             {displayState === "PENDING_APPROVAL" && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-200">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-900 border border-amber-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                 {t("host_status_pending_admin_approval")}
               </span>
             )}
             {displayState === "REJECTED" && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-900 border border-rose-200">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-900 border border-rose-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                 {t("host_status_changes_required")}
               </span>
             )}
             {displayState === "PUBLISHED" && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-200">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-900 border border-emerald-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                 {t("host_status_published_live")}
               </span>
             )}
             {displayState === "APPROVED" && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-200">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-900 border border-emerald-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                 {isSaudi ? t("host_status_ready_to_publish") : t("host_status_approved")}
               </span>
             )}
 
             {displayState === "DRAFT" && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-200/80 text-zinc-700">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-200/80 text-zinc-700">
                 <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
                 {t("host_status_draft_incomplete")}
               </span>
@@ -551,7 +556,9 @@ export function EditorSidebar({
               type="button"
               onClick={() => {
                 setEditorTab("space");
-                setActiveSection("description");
+                // The mobile drawer is a section picker. Keep it open and
+                // show the selected list until the host chooses a card.
+                if (!mobileOpen) setActiveSection("description");
               }}
               className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-base font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 duration-300 ${editorTab === "space"
                 ? "bg-[#FCDF9C] text-[#1F1F1F] shadow-2xs dark:bg-amber-400 dark:text-zinc-950"
@@ -565,7 +572,9 @@ export function EditorSidebar({
               type="button"
               onClick={() => {
                 setEditorTab("arrival");
-                setActiveSection("check-in-out");
+                // Desktop preserves its convenient default panel, while
+                // mobile remains in the guide list.
+                if (!mobileOpen) setActiveSection("check-in-out");
               }}
               className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-base font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 duration-300 ${editorTab === "arrival"
                 ? "bg-[#FCDF9C] text-[#1F1F1F] shadow-2xs dark:bg-amber-400 dark:text-zinc-950"
@@ -581,7 +590,9 @@ export function EditorSidebar({
             aria-label="Listing preferences"
             onClick={() => {
               setEditorTab("preferences");
-              setActiveSection("listing-status");
+              // Do not navigate away from the mobile picker until a card is
+              // explicitly selected.
+              if (!mobileOpen) setActiveSection("listing-status");
             }}
             className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-base transition-all  duration-300 cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
               ? "bg-[#FCDF9C] hover:bg-[#1f1f1f] border-transparent text-[#1f1f1f] hover:text-white hover:border-[#1f1f1f]"
@@ -599,7 +610,7 @@ export function EditorSidebar({
           >
             {/* Preferences Cards Stack */}
             {editorTab === "preferences" ? (
-              <div className="min-w-0 space-y-3">
+              <div className={`min-w-0 space-y-3 ${mobileOpen ? "[&>*]:!border-transparent" : ""}`}>
                 {/* Card 1: Listing status */}
                 <div
                   onClick={() => setActiveSection("listing-status")}
@@ -828,7 +839,7 @@ export function EditorSidebar({
                 </div>
               </div>
             ) : editorTab === "space" ? (
-              <div className="space-y-3">
+              <div className={`space-y-3 ${mobileOpen ? "[&>*]:!border-transparent" : ""}`}>
                 {/* Photo Tour Summary Card (Matches Airbnb reference: Photo tour, bedroom/bed/bath count, collage, tasks) */}
                 {activeSection !== "about-host" && (
                   <div
@@ -1214,7 +1225,7 @@ export function EditorSidebar({
                           className="w-16 h-16 rounded-full object-cover text-xs bg-[#D9D9D9]"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-full border border-amber-200 bg-amber-100 text-amber-900 flex items-center justify-center font-semibold text-lg shadow-2xs">
+                        <div className="w-16 h-16 rounded-full border border-amber-200 bg-amber-100 text-amber-900 flex items-center justify-center font-medium text-lg shadow-2xs">
                           {hostName
                             .split(/\s+/)
                             .slice(0, 2)
@@ -1448,7 +1459,7 @@ export function EditorSidebar({
               </div>
             ) : (
               /* Arrival Guide Mode Sidebar Items (Matches Figma Screenshot 100%) */
-              <div className="space-y-3">
+              <div className={`space-y-3 ${mobileOpen ? "[&>*]:!border-transparent" : ""}`}>
                 {/* Card 1: Check-in and check-out */}
                 <button
                   type="button"
@@ -1606,9 +1617,13 @@ export function EditorSidebar({
     </aside>
   );
 
-  return mobileOpen ? (
-    <ModalOverlay className="fixed inset-0 z-50 bg-white lg:contents">
-      {sidebar}
-    </ModalOverlay>
-  ) : sidebar;
+  if (mobileOpen) {
+    return (
+      <div className="fixed inset-0 z-50 bg-white lg:hidden">
+        {sidebar}
+      </div>
+    );
+  }
+
+  return sidebar;
 }

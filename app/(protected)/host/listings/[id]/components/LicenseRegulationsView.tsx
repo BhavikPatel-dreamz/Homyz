@@ -4,6 +4,9 @@ import React from "react";
 
 import { BackButton } from "@/components/ui/back-button";
 import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
+import { RegulationsSkeleton } from "./YourSpaceSkeletons";
+
+const licenseCache = new Map<string, LicenseManagement | null>();
 
 type LicenseManagement = {
   listing: {
@@ -155,25 +158,31 @@ export function LicenseRegulationsView({
   setActiveSection: (section: string) => void;
 }) {
   const { t } = useLanguage();
-  const [management, setManagement] = React.useState<LicenseManagement | null>(null);
-  const [licenseNumber, setLicenseNumber] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(true);
+  const cached = licenseCache.get(listingId);
+  const [management, setManagement] = React.useState<LicenseManagement | null>(cached ?? null);
+  const [licenseNumber, setLicenseNumber] = React.useState(cached?.license.number ?? "");
+  const [isLoading, setIsLoading] = React.useState(!licenseCache.has(listingId));
   const [isSaving, setIsSaving] = React.useState(false);
   const [isVerifying, setIsVerifying] = React.useState(false);
   const [adminReason, setAdminReason] = React.useState("");
   const [notice, setNotice] = React.useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const load = React.useCallback(async () => {
-    setIsLoading(true);
+    if (!licenseCache.has(listingId)) {
+      setIsLoading(true);
+    }
     try {
       const response = await fetch(`/api/v1/host/licenses/${encodeURIComponent(listingId)}`, { credentials: "same-origin" });
       const payload = await response.json() as ApiEnvelope<LicenseManagement | null>;
       if (!response.ok || !payload.success) throw new Error(("error" in payload && payload.error?.message) || t("host_license_err_load", "Unable to load license information."));
       const normalized = normalizeLicenseManagement(payload.data);
+      licenseCache.set(listingId, normalized);
       setManagement(normalized);
       setLicenseNumber(normalized?.license.number ?? "");
     } catch (error) {
-      setNotice({ type: "error", message: error instanceof Error ? error.message : t("host_license_err_load", "Unable to load license information.") });
+      if (!licenseCache.has(listingId)) {
+        setNotice({ type: "error", message: error instanceof Error ? error.message : t("host_license_err_load", "Unable to load license information.") });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -272,6 +281,10 @@ export function LicenseRegulationsView({
     [t("host_license_detail_publishing_status", "Publishing status"), listing?.published ? t("host_license_status_listed", "Listed") : t("host_license_status_unlisted", "Unlisted")],
   ] : [];
 
+  if (isLoading && !management) {
+    return <RegulationsSkeleton />;
+  }
+
   return (
     <section className="max-w-4xl space-y-6 pb-12 font-sans text-[#1F1F1F] animate-in fade-in">
       <div className="flex items-center gap-5">
@@ -352,8 +365,6 @@ export function LicenseRegulationsView({
         )}
         {!canManage && <p className="mt-3 text-xs text-[#727272]">{t("host_license_readonly_role_notice", "You can view this license record, but your role cannot change or verify it.")}</p>}
       </div>
-
-      {isLoading && <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-[#727272]">{t("host_license_loading", "Loading license information…")}</div>}
 
       {!isLoading && management && (
         <>

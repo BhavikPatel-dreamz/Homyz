@@ -6,8 +6,9 @@ import {
   savePublicMedia,
   deletePublicMedia,
   parseManagedMediaUrl,
+  type PublicMediaKind,
 } from "@/lib/storage/media";
-import { validatePublicImageUpload } from "@/lib/media/public-image-validation";
+import { sanitizePublicSvg, validatePublicImageUpload } from "@/lib/media/public-image-validation";
 import { auditService } from "@/services/audit.service";
 import { CmsContentStatus, CmsScheduledStatus } from "@/generated/prisma/enums";
 
@@ -18,6 +19,8 @@ export interface UploadMediaParams {
   size: number;
   title?: string;
   altText?: string;
+  /** CMS uploads may use a dedicated public namespace for global assets. */
+  kind?: Extract<PublicMediaKind, "cms-media" | "branding" | "homepage">;
 }
 
 export interface ListMediaOptions {
@@ -71,16 +74,27 @@ export interface BulkDeleteResult {
   }[];
 }
 
+function publicMediaKindForUrl(url: string): PublicMediaKind {
+  const parsed = parseManagedMediaUrl(url);
+  return parsed?.visibility === "public" ? (parsed.kind as PublicMediaKind) : "cms-media";
+}
+
 class CmsMediaService {
   /**
    * Upload an image to the CMS media library with signature validation and metadata extraction
    */
   async uploadMedia(actor: AuthUser, params: UploadMediaParams) {
+    let uploadBuffer = params.buffer;
+    if (params.mimeType === "image/svg+xml") {
+      const sanitized = sanitizePublicSvg(params.buffer);
+      if (!sanitized.buffer) throw AppError.badRequest(sanitized.message || "Unable to sanitize SVG.");
+      uploadBuffer = sanitized.buffer;
+    }
     const validation = validatePublicImageUpload({
       fileName: params.fileName,
       mimeType: params.mimeType,
       size: params.size,
-      buffer: params.buffer,
+      buffer: uploadBuffer,
     });
 
     if (validation) {
@@ -92,15 +106,16 @@ class CmsMediaService {
       "image/png": ".png",
       "image/webp": ".webp",
       "image/avif": ".avif",
+      "image/svg+xml": ".svg",
     };
     const ext = extensionByMime[params.mimeType] || ".jpg";
     const storageFileName = `cms_${Date.now()}_${Math.random().toString(36).slice(2, 8)}${ext}`;
 
     // Persist to storage backend (S3, media server, or local disk)
     const saved = await savePublicMedia({
-      kind: "cms-media",
+      kind: params.kind || "cms-media",
       fileName: storageFileName,
-      body: params.buffer,
+      body: uploadBuffer,
       contentType: params.mimeType,
     });
 
@@ -117,7 +132,7 @@ class CmsMediaService {
           url: saved.url,
           originalFilename: params.fileName,
           mimeType: params.mimeType,
-          size: params.size,
+          size: uploadBuffer.length,
           title: params.title || params.fileName,
           altText: params.altText || "",
           uploaderId: actor.id,
@@ -129,7 +144,7 @@ class CmsMediaService {
       });
     } catch (error) {
       await deletePublicMedia({
-        kind: "cms-media",
+        kind: params.kind || "cms-media",
         fileName: resolvedKey,
       }).catch(() => undefined);
       throw error;
@@ -146,7 +161,7 @@ class CmsMediaService {
           mimeType: params.mimeType,
           width: 320,
           height: 240,
-          size: Math.round(params.size * 0.3),
+          size: Math.round(uploadBuffer.length * 0.3),
         },
         {
           mediaAssetId: mediaAsset.id,
@@ -156,7 +171,7 @@ class CmsMediaService {
           mimeType: params.mimeType,
           width: 768,
           height: 512,
-          size: Math.round(params.size * 0.6),
+          size: Math.round(uploadBuffer.length * 0.6),
         },
         {
           mediaAssetId: mediaAsset.id,
@@ -166,7 +181,7 @@ class CmsMediaService {
           mimeType: params.mimeType,
           width: 1920,
           height: 1080,
-          size: params.size,
+          size: uploadBuffer.length,
         },
       ],
       skipDuplicates: true,
@@ -199,7 +214,7 @@ class CmsMediaService {
     } = options;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.CmsMediaAssetWhereInput = {};
     if (status) where.status = status;
     if (mimeType) {
       if (mimeType.includes("/")) {
@@ -355,6 +370,33 @@ class CmsMediaService {
       }
     }
 
+    // Branding assets are referenced in AppSettings rather than CmsContent.
+    // Treat the current global configuration as a live reference so selected
+    // logos and heroes cannot be deleted from remote storage.
+    const brandingSettings = await prisma.appSettings.findUnique({
+      where: { key: "GLOBAL_WEBSITE_SETTINGS" },
+      select: { value: true },
+    });
+    if (
+      brandingSettings?.value &&
+      (brandingSettings.value.includes(asset.id) ||
+        brandingSettings.value.includes(urlNeedle) ||
+        (keyNeedle && brandingSettings.value.includes(keyNeedle)))
+    ) {
+      referencesMap.set(`app-settings_${asset.id}`, {
+        contentId: "GLOBAL_WEBSITE_SETTINGS",
+        contentTitle: "Global website settings",
+        contentType: "APP_SETTINGS",
+        versionId: "current",
+        versionNumber: 1,
+        locale: "global",
+        isLivePublished: true,
+        isCurrentDraft: false,
+        isHistorical: false,
+        isScheduled: false,
+      });
+    }
+
     const references = Array.from(referencesMap.values());
     const livePublishedCount = references.filter(
       (r) => r.isLivePublished,
@@ -460,11 +502,18 @@ class CmsMediaService {
       throw AppError.notFound("Media asset not found");
     }
 
+    let uploadBuffer = params.buffer;
+    if (params.mimeType === "image/svg+xml") {
+      const sanitized = sanitizePublicSvg(params.buffer);
+      if (!sanitized.buffer) throw AppError.badRequest(sanitized.message || "Unable to sanitize SVG.");
+      uploadBuffer = sanitized.buffer;
+    }
+
     const validation = validatePublicImageUpload({
       fileName: params.fileName,
       mimeType: params.mimeType,
       size: params.size,
-      buffer: params.buffer,
+      buffer: uploadBuffer,
     });
 
     if (validation) {
@@ -476,6 +525,7 @@ class CmsMediaService {
       "image/png": ".png",
       "image/webp": ".webp",
       "image/avif": ".avif",
+      "image/svg+xml": ".svg",
     };
     const ext = extensionByMime[params.mimeType] || ".jpg";
     const newStorageFileName = `cms_${Date.now()}_${Math.random().toString(36).slice(2, 8)}${ext}`;
@@ -484,7 +534,7 @@ class CmsMediaService {
     const saved = await savePublicMedia({
       kind: "cms-media",
       fileName: newStorageFileName,
-      body: params.buffer,
+      body: uploadBuffer,
       contentType: params.mimeType,
     });
 
@@ -503,7 +553,7 @@ class CmsMediaService {
           url: saved.url,
           originalFilename: params.fileName,
           mimeType: params.mimeType,
-          size: params.size,
+          size: uploadBuffer.length,
           updatedAt: new Date(),
         },
       });
@@ -518,7 +568,7 @@ class CmsMediaService {
     try {
       const parsedOld = parseManagedMediaUrl(asset.url);
       await deletePublicMedia({
-        kind: "cms-media",
+        kind: publicMediaKindForUrl(asset.url),
         fileName: parsedOld?.fileName || asset.key,
       });
     } catch (err) {
@@ -540,7 +590,7 @@ class CmsMediaService {
           mimeType: params.mimeType,
           width: 320,
           height: 240,
-          size: Math.round(params.size * 0.3),
+          size: Math.round(uploadBuffer.length * 0.3),
         },
         {
           mediaAssetId: id,
@@ -550,7 +600,7 @@ class CmsMediaService {
           mimeType: params.mimeType,
           width: 1920,
           height: 1080,
-          size: params.size,
+          size: uploadBuffer.length,
         },
       ],
       skipDuplicates: true,
@@ -639,7 +689,7 @@ class CmsMediaService {
       const parsed = parseManagedMediaUrl(asset.url);
       const targetFileName = parsed?.fileName || asset.key;
       await deletePublicMedia({
-        kind: "cms-media",
+        kind: publicMediaKindForUrl(asset.url),
         fileName: targetFileName,
       });
     } catch (storageErr) {
@@ -732,7 +782,7 @@ class CmsMediaService {
           const parsed = parseManagedMediaUrl(asset.url);
           const targetFileName = parsed?.fileName || asset.key;
           await deletePublicMedia({
-            kind: "cms-media",
+            kind: publicMediaKindForUrl(asset.url),
             fileName: targetFileName,
           });
         } catch (storageErr) {
@@ -747,8 +797,8 @@ class CmsMediaService {
         });
         await prisma.cmsMediaAsset.delete({ where: { id } });
         deleted.push(id);
-      } catch (err: any) {
-        failed.push({ id, error: err.message || "Failed to process asset" });
+      } catch (err: unknown) {
+        failed.push({ id, error: err instanceof Error ? err.message : "Failed to process asset" });
       }
     }
 

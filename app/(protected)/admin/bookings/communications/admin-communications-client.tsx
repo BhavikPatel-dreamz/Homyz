@@ -134,7 +134,7 @@ export function AdminCommunicationsClient({
             type="button"
             onClick={() => fetchConversations(pagination.page)}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-4 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-4 py-2 text-xs font-medium shadow-2xs transition-all disabled:opacity-50"
           >
             <span>{loading ? "Refreshing..." : "Refresh"}</span>
           </button>
@@ -144,7 +144,7 @@ export function AdminCommunicationsClient({
       {/* 6 KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
-          <span className="text-3xs uppercase font-bold tracking-wider text-[var(--muted-foreground)]">
+          <span className="text-3xs uppercase font-medium tracking-wider text-[var(--muted-foreground)]">
             Total Conversations
           </span>
           <p className="text-xl font-black text-foreground mt-1">
@@ -152,7 +152,7 @@ export function AdminCommunicationsClient({
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
-          <span className="text-3xs uppercase font-bold tracking-wider text-emerald-600 dark:text-emerald-400">
+          <span className="text-3xs uppercase font-medium tracking-wider text-emerald-600 dark:text-emerald-400">
             Active
           </span>
           <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
@@ -160,7 +160,7 @@ export function AdminCommunicationsClient({
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
-          <span className="text-3xs uppercase font-bold tracking-wider text-purple-600 dark:text-purple-400">
+          <span className="text-3xs uppercase font-medium tracking-wider text-purple-600 dark:text-purple-400">
             Inquiries
           </span>
           <p className="text-xl font-black text-purple-600 dark:text-purple-400 mt-1">
@@ -168,7 +168,7 @@ export function AdminCommunicationsClient({
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
-          <span className="text-3xs uppercase font-bold tracking-wider text-amber-600 dark:text-amber-400">
+          <span className="text-3xs uppercase font-medium tracking-wider text-amber-600 dark:text-amber-400">
             Booking Requests
           </span>
           <p className="text-xl font-black text-amber-600 dark:text-amber-400 mt-1">
@@ -176,7 +176,7 @@ export function AdminCommunicationsClient({
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
-          <span className="text-3xs uppercase font-bold tracking-wider text-blue-600 dark:text-blue-400">
+          <span className="text-3xs uppercase font-medium tracking-wider text-blue-600 dark:text-blue-400">
             Confirmed Stays
           </span>
           <p className="text-xl font-black text-blue-600 dark:text-blue-400 mt-1">
@@ -184,7 +184,7 @@ export function AdminCommunicationsClient({
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
-          <span className="text-3xs uppercase font-bold tracking-wider text-rose-600 dark:text-rose-400">
+          <span className="text-3xs uppercase font-medium tracking-wider text-rose-600 dark:text-rose-400">
             Reported / Issues
           </span>
           <p className="text-xl font-black text-rose-600 dark:text-rose-400 mt-1">
@@ -206,9 +206,9 @@ export function AdminCommunicationsClient({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
                 activeTab === tab.id
-                  ? "bg-[var(--surface)] text-foreground shadow-2xs font-bold"
+                  ? "bg-[var(--surface)] text-foreground shadow-2xs font-medium"
                   : "text-[var(--muted-foreground)] hover:text-foreground"
               }`}
             >
@@ -252,7 +252,7 @@ export function AdminCommunicationsClient({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-[var(--border)] bg-[var(--surface-secondary)]/50 text-[var(--muted-foreground)] font-semibold uppercase text-3xs tracking-wider">
+              <tr className="border-b border-[var(--border)] bg-[var(--surface-secondary)]/50 text-[var(--muted-foreground)] font-medium uppercase text-3xs tracking-wider">
                 <th className="py-3 px-4">Conversation ID</th>
                 <th className="py-3 px-4">Property & Host</th>
                 <th className="py-3 px-4">Guest</th>
@@ -273,31 +273,31 @@ export function AdminCommunicationsClient({
               ) : (
                 conversations.map((c) => (
                   <tr key={c.id} className="hover:bg-[var(--surface-secondary)]/30 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-bold text-foreground">
+                    <td className="py-3.5 px-4 font-mono font-medium text-foreground">
                       <span className="block">{c.id.slice(0, 10)}...</span>
                       {c.bookingId && (
-                        <span className="text-3xs text-[var(--accent)] font-semibold block">
+                        <span className="text-3xs text-[var(--accent)] font-medium block">
                           Bkg: {c.bookingId.slice(0, 8)}...
                         </span>
                       )}
                     </td>
                     <td className="py-3.5 px-4 max-w-xs">
-                      <p className="font-semibold text-foreground truncate">{c.listing?.title || "Property"}</p>
+                      <p className="font-medium text-foreground truncate">{c.listing?.title || "Property"}</p>
                       <span className="text-3xs text-[var(--muted-foreground)] block">
                         Host: {c.host?.name || c.host?.email || "Host"}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <p className="font-semibold text-foreground">{c.guest?.name || "Guest"}</p>
+                      <p className="font-medium text-foreground">{c.guest?.name || "Guest"}</p>
                       <span className="text-3xs text-[var(--muted-foreground)]">{c.guest?.email}</span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-3xs font-bold uppercase border ${getTypeBadge(c.type)}`}>
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-3xs font-medium uppercase border ${getTypeBadge(c.type)}`}>
                         {c.type}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-3xs font-bold uppercase border ${getStatusBadge(c.status)}`}>
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-3xs font-medium uppercase border ${getStatusBadge(c.status)}`}>
                         {c.status}
                       </span>
                     </td>
@@ -323,7 +323,7 @@ export function AdminCommunicationsClient({
                       <button
                         type="button"
                         onClick={() => handleInspectConversation(c)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-xs font-semibold text-foreground transition-all shadow-2xs"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-xs font-medium text-foreground transition-all shadow-2xs"
                       >
                         Inspect
                       </button>
@@ -370,17 +370,17 @@ export function AdminCommunicationsClient({
             {/* Modal Header */}
             <div className="p-5 border-b border-[var(--border)] flex items-center justify-between bg-[var(--surface-secondary)]/40">
               <div>
-                <span className="text-3xs uppercase font-bold tracking-wider text-[var(--accent)]">
+                <span className="text-3xs uppercase font-medium tracking-wider text-[var(--accent)]">
                   Read-Only Conversation Inspection
                 </span>
-                <h3 className="text-base font-bold text-foreground">
+                <h3 className="text-base font-medium text-foreground">
                   Thread: {selectedConv?.id}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setInspectModalOpen(false)}
-                className="w-8 h-8 rounded-full border border-[var(--border)] hover:bg-[var(--surface-secondary)] flex items-center justify-center text-foreground font-bold"
+                className="w-8 h-8 rounded-full border border-[var(--border)] hover:bg-[var(--surface-secondary)] flex items-center justify-center text-foreground font-medium"
               >
                 ✕
               </button>
@@ -407,19 +407,19 @@ export function AdminCommunicationsClient({
                   {/* Context Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <div className="p-3 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/30">
-                      <span className="text-3xs uppercase font-semibold text-[var(--muted-foreground)]">Listing & Host</span>
-                      <p className="font-bold text-foreground mt-0.5">{convDetails.conversation?.listing?.title}</p>
+                      <span className="text-3xs uppercase font-medium text-[var(--muted-foreground)]">Listing & Host</span>
+                      <p className="font-medium text-foreground mt-0.5">{convDetails.conversation?.listing?.title}</p>
                       <p className="text-3xs text-[var(--muted-foreground)]">
                         Host: {convDetails.conversation?.host?.name} ({convDetails.conversation?.host?.email})
                       </p>
                     </div>
                     <div className="p-3 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/30">
-                      <span className="text-3xs uppercase font-semibold text-[var(--muted-foreground)]">Guest & Booking</span>
-                      <p className="font-bold text-foreground mt-0.5">
+                      <span className="text-3xs uppercase font-medium text-[var(--muted-foreground)]">Guest & Booking</span>
+                      <p className="font-medium text-foreground mt-0.5">
                         {convDetails.conversation?.guest?.name} ({convDetails.conversation?.guest?.email})
                       </p>
                       {convDetails.conversation?.booking ? (
-                        <p className="text-3xs text-[var(--accent)] font-semibold">
+                        <p className="text-3xs text-[var(--accent)] font-medium">
                           Booking ID: {convDetails.conversation?.booking?.id} • Status: {convDetails.conversation?.booking?.status}
                         </p>
                       ) : (
@@ -430,7 +430,7 @@ export function AdminCommunicationsClient({
 
                   {/* Messages Bubble History */}
                   <div className="flex flex-col gap-3 mt-2">
-                    <span className="text-3xs uppercase font-bold text-[var(--muted-foreground)]">
+                    <span className="text-3xs uppercase font-medium text-[var(--muted-foreground)]">
                       Message History ({convDetails.messages?.length || 0} messages)
                     </span>
 
@@ -482,7 +482,7 @@ export function AdminCommunicationsClient({
               <button
                 type="button"
                 onClick={() => setInspectModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-secondary)] border border-[var(--border)] text-xs font-semibold text-foreground transition-all"
+                className="px-4 py-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-secondary)] border border-[var(--border)] text-xs font-medium text-foreground transition-all"
               >
                 Close Inspection
               </button>

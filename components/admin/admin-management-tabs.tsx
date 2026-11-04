@@ -12,7 +12,7 @@ export function AdminManagementTabs() {
       <Link
         href="/admin/admins"
         prefetch={false}
-        className={`px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-colors -mb-px flex items-center gap-2 ${
+        className={`px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-colors -mb-px flex items-center gap-2 ${
           !isInvitations
             ? "border-[var(--accent)] text-[var(--accent)]"
             : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
@@ -26,7 +26,7 @@ export function AdminManagementTabs() {
       <Link
         href="/admin/admins/invitations"
         prefetch={false}
-        className={`px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-colors -mb-px flex items-center gap-2 ${
+        className={`px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-colors -mb-px flex items-center gap-2 ${
           isInvitations
             ? "border-[var(--accent)] text-[var(--accent)]"
             : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"

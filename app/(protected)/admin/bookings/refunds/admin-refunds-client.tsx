@@ -349,14 +349,14 @@ export function AdminRefundsClient({
           {/* Quick Links */}
           <Link
             href="/admin/bookings/all"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>All Bookings</span>
           </Link>
 
           <Link
             href="/admin/bookings/cancellations"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>Cancellations</span>
           </Link>
@@ -366,7 +366,7 @@ export function AdminRefundsClient({
             type="button"
             onClick={exportCSV}
             disabled={refunds.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all disabled:opacity-50"
           >
             <svg className="w-3.5 h-3.5 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -378,7 +378,7 @@ export function AdminRefundsClient({
           <button
             type="button"
             onClick={() => setCreateModalOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-4 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-4 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>+ Create Refund Request</span>
           </button>
@@ -391,7 +391,7 @@ export function AdminRefundsClient({
           <button
             type="button"
             onClick={() => fetchRefunds(1)}
-            className="font-semibold underline ml-2 hover:opacity-80"
+            className="font-medium underline ml-2 hover:opacity-80"
           >
             Retry
           </button>
@@ -409,11 +409,11 @@ export function AdminRefundsClient({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Total Requests</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Total Requests</span>
             <span className="text-sm">📋</span>
           </div>
           <div className="mt-2.5">
-            <p className="text-2xl font-bold text-foreground font-mono">{summary.totalRequests}</p>
+            <p className="text-2xl font-medium text-foreground font-mono">{summary.totalRequests}</p>
             <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5">All refund attempts</p>
           </div>
         </button>
@@ -427,11 +427,11 @@ export function AdminRefundsClient({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">Pending Review</span>
+            <span className="text-xs font-medium text-amber-700 dark:text-amber-400">Pending Review</span>
             <span className="text-sm">⏳</span>
           </div>
           <div className="mt-2.5">
-            <p className="text-2xl font-bold text-amber-700 dark:text-amber-400 font-mono">{summary.pendingReview}</p>
+            <p className="text-2xl font-medium text-amber-700 dark:text-amber-400 font-mono">{summary.pendingReview}</p>
             <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5">Awaiting admin review</p>
           </div>
         </button>
@@ -445,11 +445,11 @@ export function AdminRefundsClient({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">Approved</span>
+            <span className="text-xs font-medium text-blue-700 dark:text-blue-400">Approved</span>
             <span className="text-sm">✓</span>
           </div>
           <div className="mt-2.5">
-            <p className="text-2xl font-bold text-blue-700 dark:text-blue-400 font-mono">{summary.approved}</p>
+            <p className="text-2xl font-medium text-blue-700 dark:text-blue-400 font-mono">{summary.approved}</p>
             <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5">Ready for processing</p>
           </div>
         </button>
@@ -463,11 +463,11 @@ export function AdminRefundsClient({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-purple-700 dark:text-purple-400">Processing</span>
+            <span className="text-xs font-medium text-purple-700 dark:text-purple-400">Processing</span>
             <span className="text-sm">⚙️</span>
           </div>
           <div className="mt-2.5">
-            <p className="text-2xl font-bold text-purple-700 dark:text-purple-400 font-mono">{summary.processing}</p>
+            <p className="text-2xl font-medium text-purple-700 dark:text-purple-400 font-mono">{summary.processing}</p>
             <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5">With payment provider</p>
           </div>
         </button>
@@ -481,11 +481,11 @@ export function AdminRefundsClient({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">Succeeded</span>
+            <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">Succeeded</span>
             <span className="text-sm">💰</span>
           </div>
           <div className="mt-2.5">
-            <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400 font-mono">{summary.succeeded}</p>
+            <p className="text-2xl font-medium text-emerald-700 dark:text-emerald-400 font-mono">{summary.succeeded}</p>
             <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5">Verified completions</p>
           </div>
         </button>
@@ -499,11 +499,11 @@ export function AdminRefundsClient({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-rose-700 dark:text-rose-400">Failed</span>
+            <span className="text-xs font-medium text-rose-700 dark:text-rose-400">Failed</span>
             <span className="text-sm">⚠️</span>
           </div>
           <div className="mt-2.5">
-            <p className="text-2xl font-bold text-rose-700 dark:text-rose-400 font-mono">{summary.failed}</p>
+            <p className="text-2xl font-medium text-rose-700 dark:text-rose-400 font-mono">{summary.failed}</p>
             <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5">Gateway rejections</p>
           </div>
         </button>
@@ -517,11 +517,11 @@ export function AdminRefundsClient({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Rejected</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Rejected</span>
             <span className="text-sm">✕</span>
           </div>
           <div className="mt-2.5">
-            <p className="text-2xl font-bold text-foreground font-mono">{summary.rejected}</p>
+            <p className="text-2xl font-medium text-foreground font-mono">{summary.rejected}</p>
             <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5">Admin rejected</p>
           </div>
         </button>
@@ -529,7 +529,7 @@ export function AdminRefundsClient({
         {/* Total Refunded Amount */}
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Total Refunded</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Total Refunded</span>
             <span className="text-sm">💵</span>
           </div>
           <div className="mt-2.5">
@@ -558,9 +558,9 @@ export function AdminRefundsClient({
               key={tab.key}
               type="button"
               onClick={() => handleTabChange(tab.key)}
-              className={`inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl transition-all whitespace-nowrap ${
+              className={`inline-flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-xl transition-all whitespace-nowrap ${
                 isActive
-                  ? "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-2xs font-bold"
+                  ? "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-2xs font-medium"
                   : "text-[var(--muted-foreground)] hover:text-foreground hover:bg-[var(--surface-secondary)]"
               }`}
             >
@@ -608,7 +608,7 @@ export function AdminRefundsClient({
           <button
             type="button"
             onClick={() => setFilterDrawerOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <svg className="w-3.5 h-3.5 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -634,7 +634,7 @@ export function AdminRefundsClient({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h4 className="text-sm font-bold text-foreground">No refund requests found</h4>
+            <h4 className="text-sm font-medium text-foreground">No refund requests found</h4>
             <p className="text-xs text-[var(--muted-foreground)] mt-1">
               There are no refund records matching your criteria.
             </p>
@@ -642,7 +642,7 @@ export function AdminRefundsClient({
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="border-b border-[var(--border)] bg-[var(--surface-secondary)]/50 text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+              <thead className="border-b border-[var(--border)] bg-[var(--surface-secondary)]/50 text-[11px] font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
                 <tr>
                   <th className="px-4 py-3.5">Refund Ref</th>
                   <th className="px-4 py-3.5">Booking</th>
@@ -658,37 +658,37 @@ export function AdminRefundsClient({
               <tbody className="divide-y divide-[var(--border)]">
                 {refunds.map((r) => {
                   let statusBadge = (
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                       {r.status}
                     </span>
                   );
                   if (r.status === "SUCCEEDED") {
                     statusBadge = (
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
                         Completed
                       </span>
                     );
                   } else if (r.status === "PENDING") {
                     statusBadge = (
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
                         {r.isApproved ? "Approved (Pending Processing)" : "Pending Review"}
                       </span>
                     );
                   } else if (r.status === "PROCESSING") {
                     statusBadge = (
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300">
                         Processing
                       </span>
                     );
                   } else if (r.status === "FAILED") {
                     statusBadge = (
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
                         Failed
                       </span>
                     );
                   } else if (r.status === "REJECTED") {
                     statusBadge = (
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                         Rejected
                       </span>
                     );
@@ -696,7 +696,7 @@ export function AdminRefundsClient({
 
                   return (
                     <tr key={r.id} className="hover:bg-[var(--surface-secondary)]/30 transition-colors">
-                      <td className="px-4 py-3.5 font-mono font-semibold text-foreground">
+                      <td className="px-4 py-3.5 font-mono font-medium text-foreground">
                         {r.refundReference || r.id.slice(0, 8)}
                       </td>
                       <td className="px-4 py-3.5 font-mono text-[11px] text-[var(--muted-foreground)]">
@@ -711,18 +711,18 @@ export function AdminRefundsClient({
                               <Image src={r.booking.listing.photos[0]} alt="" fill className="object-cover" unoptimized />
                             )}
                           </div>
-                          <span className="font-semibold text-foreground truncate">{r.booking.listing.title}</span>
+                          <span className="font-medium text-foreground truncate">{r.booking.listing.title}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3.5 min-w-[120px]">
-                        <p className="font-semibold text-foreground truncate">{r.booking.user.name || "Guest"}</p>
+                        <p className="font-medium text-foreground truncate">{r.booking.user.name || "Guest"}</p>
                         <p className="text-[10px] text-[var(--muted-foreground)] truncate">{r.booking.user.email}</p>
                       </td>
-                      <td className="px-4 py-3.5 font-mono font-bold text-foreground whitespace-nowrap">
+                      <td className="px-4 py-3.5 font-mono font-medium text-foreground whitespace-nowrap">
                         {formatPrice(r.amount, r.currency)}
                       </td>
                       <td className="px-4 py-3.5 whitespace-nowrap">
-                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-[var(--surface-secondary)] text-[var(--muted-foreground)]">
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[var(--surface-secondary)] text-[var(--muted-foreground)]">
                           {r.refundType}
                         </span>
                       </td>
@@ -735,7 +735,7 @@ export function AdminRefundsClient({
                       <td className="px-4 py-3.5 text-right whitespace-nowrap">
                         <Link
                           href={`/admin/bookings/refunds/${r.id}`}
-                          className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground text-xs font-semibold shadow-2xs transition-all"
+                          className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground text-xs font-medium shadow-2xs transition-all"
                         >
                           Review & Details
                         </Link>
@@ -759,18 +759,18 @@ export function AdminRefundsClient({
               type="button"
               onClick={() => fetchRefunds(pagination.page - 1)}
               disabled={pagination.page <= 1 || loading}
-              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-semibold"
+              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-medium"
             >
               ← Previous
             </button>
-            <span className="font-semibold text-foreground">
+            <span className="font-medium text-foreground">
               Page {pagination.page} of {pagination.totalPages}
             </span>
             <button
               type="button"
               onClick={() => fetchRefunds(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages || loading}
-              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-semibold"
+              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-medium"
             >
               Next →
             </button>
@@ -785,7 +785,7 @@ export function AdminRefundsClient({
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="relative w-full max-w-lg rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-bold text-foreground">
+              <h3 className="text-base font-medium text-foreground">
                 Create Refund Request
               </h3>
               <button
@@ -798,7 +798,7 @@ export function AdminRefundsClient({
             </div>
 
             {createError && (
-              <div className="mt-3 p-2.5 rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-xs font-semibold">
+              <div className="mt-3 p-2.5 rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-xs font-medium">
                 {createError}
               </div>
             )}
@@ -806,7 +806,7 @@ export function AdminRefundsClient({
             <div className="mt-4 space-y-3.5 text-xs">
               {/* Booking ID Input + Quote Preview Button */}
               <div>
-                <label className="font-semibold text-foreground block mb-1">
+                <label className="font-medium text-foreground block mb-1">
                   Booking ID <span className="text-rose-500">*</span>
                 </label>
                 <div className="flex items-center gap-2">
@@ -821,7 +821,7 @@ export function AdminRefundsClient({
                     type="button"
                     onClick={handleCalculateQuote}
                     disabled={quoteLoading || !createBookingId.trim()}
-                    className="px-3.5 py-2 rounded-xl bg-[var(--surface-secondary)] hover:bg-[var(--surface-secondary)]/80 text-foreground font-semibold border border-[var(--border)] whitespace-nowrap"
+                    className="px-3.5 py-2 rounded-xl bg-[var(--surface-secondary)] hover:bg-[var(--surface-secondary)]/80 text-foreground font-medium border border-[var(--border)] whitespace-nowrap"
                   >
                     {quoteLoading ? "Calculating..." : "Calculate Quote"}
                   </button>
@@ -839,11 +839,11 @@ export function AdminRefundsClient({
               {quoteResult && (
                 <div className="p-3.5 rounded-xl border border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 dark:border-blue-900 text-xs space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-blue-900 dark:text-blue-200">
+                    <span className="font-medium text-blue-900 dark:text-blue-200">
                       Policy Engine Result:
                     </span>
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
                         quoteResult.status === "ELIGIBLE"
                           ? "bg-emerald-100 text-emerald-800"
                           : quoteResult.status === "NEEDS_REVIEW"
@@ -862,13 +862,13 @@ export function AdminRefundsClient({
                   <div className="grid grid-cols-2 gap-2 pt-1 border-t border-blue-200/60 dark:border-blue-900/60 text-[11px] font-mono">
                     <div>
                       <span className="text-[var(--muted-foreground)] block">Captured Balance:</span>
-                      <span className="font-bold">
+                      <span className="font-medium">
                         {formatPrice(quoteResult.capturedAmount, quoteResult.currency)}
                       </span>
                     </div>
                     <div>
                       <span className="text-[var(--muted-foreground)] block">Max Refundable:</span>
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="font-medium text-emerald-600 dark:text-emerald-400">
                         {formatPrice(quoteResult.remainingRefundableBalance, quoteResult.currency)}
                       </span>
                     </div>
@@ -878,7 +878,7 @@ export function AdminRefundsClient({
 
               {/* Amount Input */}
               <div>
-                <label className="font-semibold text-foreground block mb-1">
+                <label className="font-medium text-foreground block mb-1">
                   Refund Amount (SAR) <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -888,13 +888,13 @@ export function AdminRefundsClient({
                   value={createAmountMajor}
                   onChange={(e) => setCreateAmountMajor(e.target.value)}
                   placeholder="0.00"
-                  className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-foreground font-mono font-bold text-base"
+                  className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-foreground font-mono font-medium text-base"
                 />
               </div>
 
               {/* Reason Input */}
               <div>
-                <label className="font-semibold text-foreground block mb-1">
+                <label className="font-medium text-foreground block mb-1">
                   Reason <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -908,7 +908,7 @@ export function AdminRefundsClient({
 
               {/* Notes Input */}
               <div>
-                <label className="font-semibold text-foreground block mb-1">
+                <label className="font-medium text-foreground block mb-1">
                   Internal Review Notes (Optional)
                 </label>
                 <textarea
@@ -926,7 +926,7 @@ export function AdminRefundsClient({
                 type="button"
                 onClick={() => setCreateModalOpen(false)}
                 disabled={submittingCreate}
-                className="px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-foreground text-xs font-semibold hover:bg-[var(--surface-secondary)]"
+                className="px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-foreground text-xs font-medium hover:bg-[var(--surface-secondary)]"
               >
                 Cancel
               </button>
@@ -934,7 +934,7 @@ export function AdminRefundsClient({
                 type="button"
                 onClick={handleSubmitCreateRequest}
                 disabled={submittingCreate || !createBookingId || !createAmountMajor || !createReason}
-                className="px-4 py-2 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] text-xs font-semibold shadow-2xs disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] text-xs font-medium shadow-2xs disabled:opacity-50"
               >
                 {submittingCreate ? "Submitting..." : "Create Request"}
               </button>
@@ -951,7 +951,7 @@ export function AdminRefundsClient({
           <div className="relative w-full max-w-sm bg-[var(--surface)] h-full p-6 shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-200">
             <div>
               <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
-                <h3 className="text-base font-bold text-foreground">Filter Refunds</h3>
+                <h3 className="text-base font-medium text-foreground">Filter Refunds</h3>
                 <button
                   type="button"
                   onClick={() => setFilterDrawerOpen(false)}
@@ -963,7 +963,7 @@ export function AdminRefundsClient({
 
               <div className="mt-5 space-y-4 text-xs">
                 <div>
-                  <label className="font-semibold text-foreground block mb-1.5">Date Range</label>
+                  <label className="font-medium text-foreground block mb-1.5">Date Range</label>
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="date"
@@ -981,7 +981,7 @@ export function AdminRefundsClient({
                 </div>
 
                 <div>
-                  <label className="font-semibold text-foreground block mb-1.5">Sort Direction</label>
+                  <label className="font-medium text-foreground block mb-1.5">Sort Direction</label>
                   <select
                     value={sortOrder}
                     onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
@@ -1002,7 +1002,7 @@ export function AdminRefundsClient({
                   setDateTo("");
                   setSortOrder("desc");
                 }}
-                className="px-3.5 py-2 rounded-xl border border-[var(--border)] text-foreground text-xs font-semibold hover:bg-[var(--surface-secondary)]"
+                className="px-3.5 py-2 rounded-xl border border-[var(--border)] text-foreground text-xs font-medium hover:bg-[var(--surface-secondary)]"
               >
                 Reset
               </button>
@@ -1012,7 +1012,7 @@ export function AdminRefundsClient({
                   setFilterDrawerOpen(false);
                   fetchRefunds(1);
                 }}
-                className="px-4 py-2 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] text-xs font-semibold shadow-2xs"
+                className="px-4 py-2 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] text-xs font-medium shadow-2xs"
               >
                 Apply
               </button>

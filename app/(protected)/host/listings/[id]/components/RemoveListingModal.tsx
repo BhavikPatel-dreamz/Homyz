@@ -151,7 +151,7 @@ export function RemoveListingModal({
                         </span>
                         {/* show badge if any selected and category is collapsed */}
                         {selectedReasonIds.length > 0 && !isExpanded && category.options.some((option) => selectedReasonIds.includes(option.id)) && (
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white dark:bg-zinc-100 dark:text-zinc-950">
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-xs font-medium text-white dark:bg-zinc-100 dark:text-zinc-950">
                             {category.options.filter((option) => selectedReasonIds.includes(option.id)).length}
                           </span>
                         )}
@@ -257,12 +257,12 @@ export function RemoveListingModal({
         {step === 2 && (
           <>
             <div className="border-b border-zinc-100 px-6 pb-5 pt-7 pr-16 dark:border-zinc-800 sm:px-8 sm:pr-16">
-              <h2 id="remove-listing-confirm-title" className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">
+              <h2 id="remove-listing-confirm-title" className="text-xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">
                 {t("host_remove_confirm_heading") || "Permanently remove this listing?"}
               </h2>
               <p className="mt-2 max-w-[491px] text-sm leading-6 text-[#727272] dark:text-[#727272]">
                 {t("host_remove_confirm_subtext_prefix") || "You are removing "}
-                <strong className="text-[#1f1f1f] dark:text-zinc-100 font-semibold">{listingTitle}</strong>
+                <strong className="text-[#1f1f1f] dark:text-zinc-100 font-medium">{listingTitle}</strong>
                 {t("host_remove_confirm_subtext_suffix") || " from Homyz."}
               </p>
             </div>
@@ -276,7 +276,7 @@ export function RemoveListingModal({
 
               {/* Warning Box */}
               <div className="rounded-2xl border border-rose-200 dark:border-rose-900 bg-rose-50/40 dark:bg-rose-950/30 p-4 space-y-2">
-                <div className="flex items-center gap-1.5 text-sm font-semibold text-rose-800 dark:text-rose-300">
+                <div className="flex items-center gap-1.5 text-sm font-medium text-rose-800 dark:text-rose-300">
                   <svg className="w-4 h-4 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
@@ -289,7 +289,7 @@ export function RemoveListingModal({
 
               {/* Selected Feedback Summary */}
               <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 p-4 space-y-2">
-                <div className="text-xs font-bold uppercase tracking-wider text-[#727272] dark:text-[#727272]">
+                <div className="text-xs font-medium uppercase tracking-wider text-[#727272] dark:text-[#727272]">
                   {t("host_remove_summary_title", { count: String(totalSelectedCount) }) || `Your Feedback Summary (${totalSelectedCount} reasons)`}
                 </div>
                 <ul className="list-disc space-y-1 pl-4 text-sm text-zinc-700 dark:text-zinc-300">
@@ -309,7 +309,7 @@ export function RemoveListingModal({
                 type="button"
                 disabled={isPending}
                 onClick={() => setStep(1)}
-                className="self-start px-2 py-2 text-sm font-semibold text-zinc-700 underline underline-offset-4 transition-colors hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-zinc-300 dark:hover:text-white dark:focus-visible:ring-zinc-100"
+                className="self-start px-2 py-2 text-sm font-medium text-zinc-700 underline underline-offset-4 transition-colors hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-zinc-300 dark:hover:text-white dark:focus-visible:ring-zinc-100"
               >
                 {t("host_back") || "Back"}
               </button>
@@ -319,7 +319,7 @@ export function RemoveListingModal({
                   type="button"
                   disabled={isPending}
                   onClick={onClose}
-                  className="min-h-11 rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
+                  className="min-h-11 rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
                 >
                   {t("host_remove_keep_listing") || "Keep listing"}
                 </button>
@@ -327,7 +327,7 @@ export function RemoveListingModal({
                   type="button"
                   disabled={isPending}
                   onClick={handleConfirmRemoval}
-                  className="min-h-11 rounded-full bg-rose-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-rose-700 dark:hover:bg-rose-600 dark:focus-visible:ring-rose-400 dark:focus-visible:ring-offset-zinc-900"
+                  className="min-h-11 rounded-full bg-rose-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-rose-700 dark:hover:bg-rose-600 dark:focus-visible:ring-rose-400 dark:focus-visible:ring-offset-zinc-900"
                 >
                   {isPending
                     ? (t("host_remove_confirm_removing") || "Removing...")

@@ -98,7 +98,7 @@ export function HostSettingsNavigation({
           aria-label="Host settings menu"
           className={`hidden sm:flex flex-col gap-1 rounded-3xl border border-zinc-200/80 bg-white p-3 shadow-xs ${className}`}
         >
-          <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          <div className="px-3 py-2 text-xs font-medium uppercase tracking-wider text-zinc-500">
             Account Navigation
           </div>
           {HOST_SETTINGS_NAV_ITEMS.map((item) => {
@@ -109,7 +109,7 @@ export function HostSettingsNavigation({
                 href={item.href}
                 className={`group flex items-center justify-between rounded-2xl px-3.5 py-3 text-sm transition-all ${
                   active
-                    ? "bg-amber-100/90 font-semibold text-[#1F1F1F] shadow-2xs"
+                    ? "bg-amber-100/90 font-medium text-[#1F1F1F] shadow-2xs"
                     : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 font-normal"
                 }`}
                 aria-current={active ? "page" : undefined}

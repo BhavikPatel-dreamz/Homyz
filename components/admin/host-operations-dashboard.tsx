@@ -181,7 +181,7 @@ export function HostOperationsDashboard() {
           <button
             onClick={handleExportCSV}
             disabled={exporting}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 focus:ring-2 focus:ring-amber-500/30 transition-all shadow-xs disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 focus:ring-2 focus:ring-amber-500/30 transition-all shadow-xs disabled:opacity-50"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -206,7 +206,7 @@ export function HostOperationsDashboard() {
           { label: "Suspended Hosts", val: metrics?.suspended, color: "text-rose-700", bg: "bg-rose-100/50" },
         ].map((item, idx) => (
           <div key={idx} className={`p-4 rounded-xl border border-zinc-200/80 ${item.bg} flex flex-col justify-between shadow-2xs`}>
-            <span className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{item.label}</span>
+            <span className="text-xs font-medium text-[#727272] uppercase tracking-wider">{item.label}</span>
             <span className={`text-2xl font-black mt-2 ${item.color}`}>
               {loading ? "..." : item.val ?? 0}
             </span>
@@ -218,7 +218,7 @@ export function HostOperationsDashboard() {
       <div className="bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-xs space-y-6">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
           <div>
-            <h2 className="text-lg font-semibold text-[#1F1F1F]">Host Lifecycle Conversion Funnel</h2>
+            <h2 className="text-lg font-medium text-[#1F1F1F]">Host Lifecycle Conversion Funnel</h2>
             <p className="text-xs text-[#727272] mt-0.5">End-to-end progression from intake registration to active host status</p>
           </div>
           <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
@@ -230,13 +230,13 @@ export function HostOperationsDashboard() {
           {funnel.map((st, i) => (
             <div key={st.stageKey} className="relative p-4 rounded-xl bg-gradient-to-br from-zinc-50 to-white border border-zinc-200/70 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#727272]">0{i + 1}</span>
-                <span className="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
+                <span className="text-xs font-medium text-[#727272]">0{i + 1}</span>
+                <span className="text-[11px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
                   ~{st.avgTimeHours}h avg
                 </span>
               </div>
               <div className="my-3">
-                <div className="text-sm font-semibold text-[#1F1F1F]">{st.stageName}</div>
+                <div className="text-sm font-medium text-[#1F1F1F]">{st.stageName}</div>
                 <div className="text-2xl font-black text-amber-600 mt-1">{st.count}</div>
               </div>
               <div className="flex items-center justify-between text-xs pt-2 border-t border-zinc-100 text-[#727272]">
@@ -252,31 +252,31 @@ export function HostOperationsDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* KPIs */}
         <div className="bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-xs space-y-4">
-          <h2 className="text-lg font-semibold text-[#1F1F1F] border-b border-zinc-100 pb-3">Operational KPIs & Efficiency Rates</h2>
+          <h2 className="text-lg font-medium text-[#1F1F1F] border-b border-zinc-100 pb-3">Operational KPIs & Efficiency Rates</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
               <div className="text-xs text-[#727272]">Approval Rate</div>
-              <div className="text-xl font-semibold text-emerald-600 mt-1">{kpis?.approvalRate ?? 0}%</div>
+              <div className="text-xl font-medium text-emerald-600 mt-1">{kpis?.approvalRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
               <div className="text-xs text-[#727272]">Rejection Rate</div>
-              <div className="text-xl font-semibold text-rose-600 mt-1">{kpis?.rejectionRate ?? 0}%</div>
+              <div className="text-xl font-medium text-rose-600 mt-1">{kpis?.rejectionRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
               <div className="text-xs text-[#727272]">Doc Rejection Rate</div>
-              <div className="text-xl font-semibold text-amber-600 mt-1">{kpis?.documentRejectionRate ?? 0}%</div>
+              <div className="text-xl font-medium text-amber-600 mt-1">{kpis?.documentRejectionRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
               <div className="text-xs text-[#727272]">Compliance Failure Rate</div>
-              <div className="text-xl font-semibold text-violet-600 mt-1">{kpis?.complianceFailureRate ?? 0}%</div>
+              <div className="text-xl font-medium text-violet-600 mt-1">{kpis?.complianceFailureRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
               <div className="text-xs text-[#727272]">Re-Verification Rate</div>
-              <div className="text-xl font-semibold text-blue-600 mt-1">{kpis?.reVerificationRate ?? 0}%</div>
+              <div className="text-xl font-medium text-blue-600 mt-1">{kpis?.reVerificationRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
               <div className="text-xs text-[#727272]">Suspension Rate</div>
-              <div className="text-xl font-semibold text-red-600 mt-1">{kpis?.suspensionRate ?? 0}%</div>
+              <div className="text-xl font-medium text-red-600 mt-1">{kpis?.suspensionRate ?? 0}%</div>
             </div>
           </div>
         </div>
@@ -284,22 +284,22 @@ export function HostOperationsDashboard() {
         {/* Bottleneck Detection */}
         <div className="bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-xs space-y-4">
           <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-            <h2 className="text-lg font-semibold text-[#1F1F1F]">Bottleneck & SLA Detection</h2>
-            <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md">Live SLA Monitor</span>
+            <h2 className="text-lg font-medium text-[#1F1F1F]">Bottleneck & SLA Detection</h2>
+            <span className="text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md">Live SLA Monitor</span>
           </div>
 
           <div className="space-y-3">
             {bottlenecks.map((b) => (
               <div key={b.stageKey} className="p-4 rounded-xl border border-zinc-200/80 bg-zinc-50/50 flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-[#1F1F1F]">{b.stageName}</div>
+                  <div className="text-sm font-medium text-[#1F1F1F]">{b.stageName}</div>
                   <div className="text-xs text-[#727272] mt-1">
-                    Applications Waiting: <span className="font-semibold text-zinc-800">{b.stuckCount}</span> | Avg Wait: <span className="font-semibold text-amber-700">{b.avgWaitDays} days</span>
+                    Applications Waiting: <span className="font-medium text-zinc-800">{b.stuckCount}</span> | Avg Wait: <span className="font-medium text-amber-700">{b.avgWaitDays} days</span>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
+                  <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
                     b.status === "EXCEEDED" ? "bg-rose-100 text-rose-800 border border-rose-300" :
                     b.status === "WARNING" ? "bg-amber-100 text-amber-800 border border-amber-300" :
                     "bg-emerald-100 text-emerald-800 border border-emerald-300"
@@ -318,7 +318,7 @@ export function HostOperationsDashboard() {
       <div className="bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
           <div>
-            <h2 className="text-lg font-semibold text-[#1F1F1F]">Unified Action Required Queue</h2>
+            <h2 className="text-lg font-medium text-[#1F1F1F]">Unified Action Required Queue</h2>
             <p className="text-xs text-[#727272]">Centralized queue consolidating pending reviews, compliance issues, expired docs & re-verifications</p>
           </div>
 
@@ -333,7 +333,7 @@ export function HostOperationsDashboard() {
               <button
                 key={preset.key}
                 onClick={() => applySavedView(preset.key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                   savedView === preset.key
                     ? "bg-zinc-900 text-white shadow-xs"
                     : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
@@ -395,7 +395,7 @@ export function HostOperationsDashboard() {
         {/* Action Table */}
         <div className="overflow-x-auto rounded-xl border border-zinc-200/80">
           <table className="w-full text-left text-sm text-zinc-600">
-            <thead className="bg-zinc-50 text-xs font-semibold text-[#727272] uppercase tracking-wider border-b border-zinc-200">
+            <thead className="bg-zinc-50 text-xs font-medium text-[#727272] uppercase tracking-wider border-b border-zinc-200">
               <tr>
                 <th className="px-4 py-3">Host & App ID</th>
                 <th className="px-4 py-3">Issue / Task</th>
@@ -416,7 +416,7 @@ export function HostOperationsDashboard() {
                 filteredQueue.map((item) => (
                   <tr key={item.id} className="hover:bg-zinc-50/70 transition-colors">
                     <td className="px-4 py-3">
-                      <div className="font-semibold text-[#1F1F1F]">{item.hostName}</div>
+                      <div className="font-medium text-[#1F1F1F]">{item.hostName}</div>
                       <div className="text-xs text-[#727272] font-mono">{item.applicationId}</div>
                     </td>
                     <td className="px-4 py-3">
@@ -424,12 +424,12 @@ export function HostOperationsDashboard() {
                       <div className="text-xs text-[#727272] max-w-xs truncate">{item.description}</div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold bg-zinc-100 text-zinc-700">
+                      <span className="inline-block px-2.5 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-700">
                         {item.currentStage}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         item.priority === "CRITICAL" ? "bg-rose-100 text-rose-800 border border-rose-200" :
                         item.priority === "HIGH" ? "bg-amber-100 text-amber-800 border border-amber-200" :
                         item.priority === "MEDIUM" ? "bg-blue-100 text-blue-800 border border-blue-200" :
@@ -444,7 +444,7 @@ export function HostOperationsDashboard() {
                     <td className="px-4 py-3 text-right">
                       <Link
                         href={item.targetUrl}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 hover:text-amber-700 hover:underline"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 hover:text-amber-700 hover:underline"
                       >
                         Open Workflow →
                       </Link>
@@ -461,7 +461,7 @@ export function HostOperationsDashboard() {
       <div className="bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-xs space-y-6">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
           <div>
-            <h2 className="text-lg font-semibold text-[#1F1F1F]">Reviewer Workload & Balancing</h2>
+            <h2 className="text-lg font-medium text-[#1F1F1F]">Reviewer Workload & Balancing</h2>
             <p className="text-xs text-[#727272]">Monitor individual admin workload, pending items, and SLA adherence</p>
           </div>
         </div>
@@ -473,7 +473,7 @@ export function HostOperationsDashboard() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <div className="text-xs font-semibold text-amber-900 uppercase tracking-wider">Workload Balancing Recommendation</div>
+              <div className="text-xs font-medium text-amber-900 uppercase tracking-wider">Workload Balancing Recommendation</div>
               <div className="text-sm text-amber-800 mt-0.5">{workloadData.recommendation}</div>
             </div>
           </div>
@@ -482,7 +482,7 @@ export function HostOperationsDashboard() {
         {/* Workload Table */}
         <div className="overflow-x-auto rounded-xl border border-zinc-200/80">
           <table className="w-full text-left text-sm text-zinc-600">
-            <thead className="bg-zinc-50 text-xs font-semibold text-[#727272] uppercase tracking-wider border-b border-zinc-200">
+            <thead className="bg-zinc-50 text-xs font-medium text-[#727272] uppercase tracking-wider border-b border-zinc-200">
               <tr>
                 <th className="px-4 py-3">Reviewer Name</th>
                 <th className="px-4 py-3">Assigned Total</th>
@@ -496,13 +496,13 @@ export function HostOperationsDashboard() {
               {workloadData?.reviewers.map((rev) => (
                 <tr key={rev.reviewerId} className="hover:bg-zinc-50/70 transition-colors">
                   <td className="px-4 py-3">
-                    <div className="font-semibold text-[#1F1F1F]">{rev.name}</div>
+                    <div className="font-medium text-[#1F1F1F]">{rev.name}</div>
                     <div className="text-xs text-[#727272]">{rev.email}</div>
                   </td>
-                  <td className="px-4 py-3 font-semibold text-[#1F1F1F]">{rev.assigned}</td>
-                  <td className="px-4 py-3 font-semibold text-amber-600">{rev.pending}</td>
-                  <td className="px-4 py-3 font-semibold text-rose-600">{rev.overdue}</td>
-                  <td className="px-4 py-3 font-semibold text-emerald-600">{rev.completed}</td>
+                  <td className="px-4 py-3 font-medium text-[#1F1F1F]">{rev.assigned}</td>
+                  <td className="px-4 py-3 font-medium text-amber-600">{rev.pending}</td>
+                  <td className="px-4 py-3 font-medium text-rose-600">{rev.overdue}</td>
+                  <td className="px-4 py-3 font-medium text-emerald-600">{rev.completed}</td>
                   <td className="px-4 py-3 text-xs text-[#727272]">~{rev.avgReviewTimeHours}h</td>
                 </tr>
               ))}
@@ -513,17 +513,17 @@ export function HostOperationsDashboard() {
 
       {/* Regional & Geographic Analytics */}
       <div className="bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-xs space-y-4">
-        <h2 className="text-lg font-semibold text-[#1F1F1F] border-b border-zinc-100 pb-3">Geographic / Regional Performance Analytics</h2>
+        <h2 className="text-lg font-medium text-[#1F1F1F] border-b border-zinc-100 pb-3">Geographic / Regional Performance Analytics</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {geoMetrics.map((g) => (
             <div key={g.region} className="p-4 rounded-xl border border-zinc-200/80 bg-zinc-50/40 flex flex-col justify-between">
               <div>
-                <div className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{g.region}</div>
-                <div className="text-xl font-semibold text-[#1F1F1F] mt-1">{g.totalApplications} Applications</div>
+                <div className="text-xs font-medium text-[#727272] uppercase tracking-wider">{g.region}</div>
+                <div className="text-xl font-medium text-[#1F1F1F] mt-1">{g.totalApplications} Applications</div>
               </div>
               <div className="flex items-center justify-between text-xs border-t border-zinc-200/60 pt-3 mt-3">
-                <span className="text-emerald-700 font-semibold">Approval Rate: {g.approvalRate}%</span>
-                <span className="text-rose-600 font-semibold">Compliance Issues: {g.complianceIssuesCount}</span>
+                <span className="text-emerald-700 font-medium">Approval Rate: {g.approvalRate}%</span>
+                <span className="text-rose-600 font-medium">Compliance Issues: {g.complianceIssuesCount}</span>
               </div>
             </div>
           ))}

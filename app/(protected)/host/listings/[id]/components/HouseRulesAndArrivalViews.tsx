@@ -46,7 +46,7 @@ function AllowDenyButtons({
         aria-label={`Do not allow ${label}`}
         aria-pressed={value === false}
         onClick={() => onChange(false)}
-        className={`flex size-10 cursor-pointer items-center justify-center rounded-full text-xs font-semibold transition-all ${value === false
+        className={`flex size-10 cursor-pointer items-center justify-center rounded-full text-xs font-medium transition-all ${value === false
           ? "border border-[#FCDF9C] bg-[#FCDF9C] text-[#1f1f1f] shadow-xs"
           : "border border-[#727272] bg-white text-[#727272] hover:bg-zinc-200/80"
           }`}
@@ -65,7 +65,7 @@ function AllowDenyButtons({
         aria-label={`Allow ${label}`}
         aria-pressed={value === true}
         onClick={() => onChange(true)}
-        className={`flex size-10 cursor-pointer items-center justify-center rounded-full text-xs font-semibold transition-all ${value === true
+        className={`flex size-10 cursor-pointer items-center justify-center rounded-full text-xs font-medium transition-all ${value === true
           ? "border border-[#FCDF9C] bg-[#FCDF9C] text-[#1f1f1f] shadow-xs"
           : "border border-[#727272] bg-white text-[#727272] hover:bg-zinc-200/80"
           }`}
@@ -302,7 +302,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: HOUSE RULES (Professional Airbnb-Style Structured) */}
       {/* --------------------------------------------------------- */}
       {activeSection === "house-rules" && (
-        <div className="max-w-3xl mx-auto space-y-6 pb-10 font-sans animate-in fade-in">
+        <div className="w-full max-w-3xl space-y-6 pb-10 font-sans animate-in fade-in">
           {/* Header & Subtitle */}
           <div className="space-y-2">
             <div className="flex items-center gap-6">
@@ -360,7 +360,7 @@ export function HouseRulesAndArrivalViews({
                           >
                             <Image src="/images/icons/minus-icon.svg" alt={t("host_decrease_max_pets_aria") || "Decrease maximum pets"} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                           </button>
-                          <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 min-w-[20px] text-center">
+                          <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 min-w-[20px] text-center">
                             {maxPetsCount || 1}
                           </span>
                           <button
@@ -540,7 +540,7 @@ export function HouseRulesAndArrivalViews({
                     >
                       <Image src="/images/icons/minus-icon.svg" alt={t("host_decrease_max_guests_aria") || "Decrease maximum guests"} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                     </button>
-                    <span className="min-w-5 text-center text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{maxGuestsCount}</span>
+                    <span className="min-w-5 text-center text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">{maxGuestsCount}</span>
                     <button
                       type="button"
                       aria-label={t("host_increase_max_guests_aria") || "Increase maximum guests"}
@@ -620,7 +620,7 @@ export function HouseRulesAndArrivalViews({
                   type="button"
                   disabled={isSaving}
                   onClick={() => setIsCheckInOutModalOpen(false)}
-                  className="absolute top-6 right-6 text-zinc-600 dark:text-[#727272] hover:text-zinc-950 dark:hover:text-white font-semibold text-sm cursor-pointer p-1"
+                  className="absolute top-6 right-6 text-zinc-600 dark:text-[#727272] hover:text-zinc-950 dark:hover:text-white font-medium text-sm cursor-pointer p-1"
                 >
                   <CloseIcon className="size-5" />
                 </button>
@@ -731,7 +731,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: PARKING INSTRUCTIONS & CONFIGURATION */}
       {/* --------------------------------------------------------- */}
       {activeSection === "parking" && (
-        <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
+        <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
           <div className="flex items-start gap-6">
             <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
             <div>
@@ -755,7 +755,7 @@ export function HouseRulesAndArrivalViews({
                   aria-label="Parking is not available"
                   aria-pressed={parkingAvailable === false}
                   onClick={() => setParkingAvailable?.(false)}
-                  className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingAvailable === false
+                  className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-medium transition-all ${parkingAvailable === false
                     ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-[#727272] dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
@@ -774,7 +774,7 @@ export function HouseRulesAndArrivalViews({
                   aria-label="Parking is available"
                   aria-pressed={parkingAvailable === true}
                   onClick={() => setParkingAvailable?.(true)}
-                  className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingAvailable === true
+                  className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-medium transition-all ${parkingAvailable === true
                     ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-[#727272] dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
@@ -828,7 +828,7 @@ export function HouseRulesAndArrivalViews({
                     <button
                       type="button"
                       onClick={() => setParkingSpaces?.(Math.max(1, (parkingSpaces || 1) - 1))}
-                      className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xs font-semibold text-zinc-700 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
+                      className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-700 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
                     >
                       <Image src="/images/icons/minus-icon.svg" alt={t("host_decrease_parking_spaces") || "Decrease parking spaces"} width={12} height={12} className="size-3 object-contain dark:invert" />
                     </button>
@@ -836,7 +836,7 @@ export function HouseRulesAndArrivalViews({
                     <button
                       type="button"
                       onClick={() => setParkingSpaces?.((parkingSpaces || 1) + 1)}
-                      className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xs font-semibold text-zinc-700 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
+                      className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-700 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
                     >
                       <Image src="/images/icons/add-icon.svg" alt={t("host_increase_parking_spaces") || "Increase parking spaces"} width={14} height={14} className="size-3 object-contain dark:invert" />
                     </button>
@@ -852,7 +852,7 @@ export function HouseRulesAndArrivalViews({
                       aria-label="Parking reservation is not required"
                       aria-pressed={parkingReservation === false}
                       onClick={() => setParkingReservation?.(false)}
-                      className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingReservation === false
+                      className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-medium transition-all ${parkingReservation === false
                         ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                         : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
@@ -871,7 +871,7 @@ export function HouseRulesAndArrivalViews({
                       aria-label="Parking reservation is required"
                       aria-pressed={parkingReservation === true}
                       onClick={() => setParkingReservation?.(true)}
-                      className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingReservation === true
+                      className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-medium transition-all ${parkingReservation === true
                         ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                         : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
@@ -977,7 +977,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: WIFI DETAILS (Matches Figma Screenshot 100%) */}
       {/* --------------------------------------------------------- */}
       {activeSection === "wifi-details" && (
-        <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
+        <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
           <div className="flex items-center gap-6">
             <BackButton onClick={() => setActiveSection("check-in-out")} />
             <h1>{t("host_wifi_details") || "Wifi details"}</h1>
@@ -1024,7 +1024,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: HOUSE MANUAL */}
       {/* --------------------------------------------------------- */}
       {activeSection === "house-manual" && (
-        <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
+        <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
           <div className="flex items-start gap-6">
             <BackButton onClick={() => setActiveSection("check-in-out")} className="mt-2" />
             <div>
@@ -1263,7 +1263,7 @@ function CheckOutInstructionsView({
   const formattedCheckOut = formatTimeDisplay(checkOutTime, "11:00 AM");
 
   return (
-    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
+    <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-start gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
@@ -1296,7 +1296,7 @@ function CheckOutInstructionsView({
           <button
             type="button"
             onClick={() => setActiveSection("check-in-out")}
-            className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 hover:text-zinc-600 dark:hover:text-zinc-300 underline underline-offset-2 transition-colors cursor-pointer"
+            className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 hover:text-zinc-600 dark:hover:text-zinc-300 underline underline-offset-2 transition-colors cursor-pointer"
           >
             {t("host_change_time") || "Change time"}
           </button>
@@ -1433,7 +1433,7 @@ function CheckOutInstructionsView({
 
             {/* Quick Suggestions */}
             <div className="mb-4 space-y-2">
-              <span className="text-sm font-semibold text-[#1f1f1f] dark:text-[#727272] block">{t("host_quick_suggestions_label") || "Quick suggestions (click to add)"}</span>
+              <span className="text-sm font-medium text-[#1f1f1f] dark:text-[#727272] block">{t("host_quick_suggestions_label") || "Quick suggestions (click to add)"}</span>
               <div className="flex flex-wrap gap-1.5">
                 {suggestionChips.map((chip) => (
                   <button
@@ -1520,7 +1520,7 @@ function GuidebooksView({
   ]);
 
   return (
-    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
+    <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
       {/* Header & Back Button & Plus Circle Icon (Matches Figma Screenshot 100%) */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
@@ -1532,7 +1532,7 @@ function GuidebooksView({
         <button
           type="button"
           onClick={() => setIsAdding(!isAdding)}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-sm font-semibold transition-all cursor-pointer shadow-2xs"
+          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-sm font-medium transition-all cursor-pointer shadow-2xs"
         >
           +
         </button>
@@ -1546,7 +1546,7 @@ function GuidebooksView({
         <a
           href="#"
           onClick={(e) => e.preventDefault()}
-          className="text-xs font-semibold text-[#1F1F1F] underline hover:text-zinc-700 block"
+          className="text-xs font-medium text-[#1F1F1F] underline hover:text-zinc-700 block"
         >
           {t("host_guidebooks_content_policy", "Read our content policy")}
         </a>
@@ -1554,7 +1554,7 @@ function GuidebooksView({
 
       {isAdding && (
         <div className="p-4 rounded-2xl border border-zinc-200 bg-white space-y-3 shadow-2xs animate-in fade-in">
-          <h3 className="text-xs font-semibold text-[#1F1F1F]">{t("host_guidebooks_add_new", "Add New Guidebook")}</h3>
+          <h3 className="text-xs font-medium text-[#1F1F1F]">{t("host_guidebooks_add_new", "Add New Guidebook")}</h3>
           <input
             type="text"
             value={newTitle}
@@ -1566,7 +1566,7 @@ function GuidebooksView({
             <button
               type="button"
               onClick={() => setIsAdding(false)}
-              className="px-4 py-1.5 rounded-full border border-zinc-200 text-xs font-semibold text-zinc-600 hover:bg-zinc-50"
+              className="px-4 py-1.5 rounded-full border border-zinc-200 text-xs font-medium text-zinc-600 hover:bg-zinc-50"
             >
               {t("host_cancel", "Cancel")}
             </button>
@@ -1580,7 +1580,7 @@ function GuidebooksView({
                   handleSaveSection("arrival-guide");
                 }
               }}
-              className="px-4 py-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#FDE047] text-xs font-semibold text-zinc-950 shadow-2xs"
+              className="px-4 py-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#FDE047] text-xs font-medium text-zinc-950 shadow-2xs"
             >
               {t("host_guidebooks_save", "Save")}
             </button>
@@ -1600,7 +1600,7 @@ function GuidebooksView({
               📖
             </div>
             <div>
-              <h4 className="text-xs font-semibold text-[#1F1F1F] line-clamp-2">{gb.title}</h4>
+              <h4 className="text-xs font-medium text-[#1F1F1F] line-clamp-2">{gb.title}</h4>
               <p className="text-[10px] text-[#727272] font-medium">{t("host_guidebooks_recs_count", { count: gb.itemsCount })}</p>
             </div>
           </div>
@@ -1657,7 +1657,7 @@ function InteractionPreferencesView({
   const selectedOption = options.indexOf(value || "No preferences");
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-16 font-sans animate-in fade-in">
+    <div className="w-full max-w-2xl space-y-6 pb-16 font-sans animate-in fade-in">
       {/* Header & Back Button */}
       <div className="flex items-start gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
@@ -1766,7 +1766,7 @@ function LanguagesView({
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
+    <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
@@ -1797,7 +1797,7 @@ function LanguagesView({
                   if (!setSelectedLanguageIds) return;
                   setSelectedLanguageIds(selectedLanguageIds.filter((id) => id !== languageId));
                 }}
-                className="text-[#727272] dark:text-[#727272] hover:text-zinc-700 dark:hover:text-zinc-200 font-semibold"
+                className="text-[#727272] dark:text-[#727272] hover:text-zinc-700 dark:hover:text-zinc-200 font-medium"
               >
                 ✕
               </button>
@@ -1907,7 +1907,7 @@ function LanguagesView({
           onClick={() => setIsAdding(!isAdding)}
           className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
         >
-          <span className="text-sm font-semibold">+</span>
+          <span className="text-sm font-medium">+</span>
           {t("host_add_a_language") || "Add a language"}
         </button>
         <button
@@ -2059,7 +2059,7 @@ function CheckInCheckOutView({
   const timesList = [...ALL_HOURS_OPTIONS, "Flexible"];
 
   return (
-    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
+    <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("house-rules")} />
@@ -2225,7 +2225,7 @@ function DirectionsView({
   const { t } = useLanguage();
 
   return (
-    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
+    <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="space-y-1">
         <div className="flex items-start gap-6">
@@ -2290,7 +2290,7 @@ function DirectionsView({
       <div className="space-y-1.5 pt-1">
         <div className="flex items-center justify-between">
           <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-300 block">{t("host_directions_arrival_notes_label") || "Directions & arrival notes"}</label>
-          <span className={`text-[11px] ${(directions || "").length > 4800 ? "text-amber-600 dark:text-amber-400 font-semibold" : "text-[#727272] dark:text-[#727272]"}`}>
+          <span className={`text-[11px] ${(directions || "").length > 4800 ? "text-amber-600 dark:text-amber-400 font-medium" : "text-[#727272] dark:text-[#727272]"}`}>
             {t("host_characters_limit", { count: (directions || "").length }) || `${(directions || "").length} / 5000 characters`}
           </span>
         </div>
@@ -2554,7 +2554,7 @@ function CheckInMethodView({
   const selectedDetailMethod = checkInMethodsData.find((m) => m.id === selectedMethodId);
 
   return (
-    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
+    <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("check-in-out")} />
@@ -2882,7 +2882,7 @@ function RegulationsView({
 
             {/* Section 2: Registration details */}
             <div className="space-y-4 pt-3">
-              <h2 className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100">
+              <h2 className="text-xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                 {t("host_regulations_details_heading")}
               </h2>
               <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed max-w-md">
@@ -2900,7 +2900,7 @@ function RegulationsView({
                       type="text"
                       value={regNumber}
                       onChange={(e) => setRegNumber(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-[#727272] dark:border-zinc-600 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-500 bg-white sm:min-h-[56px] min-h-[45px] dark:bg-zinc-900"
+                      className="w-full px-3 py-2 rounded-lg border border-[#727272] dark:border-zinc-600 text-xs font-medium text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-500 bg-white sm:min-h-[56px] min-h-[45px] dark:bg-zinc-900"
                     />
                   </div>
                   <div>
@@ -2911,7 +2911,7 @@ function RegulationsView({
                       type="text"
                       value={regAddress}
                       onChange={(e) => setRegAddress(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-[#727272] dark:border-zinc-600 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-500 bg-white sm:min-h-[56px] min-h-[45px] dark:bg-zinc-900"
+                      className="w-full px-3 py-2 rounded-lg border border-[#727272] dark:border-zinc-600 text-xs font-medium text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-500 bg-white sm:min-h-[56px] min-h-[45px] dark:bg-zinc-900"
                     />
                   </div>
                   <button
@@ -2929,11 +2929,11 @@ function RegulationsView({
                 <div className="space-y-3 pt-1">
                   <div>
                     <p className="text-sm text-[#727272] font-normal">XXXXXXXX</p>
-                    <p className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{regNumber}</p>
+                    <p className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">{regNumber}</p>
                   </div>
                   <div>
                     <p className="text-sm text-[#727272] font-normal">{t("host_regulations_label_address_country")}</p>
-                    <p className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{regAddress}</p>
+                    <p className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">{regAddress}</p>
                   </div>
                 </div>
               )}
@@ -2944,7 +2944,7 @@ function RegulationsView({
                 <a
                   href="#support"
                   onClick={(e) => e.preventDefault()}
-                  className="underline text-[#1F1F1F] dark:text-zinc-200 font-semibold hover:text-[#727272] dark:hover:text-[#727272] transition-colors"
+                  className="underline text-[#1F1F1F] dark:text-zinc-200 font-medium hover:text-[#727272] dark:hover:text-[#727272] transition-colors"
                 >
                   {t("host_regulations_support_link")}
                 </a>
@@ -3020,7 +3020,7 @@ function RegulationsView({
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
+    <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
@@ -3069,7 +3069,7 @@ function TaxesView({
   const [isSaved, setIsSaved] = React.useState(false);
 
   return (
-    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
+    <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
         <h1>Taxes</h1>
@@ -3080,7 +3080,7 @@ function TaxesView({
       </p>
 
       <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
-        <h3 className="text-xs font-semibold text-[#1F1F1F]">Occupancy Tax Collection</h3>
+        <h3 className="text-xs font-medium text-[#1F1F1F]">Occupancy Tax Collection</h3>
         <p className="text-xs text-[#727272] font-normal leading-relaxed">
           Depending on your jurisdiction, occupancy tax may automatically be included at checkout for guest reservations.
         </p>
@@ -3095,7 +3095,7 @@ function TaxesView({
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 2000);
           }}
-          className="rounded-full bg-[#FCDF9C] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FCDF9C] hover:bg-[#FDE047] text-zinc-950 font-medium text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
         </button>
@@ -3103,7 +3103,7 @@ function TaxesView({
         <button
           type="button"
           onClick={() => setActiveSection("description")}
-          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-medium text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           Cancel
         </button>
@@ -3127,7 +3127,7 @@ function HomyzStaysView({
   const [isSaved, setIsSaved] = React.useState(false);
 
   return (
-    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
+    <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-10 font-sans">
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
         <h1>Homyz.com stays</h1>
@@ -3138,7 +3138,7 @@ function HomyzStaysView({
       </p>
 
       <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
-        <h3 className="text-xs font-semibold text-[#1F1F1F]">Community Housing Network</h3>
+        <h3 className="text-xs font-medium text-[#1F1F1F]">Community Housing Network</h3>
         <p className="text-xs text-[#727272] font-normal leading-relaxed">
           Opt in to share emergency housing or offer discounted stays for non-profit and community partners.
         </p>
@@ -3153,7 +3153,7 @@ function HomyzStaysView({
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 2000);
           }}
-          className="rounded-full bg-[#FCDF9C] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FCDF9C] hover:bg-[#FDE047] text-zinc-950 font-medium text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
         </button>
@@ -3161,7 +3161,7 @@ function HomyzStaysView({
         <button
           type="button"
           onClick={() => setActiveSection("description")}
-          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-medium text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           Cancel
         </button>

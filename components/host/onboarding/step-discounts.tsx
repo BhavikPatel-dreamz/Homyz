@@ -139,7 +139,7 @@ export function StepDiscounts({
 
               {showExplanation && (
                 <div className="mt-3 p-4 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs text-zinc-600 leading-relaxed animate-in fade-in duration-150">
-                  <p className="font-semibold text-zinc-800 mb-1">{t("host_discounts_how_it_works")}</p>
+                  <p className="font-medium text-zinc-800 mb-1">{t("host_discounts_how_it_works")}</p>
                   <ul className="list-disc pl-4 space-y-1">
                     <li>{t("host_discounts_rule_multiple")}</li>
                     <li>{t("host_discounts_rule_length")}</li>

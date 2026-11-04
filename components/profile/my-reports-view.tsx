@@ -179,7 +179,7 @@ export function MyReportsView() {
             void fetchEnforcementStatus();
           }}
           disabled={loading || isPending}
-          className="self-start rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          className="self-start rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
         >
           {loading ? "Refreshing..." : "Refresh Status"}
         </button>
@@ -189,8 +189,8 @@ export function MyReportsView() {
       {enforcementStatus?.isSuspended && (
         <div role="alert" className="rounded-2xl border border-red-300 bg-red-50 p-5 shadow-sm text-xs text-red-950 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="flex size-6 items-center justify-center rounded-full bg-red-600 text-white font-bold text-xs">!</span>
-            <h3 className="text-sm font-bold text-red-900">Account Access Suspended</h3>
+            <span className="flex size-6 items-center justify-center rounded-full bg-red-600 text-white font-medium text-xs">!</span>
+            <h3 className="text-sm font-medium text-red-900">Account Access Suspended</h3>
           </div>
           <p className="leading-relaxed">
             Your account has been suspended by Trust &amp; Safety due to confirmed policy violations.
@@ -205,8 +205,8 @@ export function MyReportsView() {
       {enforcementStatus?.activeRestrictions?.length > 0 && (
         <div role="alert" className="rounded-2xl border border-amber-300 bg-amber-50 p-5 shadow-sm text-xs text-amber-950 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="flex size-6 items-center justify-center rounded-full bg-amber-600 text-white font-bold text-xs">!</span>
-            <h3 className="text-sm font-bold text-amber-900">Active Account Restrictions</h3>
+            <span className="flex size-6 items-center justify-center rounded-full bg-amber-600 text-white font-medium text-xs">!</span>
+            <h3 className="text-sm font-medium text-amber-900">Active Account Restrictions</h3>
           </div>
           <p className="leading-relaxed text-amber-800">
             Our moderation team has placed temporary restrictions on specific features of your account:
@@ -217,7 +217,7 @@ export function MyReportsView() {
               const expiry = rst.expiresAt ? `Until ${new Date(rst.expiresAt).toLocaleDateString()}` : "Indefinite";
               return (
                 <div key={rst.id} className="rounded-lg bg-white/80 p-2.5 border border-amber-200 flex flex-wrap items-center justify-between gap-1">
-                  <span className="font-semibold text-slate-800 capitalize">{scopeLabel} Restricted</span>
+                  <span className="font-medium text-slate-800 capitalize">{scopeLabel} Restricted</span>
                   <span className="text-amber-800 font-medium">{expiry}</span>
                   <p className="w-full text-slate-600 text-[11px] mt-0.5">Reason: {rst.reason}</p>
                 </div>
@@ -230,7 +230,7 @@ export function MyReportsView() {
       {enforcementStatus?.activeWarnings?.length > 0 && (
         <div className="rounded-2xl border border-yellow-200 bg-yellow-50/80 p-4 text-xs text-yellow-950 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-yellow-800">⚠️ Account Warning on Record</span>
+            <span className="font-medium text-yellow-800">⚠️ Account Warning on Record</span>
           </div>
           <div className="space-y-1">
             {enforcementStatus.activeWarnings.map((w: any) => (
@@ -257,7 +257,7 @@ export function MyReportsView() {
           <svg className="mx-auto size-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.5l5 5V19a2 2 0 01-2 2z" />
           </svg>
-          <h3 className="mt-3 text-sm font-semibold text-slate-900">No reports submitted</h3>
+          <h3 className="mt-3 text-sm font-medium text-slate-900">No reports submitted</h3>
           <p className="mt-1 text-xs text-slate-500">
             You haven't submitted any review disputes or content reports.
           </p>
@@ -281,7 +281,7 @@ export function MyReportsView() {
               >
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-semibold text-indigo-700">
+                    <span className="text-xs font-mono font-medium text-indigo-700">
                       {report.case?.caseReference || `REP-${report.id.slice(0, 8)}`}
                     </span>
                     <span className="text-slate-300">·</span>
@@ -289,20 +289,20 @@ export function MyReportsView() {
                       {report.targetType.toLowerCase().replaceAll("_", " ")} Report
                     </span>
                   </div>
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusInfo.className}`}>
+                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${statusInfo.className}`}>
                     {statusInfo.label}
                   </span>
                 </div>
 
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   <div>
-                    <p className="text-xs font-semibold text-slate-500">Report Reason</p>
+                    <p className="text-xs font-medium text-slate-500">Report Reason</p>
                     <p className="mt-0.5 text-sm font-medium text-slate-900">
                       {report.reasonCode.replaceAll("_", " ")}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-slate-500">Date Submitted</p>
+                    <p className="text-xs font-medium text-slate-500">Date Submitted</p>
                     <p className="mt-0.5 text-sm text-slate-700">
                       {new Date(report.createdAt).toLocaleDateString("en-US", {
                         year: "numeric",
@@ -315,7 +315,7 @@ export function MyReportsView() {
 
                 {report.description && (
                   <div className="mt-3 rounded-xl bg-slate-50 p-3 text-xs text-slate-700">
-                    <p className="font-semibold text-slate-600">Your Explanation:</p>
+                    <p className="font-medium text-slate-600">Your Explanation:</p>
                     <p className="mt-1 whitespace-pre-wrap">{report.description}</p>
                   </div>
                 )}
@@ -325,7 +325,7 @@ export function MyReportsView() {
                   <div className="mt-3 rounded-xl bg-amber-50 border border-amber-200 p-4 text-xs text-amber-900 shadow-sm">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-amber-950 text-sm">Action Required: Information Requested</p>
+                        <p className="font-medium text-amber-950 text-sm">Action Required: Information Requested</p>
                         <p className="mt-0.5 text-amber-800">
                           Our Trust &amp; Safety team has requested additional information or evidence from you to proceed with this investigation.
                         </p>
@@ -333,7 +333,7 @@ export function MyReportsView() {
                       <button
                         type="button"
                         onClick={() => setSelectedRfiReport(report)}
-                        className="shrink-0 rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-amber-700 transition-colors"
+                        className="shrink-0 rounded-lg bg-amber-600 px-4 py-2 text-xs font-medium text-white shadow hover:bg-amber-700 transition-colors"
                       >
                         View Request &amp; Respond →
                       </button>
@@ -343,14 +343,14 @@ export function MyReportsView() {
 
                 {report.case?.status === "RESOLVED" && (
                   <div className="mt-3 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-900">
-                    <span className="font-semibold">Outcome: </span>
+                    <span className="font-medium">Outcome: </span>
                     Investigation complete. Authorized policy action has been finalized by our moderation team.
                   </div>
                 )}
 
                 {report.case?.status === "DISMISSED" && (
                   <div className="mt-3 rounded-xl bg-slate-100 p-3 text-xs text-slate-700">
-                    <span className="font-semibold">Outcome: </span>
+                    <span className="font-medium">Outcome: </span>
                     Investigation concluded. The reported content was determined not to violate our published marketplace standards.
                   </div>
                 )}
@@ -363,7 +363,7 @@ export function MyReportsView() {
                     return (
                       <div className="mt-3 space-y-2 rounded-xl bg-purple-50/60 border border-purple-200 p-3.5 text-xs text-purple-950">
                         <div className="flex items-center justify-between">
-                          <p className="font-semibold text-purple-900">Moderation Appeal Status</p>
+                          <p className="font-medium text-purple-900">Moderation Appeal Status</p>
                           <span className="font-mono text-[11px] text-purple-600">{caseAppeals[0].id}</span>
                         </div>
                         {caseAppeals.map((appeal: any) => (
@@ -372,7 +372,7 @@ export function MyReportsView() {
                               <span className="font-medium text-slate-800">
                                 Reason: {appeal.reason.replaceAll("_", " ")}
                               </span>
-                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
                                 appeal.status === "SUBMITTED"
                                   ? "bg-amber-100 text-amber-800"
                                   : appeal.status === "UNDER_REVIEW"
@@ -420,7 +420,7 @@ export function MyReportsView() {
                         <button
                           type="button"
                           onClick={() => setSelectedAppealReport(report)}
-                          className="rounded-lg bg-indigo-600 px-3 py-1.5 font-semibold text-white shadow-xs hover:bg-indigo-700 transition"
+                          className="rounded-lg bg-indigo-600 px-3 py-1.5 font-medium text-white shadow-xs hover:bg-indigo-700 transition"
                         >
                           Appeal This Decision →
                         </button>
@@ -461,7 +461,7 @@ export function MyReportsView() {
                 {/* EXPANDED EVIDENCE DRAWER */}
                 {evidenceList && (
                   <div className="mt-3 rounded-xl bg-slate-50 p-3.5 border border-slate-200 space-y-2 text-xs">
-                    <p className="font-semibold text-slate-700">Attached Evidence Files ({evidenceList.length})</p>
+                    <p className="font-medium text-slate-700">Attached Evidence Files ({evidenceList.length})</p>
                     {evidenceList.length === 0 ? (
                       <p className="text-slate-500">No evidence files currently attached to this case.</p>
                     ) : (
@@ -489,7 +489,7 @@ export function MyReportsView() {
                                     <button
                                       type="button"
                                       onClick={() => setPreviewEvidence({ id: ev.id, caseId, displayName: ev.displayName, mimeType: mime })}
-                                      className="font-semibold text-indigo-600 hover:underline"
+                                      className="font-medium text-indigo-600 hover:underline"
                                     >
                                       Preview
                                     </button>
@@ -697,11 +697,11 @@ function RespondRfiDialog({
     >
       <div className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl space-y-4">
         <div>
-          <h2 id="respond-rfi-title" className="text-lg font-bold text-slate-900">
+          <h2 id="respond-rfi-title" className="text-lg font-medium text-slate-900">
             Trust &amp; Safety Information Request
           </h2>
           <p className="mt-1 text-xs text-slate-600">
-            Case Reference: <span className="font-mono font-semibold text-indigo-700">{report.case?.caseReference}</span>
+            Case Reference: <span className="font-mono font-medium text-indigo-700">{report.case?.caseReference}</span>
           </p>
         </div>
 
@@ -721,7 +721,7 @@ function RespondRfiDialog({
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             {/* INQUIRY FROM MODERATOR */}
             <div className="rounded-xl bg-amber-50/80 border border-amber-200 p-3.5 space-y-1.5">
-              <p className="font-semibold text-amber-950">
+              <p className="font-medium text-amber-950">
                 Inquiry from Moderation Team:
               </p>
               <p className="whitespace-pre-wrap text-slate-800 font-medium">
@@ -736,7 +736,7 @@ function RespondRfiDialog({
 
             {/* RESPONSE TEXTAREA */}
             <div>
-              <label className="block font-semibold text-slate-700">
+              <label className="block font-medium text-slate-700">
                 Your Explanation / Clarification
               </label>
               <textarea
@@ -750,7 +750,7 @@ function RespondRfiDialog({
 
             {/* ATTACH EVIDENCE */}
             <div>
-              <label className="block font-semibold text-slate-700">
+              <label className="block font-medium text-slate-700">
                 Attach Supporting Evidence (Images or PDF)
               </label>
               <input
@@ -758,7 +758,7 @@ function RespondRfiDialog({
                 disabled={uploadingFile || submitting}
                 accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
                 onChange={handleFileUpload}
-                className="mt-1 w-full text-xs text-slate-500 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-slate-700 hover:file:bg-slate-200"
+                className="mt-1 w-full text-xs text-slate-500 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200"
               />
               <p className="mt-1 text-[11px] text-slate-500">
                 Supported formats: JPEG, PNG, WebP, PDF (max 15MB each). Files are virus-scanned.
@@ -770,14 +770,14 @@ function RespondRfiDialog({
 
               {attachedEvidence.length > 0 && (
                 <div className="mt-2 space-y-1.5">
-                  <p className="font-semibold text-slate-700">Attached Files:</p>
+                  <p className="font-medium text-slate-700">Attached Files:</p>
                   {attachedEvidence.map((file, idx) => (
                     <div key={idx} className="flex items-center justify-between rounded-md bg-slate-50 px-2.5 py-1.5 border border-slate-200 text-xs">
                       <span className="truncate text-slate-800">📎 {file.name}</span>
                       <button
                         type="button"
                         onClick={() => setAttachedEvidence((prev) => prev.filter((_, i) => i !== idx))}
-                        className="text-red-600 hover:text-red-800 font-semibold text-xs ml-2"
+                        className="text-red-600 hover:text-red-800 font-medium text-xs ml-2"
                       >
                         Remove
                       </button>
@@ -792,14 +792,14 @@ function RespondRfiDialog({
                 type="button"
                 disabled={submitting}
                 onClick={onClose}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting || uploadingFile}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-indigo-700 disabled:opacity-50"
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white shadow hover:bg-indigo-700 disabled:opacity-50"
               >
                 {submitting ? "Submitting..." : "Submit Response"}
               </button>
@@ -871,7 +871,7 @@ function ClientUploadEvidenceDialog({
     >
       <div className="max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-xl space-y-4">
         <div>
-          <h2 id="upload-client-evidence-title" className="text-lg font-bold text-slate-900">
+          <h2 id="upload-client-evidence-title" className="text-lg font-medium text-slate-900">
             Attach Supporting Evidence
           </h2>
           <p className="mt-1 text-xs text-slate-600">
@@ -887,7 +887,7 @@ function ClientUploadEvidenceDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="block font-semibold text-slate-700">
+            <label className="block font-medium text-slate-700">
               Select File <span className="text-red-500">*</span>
             </label>
             <input
@@ -895,7 +895,7 @@ function ClientUploadEvidenceDialog({
               required
               accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="mt-1 w-full text-xs text-slate-500 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-slate-700 hover:file:bg-slate-200"
+              className="mt-1 w-full text-xs text-slate-500 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200"
             />
             <p className="mt-1 text-[11px] text-slate-500">
               Supported formats: JPEG, PNG, WebP, PDF (max 15MB).
@@ -903,7 +903,7 @@ function ClientUploadEvidenceDialog({
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700">
+            <label className="block font-medium text-slate-700">
               Description / Notes
             </label>
             <textarea
@@ -927,7 +927,7 @@ function ClientUploadEvidenceDialog({
             <button
               type="submit"
               disabled={uploading || !file}
-              className="rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white shadow hover:bg-indigo-700 disabled:opacity-50"
+              className="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white shadow hover:bg-indigo-700 disabled:opacity-50"
             >
               {uploading ? "Uploading..." : "Upload File"}
             </button>
@@ -960,14 +960,14 @@ function ClientPreviewEvidenceDialog({
     >
       <div className="flex max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl bg-white shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
-          <h2 id="preview-client-evidence-title" className="text-sm font-semibold text-slate-900 truncate">
+          <h2 id="preview-client-evidence-title" className="text-sm font-medium text-slate-900 truncate">
             {evidence.displayName}
           </h2>
           <div className="flex items-center gap-2">
             <a
               href={`${streamUrl}?download=true`}
               download
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
             >
               Download
             </a>
@@ -1090,11 +1090,11 @@ function SubmitAppealModal({
       >
         <div className="flex items-start justify-between border-b border-slate-200 pb-3">
           <div>
-            <h2 id="submit-appeal-title" className="text-lg font-bold text-slate-900">
+            <h2 id="submit-appeal-title" className="text-lg font-medium text-slate-900">
               Appeal Moderation Decision
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Case Reference: <span className="font-mono font-semibold text-indigo-700">{report.case?.caseReference}</span>
+              Case Reference: <span className="font-mono font-medium text-indigo-700">{report.case?.caseReference}</span>
             </p>
           </div>
           <button
@@ -1118,14 +1118,14 @@ function SubmitAppealModal({
         ) : eligibility && !eligibility.eligible ? (
           <div className="py-6 space-y-3">
             <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-xs text-amber-900">
-              <p className="font-bold">Not Eligible for Appeal</p>
+              <p className="font-medium">Not Eligible for Appeal</p>
               <p className="mt-1">{eligibility.reason || "This case is not eligible for appeal under community trust guidelines."}</p>
             </div>
             <div className="flex justify-end">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-md border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                className="rounded-md border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
               >
                 Close
               </button>
@@ -1140,7 +1140,7 @@ function SubmitAppealModal({
             )}
 
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">
+              <label className="block font-medium text-slate-700 mb-1">
                 Reason for Appeal *
               </label>
               <select
@@ -1157,7 +1157,7 @@ function SubmitAppealModal({
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">
+              <label className="block font-medium text-slate-700 mb-1">
                 Explanation &amp; Statement *
               </label>
               <textarea
@@ -1172,7 +1172,7 @@ function SubmitAppealModal({
 
             {evidenceList.length > 0 && (
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label className="block font-medium text-slate-700 mb-1">
                   Attach Case Evidence Files (Optional)
                 </label>
                 <div className="space-y-1.5 rounded-lg border border-slate-200 bg-slate-50 p-2.5 max-h-32 overflow-y-auto">
@@ -1209,7 +1209,7 @@ function SubmitAppealModal({
               <button
                 type="submit"
                 disabled={submitting || explanation.trim().length < 10}
-                className="rounded-md bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="rounded-md bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
               >
                 {submitting ? "Submitting Appeal..." : "Submit Appeal"}
               </button>

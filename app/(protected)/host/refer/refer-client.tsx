@@ -27,7 +27,7 @@ export function ReferClient() {
             </div>
 
             <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 sm:p-8 space-y-4 text-left">
-              <h2 className="text-base font-bold text-[#1F1F1F]">
+              <h2 className="text-base font-medium text-[#1F1F1F]">
                 {t("host_refer_how_it_works", "How it works")}
               </h2>
               <ol className="space-y-3 text-xs sm:text-sm text-zinc-600 list-decimal list-inside">
@@ -40,7 +40,7 @@ export function ReferClient() {
             <div>
               <Link
                 href="/host/onboarding"
-                className="inline-flex rounded-full bg-[#1F1F1F] text-white px-8 py-3.5 text-sm font-semibold hover:bg-zinc-800 transition-colors"
+                className="inline-flex rounded-full bg-[#1F1F1F] text-white px-8 py-3.5 text-sm font-medium hover:bg-zinc-800 transition-colors"
               >
                 {t("host_refer_btn_become_host", "Become a Host Yourself")}
               </Link>

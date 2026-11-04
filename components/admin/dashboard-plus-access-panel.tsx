@@ -244,11 +244,11 @@ export function DashboardPlusAccessPanel({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
           <div>
             <div className="flex items-center gap-3">
-              <h2 className="text-base font-semibold text-muted-foreground">
+              <h2 className="text-base font-medium text-muted-foreground">
                 Dashboard Plus Access
               </h2>
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                   entitlements?.hasDashboardPlus
                     ? "bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60"
                     : "bg-zinc-100 text-zinc-700 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700"
@@ -267,7 +267,7 @@ export function DashboardPlusAccessPanel({
             <span className="text-xs text-[var(--muted-foreground)] font-mono">
               Access Status:
             </span>
-            <span className="text-xs font-semibold text-muted-foreground">
+            <span className="text-xs font-medium text-muted-foreground">
               {entitlements?.accessStatus || "Standard"}
             </span>
           </div>
@@ -276,10 +276,10 @@ export function DashboardPlusAccessPanel({
         {/* Detailed Fields Grid */}
         <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)]/50 p-4">
-            <p className="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+            <p className="text-[11px] font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
               Host Identifier
             </p>
-            <p className="mt-1 text-sm font-semibold text-muted-foreground truncate">
+            <p className="mt-1 text-sm font-medium text-muted-foreground truncate">
               {hostName || "Unnamed Host"}
             </p>
             <p className="mt-0.5 text-[11px] font-mono text-[var(--muted-foreground)] truncate">
@@ -288,10 +288,10 @@ export function DashboardPlusAccessPanel({
           </div>
 
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)]/50 p-4">
-            <p className="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+            <p className="text-[11px] font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
               Current Dashboard Tier
             </p>
-            <p className="mt-1 text-sm font-semibold text-muted-foreground">
+            <p className="mt-1 text-sm font-medium text-muted-foreground">
               {currentAccess === "Plus" ? "Dashboard Plus" : "Standard Dashboard"}
             </p>
             <p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">
@@ -300,7 +300,7 @@ export function DashboardPlusAccessPanel({
           </div>
 
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)]/50 p-4">
-            <p className="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+            <p className="text-[11px] font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
               Effective Entitlement
             </p>
             <div className="mt-1 flex items-center gap-2">
@@ -309,7 +309,7 @@ export function DashboardPlusAccessPanel({
                   entitlements?.hasDashboardPlus ? "bg-emerald-500" : "bg-zinc-400"
                 }`}
               />
-              <p className="text-sm font-semibold text-muted-foreground">
+              <p className="text-sm font-medium text-muted-foreground">
                 {entitlements?.hasDashboardPlus ? "Granted" : "Not Granted"}
               </p>
             </div>
@@ -319,10 +319,10 @@ export function DashboardPlusAccessPanel({
           </div>
 
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)]/50 p-4">
-            <p className="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+            <p className="text-[11px] font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
               Complimentary Expiration
             </p>
-            <p className="mt-1 text-sm font-semibold text-muted-foreground truncate">
+            <p className="mt-1 text-sm font-medium text-muted-foreground truncate">
               {expiryDisplay}
             </p>
             <p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">
@@ -334,18 +334,18 @@ export function DashboardPlusAccessPanel({
         {/* Audit Meta Information */}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)]/30 px-4 py-3 text-xs">
           <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
-            <span className="font-semibold text-muted-foreground">Last Permission Update:</span>
+            <span className="font-medium text-muted-foreground">Last Permission Update:</span>
             <span>{lastUpdateDisplay}</span>
           </div>
           <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
-            <span className="font-semibold text-muted-foreground">Modified By:</span>
+            <span className="font-medium text-muted-foreground">Modified By:</span>
             <span>{lastAdminDisplay}</span>
           </div>
         </div>
 
         {/* Admin Controls Action Bar */}
         <div className="mt-6 border-t border-[var(--border-subtle)] pt-5">
-          <p className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider mb-3">
+          <p className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider mb-3">
             Admin Entitlement Controls
           </p>
           <div className="flex flex-wrap items-center gap-3">
@@ -354,7 +354,7 @@ export function DashboardPlusAccessPanel({
               type="button"
               onClick={() => openModal("grant_complimentary")}
               disabled={isPending}
-              className="rounded-full bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-xs font-semibold transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+              className="rounded-full bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-xs font-medium transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
             >
               Grant Complimentary Plus
             </button>
@@ -364,7 +364,7 @@ export function DashboardPlusAccessPanel({
               type="button"
               onClick={() => openModal("grant_temporary")}
               disabled={isPending}
-              className="rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-2 text-xs font-semibold transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+              className="rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-2 text-xs font-medium transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
             >
               Grant Temporary Plus
             </button>
@@ -375,7 +375,7 @@ export function DashboardPlusAccessPanel({
                 type="button"
                 onClick={() => openModal("change_expiry")}
                 disabled={isPending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-4 py-2 text-xs font-semibold text-muted-foreground transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-4 py-2 text-xs font-medium text-muted-foreground transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
               >
                 Change Expiration
               </button>
@@ -387,7 +387,7 @@ export function DashboardPlusAccessPanel({
                 type="button"
                 onClick={() => openModal("revoke")}
                 disabled={isPending}
-                className="rounded-full border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-300 px-4 py-2 text-xs font-semibold transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+                className="rounded-full border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-300 px-4 py-2 text-xs font-medium transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
               >
                 Revoke Complimentary Access
               </button>
@@ -398,7 +398,7 @@ export function DashboardPlusAccessPanel({
               type="button"
               onClick={() => openModal("standard_only")}
               disabled={isPending}
-              className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-4 py-2 text-xs font-semibold text-muted-foreground transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+              className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-4 py-2 text-xs font-medium text-muted-foreground transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
             >
               Standard Only
             </button>
@@ -410,7 +410,7 @@ export function DashboardPlusAccessPanel({
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
         <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
           <div>
-            <h3 className="text-sm font-semibold text-muted-foreground">
+            <h3 className="text-sm font-medium text-muted-foreground">
               Permission & Grant History
             </h3>
             <p className="mt-1 text-xs text-[var(--muted-foreground)]">
@@ -429,7 +429,7 @@ export function DashboardPlusAccessPanel({
         ) : (
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
+              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-medium uppercase tracking-wider">
                 <tr>
                   <th className="py-2.5 px-3">Date</th>
                   <th className="py-2.5 px-3">Status</th>
@@ -448,7 +448,7 @@ export function DashboardPlusAccessPanel({
                     </td>
                     <td className="py-3 px-3">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${
                           grant.status === "ACTIVE"
                             ? grant.expiresAt && new Date(grant.expiresAt).getTime() <= Date.now()
                               ? "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300"
@@ -498,7 +498,7 @@ export function DashboardPlusAccessPanel({
       {activeModal === "grant_complimentary" && (
         <ModalOverlay className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in" onMouseDown={closeModal}>
           <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xl" onMouseDown={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-muted-foreground">
+            <h3 className="text-base font-medium text-muted-foreground">
               Grant Complimentary Dashboard Plus
             </h3>
             <p className="mt-2 text-xs text-[var(--muted-foreground)]">
@@ -507,7 +507,7 @@ export function DashboardPlusAccessPanel({
 
             <div className="mt-4 space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Reason for access (optional)
                 </label>
                 <input
@@ -520,7 +520,7 @@ export function DashboardPlusAccessPanel({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Internal admin notes (optional)
                 </label>
                 <textarea
@@ -538,7 +538,7 @@ export function DashboardPlusAccessPanel({
                 type="button"
                 onClick={closeModal}
                 disabled={isPending}
-                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold text-muted-foreground disabled:opacity-50 cursor-pointer"
+                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-medium text-muted-foreground disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
@@ -546,7 +546,7 @@ export function DashboardPlusAccessPanel({
                 type="button"
                 onClick={handleGrantComplimentary}
                 disabled={isPending}
-                className="rounded-full bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-xs font-semibold disabled:opacity-50 cursor-pointer"
+                className="rounded-full bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-xs font-medium disabled:opacity-50 cursor-pointer"
               >
                 {isPending ? "Granting..." : "Confirm & Grant Access"}
               </button>
@@ -559,7 +559,7 @@ export function DashboardPlusAccessPanel({
       {activeModal === "grant_temporary" && (
         <ModalOverlay className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in" onMouseDown={closeModal}>
           <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xl" onMouseDown={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-muted-foreground">
+            <h3 className="text-base font-medium text-muted-foreground">
               Grant Temporary Dashboard Plus Access
             </h3>
             <p className="mt-2 text-xs text-[var(--muted-foreground)]">
@@ -568,7 +568,7 @@ export function DashboardPlusAccessPanel({
 
             <div className="mt-4 space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Expiration Date & Time (required)
                 </label>
                 <input
@@ -581,7 +581,7 @@ export function DashboardPlusAccessPanel({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Start Date (optional, defaults to immediately)
                 </label>
                 <input
@@ -593,7 +593,7 @@ export function DashboardPlusAccessPanel({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Reason for access (optional)
                 </label>
                 <input
@@ -606,7 +606,7 @@ export function DashboardPlusAccessPanel({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Internal admin notes (optional)
                 </label>
                 <textarea
@@ -624,7 +624,7 @@ export function DashboardPlusAccessPanel({
                 type="button"
                 onClick={closeModal}
                 disabled={isPending}
-                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold text-muted-foreground disabled:opacity-50 cursor-pointer"
+                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-medium text-muted-foreground disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
@@ -632,7 +632,7 @@ export function DashboardPlusAccessPanel({
                 type="button"
                 onClick={handleGrantTemporary}
                 disabled={isPending || !expiryDate}
-                className="rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-2 text-xs font-semibold disabled:opacity-50 cursor-pointer"
+                className="rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-2 text-xs font-medium disabled:opacity-50 cursor-pointer"
               >
                 {isPending ? "Granting..." : "Confirm Temporary Access"}
               </button>
@@ -645,7 +645,7 @@ export function DashboardPlusAccessPanel({
       {activeModal === "change_expiry" && (
         <ModalOverlay className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in" onMouseDown={closeModal}>
           <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xl" onMouseDown={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-muted-foreground">
+            <h3 className="text-base font-medium text-muted-foreground">
               Update Expiration Date
             </h3>
             <p className="mt-2 text-xs text-[var(--muted-foreground)]">
@@ -654,7 +654,7 @@ export function DashboardPlusAccessPanel({
 
             <div className="mt-4 space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   New Expiration Date & Time
                 </label>
                 <input
@@ -673,7 +673,7 @@ export function DashboardPlusAccessPanel({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Reason for change (optional)
                 </label>
                 <input
@@ -691,7 +691,7 @@ export function DashboardPlusAccessPanel({
                 type="button"
                 onClick={closeModal}
                 disabled={isPending}
-                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold text-muted-foreground disabled:opacity-50 cursor-pointer"
+                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-medium text-muted-foreground disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
@@ -699,7 +699,7 @@ export function DashboardPlusAccessPanel({
                 type="button"
                 onClick={handleChangeExpiry}
                 disabled={isPending}
-                className="rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-2 text-xs font-semibold disabled:opacity-50 cursor-pointer"
+                className="rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-2 text-xs font-medium disabled:opacity-50 cursor-pointer"
               >
                 {isPending ? "Updating..." : "Update Expiration"}
               </button>
@@ -712,19 +712,19 @@ export function DashboardPlusAccessPanel({
       {activeModal === "revoke" && (
         <ModalOverlay className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in" onMouseDown={closeModal}>
           <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xl" onMouseDown={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-muted-foreground">
+            <h3 className="text-base font-medium text-muted-foreground">
               Revoke Complimentary Access
             </h3>
 
             <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/40 dark:border-rose-900/50 p-3 text-xs text-rose-800 dark:text-rose-300">
-              <p className="font-semibold">Impact Warning</p>
+              <p className="font-medium">Impact Warning</p>
               <p className="mt-1 leading-relaxed">
                 Revoking will immediately remove complimentary Plus entitlement. If the host also has an independent active paid subscription, that paid entitlement is preserved. All historical host analytics, bookings, and financial records remain intact.
               </p>
             </div>
 
             <div className="mt-4">
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
                 Reason for revocation (optional)
               </label>
               <input
@@ -741,7 +741,7 @@ export function DashboardPlusAccessPanel({
                 type="button"
                 onClick={closeModal}
                 disabled={isPending}
-                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold text-muted-foreground disabled:opacity-50 cursor-pointer"
+                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-medium text-muted-foreground disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
@@ -749,7 +749,7 @@ export function DashboardPlusAccessPanel({
                 type="button"
                 onClick={handleRevoke}
                 disabled={isPending}
-                className="rounded-full bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 text-xs font-semibold disabled:opacity-50 cursor-pointer"
+                className="rounded-full bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 text-xs font-medium disabled:opacity-50 cursor-pointer"
               >
                 {isPending ? "Revoking..." : "Confirm Revocation"}
               </button>
@@ -762,7 +762,7 @@ export function DashboardPlusAccessPanel({
       {activeModal === "standard_only" && (
         <ModalOverlay className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in" onMouseDown={closeModal}>
           <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xl" onMouseDown={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-muted-foreground">
+            <h3 className="text-base font-medium text-muted-foreground">
               Set Host to Standard Only
             </h3>
             <p className="mt-2 text-xs text-[var(--muted-foreground)] leading-relaxed">
@@ -770,7 +770,7 @@ export function DashboardPlusAccessPanel({
             </p>
 
             <div className="mt-4">
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
                 Reason for change (optional)
               </label>
               <input
@@ -787,7 +787,7 @@ export function DashboardPlusAccessPanel({
                 type="button"
                 onClick={closeModal}
                 disabled={isPending}
-                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold text-muted-foreground disabled:opacity-50 cursor-pointer"
+                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-medium text-muted-foreground disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
@@ -795,7 +795,7 @@ export function DashboardPlusAccessPanel({
                 type="button"
                 onClick={handleStandardOnly}
                 disabled={isPending}
-                className="rounded-full bg-zinc-950 dark:bg-zinc-100 text-white dark:text-zinc-950 px-4 py-2 text-xs font-semibold disabled:opacity-50 cursor-pointer"
+                className="rounded-full bg-zinc-950 dark:bg-zinc-100 text-white dark:text-zinc-950 px-4 py-2 text-xs font-medium disabled:opacity-50 cursor-pointer"
               >
                 {isPending ? "Applying..." : "Confirm Standard Only"}
               </button>

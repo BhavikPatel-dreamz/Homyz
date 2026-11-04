@@ -280,7 +280,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
           <div className="flex items-center gap-2">
             <Link
               href="/admin/bookings/disputes"
-              className="text-xs font-semibold text-[var(--accent)] hover:underline flex items-center gap-1"
+              className="text-xs font-medium text-[var(--accent)] hover:underline flex items-center gap-1"
             >
               ← All Disputes
             </Link>
@@ -295,7 +295,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
               Case {dispute.caseReference}
             </h1>
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wider ${
                 dispute.status === "RESOLVED"
                   ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
                   : dispute.status === "PENDING"
@@ -305,10 +305,10 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
             >
               {dispute.disputeWorkflowStatus}
             </span>
-            <span className="px-2 py-0.5 rounded text-2xs font-bold uppercase bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+            <span className="px-2 py-0.5 rounded text-2xs font-medium uppercase bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
               {dispute.severity}
             </span>
-            <span className="px-2 py-0.5 rounded text-2xs font-semibold bg-[var(--surface-secondary)] text-[var(--muted-foreground)]">
+            <span className="px-2 py-0.5 rounded text-2xs font-medium bg-[var(--surface-secondary)] text-[var(--muted-foreground)]">
               {dispute.category.replace(/_/g, " ")}
             </span>
           </div>
@@ -323,7 +323,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
                   setInfoTarget("HOST");
                   setInfoModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
               >
                 <span>Request Host Response</span>
               </button>
@@ -331,7 +331,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
               <button
                 type="button"
                 onClick={() => setResolveModalOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
               >
                 <span>Resolve Dispute</span>
               </button>
@@ -341,7 +341,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
           <button
             type="button"
             onClick={() => setNoteModalOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>+ Add Note</span>
           </button>
@@ -352,13 +352,13 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
       {actionSuccess && (
         <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 text-xs flex justify-between items-center">
           <span>{actionSuccess}</span>
-          <button onClick={() => setActionSuccess(null)} className="font-bold">✕</button>
+          <button onClick={() => setActionSuccess(null)} className="font-medium">✕</button>
         </div>
       )}
       {actionError && (
         <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700 text-xs flex justify-between items-center">
           <span>{actionError}</span>
-          <button onClick={() => setActionError(null)} className="font-bold">✕</button>
+          <button onClick={() => setActionError(null)} className="font-medium">✕</button>
         </div>
       )}
 
@@ -368,7 +368,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
         <div className="lg:col-span-2 flex flex-col gap-6">
           {/* Section A: Complaint Details */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
-            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-base font-medium text-foreground mb-4 flex items-center gap-2">
               <svg className="w-5 h-5 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -384,11 +384,11 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
                 <span className="text-[var(--muted-foreground)] block">Reporter Role</span>
-                <span className="font-semibold uppercase text-foreground">{dispute.reporterRole}</span>
+                <span className="font-medium uppercase text-foreground">{dispute.reporterRole}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block">Reported By</span>
-                <span className="font-semibold text-foreground">{dispute.reportedBy?.name || "User"}</span>
+                <span className="font-medium text-foreground">{dispute.reportedBy?.name || "User"}</span>
                 <span className="text-3xs text-[var(--muted-foreground)] block">{dispute.reportedBy?.email}</span>
               </div>
               <div>
@@ -405,7 +405,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
           {/* Section B: Booking Information */}
           {booking && (
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
-              <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+              <h2 className="text-base font-medium text-foreground mb-4 flex items-center gap-2">
                 <svg className="w-5 h-5 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0V7m0 4h4m-4 0H7" />
                 </svg>
@@ -421,7 +421,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
                   )}
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-foreground text-sm">{booking.listing.title}</h3>
+                  <h3 className="font-medium text-foreground text-sm">{booking.listing.title}</h3>
                   <p className="text-xs text-[var(--muted-foreground)]">{booking.listing.city || "Saudi Arabia"}</p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 text-xs">
                     <div>
@@ -430,15 +430,15 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
                     </div>
                     <div>
                       <span className="text-[var(--muted-foreground)] block">Check-in</span>
-                      <span className="font-semibold text-foreground">{formatDate(booking.startDate)}</span>
+                      <span className="font-medium text-foreground">{formatDate(booking.startDate)}</span>
                     </div>
                     <div>
                       <span className="text-[var(--muted-foreground)] block">Check-out</span>
-                      <span className="font-semibold text-foreground">{formatDate(booking.endDate)}</span>
+                      <span className="font-medium text-foreground">{formatDate(booking.endDate)}</span>
                     </div>
                     <div>
                       <span className="text-[var(--muted-foreground)] block">Status</span>
-                      <span className="font-semibold uppercase text-foreground">{booking.status}</span>
+                      <span className="font-medium uppercase text-foreground">{booking.status}</span>
                     </div>
                   </div>
                 </div>
@@ -448,19 +448,19 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-[var(--surface-secondary)]/40 border border-[var(--border)] text-xs">
                 <div>
                   <span className="text-[var(--muted-foreground)] block">Total Booking Value</span>
-                  <span className="font-bold text-foreground">
+                  <span className="font-medium text-foreground">
                     {formatPrice((booking.totalPrice || 0) / 100, booking.currency || "SAR")}
                   </span>
                 </div>
                 <div>
                   <span className="text-[var(--muted-foreground)] block">Captured Payments</span>
-                  <span className="font-semibold text-emerald-600">
+                  <span className="font-medium text-emerald-600">
                     {booking.payments?.length || 0} transaction(s)
                   </span>
                 </div>
                 <div>
                   <span className="text-[var(--muted-foreground)] block">Refund Requests</span>
-                  <span className="font-semibold text-foreground">
+                  <span className="font-medium text-foreground">
                     {booking.refunds?.length || 0} request(s)
                   </span>
                 </div>
@@ -470,7 +470,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
 
           {/* Section D: Investigation Timeline */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
-            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-base font-medium text-foreground mb-4 flex items-center gap-2">
               <svg className="w-5 h-5 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -487,7 +487,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
                     <span className="w-2 h-2 rounded-full bg-[var(--accent)] mt-1.5 shrink-0" />
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-foreground uppercase tracking-wider text-2xs">
+                        <span className="font-medium text-foreground uppercase tracking-wider text-2xs">
                           {ev.title}
                         </span>
                         <span className="text-[var(--muted-foreground)] text-2xs">
@@ -517,12 +517,12 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
           {/* Resolution Outcome if resolved */}
           {dispute.resolution && (
             <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-6 shadow-2xs text-xs space-y-3">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-emerald-800">
+              <h2 className="text-sm font-medium uppercase tracking-wider text-emerald-800">
                 Official Resolution Decision
               </h2>
               <div>
                 <span className="text-[var(--muted-foreground)] block">Decision Category</span>
-                <span className="font-bold text-foreground text-sm">
+                <span className="font-medium text-foreground text-sm">
                   {dispute.resolution.decisionCategory.replace(/_/g, " ")}
                 </span>
               </div>
@@ -536,7 +536,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
                 <p>Resolved by: {dispute.resolution.resolvedByEmail}</p>
                 <p>Date: {formatDateTime(dispute.resolution.resolvedAt)}</p>
                 {dispute.resolution.refundRequestId && (
-                  <p className="mt-1 font-semibold text-emerald-700">
+                  <p className="mt-1 font-medium text-emerald-700">
                     Linked Refund Request: {dispute.resolution.refundRequestId}
                   </p>
                 )}
@@ -546,12 +546,12 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
 
           {/* Assigned Reviewer */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs text-xs space-y-2">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
+            <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
               Case Reviewer
             </h2>
             {dispute.assignedAdmin ? (
               <div>
-                <span className="font-semibold text-foreground block">{dispute.assignedAdmin.email}</span>
+                <span className="font-medium text-foreground block">{dispute.assignedAdmin.email}</span>
                 <span className="text-3xs text-[var(--muted-foreground)]">
                   Assigned on {formatDateTime(dispute.assignedAdmin.assignedAt)}
                 </span>
@@ -563,7 +563,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
 
           {/* Internal Investigation Notes */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs text-xs space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--muted-foreground)]">Participant responses</h2>
+            <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--muted-foreground)]">Participant responses</h2>
             {dispute.partyResponses.length > 0 ? (
               <div className="space-y-3">
                 {dispute.partyResponses.map((response) => (
@@ -576,7 +576,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
             ) : <p className="text-[var(--muted-foreground)] italic">No participant responses have been submitted.</p>}
             {dispute.evidence.length > 0 && (
               <div className="border-t border-[var(--border)] pt-3">
-                <p className="mb-2 font-semibold text-foreground">Evidence</p>
+                <p className="mb-2 font-medium text-foreground">Evidence</p>
                 <ul className="space-y-1.5">{dispute.evidence.map((evidence) => evidence.url ? <li key={evidence.id}><a href={evidence.url} target="_blank" rel="noreferrer" className="text-[var(--accent)] hover:underline">{evidence.fileName || evidence.url}</a></li> : null)}</ul>
               </div>
             )}
@@ -585,13 +585,13 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
           {/* Internal Investigation Notes */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs text-xs space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+              <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
                 Internal Admin Notes ({dispute.internalNotes.length})
               </h2>
               <button
                 type="button"
                 onClick={() => setNoteModalOpen(true)}
-                className="text-xs font-semibold text-[var(--accent)] hover:underline"
+                className="text-xs font-medium text-[var(--accent)] hover:underline"
               >
                 + Add Note
               </button>
@@ -623,12 +623,12 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-bold text-foreground">Assign Dispute Case</h3>
-              <button onClick={() => setAssignModalOpen(false)} className="font-bold">✕</button>
+              <h3 className="text-base font-medium text-foreground">Assign Dispute Case</h3>
+              <button onClick={() => setAssignModalOpen(false)} className="font-medium">✕</button>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Administrator Email *
               </label>
               <input
@@ -645,7 +645,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
               <button
                 type="button"
                 onClick={() => setAssignModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-semibold"
+                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-medium"
               >
                 Cancel
               </button>
@@ -653,7 +653,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
                 type="button"
                 onClick={handleAssign}
                 disabled={loadingAction || !assignEmail.trim()}
-                className="px-4 py-2 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-semibold disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-medium disabled:opacity-50"
               >
                 {loadingAction ? "Assigning..." : "Assign Reviewer"}
               </button>
@@ -667,8 +667,8 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-bold text-foreground">Add Internal Investigation Note</h3>
-              <button onClick={() => setNoteModalOpen(false)} className="font-bold">✕</button>
+              <h3 className="text-base font-medium text-foreground">Add Internal Investigation Note</h3>
+              <button onClick={() => setNoteModalOpen(false)} className="font-medium">✕</button>
             </div>
 
             <p className="text-2xs text-[var(--muted-foreground)]">
@@ -691,7 +691,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
               <button
                 type="button"
                 onClick={() => setNoteModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-semibold"
+                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-medium"
               >
                 Cancel
               </button>
@@ -699,7 +699,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
                 type="button"
                 onClick={handleAddNote}
                 disabled={loadingAction || !noteContent.trim()}
-                className="px-4 py-2 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-semibold disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-medium disabled:opacity-50"
               >
                 {loadingAction ? "Saving..." : "Save Internal Note"}
               </button>
@@ -713,10 +713,10 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-bold text-foreground">
+              <h3 className="text-base font-medium text-foreground">
                 {infoTarget === "HOST" ? "Request Host Response" : "Request Guest Information"}
               </h3>
-              <button onClick={() => setInfoModalOpen(false)} className="font-bold">✕</button>
+              <button onClick={() => setInfoModalOpen(false)} className="font-medium">✕</button>
             </div>
 
               <div className="space-y-3 text-xs">
@@ -726,7 +726,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
                   </p>
                 )}
                 <div>
-                <label className="block font-semibold text-foreground mb-1">Target Party</label>
+                <label className="block font-medium text-foreground mb-1">Target Party</label>
                 <select
                   value={infoTarget}
                   onChange={(e) => setInfoTarget(e.target.value as any)}
@@ -738,7 +738,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
               </div>
 
               <div>
-                <label className="block font-semibold text-foreground mb-1">Message / Request Details</label>
+                <label className="block font-medium text-foreground mb-1">Message / Request Details</label>
                 <textarea
                   rows={4}
                   required
@@ -754,7 +754,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
               <button
                 type="button"
                 onClick={() => setInfoModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-semibold"
+                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-medium"
               >
                 Cancel
               </button>
@@ -762,7 +762,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
                 type="button"
                 onClick={handleRequestInfo}
                 disabled={loadingAction || !infoMessage.trim()}
-                className="px-4 py-2 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-semibold disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-medium disabled:opacity-50"
               >
                 {loadingAction ? "Sending..." : infoTarget === "HOST" ? "Confirm & Request Host Response" : "Send Request"}
               </button>
@@ -776,13 +776,13 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-bold text-foreground">Resolve Dispute Case</h3>
-              <button onClick={() => setResolveModalOpen(false)} className="font-bold">✕</button>
+              <h3 className="text-base font-medium text-foreground">Resolve Dispute Case</h3>
+              <button onClick={() => setResolveModalOpen(false)} className="font-medium">✕</button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block font-semibold text-foreground mb-1">Decision Category</label>
+                <label className="block font-medium text-foreground mb-1">Decision Category</label>
                 <select
                   value={resolveCategory}
                   onChange={(e) => setResolveCategory(e.target.value)}
@@ -796,7 +796,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
               </div>
 
               <div>
-                <label className="block font-semibold text-foreground mb-1">
+                <label className="block font-medium text-foreground mb-1">
                   Resolution Explanation *
                 </label>
                 <textarea
@@ -810,7 +810,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
               </div>
 
               <div>
-                <label className="block font-semibold text-foreground mb-1">
+                <label className="block font-medium text-foreground mb-1">
                   Linked Refund Request ID (Optional)
                 </label>
                 <input
@@ -840,7 +840,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
               <button
                 type="button"
                 onClick={() => setResolveModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-semibold"
+                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-medium"
               >
                 Cancel
               </button>
@@ -848,7 +848,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
                 type="button"
                 onClick={handleResolve}
                 disabled={loadingAction || !resolveConfirmCheck || !resolveExplanation.trim()}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium disabled:opacity-50"
               >
                 {loadingAction ? "Resolving..." : "Confirm Resolution"}
               </button>

@@ -1470,7 +1470,7 @@ export function HostMessagesWorkspace({
                         className="size-10 shrink-0 rounded-full border border-zinc-200 object-cover"
                       />
                     ) : (
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-200 text-sm font-bold text-amber-900">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-200 text-sm font-medium text-amber-900">
                         {(selectedConversation.guest.name || "G")[0].toUpperCase()}
                       </div>
                     )}
@@ -1649,7 +1649,7 @@ export function HostMessagesWorkspace({
                               <div className="max-w-md w-full rounded-lg border border-amber-300 bg-amber-50/90 p-4 shadow-2xs space-y-3">
                                 <div className="flex items-center justify-between flex-wrap">
                                   <div className="flex items-center gap-2">
-                                    <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
+                                    <span className="text-xs font-medium text-amber-900 uppercase tracking-wider">
                                       {t("messages_so_sent_title", "Special Offer Sent")}
                                     </span>
                                     {hasBooking ? (
@@ -1687,7 +1687,7 @@ export function HostMessagesWorkspace({
                                     </div>
                                     <div>
                                       <span className="text-zinc-500 block">{t("messages_so_total_label", "Total Offer:")}</span>
-                                      <span className="font-bold text-amber-900 text-sm">
+                                      <span className="font-medium text-amber-900 text-sm">
                                         {formatPrice(
                                           Number(m.metadata.subtotalPrice) || 0,
                                           String(m.metadata.currency || "SAR"),
@@ -1707,7 +1707,7 @@ export function HostMessagesWorkspace({
                           return (
                             <div key={m.id} className="flex justify-center my-3">
                               <div className="max-w-md w-full rounded-2xl border border-emerald-200 bg-emerald-50/90 p-3.5 shadow-2xs text-center space-y-1">
-                                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                                <span className="text-xs font-medium text-emerald-800 uppercase tracking-wider">
                                   {t("messages_preapproved_notice", "Inquiry Pre-Approved")}
                                 </span>
                                 <p className="text-xs sm:text-sm text-emerald-950">{m.content}</p>
@@ -1722,7 +1722,7 @@ export function HostMessagesWorkspace({
                           return (
                             <div key={m.id} className="flex justify-center my-3">
                               <div className="max-w-md w-full rounded-2xl border border-zinc-200 bg-zinc-100 p-3.5 shadow-2xs text-center space-y-1">
-                                <span className="text-xs font-bold text-zinc-700 uppercase tracking-wider">
+                                <span className="text-xs font-medium text-zinc-700 uppercase tracking-wider">
                                   {t("messages_declined_notice", "Inquiry Declined")}
                                 </span>
                                 <p className="text-xs sm:text-sm text-zinc-700">{m.content}</p>
@@ -1933,7 +1933,7 @@ export function HostMessagesWorkspace({
                               </div>
                             )}
                             {s.status === "FAILED" && (
-                              <div className="absolute inset-0 bg-red-500/60 flex items-center justify-center text-white text-[10px] font-bold">
+                              <div className="absolute inset-0 bg-red-500/60 flex items-center justify-center text-white text-[10px] font-medium">
                                 !
                               </div>
                             )}
@@ -2561,7 +2561,7 @@ export function HostMessagesWorkspace({
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-              <h3 className="text-lg font-bold text-[#1F1F1F]">{t("messages_so_modal_title", "Send a Special Offer")}</h3>
+              <h3 className="text-lg font-medium text-[#1F1F1F]">{t("messages_so_modal_title", "Send a Special Offer")}</h3>
               <button
                 type="button"
                 onClick={() => setSpecialOfferModalOpen(false)}
@@ -2669,7 +2669,7 @@ export function HostMessagesWorkspace({
       {preApproveModalOpen && (
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4">
-            <h3 className="text-lg font-bold text-[#1F1F1F]">{t("messages_preapprove_modal_title", "Pre-approve Guest Inquiry")}</h3>
+            <h3 className="text-lg font-medium text-[#1F1F1F]">{t("messages_preapprove_modal_title", "Pre-approve Guest Inquiry")}</h3>
             <p className="text-xs text-zinc-600 leading-relaxed">
               {t("messages_preapprove_modal_desc", { name: selectedConversation?.guest.name || "the guest" }, `Pre-approving lets ${selectedConversation?.guest.name || "the guest"} book immediately without needing additional approval. The guest will receive a notification and has 24 hours to complete their reservation.`)}
             </p>
@@ -2712,7 +2712,7 @@ export function HostMessagesWorkspace({
       {declineModalOpen && (
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4">
-            <h3 className="text-lg font-bold text-[#1F1F1F]">{t("messages_decline_modal_title", "Decline Inquiry")}</h3>
+            <h3 className="text-lg font-medium text-[#1F1F1F]">{t("messages_decline_modal_title", "Decline Inquiry")}</h3>
             <div>
               <label className="block text-xs font-medium text-zinc-700 mb-1">{t("messages_decline_reason_label", "Reason")}</label>
               <select
@@ -2779,7 +2779,7 @@ export function HostMessagesWorkspace({
                 <button
                   type="button"
                   onClick={() => setLightboxAttachment(null)}
-                  className="size-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors font-bold"
+                  className="size-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors font-medium"
                 >
                   ✕
                 </button>

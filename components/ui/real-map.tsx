@@ -412,7 +412,7 @@ export function RealMap({
 
       {/* Geocoding Loading Indicator */}
       {isLoadingGeocode && (
-        <div className="absolute top-3 left-3 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 text-[11px] font-semibold text-zinc-700 dark:text-zinc-200 shadow-xs z-10 flex items-center gap-2">
+        <div className="absolute top-3 left-3 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 text-[11px] font-medium text-zinc-700 dark:text-zinc-200 shadow-xs z-10 flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
           Updating address details...
         </div>
@@ -426,7 +426,7 @@ export function RealMap({
       )}
 
       {/* Zoom Controls Overlay */}
-      {!mapLoadError && shouldLoadMap && <div className={`absolute right-3 z-10 flex flex-col items-center gap-3 text-xs font-semibold text-zinc-800 dark:text-zinc-100 sm:right-4 ${
+      {!mapLoadError && shouldLoadMap && <div className={`absolute right-3 z-10 flex flex-col items-center gap-3 text-xs font-medium text-zinc-800 dark:text-zinc-100 sm:right-4 ${
         zoomControlsPlacement === "below-top-overlay" ? "top-3 sm:top-[6.5rem]" : "top-3"
       }`}>
         <button

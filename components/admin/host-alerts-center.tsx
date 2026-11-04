@@ -85,7 +85,7 @@ export function HostAlertsCenter() {
 
         <button
           onClick={loadAlerts}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 text-white text-sm font-semibold hover:bg-zinc-800 transition-all shadow-xs"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-all shadow-xs"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -110,8 +110,8 @@ export function HostAlertsCenter() {
               statusFilter === item.key ? "ring-2 ring-amber-500 border-amber-500 shadow-xs" : "border-zinc-200/80 bg-white"
             }`}
           >
-            <div className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{item.label}</div>
-            <div className={`text-xl font-semibold mt-1 ${item.color}`}>{item.count}</div>
+            <div className="text-xs font-medium text-[#727272] uppercase tracking-wider">{item.label}</div>
+            <div className={`text-xl font-medium mt-1 ${item.color}`}>{item.count}</div>
           </button>
         ))}
       </div>
@@ -119,7 +119,7 @@ export function HostAlertsCenter() {
       {/* Filter Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-zinc-200/80 shadow-2xs">
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <label className="text-xs font-semibold text-[#727272]">Filter Status:</label>
+          <label className="text-xs font-medium text-[#727272]">Filter Status:</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -135,7 +135,7 @@ export function HostAlertsCenter() {
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <label className="text-xs font-semibold text-[#727272]">Filter Severity:</label>
+          <label className="text-xs font-medium text-[#727272]">Filter Severity:</label>
           <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
@@ -170,7 +170,7 @@ export function HostAlertsCenter() {
             >
               <div className="space-y-1 max-w-2xl">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     alert.severity === "CRITICAL" ? "bg-rose-100 text-rose-800" :
                     alert.severity === "HIGH" ? "bg-amber-100 text-amber-800" :
                     "bg-blue-100 text-blue-800"
@@ -178,7 +178,7 @@ export function HostAlertsCenter() {
                     {alert.severity}
                   </span>
 
-                  <span className="text-xs font-semibold text-[#727272] uppercase tracking-wider">
+                  <span className="text-xs font-medium text-[#727272] uppercase tracking-wider">
                     {alert.alertType.replace(/_/g, " ")}
                   </span>
 
@@ -198,7 +198,7 @@ export function HostAlertsCenter() {
               <div className="flex items-center gap-2 flex-wrap shrink-0">
                 <Link
                   href={alert.actionUrl}
-                  className="px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-800 text-xs font-semibold hover:bg-zinc-200 transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-800 text-xs font-medium hover:bg-zinc-200 transition-colors"
                 >
                   View Workflow →
                 </Link>
@@ -207,7 +207,7 @@ export function HostAlertsCenter() {
                   <button
                     onClick={() => handleStatusChange(alert.id, "ACKNOWLEDGED")}
                     disabled={updatingAlertId === alert.id}
-                    className="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition-colors disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-medium hover:bg-amber-600 transition-colors disabled:opacity-50"
                   >
                     Acknowledge
                   </button>
@@ -217,7 +217,7 @@ export function HostAlertsCenter() {
                   <button
                     onClick={() => handleStatusChange(alert.id, "IN_PROGRESS")}
                     disabled={updatingAlertId === alert.id}
-                    className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
                   >
                     Mark In Progress
                   </button>
@@ -227,7 +227,7 @@ export function HostAlertsCenter() {
                   <button
                     onClick={() => handleStatusChange(alert.id, "RESOLVED")}
                     disabled={updatingAlertId === alert.id}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50"
                   >
                     Resolve Alert
                   </button>

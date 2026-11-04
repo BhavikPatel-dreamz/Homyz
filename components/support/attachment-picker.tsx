@@ -138,7 +138,7 @@ export function AttachmentPicker({
               className="flex min-w-0 items-center gap-3 rounded-lg border border-zinc-200 bg-white p-3 text-sm"
             >
               <span
-                className="rounded bg-zinc-100 px-1.5 py-1 text-[10px] font-semibold text-zinc-700"
+                className="rounded bg-zinc-100 px-1.5 py-1 text-[10px] font-medium text-zinc-700"
                 aria-hidden="true"
               >
                 {iconFor(file)}

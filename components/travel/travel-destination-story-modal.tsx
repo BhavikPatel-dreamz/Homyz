@@ -187,7 +187,7 @@ export function TravelDestinationStoryModal({
           <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-white/10 text-2xl">
             ✈️
           </div>
-          <h2 className="mt-4 text-lg font-bold">No travel photos yet</h2>
+          <h2 className="mt-4 text-lg font-medium">No travel photos yet</h2>
           <p className="mt-2 text-sm leading-relaxed text-white/70">
             {error || "You haven't added any photos for this destination."}
           </p>
@@ -197,7 +197,7 @@ export function TravelDestinationStoryModal({
                 <button
                   type="button"
                   onClick={() => onUploadPhotos(country)}
-                  className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-zinc-900 transition hover:bg-zinc-200"
+                  className="rounded-full bg-white px-4 py-2 text-xs font-medium text-zinc-900 transition hover:bg-zinc-200"
                 >
                   Upload Photos
                 </button>

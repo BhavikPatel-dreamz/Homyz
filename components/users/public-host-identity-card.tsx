@@ -45,7 +45,7 @@ export function PublicHostIdentityCard({
               className="size-[80px] sm:size-[104px] shrink-0 rounded-full border border-zinc-200 object-cover"
             />
           ) : (
-            <div aria-hidden="true" className="flex size-[104px] shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-2xl font-bold text-amber-900">{initial}</div>
+            <div aria-hidden="true" className="flex size-[104px] shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-2xl font-medium text-amber-900">{initial}</div>
           )}
           <div className="pt-4 text-center">
             <p className="break-words font-medium leading-tight capitalize text-[#1f1f1f] text-base">{name}</p>

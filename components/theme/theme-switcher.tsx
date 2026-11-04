@@ -83,7 +83,7 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle theme menu"
-        className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-all hover:border-[var(--muted-foreground)] hover:shadow-2xs"
+        className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:border-[var(--muted-foreground)] hover:shadow-2xs"
       >
         <span className="text-[var(--muted-foreground)]">{currentIcon}</span>
         <span className="capitalize">{mounted ? theme : "system"}</span>
@@ -104,7 +104,7 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
               }}
               className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium transition-colors ${
                 theme === t.id
-                  ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold"
+                  ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-medium"
                   : "text-muted-foreground hover:bg-[var(--muted)]"
               }`}
             >

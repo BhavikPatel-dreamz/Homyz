@@ -28,7 +28,7 @@ export function GiftCardsClient() {
             </div>
 
             <div className="rounded-3xl border border-zinc-200 bg-linear-to-br from-amber-50 to-orange-50/40 p-8 shadow-sm text-center space-y-6">
-              <h2 className="text-xl font-bold text-[#1F1F1F]">
+              <h2 className="text-xl font-medium text-[#1F1F1F]">
                 {t("giftcards_choose_amount", "Choose an amount")}
               </h2>
               <div className="flex flex-wrap justify-center gap-3">
@@ -36,7 +36,7 @@ export function GiftCardsClient() {
                   <button
                     key={amount}
                     type="button"
-                    className="rounded-2xl border border-amber-300 bg-white px-5 py-3 text-sm font-bold text-[#1F1F1F] hover:bg-amber-100/70 transition-colors shadow-2xs cursor-pointer"
+                    className="rounded-2xl border border-amber-300 bg-white px-5 py-3 text-sm font-medium text-[#1F1F1F] hover:bg-amber-100/70 transition-colors shadow-2xs cursor-pointer"
                   >
                     <CurrencyPrice amountMinorUnits={amount * 100} sourceCurrency="SAR" />
                   </button>
@@ -48,7 +48,7 @@ export function GiftCardsClient() {
               <div>
                 <Link
                   href="/listings"
-                  className="inline-flex rounded-full bg-[#1F1F1F] text-white px-8 py-3.5 text-sm font-semibold hover:bg-zinc-800 transition-colors"
+                  className="inline-flex rounded-full bg-[#1F1F1F] text-white px-8 py-3.5 text-sm font-medium hover:bg-zinc-800 transition-colors"
                 >
                   {t("giftcards_explore_stays", "Explore Stays")}
                 </Link>

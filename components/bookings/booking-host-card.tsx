@@ -46,7 +46,7 @@ export function BookingHostCard({
               className="h-16 w-16 shrink-0 rounded-full object-cover ring-2 ring-zinc-200"
             />
           ) : (
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-amber-100 text-lg font-bold text-amber-900 ring-2 ring-amber-200">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-amber-100 text-lg font-medium text-amber-900 ring-2 ring-amber-200">
               {initials}
             </div>
           )}
@@ -54,7 +54,7 @@ export function BookingHostCard({
             <span className="text-sm font-medium text-[#727272]">
               {t("booking_details_property_host", "Property Host")}
             </span>
-            <h2 id="host-heading" className="text-lg font-semibold text-[#1F1F1F]">
+            <h2 id="host-heading" className="text-lg font-medium text-[#1F1F1F]">
               {t("booking_details_hosted_by", { name: displayName }, "Hosted by {name}")}
             </h2>
             {memberYear && (
@@ -69,7 +69,7 @@ export function BookingHostCard({
           <button
             type="button"
             onClick={onContactHost}
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#1F1F1F] hover:bg-[#D9D9D9] text-white hover:text-[#1f1f1f] px-4 py-2 text-sm font-semibold transition-colors duration-300 cursor-pointer"
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#1F1F1F] hover:bg-[#D9D9D9] text-white hover:text-[#1f1f1f] px-4 py-2 text-sm font-medium transition-colors duration-300 cursor-pointer"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />

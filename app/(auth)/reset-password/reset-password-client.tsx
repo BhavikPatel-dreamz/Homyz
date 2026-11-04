@@ -40,10 +40,10 @@ export function ResetPasswordClient({ token }: { token: string }) {
                 className="object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-end p-8 text-white">
-                <span className="text-[11px] font-semibold uppercase tracking-widest text-amber-300 mb-1">
+                <span className="text-[11px] font-medium uppercase tracking-widest text-amber-300 mb-1">
                   Account Protection
                 </span>
-                <h2 className="text-xl font-semibold">
+                <h2 className="text-xl font-medium">
                   Enhanced Credential Encryption
                 </h2>
               </div>

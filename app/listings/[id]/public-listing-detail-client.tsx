@@ -345,7 +345,7 @@ function HostIdentityCard({
           {host.image && !imageFailed ? (
             <img src={host.image} alt={`${host.name || "Host"}'s profile photo`} loading="lazy" decoding="async" onError={onImageError} className="size-[104px] shrink-0 rounded-full border border-zinc-200 object-cover" />
           ) : (
-            <div aria-hidden="true" className="flex size-[104px] shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-2xl font-bold text-amber-900">
+            <div aria-hidden="true" className="flex size-[104px] shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-2xl font-medium text-amber-900">
               {(host.name || "H")[0]?.toUpperCase()}
             </div>
           )}
@@ -2196,7 +2196,7 @@ export function PublicListingDetailClient({
                   <div className="space-y-4 rounded-[30px] border border-zinc-300 bg-[rgba(255,255,255,0.6)] p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] sm:p-5">
                     {bookingSuccess ? (
                       <div className="py-8 text-center space-y-3">
-                        <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl font-bold">
+                        <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl font-medium">
                           ✓
                         </div>
                         <h3 className="text-[20px] font-normal text-[#1f1f1f]">{isInstantBook ? t("listing_detail_reservation_confirmed", "Reservation confirmed") : t("listing_detail_reservation_submitted", "Reservation request submitted")}</h3>
@@ -2737,7 +2737,7 @@ export function PublicListingDetailClient({
                 {/* {guidebooks.length > 0 && (
                   <div className="pt-5 border-t border-zinc-200/80 space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-sm text-[#1f1f1f]">{t("listing_detail_guidebook_heading", "Local Host Guidebook")}</h4>
+                      <h4 className="font-medium text-sm text-[#1f1f1f]">{t("listing_detail_guidebook_heading", "Local Host Guidebook")}</h4>
                       <span className="text-[11px] text-[#727272]">{t("listing_detail_guidebook_sub", "Curated recommendations")}</span>
                     </div>
                     <div className="space-y-2.5">
@@ -2751,7 +2751,7 @@ export function PublicListingDetailClient({
                               📖
                             </div>
                             <div className="min-w-0">
-                              <h5 className="text-xs font-bold text-[#1f1f1f] truncate">{gb.title}</h5>
+                              <h5 className="text-xs font-medium text-[#1f1f1f] truncate">{gb.title}</h5>
                               <p className="text-base font-light text-[#1F1F1F] truncate">
                                 {t("listing_detail_guidebook_count", { count: gb.itemsCount, host: gb.host?.name || "Host" }, "{count} recommendations by {host}")}
                               </p>
@@ -2918,7 +2918,7 @@ export function PublicListingDetailClient({
           <div className="flex max-h-[90vh] w-full max-w-lg flex-col rounded-[24px] border border-zinc-200 bg-white p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
               <div>
-                <h3 id="contact-host-modal-title" className="font-bold text-lg text-[#1f1f1f]">
+                <h3 id="contact-host-modal-title" className="font-medium text-lg text-[#1f1f1f]">
                   {t("listing_detail_contact_host", "Contact host")} {listing.host?.name ? `(${listing.host.name})` : ""}
                 </h3>
                 <p className="text-xs text-zinc-500">{t("listing_detail_ask_host_subtitle", "Ask about dates, amenities, or special requests")}</p>
@@ -3088,7 +3088,7 @@ export function PublicListingDetailClient({
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 id="report-login-modal-title" className="text-xl font-semibold text-[#1f1f1f]">
+                <h2 id="report-login-modal-title" className="text-xl font-medium text-[#1f1f1f]">
                   {reportLoginTarget === "host" ? "Sign in to report this host" : "Sign in to report this listing"}
                 </h2>
                 <p id="report-login-modal-description" className="mt-2 text-sm leading-6 text-[#727272]">
@@ -3115,14 +3115,14 @@ export function PublicListingDetailClient({
                   setIsReportLoginOpen(false);
                   setOpenReportAfterAuthentication(false);
                 }}
-                className="rounded-xl border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-[#1f1f1f] transition hover:bg-zinc-50"
+                className="rounded-xl border border-zinc-300 px-4 py-2.5 text-sm font-medium text-[#1f1f1f] transition hover:bg-zinc-50"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleContinueToLoginForReport}
-                className="rounded-xl bg-[#1f1f1f] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-black"
+                className="rounded-xl bg-[#1f1f1f] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black"
               >
                 Continue to sign in
               </button>

@@ -151,7 +151,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
           <div className="flex items-center gap-2">
             <Link
               href="/admin/bookings/payments"
-              className="text-xs font-semibold text-[var(--accent)] hover:underline flex items-center gap-1"
+              className="text-xs font-medium text-[var(--accent)] hover:underline flex items-center gap-1"
             >
               ← All Payments
             </Link>
@@ -166,7 +166,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
               {payment.id}
             </h1>
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wider ${
                 payment.status === "CAPTURED"
                   ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
                   : payment.status === "AUTHORIZED"
@@ -189,7 +189,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
           <button
             type="button"
             onClick={() => setReconcileModalOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <svg className="w-3.5 h-3.5 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -199,14 +199,14 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
 
           <Link
             href={`/admin/bookings/refunds?search=${booking.id}`}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>View Refunds</span>
           </Link>
 
           <Link
             href={`/admin/bookings/all?search=${booking.id}`}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>View Booking</span>
           </Link>
@@ -219,7 +219,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
         <div className="lg:col-span-2 flex flex-col gap-6">
           {/* Section 1: Financial Information */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
-            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-base font-medium text-foreground mb-4 flex items-center gap-2">
               <svg className="w-5 h-5 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
@@ -229,7 +229,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
               <div className="p-3.5 rounded-xl bg-[var(--surface-secondary)]/50 border border-[var(--border)]">
                 <span className="text-2xs text-[var(--muted-foreground)] font-medium">Captured Amount</span>
-                <p className="text-lg font-bold text-foreground mt-1">
+                <p className="text-lg font-medium text-foreground mt-1">
                   {formatPrice(capturedMajor, payment.currency)}
                 </p>
                 <span className="text-3xs text-[var(--muted-foreground)]">
@@ -239,7 +239,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
 
               <div className="p-3.5 rounded-xl bg-[var(--surface-secondary)]/50 border border-[var(--border)]">
                 <span className="text-2xs text-[var(--muted-foreground)] font-medium">Refunded Total</span>
-                <p className="text-lg font-bold text-rose-600 mt-1">
+                <p className="text-lg font-medium text-rose-600 mt-1">
                   {formatPrice(refundedMajor, payment.currency)}
                 </p>
                 <span className="text-3xs text-[var(--muted-foreground)]">
@@ -249,7 +249,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
 
               <div className="p-3.5 rounded-xl bg-[var(--surface-secondary)]/50 border border-[var(--border)]">
                 <span className="text-2xs text-[var(--muted-foreground)] font-medium">Refundable Balance</span>
-                <p className="text-lg font-bold text-emerald-600 mt-1">
+                <p className="text-lg font-medium text-emerald-600 mt-1">
                   {formatPrice(balanceMajor, payment.currency)}
                 </p>
                 <span className="text-3xs text-[var(--muted-foreground)]">Available to refund</span>
@@ -257,7 +257,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
 
               <div className="p-3.5 rounded-xl bg-[var(--surface-secondary)]/50 border border-[var(--border)]">
                 <span className="text-2xs text-[var(--muted-foreground)] font-medium">Provider Reference</span>
-                <p className="text-xs font-mono font-bold text-foreground mt-1 truncate" title={payment.providerPaymentId || "None"}>
+                <p className="text-xs font-mono font-medium text-foreground mt-1 truncate" title={payment.providerPaymentId || "None"}>
                   {payment.providerPaymentId || "Simulated"}
                 </p>
                 <span className="text-3xs text-[var(--muted-foreground)]">{payment.provider}</span>
@@ -267,7 +267,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-3 border-t border-[var(--border)]">
               <div>
                 <span className="text-[var(--muted-foreground)] block">Payment Method</span>
-                <span className="font-semibold text-foreground">{payment.paymentMethod || "Credit / Debit Card"}</span>
+                <span className="font-medium text-foreground">{payment.paymentMethod || "Credit / Debit Card"}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block">Created At</span>
@@ -286,7 +286,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
 
           {/* Section 2: Associated Booking */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
-            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-base font-medium text-foreground mb-4 flex items-center gap-2">
               <svg className="w-5 h-5 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0V7m0 4h4m-4 0H7" />
               </svg>
@@ -302,22 +302,22 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
                 )}
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-foreground text-sm">{booking.listing.title}</h3>
+                <h3 className="font-medium text-foreground text-sm">{booking.listing.title}</h3>
                 <p className="text-xs text-[var(--muted-foreground)]">
                   {booking.listing.city || "Saudi Arabia"}, {booking.listing.country || "SA"}
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 text-xs">
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Check-in</span>
-                    <span className="font-semibold text-foreground">{formatDate(booking.startDate)}</span>
+                    <span className="font-medium text-foreground">{formatDate(booking.startDate)}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Check-out</span>
-                    <span className="font-semibold text-foreground">{formatDate(booking.endDate)}</span>
+                    <span className="font-medium text-foreground">{formatDate(booking.endDate)}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Booking Status</span>
-                    <span className="font-semibold uppercase text-foreground">{booking.status}</span>
+                    <span className="font-medium uppercase text-foreground">{booking.status}</span>
                   </div>
                 </div>
               </div>
@@ -329,12 +329,12 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
                   {booking.user.image ? (
                     <Image src={booking.user.image} alt={booking.user.name || "Guest"} fill className="object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xs font-bold text-zinc-600">G</div>
+                    <div className="w-full h-full flex items-center justify-center text-xs font-medium text-zinc-600">G</div>
                   )}
                 </div>
                 <div>
-                  <span className="text-2xs text-[var(--muted-foreground)] uppercase font-bold block">Guest</span>
-                  <p className="font-semibold text-foreground">{booking.user.name || "Guest"}</p>
+                  <span className="text-2xs text-[var(--muted-foreground)] uppercase font-medium block">Guest</span>
+                  <p className="font-medium text-foreground">{booking.user.name || "Guest"}</p>
                   <p className="text-2xs text-[var(--muted-foreground)]">{booking.user.email}</p>
                 </div>
               </div>
@@ -344,12 +344,12 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
                   {booking.listing.host.image ? (
                     <Image src={booking.listing.host.image} alt={booking.listing.host.name || "Host"} fill className="object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xs font-bold text-zinc-600">H</div>
+                    <div className="w-full h-full flex items-center justify-center text-xs font-medium text-zinc-600">H</div>
                   )}
                 </div>
                 <div>
-                  <span className="text-2xs text-[var(--muted-foreground)] uppercase font-bold block">Host</span>
-                  <p className="font-semibold text-foreground">{booking.listing.host.name || "Host"}</p>
+                  <span className="text-2xs text-[var(--muted-foreground)] uppercase font-medium block">Host</span>
+                  <p className="font-medium text-foreground">{booking.listing.host.name || "Host"}</p>
                   <p className="text-2xs text-[var(--muted-foreground)]">{booking.listing.host.email}</p>
                 </div>
               </div>
@@ -358,7 +358,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
 
           {/* Section 3: Associated Refunds */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
-            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-base font-medium text-foreground mb-4 flex items-center gap-2">
               <svg className="w-5 h-5 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 15v-1a4 4 0 00-4-4H4m0 0l3-3m-3 3l3 3m5 4v1a3 3 0 003 3h4m0 0l-3-3m3 3l-3 3" />
               </svg>
@@ -370,7 +370,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
                 {refunds.map((r: any) => (
                   <div key={r.id} className="p-3 flex items-center justify-between hover:bg-[var(--surface-secondary)]/40">
                     <div>
-                      <span className="font-mono font-semibold text-foreground block">
+                      <span className="font-mono font-medium text-foreground block">
                         {r.refundReference || r.id}
                       </span>
                       <span className="text-2xs text-[var(--muted-foreground)]">
@@ -378,10 +378,10 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="font-bold text-foreground block">
+                      <span className="font-medium text-foreground block">
                         {formatPrice((r.amount || 0) / 100, r.currency || "SAR")}
                       </span>
-                      <span className="text-2xs font-semibold uppercase text-emerald-600">{r.status}</span>
+                      <span className="text-2xs font-medium uppercase text-emerald-600">{r.status}</span>
                     </div>
                   </div>
                 ))}
@@ -398,7 +398,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
         <div className="flex flex-col gap-6">
           {/* Host Payout Readiness */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs text-xs space-y-3">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
+            <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
               Host Earnings Snapshot
             </h2>
 
@@ -414,19 +414,19 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
                 <div className="space-y-2 pt-2">
                   <div className="flex justify-between">
                     <span className="text-[var(--muted-foreground)]">Accommodation</span>
-                    <span className="font-semibold text-foreground">
+                    <span className="font-medium text-foreground">
                       {formatPrice((hostPayout.accommodationSubtotal || 0) / 100, hostPayout.currency || "SAR")}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[var(--muted-foreground)]">Cleaning Fee</span>
-                    <span className="font-semibold text-foreground">
+                    <span className="font-medium text-foreground">
                       {formatPrice((hostPayout.cleaningFee || 0) / 100, hostPayout.currency || "SAR")}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[var(--muted-foreground)]">Platform Commission</span>
-                    <span className="font-semibold text-rose-600">
+                    <span className="font-medium text-rose-600">
                       -{formatPrice((hostPayout.hostServiceFee || 0) / 100, hostPayout.currency || "SAR")}
                     </span>
                   </div>
@@ -441,7 +441,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
 
           {/* Technical Metadata */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs text-xs space-y-3">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
+            <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
               Gateway Details
             </h2>
 
@@ -454,7 +454,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
 
             <div>
               <span className="text-[var(--muted-foreground)] block">Failure Reason</span>
-              <span className="text-rose-600 font-semibold">{payment.failureReason || "None (Healthy)"}</span>
+              <span className="text-rose-600 font-medium">{payment.failureReason || "None (Healthy)"}</span>
             </div>
 
             <div>
@@ -470,10 +470,10 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-bold text-foreground">Reconcile Payment Transaction</h3>
+              <h3 className="text-base font-medium text-foreground">Reconcile Payment Transaction</h3>
               <button
                 onClick={() => setReconcileModalOpen(false)}
-                className="text-[var(--muted-foreground)] hover:text-foreground text-sm font-bold"
+                className="text-[var(--muted-foreground)] hover:text-foreground text-sm font-medium"
               >
                 ✕
               </button>
@@ -492,7 +492,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
 
             {reconcileResult && (
               <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 text-xs space-y-1">
-                <p className="font-bold">Reconciliation Complete</p>
+                <p className="font-medium">Reconciliation Complete</p>
                 <p>Status Updated: {reconcileResult.statusUpdated ? "Yes" : "No (Already synchronized)"}</p>
                 <p>Issues Found: {reconcileResult.issuesFound?.length || 0}</p>
               </div>
@@ -502,7 +502,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
               <button
                 type="button"
                 onClick={() => setReconcileModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)]"
+                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)]"
               >
                 Close
               </button>
@@ -510,7 +510,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
                 type="button"
                 onClick={handleReconcile}
                 disabled={reconciling}
-                className="px-4 py-2 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-semibold disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-medium disabled:opacity-50"
               >
                 {reconciling ? "Checking..." : "Run Reconciliation"}
               </button>

@@ -566,7 +566,7 @@ function MonthGrid({
                 aria-hidden="true"
                 className={`min-w-0 rounded-[14px] border border-[#ececef] bg-[#fafafa] p-2.5 text-left opacity-55 dark:border-zinc-800 dark:bg-zinc-900 ${compact ? "min-h-[48px] sm:min-h-[68px]" : "min-h-[76px] sm:min-h-[102px] lg:min-h-[calc(104px+var(--calendar-booking-lanes)*36px)]"}`}
               >
-                <span className="block text-xs font-semibold text-[#737780]">{dayNum}</span>
+                <span className="block text-xs font-medium text-[#737780]">{dayNum}</span>
                 {!compact && <span className="mt-2 block text-[10px] font-medium text-[#858991] sm:text-sm">{formatMoney(adjacentRate, sourceCurrency, 2)}</span>}
               </div>
             );
@@ -856,10 +856,10 @@ function MonthGrid({
                           gridColumn: `${segment.startColumn} / ${segment.endColumn}`,
                           gridRow: segment.lane + 1,
                         }}
-                        className={`pointer-events-auto flex min-w-0 items-center overflow-hidden border px-2 text-left text-xs font-semibold shadow-[0_2px_7px_rgba(0,0,0,0.06)] transition-transform duration-150 hover:-translate-y-px hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 ${bookingBarTone(segment.booking)} ${startsHere ? "rounded-l-full" : "rounded-l-md border-l-0"} ${endsHere ? "rounded-r-full" : "rounded-r-md border-r-0"}`}
+                        className={`pointer-events-auto flex min-w-0 items-center overflow-hidden border px-2 text-left text-xs font-medium shadow-[0_2px_7px_rgba(0,0,0,0.06)] transition-transform duration-150 hover:-translate-y-px hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 ${bookingBarTone(segment.booking)} ${startsHere ? "rounded-l-full" : "rounded-l-md border-l-0"} ${endsHere ? "rounded-r-full" : "rounded-r-md border-r-0"}`}
                       >
                         {startsHere && (
-                          <span className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-white bg-white/90 text-[9px] font-bold shadow-sm">
+                          <span className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-white bg-white/90 text-[9px] font-medium shadow-sm">
                             {guestInitials(segment.booking.guestName)}
                           </span>
                         )}
@@ -893,7 +893,7 @@ function CalendarStatusLegend() {
         <div key={item.label} className="flex min-w-0 items-center gap-3">
           <span className={`size-6 shrink-0 rounded-lg border ${item.swatch}`} aria-hidden="true" />
           <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold text-[#202124]">{item.label}</span>
+            <span className="block truncate text-sm font-medium text-[#202124]">{item.label}</span>
             <span className="block truncate text-xs text-[#6b7078]">{item.description}</span>
           </span>
         </div>
@@ -1052,7 +1052,7 @@ function ContinuousMonthCalendar({
             className="scroll-mt-4"
           >
             <div className="mb-4 flex items-baseline justify-between">
-              <h2 className="text-xl font-semibold tracking-tight text-[#202124] dark:text-zinc-100">
+              <h2 className="text-xl font-medium tracking-tight text-[#202124] dark:text-zinc-100">
                 {monthName(calendarMonth)} {calendarMonth.getFullYear()}
               </h2>
               <span className="text-xs font-medium uppercase tracking-[0.14em] text-[#777b83]">Calendar</span>
@@ -1255,7 +1255,7 @@ function MultiPropertyCalendar({
       <div style={{ minWidth: propertyColumnWidth + dateKeys.length * dateColumnWidth }}>
         <div className="sticky top-0 z-30 grid border-b border-[#e3e4e8] bg-white text-center shadow-[0_2px_8px_rgba(31,31,31,0.04)] dark:border-zinc-700 dark:bg-zinc-900" style={{ ...gridStyle, height: headerHeight }}>
           <div className="sticky left-0 z-40 flex flex-col justify-center border-r border-[#dedfe3] bg-white px-4 text-left dark:border-zinc-700 dark:bg-zinc-900">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#777b83]">Properties</span>
+            <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#777b83]">Properties</span>
             <span className="mt-0.5 text-xs font-medium text-[#25282d] dark:text-zinc-100">{listings.length} selected</span>
           </div>
           {dateKeys.map((key) => {
@@ -1263,9 +1263,9 @@ function MultiPropertyCalendar({
             const isWeekend = day.getDay() === 0 || day.getDay() === 6;
             const isToday = key === today;
             return (
-              <div key={key} className={`border-r border-[#ececf0] py-2 text-[10px] font-semibold ${isWeekend ? "bg-[#fafafc] text-[#6b7078]" : "text-[#5d636d]"} dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300`}>
+              <div key={key} className={`border-r border-[#ececf0] py-2 text-[10px] font-medium ${isWeekend ? "bg-[#fafafc] text-[#6b7078]" : "text-[#5d636d]"} dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300`}>
                 <span className="block uppercase tracking-wide">{day.toLocaleDateString(language || "en", { weekday: "short" })}</span>
-                <span className={`mx-auto mt-1 flex size-6 items-center justify-center rounded-full text-sm font-semibold ${isToday ? "bg-[#2383e2] text-white" : "text-[#1f2329] dark:text-white"}`}>{day.getDate()}</span>
+                <span className={`mx-auto mt-1 flex size-6 items-center justify-center rounded-full text-sm font-medium ${isToday ? "bg-[#2383e2] text-white" : "text-[#1f2329] dark:text-white"}`}>{day.getDate()}</span>
               </div>
             );
           })}
@@ -1289,7 +1289,7 @@ function MultiPropertyCalendar({
                   <PropertyPhoto listing={listing} className="size-full object-cover" />
                 </div>
                 <span className="ml-2 min-w-0">
-                  <span className="block truncate text-xs font-semibold text-[#282c32] dark:text-zinc-100" title={listing.title || "Property"}>{listing.title || "Property"}</span>
+                  <span className="block truncate text-xs font-medium text-[#282c32] dark:text-zinc-100" title={listing.title || "Property"}>{listing.title || "Property"}</span>
                   {location && <span className="mt-0.5 block truncate text-[10px] text-[#7c818a]" title={location}>{location}</span>}
                 </span>
               </div>
@@ -1313,10 +1313,10 @@ function MultiPropertyCalendar({
                     type="button"
                     onClick={() => onSelectReservation(span.booking)}
                     title={`${span.booking.guestName} · ${formatBookingDateRange(span.start, span.end)}`}
-                    className={`z-[1] mx-0.5 my-1 flex h-7 min-w-0 self-center items-center overflow-hidden border px-2 text-left text-xs font-semibold shadow-sm transition-transform hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#2383e2] ${timelineBookingBarTone(span.booking)} ${span.continuesBefore ? "rounded-l-none border-l-0" : "rounded-l-full"} ${span.continuesAfter ? "rounded-r-none border-r-0" : "rounded-r-full"}`}
+                    className={`z-[1] mx-0.5 my-1 flex h-7 min-w-0 self-center items-center overflow-hidden border px-2 text-left text-xs font-medium shadow-sm transition-transform hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#2383e2] ${timelineBookingBarTone(span.booking)} ${span.continuesBefore ? "rounded-l-none border-l-0" : "rounded-l-full"} ${span.continuesAfter ? "rounded-r-none border-r-0" : "rounded-r-full"}`}
                     style={{ gridColumn: `${startIndex + 2} / span ${endIndex - startIndex}`, gridRow: span.lane + 1 }}
                   >
-                    {!span.continuesBefore && <span className="mr-1.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-white/90 text-[8px] font-bold shadow-sm">{guestInitials(span.booking.guestName)}</span>}
+                    {!span.continuesBefore && <span className="mr-1.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-white/90 text-[8px] font-medium shadow-sm">{guestInitials(span.booking.guestName)}</span>}
                     <span className="truncate">{span.continuesBefore ? "Continues" : span.booking.guestName}</span>
                   </button>
                 );
@@ -2492,7 +2492,7 @@ function AllListingsOverviewPanel({
   return (
     <div className="space-y-4 text-[#1F1F1F] dark:text-zinc-100">
       <div>
-        <h2 className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">
+        <h2 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
           {t("host_calendar_portfolio_overview", "Portfolio Overview")}
         </h2>
         <p className="mt-0.5 text-[11px] leading-4 text-[#727272]">
@@ -2502,21 +2502,21 @@ function AllListingsOverviewPanel({
 
       <div className="grid grid-cols-2 gap-2">
         <div className="rounded-xl border border-[#e8e9ec] bg-[#f7f8fa] p-2.5 dark:border-zinc-700 dark:bg-zinc-800/80">
-          <p className="text-[9px] font-semibold uppercase tracking-wider text-[#727272]">
+          <p className="text-[9px] font-medium uppercase tracking-wider text-[#727272]">
             {t("host_calendar_listings_stat", "Listings")}
           </p>
-          <p className="mt-0.5 text-xl font-semibold">{listings.length}</p>
+          <p className="mt-0.5 text-xl font-medium">{listings.length}</p>
         </div>
         <div className="rounded-xl border border-[#e8e9ec] bg-[#f7f8fa] p-2.5 dark:border-zinc-700 dark:bg-zinc-800/80">
-          <p className="text-[9px] font-semibold uppercase tracking-wider text-[#727272]">
+          <p className="text-[9px] font-medium uppercase tracking-wider text-[#727272]">
             {t("host_calendar_active_stays_stat", "Active Stays")}
           </p>
-          <p className="mt-0.5 text-xl font-semibold">{activeBookingsCount}</p>
+          <p className="mt-0.5 text-xl font-medium">{activeBookingsCount}</p>
         </div>
       </div>
 
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-[#555b64]">
+        <p className="text-xs font-medium text-[#555b64]">
           {t("host_calendar_select_property_edit", "Select property to edit rates:")}
         </p>
         <div className="space-y-1.5 max-h-[min(52vh,420px)] overflow-y-auto pr-1 calendar-panel-scrollbar">
@@ -2533,7 +2533,7 @@ function AllListingsOverviewPanel({
                 className="size-9 shrink-0 rounded-md object-cover"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[11px] font-semibold text-[#1F1F1F] dark:text-zinc-100">
+                <p className="truncate text-[11px] font-medium text-[#1F1F1F] dark:text-zinc-100">
                   {l.title}
                 </p>
                 <p className="truncate text-[10px] text-[#727272]">
@@ -3598,7 +3598,7 @@ export function HostCalendarWorkspace({
                   type="button"
                   onClick={() => handleSelectView(option)}
                   aria-pressed={view === option}
-                  className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${view === option ? "bg-[#20262d] text-white shadow-sm" : "text-[#4e535b] hover:text-[#202124]"}`}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${view === option ? "bg-[#20262d] text-white shadow-sm" : "text-[#4e535b] hover:text-[#202124]"}`}
                 >
                   {option === "month" ? t("host_calendar_view_month", "Month") : t("host_calendar_view_year", "Year")}
                 </button>

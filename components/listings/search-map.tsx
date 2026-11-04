@@ -584,7 +584,7 @@ export function SearchMap({
           type="button"
           onClick={handleZoomIn}
           aria-label="Zoom in"
-          className="w-8 h-8 flex items-center justify-center text-zinc-800 hover:bg-zinc-100 transition-colors border-b border-zinc-100 text-sm font-semibold cursor-pointer"
+          className="w-8 h-8 flex items-center justify-center text-zinc-800 hover:bg-zinc-100 transition-colors border-b border-zinc-100 text-sm font-medium cursor-pointer"
         >
           +
         </button>
@@ -592,7 +592,7 @@ export function SearchMap({
           type="button"
           onClick={handleZoomOut}
           aria-label="Zoom out"
-          className="w-8 h-8 flex items-center justify-center text-zinc-800 hover:bg-zinc-100 transition-colors text-sm font-semibold cursor-pointer"
+          className="w-8 h-8 flex items-center justify-center text-zinc-800 hover:bg-zinc-100 transition-colors text-sm font-medium cursor-pointer"
         >
           −
         </button>
@@ -604,7 +604,7 @@ export function SearchMap({
           <button
             type="button"
             onClick={triggerBoundsSearch}
-            className="flex items-center gap-2 bg-white hover:bg-zinc-50 text-[#1F1F1F] font-semibold px-4 py-2.5 rounded-full shadow-lg border border-zinc-200 transition-all text-xs cursor-pointer hover:shadow-xl active:scale-95"
+            className="flex items-center gap-2 bg-white hover:bg-zinc-50 text-[#1F1F1F] font-medium px-4 py-2.5 rounded-full shadow-lg border border-zinc-200 transition-all text-xs cursor-pointer hover:shadow-xl active:scale-95"
           >
             <svg
               className="w-3.5 h-3.5 text-zinc-700"
@@ -636,7 +636,7 @@ export function SearchMap({
           }}
           className="rounded border-zinc-300 text-[#1F1F1F] focus:ring-zinc-900 cursor-pointer"
         />
-        <label htmlFor="search-as-move" className="cursor-pointer select-none text-[11px] font-semibold text-zinc-700">
+        <label htmlFor="search-as-move" className="cursor-pointer select-none text-[11px] font-medium text-zinc-700">
           Search as I move the map
         </label>
       </div>

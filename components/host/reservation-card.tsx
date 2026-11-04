@@ -99,7 +99,7 @@ export function ReservationCard({
       style={{ boxShadow: "0 1px 5px rgba(0, 0, 0, 0.20)" }}
     >
       {isActive && (
-        <span className="absolute top-3.5 right-3.5 z-10 rounded-full bg-[#1F1F1F] px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-white uppercase shadow-xs sm:text-[11px]">
+        <span className="absolute top-3.5 right-3.5 z-10 rounded-full bg-[#1F1F1F] px-2.5 py-0.5 text-[10px] font-medium tracking-wide text-white uppercase shadow-xs sm:text-[11px]">
           {priorityLabel}
         </span>
       )}

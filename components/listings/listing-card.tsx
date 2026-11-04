@@ -484,7 +484,7 @@ export function ListingCard({
       {/* ── Navigation Loading Overlay ── */}
       {isNavigating && (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[1px] rounded-2xl transition-all">
-          <div className="flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 shadow-lg text-xs font-semibold text-zinc-900 border border-zinc-200">
+          <div className="flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 shadow-lg text-xs font-medium text-zinc-900 border border-zinc-200">
             <div className="size-3.5 rounded-full border-2 border-zinc-300 border-t-zinc-900 animate-spin" />
             <span>{t("common_loading", "Loading...")}</span>
           </div>
@@ -724,7 +724,7 @@ export function ListingCard({
                   {formatPrice(baseTotalPrice, currency)}
                   </span>
                 )}
-                <span className="font-semibold underline">
+                <span className="font-medium underline">
                   {isFlexibleSearch ? `From ${formatPrice(discountedPrice ?? basePrice, currency)}` : formatPrice(totalPrice, currency)}
                 </span>
                 <span className="text-[#1f1f1f]">
@@ -768,13 +768,13 @@ export function ListingCard({
         <div className="pt-6 pb-1 space-y-0.5 text-left">
           {/* Row 1: Title + Rating */}
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-sm sm:text-[15px] font-semibold text-[#1F1F1F] truncate leading-snug group-hover:text-amber-950 transition-colors flex-1 min-w-0">
+            <h3 className="text-sm sm:text-[15px] font-medium text-[#1F1F1F] truncate leading-snug group-hover:text-amber-950 transition-colors flex-1 min-w-0">
               {primaryHeading}
             </h3>
 
             {/* Rating */}
             {numericRating !== null ? (
-              <span className="inline-flex items-center gap-1 text-sm font-semibold text-[#1F1F1F] shrink-0 ml-1">
+              <span className="inline-flex items-center gap-1 text-sm font-medium text-[#1F1F1F] shrink-0 ml-1">
                 <svg
                   aria-hidden="true"
                   className="w-3.5 h-3.5 text-[#1F1F1F] fill-current"

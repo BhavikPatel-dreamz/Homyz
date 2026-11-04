@@ -158,13 +158,13 @@ export function AdminNotificationsClient({
         <div className="flex items-center gap-2">
           <Link
             href="/admin/bookings/communications"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>Communications</span>
           </Link>
           <Link
             href="/admin/bookings/analytics"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>Analytics</span>
           </Link>
@@ -172,7 +172,7 @@ export function AdminNotificationsClient({
             type="button"
             onClick={() => fetchNotifications(pagination.page)}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-4 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-4 py-2 text-xs font-medium shadow-2xs transition-all disabled:opacity-50"
           >
             <span>{loading ? "Refreshing..." : "Refresh"}</span>
           </button>
@@ -182,7 +182,7 @@ export function AdminNotificationsClient({
       {/* 7 KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <span className="text-3xs uppercase font-bold tracking-wider text-[var(--muted-foreground)]">
+          <span className="text-3xs uppercase font-medium tracking-wider text-[var(--muted-foreground)]">
             Total
           </span>
           <p className="text-lg font-black text-foreground mt-1">
@@ -190,7 +190,7 @@ export function AdminNotificationsClient({
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <span className="text-3xs uppercase font-bold tracking-wider text-emerald-600 dark:text-emerald-400">
+          <span className="text-3xs uppercase font-medium tracking-wider text-emerald-600 dark:text-emerald-400">
             Delivered
           </span>
           <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1">
@@ -198,7 +198,7 @@ export function AdminNotificationsClient({
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <span className="text-3xs uppercase font-bold tracking-wider text-blue-600 dark:text-blue-400">
+          <span className="text-3xs uppercase font-medium tracking-wider text-blue-600 dark:text-blue-400">
             Sent / In-Flight
           </span>
           <p className="text-lg font-black text-blue-600 dark:text-blue-400 mt-1">
@@ -206,7 +206,7 @@ export function AdminNotificationsClient({
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <span className="text-3xs uppercase font-bold tracking-wider text-zinc-500">
+          <span className="text-3xs uppercase font-medium tracking-wider text-zinc-500">
             Pending
           </span>
           <p className="text-lg font-black text-zinc-700 dark:text-zinc-300 mt-1">
@@ -214,7 +214,7 @@ export function AdminNotificationsClient({
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <span className="text-3xs uppercase font-bold tracking-wider text-rose-600 dark:text-rose-400">
+          <span className="text-3xs uppercase font-medium tracking-wider text-rose-600 dark:text-rose-400">
             Failed
           </span>
           <p className="text-lg font-black text-rose-600 dark:text-rose-400 mt-1">
@@ -222,7 +222,7 @@ export function AdminNotificationsClient({
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <span className="text-3xs uppercase font-bold tracking-wider text-amber-600 dark:text-amber-400">
+          <span className="text-3xs uppercase font-medium tracking-wider text-amber-600 dark:text-amber-400">
             Retrying
           </span>
           <p className="text-lg font-black text-amber-600 dark:text-amber-400 mt-1">
@@ -230,7 +230,7 @@ export function AdminNotificationsClient({
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <span className="text-3xs uppercase font-bold tracking-wider text-rose-600 dark:text-rose-400">
+          <span className="text-3xs uppercase font-medium tracking-wider text-rose-600 dark:text-rose-400">
             Attention Req.
           </span>
           <p className="text-lg font-black text-rose-600 dark:text-rose-400 mt-1">
@@ -252,9 +252,9 @@ export function AdminNotificationsClient({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
                 activeTab === tab.id
-                  ? "bg-[var(--surface)] text-foreground shadow-2xs font-bold"
+                  ? "bg-[var(--surface)] text-foreground shadow-2xs font-medium"
                   : "text-[var(--muted-foreground)] hover:text-foreground"
               }`}
             >
@@ -298,7 +298,7 @@ export function AdminNotificationsClient({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-[var(--border)] bg-[var(--surface-secondary)]/50 text-[var(--muted-foreground)] font-semibold uppercase text-3xs tracking-wider">
+              <tr className="border-b border-[var(--border)] bg-[var(--surface-secondary)]/50 text-[var(--muted-foreground)] font-medium uppercase text-3xs tracking-wider">
                 <th className="py-3 px-4">Notification ID</th>
                 <th className="py-3 px-4">Event & Title</th>
                 <th className="py-3 px-4">Recipient</th>
@@ -319,31 +319,31 @@ export function AdminNotificationsClient({
               ) : (
                 notifications.map((n) => (
                   <tr key={n.id} className="hover:bg-[var(--surface-secondary)]/30 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-bold text-foreground">
+                    <td className="py-3.5 px-4 font-mono font-medium text-foreground">
                       {n.id.slice(0, 10)}...
                     </td>
                     <td className="py-3.5 px-4 max-w-xs">
-                      <p className="font-semibold text-foreground truncate">{n.title}</p>
+                      <p className="font-medium text-foreground truncate">{n.title}</p>
                       <p className="text-3xs text-[var(--muted-foreground)] truncate">{n.message}</p>
                     </td>
                     <td className="py-3.5 px-4">
-                      <p className="font-semibold text-foreground">{n.user?.name || "User"}</p>
+                      <p className="font-medium text-foreground">{n.user?.name || "User"}</p>
                       <span className="text-3xs text-[var(--muted-foreground)] block">{n.user?.email}</span>
-                      <span className="text-3xs uppercase font-bold text-zinc-400">{n.user?.role}</span>
+                      <span className="text-3xs uppercase font-medium text-zinc-400">{n.user?.role}</span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="inline-flex px-2 py-0.5 rounded-full text-3xs font-semibold bg-[var(--surface-secondary)] text-foreground border border-[var(--border)]">
+                      <span className="inline-flex px-2 py-0.5 rounded-full text-3xs font-medium bg-[var(--surface-secondary)] text-foreground border border-[var(--border)]">
                         {n.channel}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-3xs font-bold uppercase border ${getStatusBadge(n.deliveryStatus)}`}>
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-3xs font-medium uppercase border ${getStatusBadge(n.deliveryStatus)}`}>
                         {n.deliveryStatus}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
                       {n.entityId ? (
-                        <span className="text-3xs font-mono font-semibold text-[var(--accent)]">
+                        <span className="text-3xs font-mono font-medium text-[var(--accent)]">
                           {n.entityId.slice(0, 12)}...
                         </span>
                       ) : (
@@ -362,7 +362,7 @@ export function AdminNotificationsClient({
                       <button
                         type="button"
                         onClick={() => handleOpenDetails(n)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-xs font-semibold text-foreground transition-all shadow-2xs"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-xs font-medium text-foreground transition-all shadow-2xs"
                       >
                         Details
                       </button>
@@ -409,17 +409,17 @@ export function AdminNotificationsClient({
             {/* Header */}
             <div className="p-5 border-b border-[var(--border)] flex items-center justify-between bg-[var(--surface-secondary)]/40">
               <div>
-                <span className="text-3xs uppercase font-bold tracking-wider text-[var(--accent)]">
+                <span className="text-3xs uppercase font-medium tracking-wider text-[var(--accent)]">
                   Notification Delivery Inspector
                 </span>
-                <h3 className="text-base font-bold text-foreground">
+                <h3 className="text-base font-medium text-foreground">
                   ID: {selectedNotif?.id}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setDetailsModalOpen(false)}
-                className="w-8 h-8 rounded-full border border-[var(--border)] hover:bg-[var(--surface-secondary)] flex items-center justify-center text-foreground font-bold"
+                className="w-8 h-8 rounded-full border border-[var(--border)] hover:bg-[var(--surface-secondary)] flex items-center justify-center text-foreground font-medium"
               >
                 ✕
               </button>
@@ -448,10 +448,10 @@ export function AdminNotificationsClient({
                   <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)]/30 flex flex-col gap-2">
                     <div className="flex justify-between items-start">
                       <div>
-                        <span className="text-3xs uppercase font-bold text-[var(--muted-foreground)]">Event Title</span>
-                        <h4 className="text-sm font-bold text-foreground">{notifDetails.title}</h4>
+                        <span className="text-3xs uppercase font-medium text-[var(--muted-foreground)]">Event Title</span>
+                        <h4 className="text-sm font-medium text-foreground">{notifDetails.title}</h4>
                       </div>
-                      <span className={`px-2.5 py-0.5 rounded-full text-3xs font-bold uppercase border ${getStatusBadge(notifDetails.deliveryStatus)}`}>
+                      <span className={`px-2.5 py-0.5 rounded-full text-3xs font-medium uppercase border ${getStatusBadge(notifDetails.deliveryStatus)}`}>
                         {notifDetails.deliveryStatus}
                       </span>
                     </div>
@@ -462,14 +462,14 @@ export function AdminNotificationsClient({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/30">
-                      <span className="text-3xs uppercase font-semibold text-[var(--muted-foreground)] block">Recipient</span>
-                      <span className="font-bold text-foreground block mt-0.5">{notifDetails.user?.name || "User"}</span>
+                      <span className="text-3xs uppercase font-medium text-[var(--muted-foreground)] block">Recipient</span>
+                      <span className="font-medium text-foreground block mt-0.5">{notifDetails.user?.name || "User"}</span>
                       <span className="text-3xs text-[var(--muted-foreground)] block">{notifDetails.user?.email}</span>
-                      <span className="text-3xs uppercase font-bold text-[var(--accent)] mt-1 block">Role: {notifDetails.user?.role}</span>
+                      <span className="text-3xs uppercase font-medium text-[var(--accent)] mt-1 block">Role: {notifDetails.user?.role}</span>
                     </div>
                     <div className="p-3 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/30">
-                      <span className="text-3xs uppercase font-semibold text-[var(--muted-foreground)] block">Channel & Template</span>
-                      <span className="font-bold text-foreground block mt-0.5">{notifDetails.channel}</span>
+                      <span className="text-3xs uppercase font-medium text-[var(--muted-foreground)] block">Channel & Template</span>
+                      <span className="font-medium text-foreground block mt-0.5">{notifDetails.channel}</span>
                       <span className="text-3xs font-mono text-[var(--muted-foreground)] block mt-0.5">Tpl: {notifDetails.templateId}</span>
                       <span className="text-3xs text-[var(--muted-foreground)] block mt-1">
                         Attempts: {notifDetails.attemptCount} / 5
@@ -479,8 +479,8 @@ export function AdminNotificationsClient({
 
                   {notifDetails.relatedBooking && (
                     <div className="p-3 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/30 flex flex-col gap-1">
-                      <span className="text-3xs uppercase font-semibold text-[var(--muted-foreground)]">Associated Reservation</span>
-                      <p className="font-bold text-foreground">
+                      <span className="text-3xs uppercase font-medium text-[var(--muted-foreground)]">Associated Reservation</span>
+                      <p className="font-medium text-foreground">
                         {notifDetails.relatedBooking.listing?.title} (ID: {notifDetails.relatedBooking.id})
                       </p>
                       <p className="text-3xs text-[var(--accent)]">
@@ -491,7 +491,7 @@ export function AdminNotificationsClient({
 
                   {notifDetails.failureReason && (
                     <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700 text-xs">
-                      <span className="font-bold block">Delivery Failure Reason:</span>
+                      <span className="font-medium block">Delivery Failure Reason:</span>
                       <span>{notifDetails.failureReason}</span>
                     </div>
                   )}
@@ -499,14 +499,14 @@ export function AdminNotificationsClient({
                   {/* Delivery Attempts Timeline */}
                   {notifDetails.attemptHistory?.length > 0 && (
                     <div className="flex flex-col gap-2 mt-1">
-                      <span className="text-3xs uppercase font-bold text-[var(--muted-foreground)]">
+                      <span className="text-3xs uppercase font-medium text-[var(--muted-foreground)]">
                         Delivery Attempt Timeline
                       </span>
                       <div className="border border-[var(--border)] rounded-xl divide-y divide-[var(--border)] overflow-hidden">
                         {notifDetails.attemptHistory.map((att: any, idx: number) => (
                           <div key={idx} className="p-2.5 flex items-center justify-between text-3xs bg-[var(--surface)]">
                             <div>
-                              <span className="font-bold text-foreground">Attempt #{att.attemptNumber || idx + 1}: </span>
+                              <span className="font-medium text-foreground">Attempt #{att.attemptNumber || idx + 1}: </span>
                               <span className="text-[var(--muted-foreground)]">{att.note || "Automated dispatch"}</span>
                             </div>
                             <span className="text-zinc-400 font-mono">
@@ -532,14 +532,14 @@ export function AdminNotificationsClient({
                   type="button"
                   onClick={handleRetryNotification}
                   disabled={retrying || (notifDetails?.attemptCount || 0) >= 5}
-                  className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-2xs transition-all disabled:opacity-40"
+                  className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shadow-2xs transition-all disabled:opacity-40"
                 >
                   {retrying ? "Retrying..." : "Manual Retry Dispatch"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setDetailsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-secondary)] border border-[var(--border)] text-xs font-semibold text-foreground transition-all"
+                  className="px-4 py-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-secondary)] border border-[var(--border)] text-xs font-medium text-foreground transition-all"
                 >
                   Close
                 </button>

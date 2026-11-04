@@ -71,7 +71,7 @@ export function StepCategory({
                     key={cat.id}
                     type="button"
                     onClick={() => onSelectCategory(cat.id)}
-                    className={`flex items-center min-[425px]:w-auto w-[calc(50%_-_4px)] gap-2 sm:px-5 p-3 sm:py-3.5 rounded-lg border min-[425px]:text-center text-left sm:text-base text-sm sm:font-semibold font-normal transition-all cursor-pointer select-none border-[#727272] ${isSelected
+                    className={`flex items-center min-[425px]:w-auto w-[calc(50%_-_4px)] gap-2 sm:px-5 p-3 sm:py-3.5 rounded-lg border min-[425px]:text-center text-left sm:text-base text-sm sm:font-medium font-normal transition-all cursor-pointer select-none border-[#727272] ${isSelected
                       ? " bg-[#E9EBFF] text-[#1F1F1F]"
                       : "bg-white text-[#1F1F1F] hover:bg-[#E9EBFF]"
                       }`}

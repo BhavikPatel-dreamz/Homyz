@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { LoadingIcon } from "@/components/ui/loading-icon";
-import { Container } from "@/components/ui";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { BrandLogo } from "@/components/branding/brand-logo";
+import { useBranding } from "@/components/branding/branding-provider";
 
 interface OnboardingHeaderProps {
   onSaveAndExit: () => void;
@@ -14,12 +13,14 @@ interface OnboardingHeaderProps {
 
 /** A focused header for the listing wizard, intentionally separate from host navigation. */
 export function OnboardingHeader({ onSaveAndExit, isSaving = false, disabled = false }: OnboardingHeaderProps) {
+  const branding = useBranding();
   const { t } = useLanguage();
 
   return (
     <header className="flex h-20 shrink-0 items-center justify-between px-6 sm:h-24 sm:px-10 lg:px-16">
-      <Image
-        src="/images/brand/homyz-logo-dark-v1.svg"
+      <BrandLogo
+        src={branding.hostHeaderLogoUrl}
+        fallbackSrc="/images/brand/homyz-logo-dark-v1.svg"
         alt="Homyz"
         width={100}
         height={36}
@@ -32,7 +33,7 @@ export function OnboardingHeader({ onSaveAndExit, isSaving = false, disabled = f
           href="/help"
           target="_blank"
           rel="noreferrer"
-          className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-300 px-4 text-sm font-semibold text-[#1F1F1F] transition-colors hover:border-[#1F1F1F] hover:bg-zinc-50 sm:px-5"
+          className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-300 px-4 text-sm font-medium text-[#1F1F1F] transition-colors hover:border-[#1F1F1F] hover:bg-zinc-50 sm:px-5"
         >
           {t("host_header_questions", "Questions?")}
         </a>
@@ -40,7 +41,7 @@ export function OnboardingHeader({ onSaveAndExit, isSaving = false, disabled = f
           type="button"
           onClick={onSaveAndExit}
           disabled={disabled || isSaving}
-          className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-300 px-4 text-sm font-semibold text-[#1F1F1F] transition-colors hover:border-[#1F1F1F] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 sm:px-5"
+          className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-300 px-4 text-sm font-medium text-[#1F1F1F] transition-colors hover:border-[#1F1F1F] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 sm:px-5"
         >
           {isSaving && <LoadingIcon className="mr-2 size-4 animate-spin" />}
           {isSaving ? t("host_saving", "Saving…") : t("host_save_exit", "Save & exit")}

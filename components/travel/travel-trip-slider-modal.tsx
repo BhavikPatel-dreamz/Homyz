@@ -105,7 +105,7 @@ export function TravelTripSliderModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-zinc-800/80 px-6 py-4 bg-zinc-900/60">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-zinc-100 flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-medium text-zinc-100 flex items-center gap-2">
               <span>✈️</span> {trip.title}
             </h2>
             <p className="text-xs text-zinc-400 mt-0.5">
@@ -124,9 +124,9 @@ export function TravelTripSliderModal({
         </div>
 
         <div className="absolute right-16 top-4 z-10 flex gap-2">
-          {shareUrl && <button type="button" onClick={() => void shareTrip()} className="rounded-full bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-zinc-100 hover:bg-zinc-700">Share</button>}
-          {canLike && <button type="button" onClick={() => void toggleLike()} disabled={isLiking} aria-pressed={liked} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${liked ? "bg-rose-500 text-white" : "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"}`}>♥ {likesCount}</button>}
-          {isOwner && onManageTrip && <button type="button" onClick={onManageTrip} className="rounded-full bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-zinc-100 hover:bg-zinc-700">Manage</button>}
+          {shareUrl && <button type="button" onClick={() => void shareTrip()} className="rounded-full bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-100 hover:bg-zinc-700">Share</button>}
+          {canLike && <button type="button" onClick={() => void toggleLike()} disabled={isLiking} aria-pressed={liked} className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${liked ? "bg-rose-500 text-white" : "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"}`}>♥ {likesCount}</button>}
+          {isOwner && onManageTrip && <button type="button" onClick={onManageTrip} className="rounded-full bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-100 hover:bg-zinc-700">Manage</button>}
         </div>
 
         {/* Main Body */}

@@ -93,7 +93,7 @@ export function ReviewCard({
   return (
     <article id={`review-${id}`} className="min-w-0 break-words">
       <div className="flex items-center justify-between gap-3">
-        <div className="flex size-12 items-center justify-center overflow-hidden rounded-full border-2 border-[#e9a400] bg-amber-100 text-sm font-semibold text-amber-950">
+        <div className="flex size-12 items-center justify-center overflow-hidden rounded-full border-2 border-[#e9a400] bg-amber-100 text-sm font-medium text-amber-950">
           {author?.image && !imageFailed ? (
             // eslint-disable-next-line @next/next/no-img-element -- reviewer avatars can be remote user media.
             <img
@@ -179,7 +179,7 @@ export function ReviewCard({
       {hostResponse && (
         <div className="mt-4 rounded-xl border border-zinc-200/80 bg-zinc-50 p-4 pl-4 sm:pl-5">
           <div className="flex items-center gap-2.5">
-            <div className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-200 text-xs font-semibold text-zinc-800">
+            <div className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-200 text-xs font-medium text-zinc-800">
               {hostResponse.hostImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -192,7 +192,7 @@ export function ReviewCard({
               )}
             </div>
             <div>
-              <p className="text-sm font-semibold text-[#1f1f1f]">
+              <p className="text-sm font-medium text-[#1f1f1f]">
                 {t("reviews_response_from_host", "Response from {host}").replace(
                   "{host}",
                   hostResponse.hostName || "Host",

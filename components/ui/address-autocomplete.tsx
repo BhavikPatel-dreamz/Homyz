@@ -304,7 +304,7 @@ export function AddressAutocomplete({
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 truncate">
+                    <p className="text-xs font-medium text-[#1F1F1F] dark:text-zinc-100 truncate">
                       {primaryText}
                     </p>
                     {secondaryText && (

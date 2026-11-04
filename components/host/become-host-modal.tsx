@@ -462,19 +462,19 @@ export function BecomeHostModal({
                 <button
                   type="button"
                   onClick={() => void loadSourceListings(1)}
-                  className="mt-4 rounded-full border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-800 hover:bg-white"
+                  className="mt-4 rounded-full border border-rose-300 px-4 py-2 text-sm font-medium text-rose-800 hover:bg-white"
                 >
                   Retry
                 </button>
               </div>
             ) : sourceListings.length === 0 ? (
               <div className="flex min-h-56 flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center">
-                <p className="text-base font-semibold text-[#1F1F1F]">No listings to copy yet</p>
+                <p className="text-base font-medium text-[#1F1F1F]">No listings to copy yet</p>
                 <p className="mt-2 max-w-sm text-sm text-[#727272]">Create your first listing to use it as a starting point for another one.</p>
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="mt-5 rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
+                  className="mt-5 rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-medium text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
                 >
                   Create a new listing
                 </button>
@@ -535,7 +535,7 @@ export function BecomeHostModal({
             isClosing ? "modal-dialog-animate-out" : "modal-dialog-animate-in"
           }`}
         >
-          <h2 id="duplicate-photo-title" className="text-center text-lg font-semibold text-[#1F1F1F]">
+          <h2 id="duplicate-photo-title" className="text-center text-lg font-medium text-[#1F1F1F]">
             Want to use the same photos?
           </h2>
           <button
@@ -562,7 +562,7 @@ export function BecomeHostModal({
                   <rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9" r="1.5" /><path strokeLinecap="round" strokeLinejoin="round" d="m21 15-4.5-4.5L8 19" />
                 </svg>
               </span>
-              <span className="flex-1 text-base font-semibold text-[#1F1F1F]">{isNavigating ? "Creating draft…" : "Duplicate with photos"}</span>
+              <span className="flex-1 text-base font-medium text-[#1F1F1F]">{isNavigating ? "Creating draft…" : "Duplicate with photos"}</span>
               <svg aria-hidden="true" className="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="m9 5 7 7-7 7" /></svg>
             </button>
             <button
@@ -576,7 +576,7 @@ export function BecomeHostModal({
                   <rect x="7" y="5" width="11" height="15" rx="2" /><path strokeLinecap="round" strokeLinejoin="round" d="M4 16V6a2 2 0 0 1 2-2h8" />
                 </svg>
               </span>
-              <span className="flex-1 text-base font-semibold text-[#1F1F1F]">Duplicate without photos</span>
+              <span className="flex-1 text-base font-medium text-[#1F1F1F]">Duplicate without photos</span>
               <svg aria-hidden="true" className="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="m9 5 7 7-7 7" /></svg>
             </button>
           </div>

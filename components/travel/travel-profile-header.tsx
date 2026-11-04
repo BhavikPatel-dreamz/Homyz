@@ -173,7 +173,7 @@ export function TravelProfileHeader({
                   onError={() => setFailedAvatarUrl(profile.user.image)}
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-500 font-bold text-2xl">
+                <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-500 font-medium text-2xl">
                   {displayName.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -206,7 +206,7 @@ export function TravelProfileHeader({
             {/* Name, Surname & Town, Country */}
             <div className="min-w-0 max-w-[320px] mb-2 lg:max-w-[360px]">
               <div className="flex items-center justify-center sm:justify-start gap-2">
-                <h1 className="truncate text-lg sm:text-xl font-bold text-zinc-900 tracking-tight">
+                <h1 className="truncate text-lg sm:text-xl font-medium text-zinc-900 tracking-tight">
                   {displayName}
                 </h1>
                 {profile.handle && (
@@ -287,7 +287,7 @@ export function TravelProfileHeader({
         <div className="flex items-center justify-center gap-8 sm:gap-14 my-8">
           {/* Trips */}
           <div className="flex flex-col items-center">
-            <div className="w-14 sm:w-16 py-1 rounded-full bg-[#FCDF9C] text-center font-bold text-sm sm:text-base text-zinc-900 shadow-2xs">
+            <div className="w-14 sm:w-16 py-1 rounded-full bg-[#FCDF9C] text-center font-medium text-sm sm:text-base text-zinc-900 shadow-2xs">
               {stats.trips}
             </div>
             <span className="text-xs sm:text-sm font-medium text-zinc-800 mt-1.5">
@@ -297,7 +297,7 @@ export function TravelProfileHeader({
 
           {/* Likes */}
           <div className="flex flex-col items-center">
-            <div className="w-14 sm:w-16 py-1 rounded-full bg-[#FCDF9C] text-center font-bold text-sm sm:text-base text-zinc-900 shadow-2xs">
+            <div className="w-14 sm:w-16 py-1 rounded-full bg-[#FCDF9C] text-center font-medium text-sm sm:text-base text-zinc-900 shadow-2xs">
               {stats.likes}
             </div>
             <span className="text-xs sm:text-sm font-medium text-zinc-800 mt-1.5">
@@ -307,7 +307,7 @@ export function TravelProfileHeader({
 
           {/* Reviews */}
           <div className="flex flex-col items-center">
-            <div className="w-14 sm:w-16 py-1 rounded-full bg-[#FCDF9C] text-center font-bold text-sm sm:text-base text-zinc-900 shadow-2xs">
+            <div className="w-14 sm:w-16 py-1 rounded-full bg-[#FCDF9C] text-center font-medium text-sm sm:text-base text-zinc-900 shadow-2xs">
               {stats.reviews}
             </div>
             <span className="text-xs sm:text-sm font-medium text-zinc-800 mt-1.5">

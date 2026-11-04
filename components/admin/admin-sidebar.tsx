@@ -6,7 +6,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
-import { HomyzLogo } from "@/components/ui/homyz-logo";
+import { BrandLogo } from "@/components/branding/brand-logo";
+import { useBranding } from "@/components/branding/branding-provider";
 
 // ---------------------------------------------------------------------------
 // Explicit route-to-navigation mapping.
@@ -126,6 +127,7 @@ export function AdminSidebar({
 }: AdminSidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const branding = useBranding();
 
   const user = session?.user;
   const permissions = user?.permissions || [];
@@ -489,9 +491,9 @@ export function AdminSidebar({
         },
       ],
     },
-    // {
-    //   name: "CONTENT & CMS",
-    //   items: [
+    {
+      name: "CONTENT & CMS",
+      items: [
     //     {
     //       key: "cms-content",
     //       label: "Content & Pages",
@@ -514,18 +516,18 @@ export function AdminSidebar({
     //         </svg>
     //       ),
     //     },
-    //     {
-    //       key: "cms-settings",
-    //       label: "Global Settings",
-    //       href: "/admin/cms/settings",
-    //       requiredPermission: PERMISSIONS.CMS_VIEW,
-    //       icon: (
-    //         <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-    //           <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-    //           <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    //         </svg>
-    //       ),
-    //     },
+        {
+          key: "cms-settings",
+          label: "Global Settings",
+          href: "/admin/cms/settings",
+          requiredPermission: PERMISSIONS.CMS_VIEW,
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          ),
+        },
     //     {
     //       key: "cms-media",
     //       label: "Media Library",
@@ -559,8 +561,8 @@ export function AdminSidebar({
     //         </svg>
     //       ),
     //     },
-    //   ],
-    // },
+      ],
+    },
     {
       name: "ADMINISTRATION",
       items: [
@@ -650,10 +652,10 @@ export function AdminSidebar({
           href={item.href}
           onClick={() => setMobileOpen(false)}
           className={`flex items-center gap-2.5 rounded-xl text-xs transition-all ${
-            isChild ? "px-2.5 py-1.5 font-medium" : "px-3 py-2 font-semibold"
+            isChild ? "px-2.5 py-1.5 font-medium" : "px-3 py-2 font-medium"
           } ${
             isActive
-              ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold shadow-2xs"
+              ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-medium shadow-2xs"
               : isChild
               ? "text-muted-foreground hover:bg-[var(--surface-secondary)] hover:text-foreground"
               : "text-muted-foreground hover:bg-[var(--surface-secondary)] hover:text-foreground"
@@ -665,7 +667,7 @@ export function AdminSidebar({
 
         {/* Collapsed tooltip */}
         {collapsed && (
-          <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-9999 hidden rounded-md bg-[var(--primary)] text-primary-foreground px-3 py-1 text-[11px] font-semibold shadow-xl group-hover/item:block whitespace-nowrap">
+          <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-9999 hidden rounded-md bg-[var(--primary)] text-primary-foreground px-3 py-1 text-[11px] font-medium shadow-xl group-hover/item:block whitespace-nowrap">
             {item.label}
           </div>
         )}
@@ -691,7 +693,7 @@ export function AdminSidebar({
           >
             {item.icon}
           </Link>
-          <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-9999 hidden rounded-md bg-[var(--primary)] text-primary-foreground px-3 py-1 text-[11px] font-semibold shadow-xl group-hover/item:block whitespace-nowrap">
+          <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-9999 hidden rounded-md bg-[var(--primary)] text-primary-foreground px-3 py-1 text-[11px] font-medium shadow-xl group-hover/item:block whitespace-nowrap">
             Bookings
           </div>
         </div>
@@ -702,7 +704,7 @@ export function AdminSidebar({
       <div key={item.href} className="flex flex-col gap-0.5">
         {/* Parent row: label navigates, chevron toggles */}
         <div
-          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
             isParentActive
               ? "text-foreground bg-[var(--surface-secondary)]"
               : "text-muted-foreground hover:bg-[var(--surface-secondary)] hover:text-foreground"
@@ -763,18 +765,29 @@ export function AdminSidebar({
                 className="flex items-center justify-center hover:scale-105 transition-transform"
                 title="Homyz Admin Overview"
               >
-                <HomyzLogo className="text-muted-foreground shrink-0" size={26} />
+                <BrandLogo
+                  src={branding.adminLogoUrl}
+                  fallbackSrc="/images/brand/homyz-logo-dark-v1.svg"
+                  alt="Homyz"
+                  width={104}
+                  height={38}
+                  className="h-7 w-8 object-contain"
+                />
               </Link>
             </div>
           ) : (
             <div className="flex items-center justify-between px-1">
               <Link href="/admin" className="flex items-center gap-3 group overflow-hidden">
-                <HomyzLogo className="text-muted-foreground group-hover:scale-105 transition-transform shrink-0" size={26} />
+                <BrandLogo
+                  src={branding.adminLogoUrl}
+                  fallbackSrc="/images/brand/homyz-logo-dark-v1.svg"
+                  alt="Homyz"
+                  width={140}
+                  height={52}
+                  className="h-8 w-[96px] shrink-0 object-contain object-left transition-transform group-hover:scale-105"
+                />
                 <div className="flex flex-col min-w-0">
-                  <span className="text-base font-black tracking-tight text-muted-foreground leading-none">
-                    homyz
-                  </span>
-                  <span className="text-[10px] font-semibold tracking-wider text-amber-600 dark:text-amber-400 uppercase mt-0.5 whitespace-nowrap">
+                  <span className="text-[10px] font-medium tracking-wider text-amber-600 dark:text-amber-400 uppercase mt-0.5 whitespace-nowrap">
                     Admin Panel
                   </span>
                 </div>
@@ -806,7 +819,7 @@ export function AdminSidebar({
                   <button
                     type="button"
                     onClick={() => toggleGroup(group.name)}
-                    className="flex items-center justify-between px-3 py-1 text-[10px] font-semibold tracking-widest text-[var(--muted-foreground)] hover:text-muted-foreground transition-colors w-full text-left uppercase"
+                    className="flex items-center justify-between px-3 py-1 text-[10px] font-medium tracking-widest text-[var(--muted-foreground)] hover:text-muted-foreground transition-colors w-full text-left uppercase"
                   >
                     <span>{group.name}</span>
                     <svg
@@ -840,7 +853,7 @@ export function AdminSidebar({
       {/* Sidebar Footer */}
       {!collapsed && (
         <div className="px-5 py-3 border-t border-[var(--border-subtle)] text-[11px] text-[var(--muted-foreground)] flex flex-col gap-0.5">
-          <p className="font-semibold text-muted-foreground">Homyz Admin <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">v2.4</span></p>
+          <p className="font-medium text-muted-foreground">Homyz Admin <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">v2.4</span></p>
           <p className="text-[10px]">Enterprise RBAC &amp; Audit System</p>
         </div>
       )}

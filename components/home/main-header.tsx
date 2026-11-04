@@ -3,9 +3,12 @@
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { DISPLAY_CURRENCIES, useCurrency } from "@/lib/currency-context";
+import { BrandLogo } from "@/components/branding/brand-logo";
+import { useBranding } from "@/components/branding/branding-provider";
 
 function GuestMenuLink({
   href,
@@ -27,6 +30,7 @@ function GuestMenuLink({
 }
 
 export function MainHeader() {
+  const branding = useBranding();
   const { data: session, status: sessionStatus } = useSession();
   const user = session?.user;
   const isHost = (user as { role?: string } | undefined)?.role === "HOST" || (user as { role?: string } | undefined)?.role === "ADMIN";
@@ -54,32 +58,15 @@ export function MainHeader() {
       <div className="max-w-[1440px] mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
         {/* Tagline Left */}
         <div className="w-1/3 flex items-center">
-          <span className="tagline-cursive text-gray-800 font-semibold tracking-wide select-none">
+          <span className="tagline-cursive text-gray-800 font-medium tracking-wide select-none">
             Stay like a homie.
           </span>
         </div>
 
         {/* Center Logo */}
         <div className="w-1/3 flex items-center justify-center">
-          <Link
-            className="flex items-center gap-2.5 text-2xl font-semibold tracking-tight text-[#111111] hover:opacity-90 transition-opacity"
-            href="/"
-          >
-            <svg
-              className="w-7 h-7 text-black shrink-0"
-              fill="none"
-              viewBox="0 0 32 32"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M6 8V24M6 16H18M18 8V24"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeWidth="4.5"
-              />
-              <circle cx="25" cy="16" fill="currentColor" r="3" />
-            </svg>
-            <span>homyz</span>
+          <Link className="flex transition-opacity hover:opacity-90" href="/" aria-label="Homyz home">
+            <BrandLogo src={branding.guestHeaderLogoUrl} width={140} height={52} className="h-9 w-auto object-contain" priority />
           </Link>
         </div>
 
@@ -123,7 +110,7 @@ export function MainHeader() {
           >
             <div className="w-7 h-7 rounded-full overflow-hidden bg-gray-200 relative shrink-0">
               {user?.image ? (
-                <img alt={user?.name || (t("header_profile") || "Avatar")} className="h-full w-full object-cover" src={user.image} />
+                <Image alt={user?.name || (t("header_profile") || "Avatar")} className="h-full w-full object-cover" src={user.image} width={28} height={28} unoptimized />
               ) : (
                 <i className="fa-solid fa-user absolute inset-0 flex items-center justify-center text-[11px] text-gray-500" aria-hidden="true" />
               )}
@@ -137,13 +124,13 @@ export function MainHeader() {
               {user ? (
                 isHost ? (
                   <div className="space-y-1">
-                    <Link href="/host/today" onClick={() => setMenuOpen(false)} className="block rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50">
+                    <Link href="/host/today" onClick={() => setMenuOpen(false)} className="block rounded-xl px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-50">
                       {t("header_host_workspace") || "Host Workspace"}
                     </Link>
-                    <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="block rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50">
+                    <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="block rounded-xl px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-50">
                       {t("header_dashboard") || "Dashboard"}
                     </Link>
-                    <Link href="/profile" onClick={() => setMenuOpen(false)} className="block rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50">
+                    <Link href="/profile" onClick={() => setMenuOpen(false)} className="block rounded-xl px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-50">
                       {t("header_profile") || "Profile"}
                     </Link>
                   </div>
@@ -232,7 +219,7 @@ export function MainHeader() {
 
             <div className="space-y-5">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-medium text-gray-700 uppercase tracking-wider mb-2">
                   {t("header_language") || "Select Language"}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -244,7 +231,7 @@ export function MainHeader() {
                         onClick={() => setLanguage(lang)}
                         className={`p-2.5 rounded-xl border text-xs font-medium text-left transition cursor-pointer ${
                           selectedLangLabel === lang
-                            ? "border-amber-400 bg-amber-50 text-amber-950 font-semibold"
+                            ? "border-amber-400 bg-amber-50 text-amber-950 font-medium"
                             : "border-gray-200 bg-white text-gray-800 hover:bg-gray-50"
                         }`}
                       >
@@ -256,7 +243,7 @@ export function MainHeader() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-medium text-gray-700 uppercase tracking-wider mb-2">
                   {t("header_currency") || "Select Currency"}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -268,7 +255,7 @@ export function MainHeader() {
                         onClick={() => setSelectedCurrency(curr)}
                         className={`p-2.5 rounded-xl border text-xs font-medium text-center transition cursor-pointer ${
                           selectedCurrency === curr
-                            ? "border-amber-400 bg-amber-50 text-amber-950 font-semibold"
+                            ? "border-amber-400 bg-amber-50 text-amber-950 font-medium"
                             : "border-gray-200 bg-white text-gray-800 hover:bg-gray-50"
                         }`}
                       >

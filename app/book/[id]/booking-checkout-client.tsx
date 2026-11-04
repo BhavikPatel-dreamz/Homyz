@@ -944,7 +944,7 @@ export function BookingCheckoutClient({
                     <div className="size-full rounded-[10px] bg-white [-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:100%_100%] [mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [mask-position:center] [mask-repeat:no-repeat] [mask-size:100%_100%] sm:rounded-[30px] sm:[-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] sm:[mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)]" />
                   </div>
                   {/* Step Number Badge */}
-                  <div aria-current={activeStep === 1 ? "step" : undefined} className={activeStep === 1 ? "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-[#E9EBFF] text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold" : "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold"}>
+                  <div aria-current={activeStep === 1 ? "step" : undefined} className={activeStep === 1 ? "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-[#E9EBFF] text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-medium" : "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-medium"}>
                     1
                     <span className="sr-only">, {stepStatus(1)}</span>
                   </div>
@@ -984,7 +984,7 @@ export function BookingCheckoutClient({
                             <span className="min-w-0 flex-1">
                               <span className="block text-sm font-normal text-zinc-900">
                                 {option.type === FULL_PAYMENT_TIMING ? (
-                                  <>{t("book_pay_in_full", "Pay in full")} (<strong className="font-semibold">{checkoutTotalLabel}</strong>)</>
+                                  <>{t("book_pay_in_full", "Pay in full")} (<strong className="font-medium">{checkoutTotalLabel}</strong>)</>
                                 ) : option.type === PARTIAL_PAYMENT_TIMING ? (
                                   <>{t("book_pay_part_now", "Pay part now, part later")}</>
                                 ) : (
@@ -1005,7 +1005,7 @@ export function BookingCheckoutClient({
 
                       {quote && !isQuoteLoading && !quoteError && (
                         <section className="mt-5 border-t border-[#727272] pt-4" aria-labelledby="payment-price-details-heading">
-                          <h3 id="payment-price-details-heading" className="text-sm font-semibold text-[#1f1f1f]">
+                          <h3 id="payment-price-details-heading" className="text-sm font-medium text-[#1f1f1f]">
                             {t("book_price_details", "Price details")}
                           </h3>
                           <dl className="mt-3 space-y-2 text-sm">
@@ -1017,7 +1017,7 @@ export function BookingCheckoutClient({
                                 </dd>
                               </div>
                             ))}
-                            <div className="flex items-center justify-between gap-4 border-t border-zinc-300 pt-3 font-semibold text-zinc-950">
+                            <div className="flex items-center justify-between gap-4 border-t border-zinc-300 pt-3 font-medium text-zinc-950">
                               <dt>{t("book_total", { currency: displayCurrency }, `Total (${displayCurrency})`)}</dt>
                               <dd>{formatMoney(quote.guestTotal, 2)}</dd>
                             </div>
@@ -1097,7 +1097,7 @@ export function BookingCheckoutClient({
                   aria-labelledby="checkout-step-2-title"
                 >
                   <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-visible [filter:drop-shadow(0_2px_4px_rgb(0_0_0_/_20%))_drop-shadow(1px_0_3px_rgb(0_0_0_/_14%))]"><div className="size-full rounded-[10px] bg-white [-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:100%_100%] [mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [mask-position:center] [mask-repeat:no-repeat] [mask-size:100%_100%] sm:rounded-[30px] sm:[-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] sm:[mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)]" /></div>
-                  <div aria-current={activeStep === 2 ? "step" : undefined} className={activeStep === 2 ? "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-[#E9EBFF] text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold" : "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold"}>
+                  <div aria-current={activeStep === 2 ? "step" : undefined} className={activeStep === 2 ? "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-[#E9EBFF] text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-medium" : "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-medium"}>
                     2
                     <span className="sr-only">, {stepStatus(2)}</span>
                   </div>
@@ -1116,12 +1116,12 @@ export function BookingCheckoutClient({
 
                       {/* Development / Test Mode Banner */}
                       <div role="status" className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-xs sm:text-sm text-amber-900 shadow-2xs">
-                        <div className="flex items-center gap-2 font-semibold">
+                        <div className="flex items-center gap-2 font-medium">
                           <span className="inline-block size-2 rounded-full bg-amber-500 animate-pulse" />
                           {t("book_mock_payment_notice", "This is a mock payment step. No real money will be charged.")}
                         </div>
                         <p className="mt-1 text-xs text-amber-800 leading-relaxed">
-                          No payment is processed in test mode. No real payment will be processed. Do not enter a real card. Use mock test card <span className="font-mono font-semibold">4242 4242 4242 4242</span>, expiry <span className="font-mono font-semibold">12/30</span>, CVC <span className="font-mono font-semibold">123</span>.
+                          No payment is processed in test mode. No real payment will be processed. Do not enter a real card. Use mock test card <span className="font-mono font-medium">4242 4242 4242 4242</span>, expiry <span className="font-mono font-medium">12/30</span>, CVC <span className="font-mono font-medium">123</span>.
                         </p>
                       </div>
 
@@ -1161,7 +1161,7 @@ export function BookingCheckoutClient({
                                     aria-invalid={Boolean(cardError)}
                                     className="min-h-[45px] w-full rounded-[8px] border border-[#727272] bg-white px-4 py-2.5 pr-16 text-base text-[#1f1f1f] placeholder:text-[rgba(31,31,31,0.5)] focus:border-zinc-900 focus:outline-none sm:min-h-[56px]"
                                   />
-                                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-zinc-500">
+                                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-zinc-500">
                                     {detectCardBrand(rawCardNumber.replace(/\D/g, ""))}
                                   </span>
                                 </div>
@@ -1322,7 +1322,7 @@ export function BookingCheckoutClient({
                   aria-labelledby="checkout-step-3-title"
                 >
                   <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-visible [filter:drop-shadow(0_2px_4px_rgb(0_0_0_/_20%))_drop-shadow(1px_0_3px_rgb(0_0_0_/_14%))]"><div className="size-full rounded-[10px] bg-white [-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:100%_100%] [mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [mask-position:center] [mask-repeat:no-repeat] [mask-size:100%_100%] sm:rounded-[30px] sm:[-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] sm:[mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)]" /></div>
-                  <div aria-current={activeStep === 3 ? "step" : undefined} className={activeStep === 3 ? "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-[#E9EBFF] text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold" : "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold"}>
+                  <div aria-current={activeStep === 3 ? "step" : undefined} className={activeStep === 3 ? "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-[#E9EBFF] text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-medium" : "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-medium"}>
                     3
                     <span className="sr-only">, {stepStatus(3)}</span>
                   </div>
@@ -1355,7 +1355,7 @@ export function BookingCheckoutClient({
                               className="object-cover"
                             />
                           ) : (
-                            <div className="h-full w-full flex items-center justify-center text-lg bg-amber-100 text-amber-900 font-bold">
+                            <div className="h-full w-full flex items-center justify-center text-lg bg-amber-100 text-amber-900 font-medium">
                               {hostName.charAt(0).toUpperCase()}
                             </div>
                           )}
@@ -1467,7 +1467,7 @@ export function BookingCheckoutClient({
                   aria-labelledby="checkout-step-4-title"
                 >
                   <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-visible [filter:drop-shadow(0_2px_4px_rgb(0_0_0_/_20%))_drop-shadow(1px_0_3px_rgb(0_0_0_/_14%))]"><div className="size-full rounded-[10px] bg-white [-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:100%_100%] [mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [mask-position:center] [mask-repeat:no-repeat] [mask-size:100%_100%] sm:rounded-[30px] sm:[-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] sm:[mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)]" /></div>
-                  <div aria-current={activeStep === 4 ? "step" : undefined} className={activeStep === 4 ? "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-[#E9EBFF] text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold" : "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold"}>
+                  <div aria-current={activeStep === 4 ? "step" : undefined} className={activeStep === 4 ? "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-[#E9EBFF] text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-medium" : "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-medium"}>
                     4
                     <span className="sr-only">, {stepStatus(4)}</span>
                   </div>
@@ -1523,7 +1523,7 @@ export function BookingCheckoutClient({
                       {!bookingSuccess && !isQuoteLoading && quoteError && (
                         <div role="alert" className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm font-medium text-rose-700">
                           <p>{quoteError}</p>
-                          <button type="button" onClick={() => setQuoteRefreshKey((current) => current + 1)} className="mt-3 min-h-10 rounded-full border border-rose-400 px-4 font-semibold hover:bg-rose-100">{t("book_try_again", "Try again")}</button>
+                          <button type="button" onClick={() => setQuoteRefreshKey((current) => current + 1)} className="mt-3 min-h-10 rounded-full border border-rose-400 px-4 font-medium hover:bg-rose-100">{t("book_try_again", "Try again")}</button>
                         </div>
                       )}
 
@@ -1617,7 +1617,7 @@ export function BookingCheckoutClient({
                     value={checkIn}
                     min={dateKey(new Date())}
                     onChange={(e) => updateCheckIn(e.target.value)}
-                    className="w-full rounded-[8px] border border-[#727272] p-2.5 text-sm font-semibold text-[#1f1f1f] focus:border-zinc-900 focus:outline-none sm:min-h-[56px] min-h-[45px]"
+                    className="w-full rounded-[8px] border border-[#727272] p-2.5 text-sm font-medium text-[#1f1f1f] focus:border-zinc-900 focus:outline-none sm:min-h-[56px] min-h-[45px]"
                   />
                 </div>
                 <div>
@@ -1630,7 +1630,7 @@ export function BookingCheckoutClient({
                     value={checkOut}
                     min={checkIn || dateKey(new Date())}
                     onChange={(e) => updateCheckOut(e.target.value)}
-                    className="w-full rounded-[8px] border border-[#727272] p-2.5 text-sm font-semibold text-[#1f1f1f] focus:border-zinc-900 focus:outline-none sm:min-h-[56px] min-h-[45px]"
+                    className="w-full rounded-[8px] border border-[#727272] p-2.5 text-sm font-medium text-[#1f1f1f] focus:border-zinc-900 focus:outline-none sm:min-h-[56px] min-h-[45px]"
                   />
                 </div>
               </div>
@@ -1642,7 +1642,7 @@ export function BookingCheckoutClient({
               ) : quoteError ? (
                 <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
                   <p>{quoteError}</p>
-                  <button type="button" onClick={() => setQuoteRefreshKey((current) => current + 1)} className="mt-2 min-h-9 rounded-full border border-rose-400 px-4 font-semibold hover:bg-rose-100">{t("book_try_again", "Try again")}</button>
+                  <button type="button" onClick={() => setQuoteRefreshKey((current) => current + 1)} className="mt-2 min-h-9 rounded-full border border-rose-400 px-4 font-medium hover:bg-rose-100">{t("book_try_again", "Try again")}</button>
                 </div>
               ) : quote ? (
                 <p role="status" className="text-sm font-medium text-emerald-700">{t("book_dates_available_current", "Dates are available and the price is current.")}</p>
@@ -1654,7 +1654,7 @@ export function BookingCheckoutClient({
                 type="button"
                 onClick={() => setIsDatesModalOpen(false)}
                 disabled={isQuoteLoading || Boolean(quoteError) || !quote}
-                className="rounded-full border border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white text-[#1f1f1f] font-semibold px-6 py-2.5 text-sm bg-[#FCDF9C] transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white text-[#1f1f1f] font-medium px-6 py-2.5 text-sm bg-[#FCDF9C] transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {t("book_apply_dates", "Apply dates")}
               </button>
@@ -1707,7 +1707,7 @@ export function BookingCheckoutClient({
                   >
                     −
                   </button>
-                  <span className="w-6 text-center text-sm font-bold tabular-nums">
+                  <span className="w-6 text-center text-sm font-medium tabular-nums">
                     {adultsCount}
                   </span>
                   <button
@@ -1730,7 +1730,7 @@ export function BookingCheckoutClient({
                 </div>
                 <div className="flex items-center gap-3">
                   <button type="button" disabled={childrenCount <= 0} onClick={() => updateChildren(-1)} aria-label="Remove one child" className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">−</button>
-                  <span className="w-6 text-center text-sm font-bold tabular-nums" aria-live="polite">{childrenCount}</span>
+                  <span className="w-6 text-center text-sm font-medium tabular-nums" aria-live="polite">{childrenCount}</span>
                   <button type="button" disabled={!allowsChildren || !canAddCapacityGuest} onClick={() => updateChildren(1)} aria-label="Add one child" className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">+</button>
                 </div>
               </div>
@@ -1743,7 +1743,7 @@ export function BookingCheckoutClient({
                 </div>
                 <div className="flex items-center gap-3">
                   <button type="button" disabled={infantsCount <= 0} onClick={() => updateInfants(-1)} aria-label="Remove one infant" className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">−</button>
-                  <span className="w-6 text-center text-sm font-bold tabular-nums" aria-live="polite">{infantsCount}</span>
+                  <span className="w-6 text-center text-sm font-medium tabular-nums" aria-live="polite">{infantsCount}</span>
                   <button type="button" disabled={!allowsInfants || infantsCount >= 5} onClick={() => updateInfants(1)} aria-label="Add one infant" className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">+</button>
                 </div>
               </div>
@@ -1764,7 +1764,7 @@ export function BookingCheckoutClient({
                   >
                     −
                   </button>
-                  <span className="w-6 text-center text-sm font-bold tabular-nums">
+                  <span className="w-6 text-center text-sm font-medium tabular-nums">
                     {petsCount}
                   </span>
                   <button
@@ -1791,7 +1791,7 @@ export function BookingCheckoutClient({
             ) : quoteError ? (
               <div role="alert" className="mt-3 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
                 <p>{quoteError}</p>
-                <button type="button" onClick={() => setQuoteRefreshKey((current) => current + 1)} className="mt-2 min-h-9 rounded-full border border-rose-400 px-4 font-semibold hover:bg-rose-100">Try again</button>
+                <button type="button" onClick={() => setQuoteRefreshKey((current) => current + 1)} className="mt-2 min-h-9 rounded-full border border-rose-400 px-4 font-medium hover:bg-rose-100">Try again</button>
               </div>
             ) : null} */}
 
@@ -1800,7 +1800,7 @@ export function BookingCheckoutClient({
                 type="button"
                 onClick={() => setIsGuestsModalOpen(false)}
                 disabled={isQuoteLoading || Boolean(quoteError) || !quote}
-                className="rounded-full border border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white text-[#1f1f1f] font-semibold px-6 py-2.5 text-sm bg-[#FCDF9C] transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white text-[#1f1f1f] font-medium px-6 py-2.5 text-sm bg-[#FCDF9C] transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {t("book_done", "Done")}
               </button>
@@ -1839,7 +1839,7 @@ export function BookingCheckoutClient({
             <div className="py-5 space-y-4 text-sm text-zinc-700 leading-relaxed">
               {isNonRefundable ? (
                 <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
-                  <h4 className="font-bold text-[#1F1F1F] mb-1">
+                  <h4 className="font-medium text-[#1F1F1F] mb-1">
                     {t("book_non_refundable_notice_title", "Non-refundable rate")}
                   </h4>
                   <p className="text-xs text-[#727272]">
@@ -1848,7 +1848,7 @@ export function BookingCheckoutClient({
                 </div>
               ) : (
                 <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
-                  <h4 className="font-bold text-[#1F1F1F] mb-1">
+                  <h4 className="font-medium text-[#1F1F1F] mb-1">
                     {t("book_full_refund_before", { cutoff: formatCancellationCutoff(checkIn) }, `Full refund before ${formatCancellationCutoff(checkIn)}`)}
                   </h4>
                   <p className="text-xs text-[#727272]">
@@ -1858,7 +1858,7 @@ export function BookingCheckoutClient({
               )}
 
               <div>
-                <h5 className="font-bold text-[#1F1F1F] text-xs uppercase tracking-wider mb-2">
+                <h5 className="font-medium text-[#1F1F1F] text-xs uppercase tracking-wider mb-2">
                   {isNonRefundable ? t("book_non_refundable_terms", "Non-refundable Terms") : t("book_standard_terms", "Standard Terms")}
                 </h5>
                 <ul className="list-disc list-inside space-y-1.5 text-xs text-zinc-600">
@@ -1883,7 +1883,7 @@ export function BookingCheckoutClient({
               <button
                 type="button"
                 onClick={() => setIsPolicyModalOpen(false)}
-                className="rounded-full bg-zinc-900 text-white font-semibold px-6 py-2.5 text-sm hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="rounded-full bg-zinc-900 text-white font-medium px-6 py-2.5 text-sm hover:bg-zinc-800 transition-colors cursor-pointer"
               >
                 {t("book_close", "Close")}
               </button>

@@ -175,7 +175,7 @@ export function TagPeopleInput({
 
       {/* Limit Notice */}
       {isMaxReached && (
-        <p className="text-[11px] text-amber-700 font-semibold mt-1">
+        <p className="text-[11px] text-amber-700 font-medium mt-1">
           Maximum {maxTags} people reached.
         </p>
       )}

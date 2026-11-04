@@ -29,7 +29,7 @@ export default function HostTodayError({
             <span className="mb-4 flex size-14 items-center justify-center rounded-full bg-rose-100 text-2xl text-rose-600">
               ⚠
             </span>
-            <h2 className="text-xl font-bold text-[#1F1F1F]">
+            <h2 className="text-xl font-medium text-[#1F1F1F]">
               {t("host_today_error_title", "Unable to load reservations")}
             </h2>
             <p className="mt-2 text-sm text-[#727272]">
@@ -39,13 +39,13 @@ export default function HostTodayError({
               <button
                 type="button"
                 onClick={() => reset()}
-                className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-black cursor-pointer"
+                className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-medium text-white transition-colors hover:bg-black cursor-pointer"
               >
                 {t("host_today_error_try_again", "Try again")}
               </button>
               <Link
                 href="/host/calendar"
-                className="rounded-full border border-zinc-300 bg-white px-6 py-2.5 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-50"
+                className="rounded-full border border-zinc-300 bg-white px-6 py-2.5 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50"
               >
                 {t("host_today_error_go_calendar", "Go to calendar")}
               </Link>

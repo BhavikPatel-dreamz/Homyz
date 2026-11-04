@@ -37,7 +37,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
 
   return (
     <div className="space-y-6 pt-7 border-t border-zinc-200" aria-labelledby="manage-reservation-heading">
-      <h2 id="manage-reservation-heading" className="text-xl font-semibold text-[#1F1F1F]">
+      <h2 id="manage-reservation-heading" className="text-xl font-medium text-[#1F1F1F]">
         {t("booking_details_manage_reservation", "Manage your reservation")}
       </h2>
 
@@ -63,7 +63,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
             <button
               type="button"
               onClick={() => setIsContactOpen(true)}
-              className="inline-flex min-h-10 items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
+              className="inline-flex min-h-10 items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
             >
               {t("booking_details_contact_host", "Contact host")}
             </button>
@@ -91,7 +91,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
             <button
               type="button"
               onClick={() => setIsReceiptOpen(true)}
-              className="inline-flex min-h-10 items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
+              className="inline-flex min-h-10 items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
             >
               {t("booking_details_view_receipt", "View receipt")}
             </button>
@@ -130,7 +130,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
                 <button
                   type="button"
                   onClick={() => setIsCancelOpen(true)}
-                  className="inline-flex min-h-10 items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
+                  className="inline-flex min-h-10 items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
                 >
                   {t("booking_details_cancel_reservation", "Cancel reservation")}
                 </button>
@@ -139,7 +139,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
                   type="button"
                   disabled
                   aria-disabled="true"
-                  className="inline-flex min-h-10 cursor-not-allowed items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-semibold text-[#727272]"
+                  className="inline-flex min-h-10 cursor-not-allowed items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-medium text-[#727272]"
                 >
                   {t("booking_details_cannot_cancel_btn", "Cannot cancel")}
                 </button>

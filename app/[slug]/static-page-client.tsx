@@ -49,7 +49,7 @@ export function StaticPageClient({
       <AppHeader />
 
       {isPreview && (
-        <div className="bg-amber-500 text-white text-xs font-semibold py-2 px-4 text-center tracking-wide">
+        <div className="bg-amber-500 text-white text-xs font-medium py-2 px-4 text-center tracking-wide">
           PREVIEW MODE — Viewing unpublished draft revision for /{slug}
         </div>
       )}
@@ -70,12 +70,12 @@ export function StaticPageClient({
             </nav>
 
             {payload.badge && (
-              <span className="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-[#FCDF9C] text-[#291E05] rounded-full">
+              <span className="inline-block px-3 py-1 text-xs font-medium uppercase tracking-wider bg-[#FCDF9C] text-[#291E05] rounded-full">
                 {payload.badge}
               </span>
             )}
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-zinc-900">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-zinc-900">
               {payload.heroTitle || title}
             </h1>
 
@@ -102,7 +102,7 @@ export function StaticPageClient({
             {payload.sections.length > 1 && (
               <aside className="hidden lg:block lg:col-span-4">
                 <div className="sticky top-24 space-y-4 p-5 rounded-2xl bg-zinc-50 border border-zinc-200">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+                  <h3 className="text-xs font-medium uppercase tracking-wider text-zinc-500">
                     On this page
                   </h3>
                   <ul className="space-y-1.5 text-sm">
@@ -116,7 +116,7 @@ export function StaticPageClient({
                             onClick={() => scrollToSection(sectionId)}
                             className={`w-full text-left px-3 py-2 rounded-xl transition text-xs font-medium ${
                               isActive
-                                ? "bg-zinc-900 text-white font-semibold"
+                                ? "bg-zinc-900 text-white font-medium"
                                 : "text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
                             }`}
                           >
@@ -151,7 +151,7 @@ export function StaticPageClient({
                     className="scroll-mt-24 space-y-4"
                   >
                     {section.title && (
-                      <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 border-b border-zinc-100 pb-3">
+                      <h2 className="text-xl sm:text-2xl font-medium text-zinc-900 border-b border-zinc-100 pb-3">
                         {section.title}
                       </h2>
                     )}
@@ -185,10 +185,10 @@ export function StaticPageClient({
                                 <button
                                   type="button"
                                   onClick={() => toggleAccordion(accId)}
-                                  className="w-full flex items-center justify-between text-left font-semibold text-zinc-900 text-sm hover:text-zinc-600 transition"
+                                  className="w-full flex items-center justify-between text-left font-medium text-zinc-900 text-sm hover:text-zinc-600 transition"
                                 >
                                   <span>{item.label}</span>
-                                  <span className="text-lg leading-none font-bold text-zinc-400">
+                                  <span className="text-lg leading-none font-medium text-zinc-400">
                                     {isOpen ? "−" : "+"}
                                   </span>
                                 </button>

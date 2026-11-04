@@ -380,9 +380,9 @@ export function FooterManagementClient() {
               ← CMS Hub
             </Link>
             <span className="text-zinc-300">/</span>
-            <span className="text-xs font-semibold text-zinc-700">Footer Management</span>
+            <span className="text-xs font-medium text-zinc-700">Footer Management</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 mt-1">
+          <h1 className="text-xl sm:text-2xl font-medium text-zinc-900 mt-1">
             Global Footer Management
           </h1>
           <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
@@ -396,7 +396,7 @@ export function FooterManagementClient() {
           <select
             value={locale}
             onChange={(e) => setLocale(e.target.value)}
-            className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-zinc-300 bg-white text-zinc-800"
+            className="px-3 py-1.5 text-xs font-medium rounded-xl border border-zinc-300 bg-white text-zinc-800"
           >
             {LOCALES.map((l) => (
               <option key={l.code} value={l.code}>
@@ -409,7 +409,7 @@ export function FooterManagementClient() {
           <button
             type="button"
             onClick={() => setShowHistory(true)}
-            className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 transition"
+            className="px-3 py-1.5 text-xs font-medium rounded-xl border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 transition"
           >
             History ({versions.length})
           </button>
@@ -420,7 +420,7 @@ export function FooterManagementClient() {
               type="button"
               onClick={handleSaveDraft}
               disabled={saving}
-              className="px-4 py-1.5 text-xs font-semibold rounded-xl border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 transition disabled:opacity-50"
+              className="px-4 py-1.5 text-xs font-medium rounded-xl border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 transition disabled:opacity-50"
             >
               {saving ? "Saving..." : "Save Draft"}
             </button>
@@ -432,7 +432,7 @@ export function FooterManagementClient() {
               type="button"
               onClick={handlePublish}
               disabled={publishing}
-              className="px-4 py-1.5 text-xs font-semibold rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 transition disabled:opacity-50 flex items-center gap-1.5 shadow-xs"
+              className="px-4 py-1.5 text-xs font-medium rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 transition disabled:opacity-50 flex items-center gap-1.5 shadow-xs"
             >
               {publishing ? "Publishing..." : "Publish Live"}
             </button>
@@ -443,8 +443,8 @@ export function FooterManagementClient() {
       {/* Status Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs">
         <div className="flex items-center gap-3">
-          <span className="font-semibold text-zinc-600">Status:</span>
-          <span className={`px-2 py-0.5 rounded-full font-bold ${
+          <span className="font-medium text-zinc-600">Status:</span>
+          <span className={`px-2 py-0.5 rounded-full font-medium ${
             status === "PUBLISHED" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
           }`}>
             {status}
@@ -482,7 +482,7 @@ export function FooterManagementClient() {
           <button
             type="button"
             onClick={() => setActiveTab("columns")}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition ${
+            className={`px-3 py-1.5 text-xs font-medium rounded-xl transition ${
               activeTab === "columns"
                 ? "bg-zinc-900 text-white"
                 : "text-zinc-600 hover:bg-zinc-100"
@@ -493,7 +493,7 @@ export function FooterManagementClient() {
           <button
             type="button"
             onClick={() => setActiveTab("social")}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition ${
+            className={`px-3 py-1.5 text-xs font-medium rounded-xl transition ${
               activeTab === "social"
                 ? "bg-zinc-900 text-white"
                 : "text-zinc-600 hover:bg-zinc-100"
@@ -504,7 +504,7 @@ export function FooterManagementClient() {
           <button
             type="button"
             onClick={() => setActiveTab("bottom")}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition ${
+            className={`px-3 py-1.5 text-xs font-medium rounded-xl transition ${
               activeTab === "bottom"
                 ? "bg-zinc-900 text-white"
                 : "text-zinc-600 hover:bg-zinc-100"
@@ -515,7 +515,7 @@ export function FooterManagementClient() {
           <button
             type="button"
             onClick={() => setActiveTab("appearance")}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition ${
+            className={`px-3 py-1.5 text-xs font-medium rounded-xl transition ${
               activeTab === "appearance"
                 ? "bg-zinc-900 text-white"
                 : "text-zinc-600 hover:bg-zinc-100"
@@ -530,7 +530,7 @@ export function FooterManagementClient() {
           <button
             type="button"
             onClick={() => setPreviewDevice("desktop")}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition ${
+            className={`px-2.5 py-1 text-xs font-medium rounded-lg transition ${
               previewDevice === "desktop" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-900"
             }`}
           >
@@ -539,7 +539,7 @@ export function FooterManagementClient() {
           <button
             type="button"
             onClick={() => setPreviewDevice("mobile")}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition ${
+            className={`px-2.5 py-1 text-xs font-medium rounded-lg transition ${
               previewDevice === "mobile" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-900"
             }`}
           >
@@ -556,13 +556,13 @@ export function FooterManagementClient() {
           {activeTab === "columns" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+                <h3 className="text-sm font-medium text-zinc-900 uppercase tracking-wider">
                   Navigation Columns
                 </h3>
                 <button
                   type="button"
                   onClick={addColumn}
-                  className="px-3 py-1.5 text-xs font-semibold bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 transition"
+                  className="px-3 py-1.5 text-xs font-medium bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 transition"
                 >
                   + Add Column
                 </button>
@@ -577,18 +577,18 @@ export function FooterManagementClient() {
                     {/* Column Header */}
                     <div className="flex items-center justify-between gap-3 border-b border-zinc-100 pb-3">
                       <div className="flex items-center gap-2 flex-1">
-                        <span className="text-xs font-bold text-zinc-400">#{colIdx + 1}</span>
+                        <span className="text-xs font-medium text-zinc-400">#{colIdx + 1}</span>
                         <input
                           type="text"
                           value={col.title}
                           onChange={(e) => updateColumnTitle(colIdx, e.target.value)}
                           placeholder="Column Title (e.g. Support)"
-                          className="px-2.5 py-1 text-sm font-bold text-zinc-900 border border-zinc-200 rounded-lg flex-1 max-w-xs focus:ring-1 focus:ring-zinc-900"
+                          className="px-2.5 py-1 text-sm font-medium text-zinc-900 border border-zinc-200 rounded-lg flex-1 max-w-xs focus:ring-1 focus:ring-zinc-900"
                         />
                         <button
                           type="button"
                           onClick={() => toggleColumnEnabled(colIdx)}
-                          className={`text-xs px-2 py-0.5 rounded-full font-semibold transition ${
+                          className={`text-xs px-2 py-0.5 rounded-full font-medium transition ${
                             col.enabled !== false ? "bg-emerald-100 text-emerald-800" : "bg-zinc-100 text-zinc-500"
                           }`}
                         >
@@ -629,13 +629,13 @@ export function FooterManagementClient() {
                     {/* Links List in Column */}
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                        <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
                           Links in this column ({col.links?.length || 0})
                         </span>
                         <button
                           type="button"
                           onClick={() => addLinkToColumn(colIdx)}
-                          className="text-xs font-semibold text-zinc-900 hover:underline"
+                          className="text-xs font-medium text-zinc-900 hover:underline"
                         >
                           + Add Link
                         </button>
@@ -752,7 +752,7 @@ export function FooterManagementClient() {
             <div className="p-6 bg-white border border-zinc-200 rounded-2xl shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+                  <h3 className="text-sm font-medium text-zinc-900 uppercase tracking-wider">
                     Footer Social Channels
                   </h3>
                   <p className="text-xs text-zinc-500 mt-0.5">
@@ -762,7 +762,7 @@ export function FooterManagementClient() {
                 <button
                   type="button"
                   onClick={addSocialLink}
-                  className="px-3 py-1.5 text-xs font-semibold bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 transition"
+                  className="px-3 py-1.5 text-xs font-medium bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 transition"
                 >
                   + Add Social Icon
                 </button>
@@ -819,7 +819,7 @@ export function FooterManagementClient() {
             <div className="p-6 bg-white border border-zinc-200 rounded-2xl shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+                  <h3 className="text-sm font-medium text-zinc-900 uppercase tracking-wider">
                     Bottom Copyright & Legal Links
                   </h3>
                   <p className="text-xs text-zinc-500 mt-0.5">
@@ -829,7 +829,7 @@ export function FooterManagementClient() {
                 <button
                   type="button"
                   onClick={addBottomLink}
-                  className="px-3 py-1.5 text-xs font-semibold bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 transition"
+                  className="px-3 py-1.5 text-xs font-medium bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 transition"
                 >
                   + Add Legal Link
                 </button>
@@ -880,13 +880,13 @@ export function FooterManagementClient() {
           {/* TAB 4: APPEARANCE & NOTICES */}
           {activeTab === "appearance" && (
             <div className="p-6 bg-white border border-zinc-200 rounded-2xl shadow-xs space-y-6">
-              <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+              <h3 className="text-sm font-medium text-zinc-900 uppercase tracking-wider">
                 Appearance & Disclaimer Notices
               </h3>
 
               <div className="space-y-4 text-xs">
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-medium text-zinc-700 mb-1">
                     Copyright Notice
                   </label>
                   <input
@@ -899,7 +899,7 @@ export function FooterManagementClient() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-medium text-zinc-700 mb-1">
                     Legal Notice / Regulatory Disclaimers (Optional)
                   </label>
                   <textarea
@@ -913,7 +913,7 @@ export function FooterManagementClient() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2">
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">
+                    <label className="block font-medium text-zinc-700 mb-1">
                       Background Color
                     </label>
                     <input
@@ -928,7 +928,7 @@ export function FooterManagementClient() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">
+                    <label className="block font-medium text-zinc-700 mb-1">
                       Text Color
                     </label>
                     <input
@@ -943,7 +943,7 @@ export function FooterManagementClient() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">
+                    <label className="block font-medium text-zinc-700 mb-1">
                       Border Color
                     </label>
                     <input
@@ -966,7 +966,7 @@ export function FooterManagementClient() {
                       onChange={(e) => setPayload({ ...payload, showBackToTop: e.target.checked })}
                       className="rounded border-zinc-300 text-zinc-900"
                     />
-                    <span className="font-semibold text-zinc-800">Show Floating Back-to-Top Button</span>
+                    <span className="font-medium text-zinc-800">Show Floating Back-to-Top Button</span>
                   </label>
 
                   <label className="inline-flex items-center gap-2 cursor-pointer">
@@ -976,7 +976,7 @@ export function FooterManagementClient() {
                       onChange={(e) => setPayload({ ...payload, showSocialIcons: e.target.checked })}
                       className="rounded border-zinc-300 text-zinc-900"
                     />
-                    <span className="font-semibold text-zinc-800">Show Social Channel Icons</span>
+                    <span className="font-medium text-zinc-800">Show Social Channel Icons</span>
                   </label>
                 </div>
               </div>
@@ -987,7 +987,7 @@ export function FooterManagementClient() {
         {/* Live Interactive Preview Column */}
         <div className="xl:col-span-5 space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+            <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
               Live Preview ({previewDevice.toUpperCase()})
             </h3>
             <span className="text-[11px] text-zinc-400">
@@ -1011,7 +1011,7 @@ export function FooterManagementClient() {
                   .filter((c) => c.enabled !== false)
                   .map((col, idx) => (
                     <div key={col.id || idx} className="space-y-3">
-                      <h4 className="text-sm font-bold text-zinc-900">
+                      <h4 className="text-sm font-medium text-zinc-900">
                         {col.title}
                       </h4>
                       <ul className="space-y-2">
@@ -1022,7 +1022,7 @@ export function FooterManagementClient() {
                               <span className="text-xs text-zinc-800 underline underline-offset-2 hover:text-zinc-500 cursor-pointer inline-flex items-center gap-1">
                                 {link.label}
                                 {link.badge && (
-                                  <span className="text-[9px] uppercase font-bold px-1 rounded bg-zinc-200">
+                                  <span className="text-[9px] uppercase font-medium px-1 rounded bg-zinc-200">
                                     {link.badge}
                                   </span>
                                 )}
@@ -1036,7 +1036,7 @@ export function FooterManagementClient() {
 
               {/* Social Channels in Preview */}
               {payload.showSocialIcons !== false && (payload.socialLinks || []).length > 0 && (
-                <div className="mt-6 pt-4 border-t border-zinc-300 flex items-center gap-4 text-xs font-semibold text-zinc-700">
+                <div className="mt-6 pt-4 border-t border-zinc-300 flex items-center gap-4 text-xs font-medium text-zinc-700">
                   <span>Social:</span>
                   {(payload.socialLinks || []).filter((s) => s.enabled !== false).map((s) => (
                     <span key={s.id || s.platform} className="capitalize text-zinc-600 bg-white px-2 py-0.5 rounded border border-zinc-200">
@@ -1068,13 +1068,13 @@ export function FooterManagementClient() {
         <ModalOverlay className="fixed inset-0 z-9999 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-xl border border-zinc-200">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-              <h3 className="text-base font-bold text-zinc-900">
+              <h3 className="text-base font-medium text-zinc-900">
                 Footer Revision History
               </h3>
               <button
                 type="button"
                 onClick={() => setShowHistory(false)}
-                className="text-zinc-400 hover:text-zinc-700 text-lg leading-none font-bold"
+                className="text-zinc-400 hover:text-zinc-700 text-lg leading-none font-medium"
               >
                 ✕
               </button>
@@ -1095,12 +1095,12 @@ export function FooterManagementClient() {
                       <div className="flex items-center gap-2">
                         <strong className="text-zinc-900 text-sm">Revision #{v.versionNumber}</strong>
                         {v.isPublished && (
-                          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded-full text-[10px]">
+                          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-medium rounded-full text-[10px]">
                             Live
                           </span>
                         )}
                         {v.isDraft && (
-                          <span className="px-2 py-0.5 bg-amber-100 text-amber-800 font-bold rounded-full text-[10px]">
+                          <span className="px-2 py-0.5 bg-amber-100 text-amber-800 font-medium rounded-full text-[10px]">
                             Draft
                           </span>
                         )}
@@ -1114,7 +1114,7 @@ export function FooterManagementClient() {
                       <button
                         type="button"
                         onClick={() => handleRollback(v.id)}
-                        className="px-3 py-1 bg-zinc-900 text-white rounded-xl font-semibold hover:bg-zinc-800 transition"
+                        className="px-3 py-1 bg-zinc-900 text-white rounded-xl font-medium hover:bg-zinc-800 transition"
                       >
                         Rollback
                       </button>

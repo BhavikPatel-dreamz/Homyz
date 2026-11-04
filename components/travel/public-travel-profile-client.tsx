@@ -267,14 +267,14 @@ export function PublicTravelProfileClient({
                       className="object-cover"
                     />
                   ) : (
-                    <div className="flex size-full items-center justify-center bg-amber-100 text-3xl font-bold text-amber-800">
+                    <div className="flex size-full items-center justify-center bg-amber-100 text-3xl font-medium text-amber-800">
                       {profile.displayName.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
               </div>
               <div className="mb-1">
-                <h1 className="text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl md:text-3xl">
+                <h1 className="text-xl font-medium tracking-tight text-zinc-900 sm:text-2xl md:text-3xl">
                   {profile.displayName}
                 </h1>
                 <p className="text-xs font-medium text-zinc-500 sm:text-sm">
@@ -296,7 +296,7 @@ export function PublicTravelProfileClient({
                   type="button"
                   disabled={isFollowLoading}
                   onClick={handleFollowToggle}
-                  className={`rounded-full px-4 py-2 text-xs font-bold shadow-xs transition disabled:opacity-60 ${isFollowing ? "border border-zinc-200 bg-zinc-100 text-zinc-700 hover:bg-zinc-200" : "bg-amber-500 text-white hover:bg-amber-600"}`}
+                  className={`rounded-full px-4 py-2 text-xs font-medium shadow-xs transition disabled:opacity-60 ${isFollowing ? "border border-zinc-200 bg-zinc-100 text-zinc-700 hover:bg-zinc-200" : "bg-amber-500 text-white hover:bg-amber-600"}`}
                 >
                   {isFollowing ? "Following" : "+ Follow"}
                 </button>
@@ -304,15 +304,15 @@ export function PublicTravelProfileClient({
               <button
                 type="button"
                 onClick={() => setIsShareModalOpen(true)}
-                className="flex items-center gap-1.5 rounded-full border border-zinc-200/80 bg-zinc-100 px-4 py-2 text-xs font-semibold text-zinc-700 shadow-2xs transition hover:bg-zinc-200"
+                className="flex items-center gap-1.5 rounded-full border border-zinc-200/80 bg-zinc-100 px-4 py-2 text-xs font-medium text-zinc-700 shadow-2xs transition hover:bg-zinc-200"
               >
                 <span>↗</span> Share profile
               </button>
             </div>
           </div>
           <div className="mt-6 flex items-center justify-center gap-4 border-t border-zinc-100 pt-4 sm:justify-start sm:gap-6 sm:pt-4">
-            <button type="button" onClick={() => setFollowListKind("followers")} className="flex min-w-[70px] flex-col items-center"><span className="inline-flex items-center justify-center rounded-full border border-[#D8BC74]/40 bg-[#E4C882]/35 px-4 py-1 text-xs font-bold text-zinc-800 shadow-2xs sm:text-sm">{followersCount}</span><span className="mt-1 text-[11px] font-medium text-zinc-500 sm:text-xs">Followers</span></button>
-            <button type="button" onClick={() => setFollowListKind("following")} className="flex min-w-[70px] flex-col items-center"><span className="inline-flex items-center justify-center rounded-full border border-[#D8BC74]/40 bg-[#E4C882]/35 px-4 py-1 text-xs font-bold text-zinc-800 shadow-2xs sm:text-sm">{profile.followingCount || 0}</span><span className="mt-1 text-[11px] font-medium text-zinc-500 sm:text-xs">Following</span></button>
+            <button type="button" onClick={() => setFollowListKind("followers")} className="flex min-w-[70px] flex-col items-center"><span className="inline-flex items-center justify-center rounded-full border border-[#D8BC74]/40 bg-[#E4C882]/35 px-4 py-1 text-xs font-medium text-zinc-800 shadow-2xs sm:text-sm">{followersCount}</span><span className="mt-1 text-[11px] font-medium text-zinc-500 sm:text-xs">Followers</span></button>
+            <button type="button" onClick={() => setFollowListKind("following")} className="flex min-w-[70px] flex-col items-center"><span className="inline-flex items-center justify-center rounded-full border border-[#D8BC74]/40 bg-[#E4C882]/35 px-4 py-1 text-xs font-medium text-zinc-800 shadow-2xs sm:text-sm">{profile.followingCount || 0}</span><span className="mt-1 text-[11px] font-medium text-zinc-500 sm:text-xs">Following</span></button>
             {(
               [
                 [profile.stats.trips, "Trips"],
@@ -324,7 +324,7 @@ export function PublicTravelProfileClient({
                 key={label}
                 className="flex min-w-[70px] flex-col items-center"
               >
-                <span className="inline-flex items-center justify-center rounded-full border border-[#D8BC74]/40 bg-[#E4C882]/35 px-4 py-1 text-xs font-bold text-zinc-800 shadow-2xs sm:text-sm">
+                <span className="inline-flex items-center justify-center rounded-full border border-[#D8BC74]/40 bg-[#E4C882]/35 px-4 py-1 text-xs font-medium text-zinc-800 shadow-2xs sm:text-sm">
                   {value}
                 </span>
                 <span className="mt-1 text-[11px] font-medium text-zinc-500 sm:text-xs">
@@ -341,7 +341,7 @@ export function PublicTravelProfileClient({
           <div className="mx-auto mb-3 flex size-16 items-center justify-center rounded-full bg-amber-100 text-3xl">
             🔒
           </div>
-          <h2 className="text-base font-bold text-zinc-900">
+          <h2 className="text-base font-medium text-zinc-900">
             {profile.restrictionReason === "FOLLOWERS_ONLY"
               ? "Followers only profile"
               : "Private travel profile"}
@@ -356,7 +356,7 @@ export function PublicTravelProfileClient({
               type="button"
               disabled={isFollowLoading}
               onClick={handleFollowToggle}
-              className="mt-5 rounded-full bg-amber-500 px-6 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-amber-600"
+              className="mt-5 rounded-full bg-amber-500 px-6 py-2.5 text-xs font-medium text-white shadow-sm transition hover:bg-amber-600"
             >
               {isFollowing ? "Request sent" : "Follow to view"}
             </button>
@@ -377,7 +377,7 @@ export function PublicTravelProfileClient({
             <div className="mb-5">
               <h2
                 id="public-trip-photo-gallery-heading"
-                className="text-lg font-bold text-zinc-900 sm:text-xl"
+                className="text-lg font-medium text-zinc-900 sm:text-xl"
               >
                 Trip photo gallery
               </h2>
@@ -400,13 +400,13 @@ export function PublicTravelProfileClient({
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
                     />
-                    <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 pb-2 pt-8 text-[11px] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 pb-2 pt-8 text-[11px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
                       {photo.location
                         ? `📍 ${photo.location}`
                         : `♥ ${photo.likesCount}`}
                     </span>
                     </button>
-                    <button type="button" aria-label={photo.isLiked ? "Unlike photo" : "Like photo"} onClick={(event) => { event.stopPropagation(); void toggleGalleryLike(photo.id); }} disabled={pendingPhotoLikeIds.has(photo.id)} className={`absolute right-2 top-2 rounded-full px-2 py-1 text-[11px] font-bold shadow transition-transform active:scale-90 disabled:cursor-not-allowed disabled:opacity-60 ${photo.isLiked ? "bg-rose-500 text-white" : "bg-white/90 text-zinc-700"}`}>♥ {photo.likesCount}</button>
+                    <button type="button" aria-label={photo.isLiked ? "Unlike photo" : "Like photo"} onClick={(event) => { event.stopPropagation(); void toggleGalleryLike(photo.id); }} disabled={pendingPhotoLikeIds.has(photo.id)} className={`absolute right-2 top-2 rounded-full px-2 py-1 text-[11px] font-medium shadow transition-transform active:scale-90 disabled:cursor-not-allowed disabled:opacity-60 ${photo.isLiked ? "bg-rose-500 text-white" : "bg-white/90 text-zinc-700"}`}>♥ {photo.likesCount}</button>
                   </div>
                 ))}
               </div>

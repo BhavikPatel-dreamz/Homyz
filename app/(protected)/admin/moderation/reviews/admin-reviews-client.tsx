@@ -99,13 +99,13 @@ export function AdminReviewsClient({
         <div className="flex gap-2">
           <Link
             href="/admin/moderation"
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
           >
             Moderation Dashboard
           </Link>
           <Link
             href="/admin/moderation/cases"
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
           >
             Cases Queue
           </Link>
@@ -116,23 +116,23 @@ export function AdminReviewsClient({
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-slate-500">Total in View</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{initialPagination.total}</p>
+          <p className="mt-1 text-2xl font-medium text-slate-900">{initialPagination.total}</p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-slate-500">Published</p>
-          <p className="mt-1 text-2xl font-bold text-emerald-600">{publishedCount}</p>
+          <p className="mt-1 text-2xl font-medium text-emerald-600">{publishedCount}</p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-slate-500">Pending Reciprocal</p>
-          <p className="mt-1 text-2xl font-bold text-amber-600">{privateCount}</p>
+          <p className="mt-1 text-2xl font-medium text-amber-600">{privateCount}</p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-slate-500">Hidden / Moderated</p>
-          <p className="mt-1 text-2xl font-bold text-rose-600">{hiddenCount}</p>
+          <p className="mt-1 text-2xl font-medium text-rose-600">{hiddenCount}</p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-slate-500">Flagged Cases</p>
-          <p className="mt-1 text-2xl font-bold text-purple-600">{flaggedCount}</p>
+          <p className="mt-1 text-2xl font-medium text-purple-600">{flaggedCount}</p>
         </div>
       </div>
 
@@ -187,14 +187,14 @@ export function AdminReviewsClient({
             <button
               type="button"
               onClick={clearFilters}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
             >
               Clear Filters
             </button>
             <button
               type="button"
               onClick={() => applyFilters(1)}
-              className="rounded-lg bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
+              className="rounded-lg bg-slate-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-800"
             >
               Apply Filters
             </button>
@@ -207,7 +207,7 @@ export function AdminReviewsClient({
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
-            <thead className="bg-slate-50 font-semibold text-slate-600">
+            <thead className="bg-slate-50 font-medium text-slate-600">
               <tr>
                 <th className="px-4 py-3">Rating</th>
                 <th className="px-4 py-3">Reviewer</th>
@@ -229,7 +229,7 @@ export function AdminReviewsClient({
               ) : (
                 initialReviews.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50/75 transition-colors">
-                    <td className="px-4 py-3 whitespace-nowrap font-bold text-amber-500">
+                    <td className="px-4 py-3 whitespace-nowrap font-medium text-amber-500">
                       {"★".repeat(r.rating)}
                       <span className="ml-1 text-slate-600 font-normal">({r.rating})</span>
                     </td>
@@ -253,7 +253,7 @@ export function AdminReviewsClient({
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${r.direction === "GUEST_TO_PROPERTY"
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${r.direction === "GUEST_TO_PROPERTY"
                             ? "bg-blue-50 text-blue-700 border border-blue-200"
                             : "bg-indigo-50 text-indigo-700 border border-indigo-200"
                           }`}
@@ -263,7 +263,7 @@ export function AdminReviewsClient({
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${r.status === "PUBLISHED"
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${r.status === "PUBLISHED"
                             ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                             : r.status === "PRIVATE"
                               ? "bg-amber-50 text-amber-700 border border-amber-200"
@@ -275,7 +275,7 @@ export function AdminReviewsClient({
                         {r.status}
                       </span>
                       {r.moderationCase && (
-                        <span className="ml-1 inline-block rounded bg-purple-100 px-1 text-[9px] font-bold text-purple-800">
+                        <span className="ml-1 inline-block rounded bg-purple-100 px-1 text-[9px] font-medium text-purple-800">
                           FLAGGED
                         </span>
                       )}

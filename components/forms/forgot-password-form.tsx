@@ -45,7 +45,7 @@ export function ForgotPasswordForm() {
         </div>
 
         <div className="text-center">
-          <h2 className="text-2xl font-semibold text-zinc-950">
+          <h2 className="text-2xl font-medium text-zinc-950">
             {t("auth_check_email_title")}
           </h2>
           <p className="mt-1.5 text-sm font-normal leading-6 text-[#727272]">

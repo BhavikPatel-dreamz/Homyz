@@ -33,7 +33,7 @@ export function SettingsHelpCard({
           {icon || <HelpCircleIcon size={20} />}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 id="help-card-title" className="text-sm font-semibold text-[#1F1F1F]">
+          <h3 id="help-card-title" className="text-sm font-medium text-[#1F1F1F]">
             {title}
           </h3>
           <p className="mt-1 text-xs sm:text-sm leading-relaxed text-[#727272]">
@@ -41,7 +41,7 @@ export function SettingsHelpCard({
           </p>
 
           {links && links.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-zinc-200/60 pt-3 text-xs font-semibold">
+            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-zinc-200/60 pt-3 text-xs font-medium">
               {links.map((link) => {
                 if (link.external) {
                   return (

@@ -708,9 +708,9 @@ export function HomyzAuthForm({
 
                     {authMode === "signup" && (
                       <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 text-zinc-600 flex flex-col gap-1 mt-1">
-                        <div className="font-semibold text-zinc-800 mb-0.5">{t("auth_pwd_requirements")}</div>
+                        <div className="font-medium text-zinc-800 mb-0.5">{t("auth_pwd_requirements")}</div>
                         <div className="flex items-center gap-2">
-                          <span className={hasMinLength ? "text-emerald-600 font-semibold" : "text-[#727272]"}>
+                          <span className={hasMinLength ? "text-emerald-600 font-medium" : "text-[#727272]"}>
                             {hasMinLength ? "✓" : "○"}
                           </span>
                           <span className={hasMinLength ? "text-[#1F1F1F] font-medium" : "text-[#727272]"}>
@@ -718,7 +718,7 @@ export function HomyzAuthForm({
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={hasUppercase ? "text-emerald-600 font-semibold" : "text-[#727272]"}>
+                          <span className={hasUppercase ? "text-emerald-600 font-medium" : "text-[#727272]"}>
                             {hasUppercase ? "✓" : "○"}
                           </span>
                           <span className={hasUppercase ? "text-[#1F1F1F] font-medium" : "text-[#727272]"}>
@@ -726,7 +726,7 @@ export function HomyzAuthForm({
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={hasNumber ? "text-emerald-600 font-semibold" : "text-[#727272]"}>
+                          <span className={hasNumber ? "text-emerald-600 font-medium" : "text-[#727272]"}>
                             {hasNumber ? "✓" : "○"}
                           </span>
                           <span className={hasNumber ? "text-[#1F1F1F] font-medium" : "text-[#727272]"}>

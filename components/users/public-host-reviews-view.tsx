@@ -76,7 +76,7 @@ function ReviewCardItem({
             ) : (
               <span
                 aria-hidden="true"
-                className="flex size-11 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-sm font-bold text-amber-900"
+                className="flex size-11 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-sm font-medium text-amber-900"
               >
                 {initial}
               </span>
@@ -131,7 +131,7 @@ function ReviewCardItem({
           <button
             type="button"
             onClick={() => setIsExpanded((prev) => !prev)}
-            className="inline-flex cursor-pointer text-xs font-semibold text-[#1F1F1F] underline underline-offset-4 transition-colors hover:text-[#727272]"
+            className="inline-flex cursor-pointer text-xs font-medium text-[#1F1F1F] underline underline-offset-4 transition-colors hover:text-[#727272]"
           >
             {isExpanded ? "Show less" : "Show more"}
           </button>
@@ -266,7 +266,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
           <div className="rounded-[10px] sm:rounded-[24px] border border-[#dedede] bg-white p-6 shadow-[0_2px_5px_rgba(0,0,0,0.08)]">
             <div className="flex items-baseline justify-between">
               <div>
-                <p className="text-xs font-semibold tracking-wider text-[#727272] uppercase">
+                <p className="text-xs font-medium tracking-wider text-[#727272] uppercase">
                   Rating Overview
                 </p>
                 <div className="mt-1 flex items-baseline gap-2">
@@ -303,7 +303,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
                     onClick={() => setSelectedStar(isSelected ? null : star)}
                     className={`group flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-xs transition-colors cursor-pointer ${
                       isSelected
-                        ? "bg-zinc-100 font-semibold ring-1 ring-zinc-300"
+                        ? "bg-zinc-100 font-medium ring-1 ring-zinc-300"
                         : "text-[#727272] hover:bg-zinc-50 hover:text-[#1F1F1F]"
                     }`}
                     aria-label={`Filter by ${star} star reviews (${count})`}
@@ -506,7 +506,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
                   setSelectedStar(null);
                   setSearchQuery("");
                 }}
-                className="mt-4 inline-flex items-center rounded-full bg-[#1F1F1F] px-5 py-2 text-xs font-semibold text-white transition-colors hover:bg-black cursor-pointer"
+                className="mt-4 inline-flex items-center rounded-full bg-[#1F1F1F] px-5 py-2 text-xs font-medium text-white transition-colors hover:bg-black cursor-pointer"
               >
                 Clear all filters
               </button>

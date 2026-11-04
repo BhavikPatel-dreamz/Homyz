@@ -98,7 +98,7 @@ export function ResultsSummaryBar({
 
   return (
     <div className="mb-2 pb-1 sm:mb-4 sm:border-b sm:border-zinc-200 sm:pb-3.5">
-      <h1 className="text-[16px] font-semibold leading-5 tracking-tight text-[#1F1F1F] break-words sm:text-[20px] sm:font-medium sm:leading-tight lg:text-[24px]">
+      <h1 className="text-[16px] font-medium leading-5 tracking-tight text-[#1F1F1F] break-words sm:text-[20px] sm:font-medium sm:leading-tight lg:text-[24px]">
         {headline}
       </h1>
       {subtitleParts.length > 0 && (

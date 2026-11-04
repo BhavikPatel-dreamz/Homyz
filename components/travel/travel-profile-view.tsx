@@ -415,7 +415,7 @@ export function TravelProfileView({
           <button
             type="button"
             onClick={() => setActiveTab("photos")}
-            className={`flex items-center gap-2 pb-2 text-xs font-semibold transition ${activeTab === "photos" ? "border-b-2 border-zinc-900 text-zinc-900" : "text-zinc-500 hover:text-zinc-900"}`}
+            className={`flex items-center gap-2 pb-2 text-xs font-medium transition ${activeTab === "photos" ? "border-b-2 border-zinc-900 text-zinc-900" : "text-zinc-500 hover:text-zinc-900"}`}
           >
             <Grid3X3 className="w-4 h-4" />
             <span>Photos</span>
@@ -423,7 +423,7 @@ export function TravelProfileView({
           <button
             type="button"
             onClick={() => setActiveTab("trips")}
-            className={`flex items-center gap-2 pb-2 text-xs font-semibold transition ${activeTab === "trips" ? "border-b-2 border-zinc-900 text-zinc-900" : "text-zinc-500 hover:text-zinc-900"}`}
+            className={`flex items-center gap-2 pb-2 text-xs font-medium transition ${activeTab === "trips" ? "border-b-2 border-zinc-900 text-zinc-900" : "text-zinc-500 hover:text-zinc-900"}`}
           >
             <Film className="w-4 h-4" />
             <span>Trips</span>
@@ -431,7 +431,7 @@ export function TravelProfileView({
           <button
             type="button"
             onClick={() => setActiveTab("likes")}
-            className={`flex items-center gap-2 pb-2 text-xs font-semibold transition ${activeTab === "likes" ? "border-b-2 border-zinc-900 text-zinc-900" : "text-zinc-500 hover:text-zinc-900"}`}
+            className={`flex items-center gap-2 pb-2 text-xs font-medium transition ${activeTab === "likes" ? "border-b-2 border-zinc-900 text-zinc-900" : "text-zinc-500 hover:text-zinc-900"}`}
           >
             <Users className="w-4 h-4" />
             <span>Likes</span>
@@ -445,7 +445,7 @@ export function TravelProfileView({
             <div>
               <h2
                 id="trip-photo-gallery-heading"
-                className="text-lg font-bold text-zinc-900 sm:text-xl"
+                className="text-lg font-medium text-zinc-900 sm:text-xl"
               >
                 Trip photo gallery
               </h2>
@@ -457,7 +457,7 @@ export function TravelProfileView({
               <button
                 type="button"
                 onClick={() => setIsUploadModalOpen(true)}
-                className="shrink-0 rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-black"
+                className="shrink-0 rounded-full bg-zinc-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-black"
               >
                 Upload photos
               </button>
@@ -490,7 +490,7 @@ export function TravelProfileView({
                     type="button"
                     onClick={handleLoadMorePhotos}
                     disabled={loadingMorePhotos}
-                    className="rounded-full border border-zinc-300 bg-white px-6 py-2.5 text-xs font-semibold text-zinc-800 shadow-2xs transition hover:bg-zinc-100 disabled:opacity-50"
+                    className="rounded-full border border-zinc-300 bg-white px-6 py-2.5 text-xs font-medium text-zinc-800 shadow-2xs transition hover:bg-zinc-100 disabled:opacity-50"
                   >
                     {loadingMorePhotos
                       ? "Loading more memories..."
@@ -501,7 +501,7 @@ export function TravelProfileView({
             </div>
           ) : (
             <div className="rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/70 p-10 text-center sm:p-14">
-              <h3 className="text-base font-semibold text-zinc-900">
+              <h3 className="text-base font-medium text-zinc-900">
                 No travel photos yet
               </h3>
               <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-zinc-500">
@@ -512,7 +512,7 @@ export function TravelProfileView({
                   <button
                     type="button"
                     onClick={() => setIsUploadModalOpen(true)}
-                    className="rounded-full bg-zinc-900 px-5 py-2 text-xs font-semibold text-white transition hover:bg-black"
+                    className="rounded-full bg-zinc-900 px-5 py-2 text-xs font-medium text-white transition hover:bg-black"
                   >
                     Upload photos
                   </button>
@@ -520,7 +520,7 @@ export function TravelProfileView({
                 {isOwner && (
                   <Link
                     href="/profile/tab/profile_management/trip_photos?travelTab=trips"
-                    className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-100"
+                    className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-xs font-medium text-zinc-800 transition hover:bg-zinc-100"
                   >
                     Manage trip photos
                   </Link>
@@ -542,8 +542,8 @@ export function TravelProfileView({
             </div>
           ) : tripsError ? (
             <div className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center">
-              <p className="text-sm font-semibold text-zinc-900">Couldn&apos;t load trips</p>
-              <button type="button" onClick={() => void loadTrips()} className="mt-3 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800">Try again</button>
+              <p className="text-sm font-medium text-zinc-900">Couldn&apos;t load trips</p>
+              <button type="button" onClick={() => void loadTrips()} className="mt-3 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-800">Try again</button>
             </div>
           ) : trips.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -574,7 +574,7 @@ export function TravelProfileView({
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-zinc-900 truncate">
+                    <h3 className="font-medium text-zinc-900 truncate">
                       {trip.title}
                     </h3>
                     <p className="mt-1 text-xs text-zinc-500">
@@ -606,7 +606,7 @@ export function TravelProfileView({
                         aria-label={`Manage ${trip.title}`}
                         aria-expanded={openTripMenuId === trip.id}
                         onClick={() => setOpenTripMenuId((current) => current === trip.id ? null : trip.id)}
-                        className="flex size-8 items-center justify-center rounded-full bg-black/55 text-lg font-bold text-white shadow-sm backdrop-blur-sm transition hover:bg-black/75"
+                        className="flex size-8 items-center justify-center rounded-full bg-black/55 text-lg font-medium text-white shadow-sm backdrop-blur-sm transition hover:bg-black/75"
                       >
                         ⋯
                       </button>
@@ -624,7 +624,7 @@ export function TravelProfileView({
             </div>
           ) : (
             <div className="rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/70 p-10 text-center sm:p-14">
-              <h3 className="text-base font-semibold text-zinc-900">
+              <h3 className="text-base font-medium text-zinc-900">
                 No trips yet
               </h3>
               <p className="mt-1 text-xs leading-relaxed text-zinc-500">
@@ -634,7 +634,7 @@ export function TravelProfileView({
                 <button
                   type="button"
                   onClick={() => setIsUploadModalOpen(true)}
-                  className="mt-5 rounded-full bg-zinc-900 px-5 py-2 text-xs font-semibold text-white transition hover:bg-black"
+                  className="mt-5 rounded-full bg-zinc-900 px-5 py-2 text-xs font-medium text-white transition hover:bg-black"
                 >
                   Upload photos
                 </button>
@@ -655,8 +655,8 @@ export function TravelProfileView({
             </div>
           ) : likesError ? (
             <div className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center">
-              <p className="text-sm font-semibold text-zinc-900">Couldn&apos;t load liked photos</p>
-              <button type="button" onClick={() => void loadLikes()} className="mt-3 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800">Try again</button>
+              <p className="text-sm font-medium text-zinc-900">Couldn&apos;t load liked photos</p>
+              <button type="button" onClick={() => void loadLikes()} className="mt-3 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-800">Try again</button>
             </div>
           ) : likedPhotos.length > 0 ? (
             <>
@@ -684,7 +684,7 @@ export function TravelProfileView({
                     type="button"
                     onClick={handleLoadMoreLikes}
                     disabled={loadingMoreLikes}
-                    className="rounded-full border border-zinc-300 bg-white px-6 py-2.5 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-100 disabled:opacity-50"
+                    className="rounded-full border border-zinc-300 bg-white px-6 py-2.5 text-xs font-medium text-zinc-800 transition hover:bg-zinc-100 disabled:opacity-50"
                   >
                     {loadingMoreLikes
                       ? "Loading more likes..."
@@ -695,7 +695,7 @@ export function TravelProfileView({
             </>
           ) : (
             <div className="rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/70 p-10 text-center sm:p-14">
-              <h3 className="text-base font-semibold text-zinc-900">
+              <h3 className="text-base font-medium text-zinc-900">
                 No likes on your photos yet
               </h3>
               <p className="mt-1 text-xs leading-relaxed text-zinc-500">

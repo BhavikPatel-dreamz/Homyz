@@ -154,7 +154,7 @@ export function TravelTripManageModal({
           ✕
         </button>
 
-        <h3 className="text-xl font-bold text-zinc-900 tracking-tight mb-1">
+        <h3 className="text-xl font-medium text-zinc-900 tracking-tight mb-1">
           {isEditing ? "Manage Trip Album" : "Create New Trip Album"}
         </h3>
         <p className="text-xs text-zinc-500 mb-6">
@@ -164,7 +164,7 @@ export function TravelTripManageModal({
         {showDeleteConfirm ? (
           <div className="space-y-4 py-4 animate-in fade-in">
             <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900">
-              <h4 className="text-sm font-bold mb-1">Delete &quot;{trip?.title}&quot;?</h4>
+              <h4 className="text-sm font-medium mb-1">Delete &quot;{trip?.title}&quot;?</h4>
               <p className="text-xs text-rose-700 leading-relaxed mb-3">
                 Choose how you want to handle the photos currently inside this trip:
               </p>
@@ -197,7 +197,7 @@ export function TravelTripManageModal({
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-5 py-2 rounded-full border border-zinc-300 text-xs font-semibold text-zinc-700 hover:bg-zinc-100"
+                className="px-5 py-2 rounded-full border border-zinc-300 text-xs font-medium text-zinc-700 hover:bg-zinc-100"
               >
                 Cancel
               </button>
@@ -205,7 +205,7 @@ export function TravelTripManageModal({
                 type="button"
                 onClick={handleDeleteTrip}
                 disabled={deleting}
-                className="px-6 py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold disabled:opacity-50"
+                className="px-6 py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium disabled:opacity-50"
               >
                 {deleting ? "Deleting..." : "Confirm Delete"}
               </button>
@@ -214,7 +214,7 @@ export function TravelTripManageModal({
         ) : (
           <form onSubmit={handleSave} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1">
+              <label className="block text-xs font-medium text-zinc-700 mb-1">
                 Trip Title *
               </label>
               <input
@@ -229,7 +229,7 @@ export function TravelTripManageModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1">
+              <label className="block text-xs font-medium text-zinc-700 mb-1">
                 Destination country *
               </label>
               <select
@@ -248,7 +248,7 @@ export function TravelTripManageModal({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-medium text-zinc-700 mb-1">
                   Start Date
                 </label>
                 <input
@@ -259,7 +259,7 @@ export function TravelTripManageModal({
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-medium text-zinc-700 mb-1">
                   End Date
                 </label>
                 <input
@@ -275,7 +275,7 @@ export function TravelTripManageModal({
             {isEditing && (
               <div className="pt-2">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-zinc-700">
+                  <span className="text-xs font-medium text-zinc-700">
                     Photos in this trip ({photos.length}/5)
                   </span>
                   {photos.length < 5 && (
@@ -285,7 +285,7 @@ export function TravelTripManageModal({
                         onClose();
                         onAddPhotosClick?.(trip!.id);
                       }}
-                      className="text-xs font-semibold text-amber-700 hover:text-amber-800 cursor-pointer"
+                      className="text-xs font-medium text-amber-700 hover:text-amber-800 cursor-pointer"
                     >
                       + Add photos ({5 - photos.length} left)
                     </button>
@@ -307,7 +307,7 @@ export function TravelTripManageModal({
                         >
                           <Image src={p.mediumUrl || p.url} alt="Trip photo" fill className="object-cover" />
                           {isCover && (
-                            <span className="absolute bottom-0 inset-x-0 bg-amber-500 text-white text-[9px] font-bold text-center py-0.5">
+                            <span className="absolute bottom-0 inset-x-0 bg-amber-500 text-white text-[9px] font-medium text-center py-0.5">
                               Cover
                             </span>
                           )}
@@ -337,7 +337,7 @@ export function TravelTripManageModal({
                 <button
                   type="button"
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="text-xs text-rose-600 hover:text-rose-700 font-semibold cursor-pointer"
+                  className="text-xs text-rose-600 hover:text-rose-700 font-medium cursor-pointer"
                 >
                   Delete Trip
                 </button>
@@ -349,14 +349,14 @@ export function TravelTripManageModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-5 py-2 rounded-full border border-zinc-300 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition cursor-pointer"
+                  className="px-5 py-2 rounded-full border border-zinc-300 text-xs font-medium text-zinc-700 hover:bg-zinc-100 transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-6 py-2 rounded-full bg-zinc-900 hover:bg-black text-white text-xs font-semibold transition cursor-pointer disabled:opacity-50 shadow-md"
+                  className="px-6 py-2 rounded-full bg-zinc-900 hover:bg-black text-white text-xs font-medium transition cursor-pointer disabled:opacity-50 shadow-md"
                 >
                   {saving ? "Saving..." : isEditing ? "Save Changes" : "Create Trip"}
                 </button>

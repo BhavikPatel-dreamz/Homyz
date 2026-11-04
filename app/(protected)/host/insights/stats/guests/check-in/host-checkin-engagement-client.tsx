@@ -64,7 +64,7 @@ export function HostCheckInEngagementClient({ initialData }: HostCheckInEngageme
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href={guestInsightsHref}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-600 transition-colors hover:text-zinc-950"
+          className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-950"
         >
           <span className="text-base">←</span>
           <span>Back to Guest Insights</span>
@@ -76,7 +76,7 @@ export function HostCheckInEngagementClient({ initialData }: HostCheckInEngageme
             <select
               value={data.selectedListingId || "all"}
               onChange={(e) => updateFilters({ propertyId: e.target.value === "all" ? null : e.target.value })}
-              className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-800 shadow-2xs focus:border-zinc-900 focus:outline-hidden"
+              className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-800 shadow-2xs focus:border-zinc-900 focus:outline-hidden"
               disabled={isPending}
             >
               <option value="all">All properties</option>
@@ -91,7 +91,7 @@ export function HostCheckInEngagementClient({ initialData }: HostCheckInEngageme
           <select
             value={data.reportingPeriod.preset}
             onChange={(e) => updateFilters({ period: e.target.value })}
-            className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-800 shadow-2xs focus:border-zinc-900 focus:outline-hidden"
+            className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-800 shadow-2xs focus:border-zinc-900 focus:outline-hidden"
             disabled={isPending}
           >
             {PERIOD_OPTIONS.map((p) => (
@@ -104,7 +104,7 @@ export function HostCheckInEngagementClient({ initialData }: HostCheckInEngageme
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-800">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-800">
           {error}
         </div>
       )}
@@ -112,8 +112,8 @@ export function HostCheckInEngagementClient({ initialData }: HostCheckInEngageme
       {/* Header Banner */}
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
         <div className="border-b border-zinc-100 pb-6">
-          <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Guest Experience</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">Check-in Instructions Engagement</h1>
+          <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">Guest Experience</p>
+          <h1 className="mt-1 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">Check-in Instructions Engagement</h1>
           <p className="mt-1 text-xs text-zinc-500 max-w-xl">
             Tracks whether guests open and view their arrival check-in instructions before checking in. Higher viewing rates reduce host messaging friction and arrival confusion.
           </p>
@@ -122,7 +122,7 @@ export function HostCheckInEngagementClient({ initialData }: HostCheckInEngageme
         <div className="mt-6 grid gap-6 sm:grid-cols-3">
           <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-5">
             <p className="text-xs text-zinc-500">Viewed Percentage</p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
+            <p className="mt-2 text-3xl font-medium tracking-tight text-zinc-950 sm:text-4xl">
               {checkInEngagement.viewedPercentage}%
             </p>
             <p className="mt-3 text-[11px] text-zinc-500">
@@ -132,7 +132,7 @@ export function HostCheckInEngagementClient({ initialData }: HostCheckInEngageme
 
           <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-5">
             <p className="text-xs text-zinc-500">Viewed by Guest</p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-emerald-800 sm:text-4xl">
+            <p className="mt-2 text-3xl font-medium tracking-tight text-emerald-800 sm:text-4xl">
               {checkInEngagement.viewedCount}
             </p>
             <p className="mt-3 text-[11px] text-zinc-500">Opened arrival details</p>
@@ -140,7 +140,7 @@ export function HostCheckInEngagementClient({ initialData }: HostCheckInEngageme
 
           <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-5">
             <p className="text-xs text-zinc-500">Not Yet Opened</p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-700 sm:text-4xl">
+            <p className="mt-2 text-3xl font-medium tracking-tight text-zinc-700 sm:text-4xl">
               {checkInEngagement.notViewedCount}
             </p>
             <p className="mt-3 text-[11px] text-zinc-500">Arrival details pending view</p>
@@ -150,7 +150,7 @@ export function HostCheckInEngagementClient({ initialData }: HostCheckInEngageme
 
       {/* Property Breakdown Section */}
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
-        <h2 className="text-lg font-bold text-zinc-950">Property-level Check-in Viewing</h2>
+        <h2 className="text-lg font-medium text-zinc-950">Property-level Check-in Viewing</h2>
         <p className="text-xs text-zinc-500 mt-0.5">Instruction engagement across your properties</p>
 
         {checkInEngagement.propertyBreakdown.length > 0 ? (
@@ -160,7 +160,7 @@ export function HostCheckInEngagementClient({ initialData }: HostCheckInEngageme
                 <div>
                   <Link
                     href={`/host/listings/${item.listingId}`}
-                    className="text-sm font-semibold text-zinc-900 underline underline-offset-2 hover:text-zinc-600"
+                    className="text-sm font-medium text-zinc-900 underline underline-offset-2 hover:text-zinc-600"
                   >
                     {item.listingTitle}
                   </Link>
@@ -169,7 +169,7 @@ export function HostCheckInEngagementClient({ initialData }: HostCheckInEngageme
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="text-sm font-bold text-zinc-950 font-mono">
+                  <span className="text-sm font-medium text-zinc-950 font-mono">
                     {item.percentage}%
                   </span>
                 </div>
@@ -185,7 +185,7 @@ export function HostCheckInEngagementClient({ initialData }: HostCheckInEngageme
 
       {/* Telemetry Tracking Disclosure */}
       <section className="rounded-3xl border border-zinc-200 bg-zinc-50/60 p-6 shadow-xs">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-700">Event Telemetry Status</h4>
+        <h4 className="text-xs font-medium uppercase tracking-wider text-zinc-700">Event Telemetry Status</h4>
         <p className="mt-1 text-xs leading-relaxed text-zinc-600">
           {checkInEngagement.trackingStatus.message}
           {checkInEngagement.trackingStatus.trackingStartDate ? <>

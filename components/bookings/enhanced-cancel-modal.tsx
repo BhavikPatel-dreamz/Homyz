@@ -113,7 +113,7 @@ export function EnhancedCancelModal({
             </svg>
           </div>
           <div>
-            <h2 id="cancel-title" className="text-xl font-semibold text-[#1F1F1F]">
+            <h2 id="cancel-title" className="text-xl font-medium text-[#1F1F1F]">
               {t("booking_details_cancel_modal_title", "Cancel reservation?")}
             </h2>
             <p className="text-xs text-[#727272]">
@@ -123,14 +123,14 @@ export function EnhancedCancelModal({
         </div>
 
         <div className="mt-5 sm:rounded-2xl rounded-lg shadow-md bg-white p-4">
-          <h3 className="font-semibold text-sm text-[#1F1F1F] line-clamp-1">{propertyName}</h3>
+          <h3 className="font-medium text-sm text-[#1F1F1F] line-clamp-1">{propertyName}</h3>
           {location && <p className="text-xs text-zinc-600 mt-0.5">{location}</p>}
         </div>
 
         {/* Cancellation policy & Refund Breakdown */}
         <div className="mt-5 space-y-3">
           <div className="rounded-xl border border-zinc-200 bg-white p-4">
-            <h4 className="text-xs font-semibold text-[#727272] uppercase tracking-wider">
+            <h4 className="text-xs font-medium text-[#727272] uppercase tracking-wider">
               {t("booking_details_cancel_policy_terms", "Cancellation Policy & Terms")}
             </h4>
             <p className="mt-1 text-sm font-medium text-[#1F1F1F]">
@@ -146,7 +146,7 @@ export function EnhancedCancelModal({
           </div>
 
           <div className="rounded-xl border border-zinc-200 bg-white p-4">
-            <h4 className="text-xs font-semibold text-[#727272] uppercase tracking-wider mb-2">
+            <h4 className="text-xs font-medium text-[#727272] uppercase tracking-wider mb-2">
               {t("booking_details_refund_summary", "Refund Summary")}
             </h4>
             <dl className="space-y-2 text-xs sm:text-sm">
@@ -164,7 +164,7 @@ export function EnhancedCancelModal({
                   </dd>
                 </div>
               )}
-              <div className="flex justify-between border-t border-zinc-200 pt-2 font-semibold text-[#1F1F1F]">
+              <div className="flex justify-between border-t border-zinc-200 pt-2 font-medium text-[#1F1F1F]">
                 <dt>{t("booking_details_expected_refund", "Expected refund")}</dt>
                 <dd className={expectedRefund > 0 ? "text-emerald-700" : "text-zinc-700"}>
                   <CurrencyPrice amountMinorUnits={expectedRefund} sourceCurrency={currency} fractionDigits={2} />

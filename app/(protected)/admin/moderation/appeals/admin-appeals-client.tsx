@@ -267,7 +267,7 @@ export function AdminAppealsClient({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-medium text-slate-500">Support &amp; Operations / Moderation</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">Appeals Queue</h1>
+          <h1 className="mt-1 text-2xl font-medium tracking-tight text-slate-900">Appeals Queue</h1>
           <p className="mt-1 text-sm text-slate-500">
             Review, investigate, and decide client and host moderation appeals.
           </p>
@@ -292,27 +292,27 @@ export function AdminAppealsClient({
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Total Appeals</p>
-          <p className="mt-2 text-2xl font-bold text-slate-900">{summary.total}</p>
+          <p className="mt-2 text-2xl font-medium text-slate-900">{summary.total}</p>
         </div>
         <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-wider text-amber-700">Submitted</p>
-          <p className="mt-2 text-2xl font-bold text-amber-900">{summary.submitted}</p>
+          <p className="mt-2 text-2xl font-medium text-amber-900">{summary.submitted}</p>
         </div>
         <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-wider text-blue-700">Under Review</p>
-          <p className="mt-2 text-2xl font-bold text-blue-900">{summary.underReview}</p>
+          <p className="mt-2 text-2xl font-medium text-blue-900">{summary.underReview}</p>
         </div>
         <div className="rounded-xl border border-purple-200 bg-purple-50/50 p-4 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-wider text-purple-700">Decided</p>
-          <p className="mt-2 text-2xl font-bold text-purple-900">{summary.decided}</p>
+          <p className="mt-2 text-2xl font-medium text-purple-900">{summary.decided}</p>
         </div>
         <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-wider text-emerald-700">Approved</p>
-          <p className="mt-2 text-2xl font-bold text-emerald-900">{summary.approved}</p>
+          <p className="mt-2 text-2xl font-medium text-emerald-900">{summary.approved}</p>
         </div>
         <div className="rounded-xl border border-red-200 bg-red-50/50 p-4 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-wider text-red-700">Rejected</p>
-          <p className="mt-2 text-2xl font-bold text-red-900">{summary.rejected}</p>
+          <p className="mt-2 text-2xl font-medium text-red-900">{summary.rejected}</p>
         </div>
       </div>
 
@@ -405,22 +405,22 @@ export function AdminAppealsClient({
           <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
               <tr>
-                <th className="px-4 py-3 font-semibold">Appeal / Case</th>
-                <th className="px-4 py-3 font-semibold">Appellant</th>
-                <th className="px-4 py-3 font-semibold">Policy / Reason</th>
-                <th className="px-4 py-3 font-semibold">Status</th>
-                <th className="px-4 py-3 font-semibold">Decision</th>
-                <th className="px-4 py-3 font-semibold">Reviewer</th>
-                <th className="px-4 py-3 font-semibold">Submitted</th>
-                <th className="px-4 py-3 font-semibold">Deadline</th>
-                <th className="px-4 py-3 font-semibold text-right">Actions</th>
+                <th className="px-4 py-3 font-medium">Appeal / Case</th>
+                <th className="px-4 py-3 font-medium">Appellant</th>
+                <th className="px-4 py-3 font-medium">Policy / Reason</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Decision</th>
+                <th className="px-4 py-3 font-medium">Reviewer</th>
+                <th className="px-4 py-3 font-medium">Submitted</th>
+                <th className="px-4 py-3 font-medium">Deadline</th>
+                <th className="px-4 py-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {items.map((appeal) => (
                 <tr key={appeal.id} className="hover:bg-slate-50/80 transition">
                   <td className="px-4 py-3">
-                    <p className="font-semibold text-indigo-700">{appeal.id}</p>
+                    <p className="font-medium text-indigo-700">{appeal.id}</p>
                     <Link
                       href={`/admin/moderation/cases/${appeal.caseId}`}
                       className="text-xs text-slate-500 hover:text-indigo-600 hover:underline"
@@ -434,7 +434,7 @@ export function AdminAppealsClient({
                       <span className="font-medium text-slate-900">
                         {appeal.appellantName || appeal.appellantEmail || "User"}
                       </span>
-                      <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
+                      <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
                         {appeal.appellantRole}
                       </span>
                     </div>
@@ -451,13 +451,13 @@ export function AdminAppealsClient({
                   </td>
 
                   <td className="px-4 py-3">
-                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${getStatusBadge(appeal.status)}`}>
+                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadge(appeal.status)}`}>
                       {appeal.status.replaceAll("_", " ")}
                     </span>
                   </td>
 
                   <td className="px-4 py-3">
-                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${getDecisionBadge(appeal.decision)}`}>
+                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${getDecisionBadge(appeal.decision)}`}>
                       {appeal.decision.replaceAll("_", " ")}
                     </span>
                   </td>
@@ -480,7 +480,7 @@ export function AdminAppealsClient({
                     <button
                       type="button"
                       onClick={() => handleOpenReview(appeal)}
-                      className="rounded-md bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition"
+                      className="rounded-md bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition"
                     >
                       Review
                     </button>
@@ -544,14 +544,14 @@ export function AdminAppealsClient({
             >
               <div className="flex items-start justify-between border-b border-slate-200 pb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">
+                  <h3 className="text-lg font-medium text-slate-900">
                     Review Appeal: {selectedAppeal.id}
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
                     Case:{" "}
                     <Link
                       href={`/admin/moderation/cases/${selectedAppeal.caseId}`}
-                      className="font-semibold text-indigo-600 hover:underline"
+                      className="font-medium text-indigo-600 hover:underline"
                     >
                       {selectedAppeal.caseReference}
                     </Link>{" "}
@@ -572,26 +572,26 @@ export function AdminAppealsClient({
                 <div className="grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3 text-xs">
                   <div>
                     <span className="text-slate-500">Appellant:</span>
-                    <p className="font-semibold text-slate-900">
+                    <p className="font-medium text-slate-900">
                       {selectedAppeal.appellantName || selectedAppeal.appellantEmail || "User"} (
                       {selectedAppeal.appellantRole})
                     </p>
                   </div>
                   <div>
                     <span className="text-slate-500">Appeal Reason:</span>
-                    <p className="font-semibold text-slate-900">
+                    <p className="font-medium text-slate-900">
                       {selectedAppeal.reason.replaceAll("_", " ")}
                     </p>
                   </div>
                   <div>
                     <span className="text-slate-500">Policy:</span>
-                    <p className="font-semibold text-slate-900">
+                    <p className="font-medium text-slate-900">
                       {selectedAppeal.policyName || selectedAppeal.policyCode || "Standard policy"}
                     </p>
                   </div>
                   <div>
                     <span className="text-slate-500">Submission Date:</span>
-                    <p className="font-semibold text-slate-900">
+                    <p className="font-medium text-slate-900">
                       {formatDate(selectedAppeal.createdAt)}
                     </p>
                   </div>
@@ -599,7 +599,7 @@ export function AdminAppealsClient({
 
                 {/* Explanation */}
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="text-xs font-medium uppercase tracking-wider text-slate-500">
                     Appellant Statement &amp; Explanation
                   </label>
                   <div className="mt-1.5 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
@@ -610,7 +610,7 @@ export function AdminAppealsClient({
                 {/* Attached Evidence */}
                 {selectedAppeal.evidenceIds && selectedAppeal.evidenceIds.length > 0 && (
                   <div>
-                    <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    <label className="text-xs font-medium uppercase tracking-wider text-slate-500">
                       Attached Evidence ({selectedAppeal.evidenceIds.length})
                     </label>
                     <div className="mt-1.5 flex flex-wrap gap-2">
@@ -631,7 +631,7 @@ export function AdminAppealsClient({
 
                 {/* Reviewer Assignment */}
                 <div className="rounded-lg border border-slate-200 p-3 bg-white">
-                  <label className="text-xs font-semibold text-slate-700">Assign Reviewer</label>
+                  <label className="text-xs font-medium text-slate-700">Assign Reviewer</label>
                   <div className="mt-1 flex items-center gap-2">
                     <select
                       value={selectedAppeal.assignedReviewerId || ""}
@@ -654,10 +654,10 @@ export function AdminAppealsClient({
                 {/* If already decided */}
                 {selectedAppeal.status === "DECIDED" ? (
                   <div className="rounded-xl border border-purple-200 bg-purple-50 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wider text-purple-700">
+                    <p className="text-xs font-medium uppercase tracking-wider text-purple-700">
                       Appeal Decision Recorded
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-purple-900">
+                    <p className="mt-1 text-sm font-medium text-purple-900">
                       Outcome: {selectedAppeal.decision}
                     </p>
                     {selectedAppeal.decisionReason && (
@@ -675,14 +675,14 @@ export function AdminAppealsClient({
                   /* Decision Form */
                   <form onSubmit={handleSubmitDecision} className="space-y-4 border-t border-slate-200 pt-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700">
+                      <label className="block text-xs font-medium text-slate-700">
                         Decision Outcome *
                       </label>
                       <div className="mt-2 grid grid-cols-3 gap-2">
                         <button
                           type="button"
                           onClick={() => setDecision("APPROVED")}
-                          className={`rounded-lg border p-2.5 text-xs font-semibold transition ${
+                          className={`rounded-lg border p-2.5 text-xs font-medium transition ${
                             decision === "APPROVED"
                               ? "border-emerald-600 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500"
                               : "border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -693,7 +693,7 @@ export function AdminAppealsClient({
                         <button
                           type="button"
                           onClick={() => setDecision("PARTIALLY_APPROVED")}
-                          className={`rounded-lg border p-2.5 text-xs font-semibold transition ${
+                          className={`rounded-lg border p-2.5 text-xs font-medium transition ${
                             decision === "PARTIALLY_APPROVED"
                               ? "border-teal-600 bg-teal-50 text-teal-800 ring-2 ring-teal-500"
                               : "border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -704,7 +704,7 @@ export function AdminAppealsClient({
                         <button
                           type="button"
                           onClick={() => setDecision("REJECTED")}
-                          className={`rounded-lg border p-2.5 text-xs font-semibold transition ${
+                          className={`rounded-lg border p-2.5 text-xs font-medium transition ${
                             decision === "REJECTED"
                               ? "border-red-600 bg-red-50 text-red-800 ring-2 ring-red-500"
                               : "border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -739,7 +739,7 @@ export function AdminAppealsClient({
                     )}
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700">
+                      <label className="block text-xs font-medium text-slate-700">
                         Decision Explanation (Shared with appellant) *
                       </label>
                       <textarea
@@ -753,7 +753,7 @@ export function AdminAppealsClient({
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700">
+                      <label className="block text-xs font-medium text-slate-700">
                         Internal Review Notes (Admin only, optional)
                       </label>
                       <textarea
@@ -773,14 +773,14 @@ export function AdminAppealsClient({
                       <button
                         type="button"
                         onClick={() => setDecisionModalOpen(false)}
-                        className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                        className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={isSubmittingDecision}
-                        className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+                        className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-50"
                       >
                         {isSubmittingDecision ? "Recording Decision…" : "Record Decision"}
                       </button>

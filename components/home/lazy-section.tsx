@@ -325,7 +325,7 @@ function ProgressivePropertySection({
   if (isError && cards.length === 0) {
     return (
       <div ref={containerRef} className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-6 sm:p-8 text-center my-4">
-        <h3 className="text-base font-semibold text-[#1f1f1f]">{section.title}</h3>
+        <h3 className="text-base font-medium text-[#1f1f1f]">{section.title}</h3>
         <p className="mt-1 text-xs text-[#727272]">Unable to load properties for this collection.</p>
         <button
           type="button"

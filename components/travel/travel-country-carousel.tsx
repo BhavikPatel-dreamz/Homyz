@@ -22,7 +22,7 @@ export function TravelCountryCarousel({
   if (displayItems.length === 0) {
     return (
       <section className="my-8 rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/70 px-5 py-6 text-center">
-        <p className="text-sm font-semibold text-zinc-800">
+        <p className="text-sm font-medium text-zinc-800">
           Your destinations will appear here
         </p>
         <p className="mt-1 text-xs text-zinc-500">
@@ -93,7 +93,7 @@ export function TravelCountryCarousel({
                 {item.isVerified && (
                   <span
                     title="Verified Destination (Completed Homyz Stay)"
-                    className="absolute bottom-0 right-0 z-10 size-5 sm:size-6 rounded-full bg-blue-600 border-2 border-white text-white flex items-center justify-center text-[10px] sm:text-xs font-bold shadow"
+                    className="absolute bottom-0 right-0 z-10 size-5 sm:size-6 rounded-full bg-blue-600 border-2 border-white text-white flex items-center justify-center text-[10px] sm:text-xs font-medium shadow"
                   >
                     ✓
                   </span>

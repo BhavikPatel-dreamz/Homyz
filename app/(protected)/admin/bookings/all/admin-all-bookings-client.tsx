@@ -418,7 +418,7 @@ export function AdminAllBookingsClient({
             type="button"
             onClick={fetchBookings}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all disabled:opacity-50"
             title="Refresh bookings"
           >
             <svg
@@ -438,7 +438,7 @@ export function AdminAllBookingsClient({
             type="button"
             onClick={exportCSV}
             disabled={bookings.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all disabled:opacity-50"
           >
             <svg className="w-3.5 h-3.5 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -457,7 +457,7 @@ export function AdminAllBookingsClient({
               key={tab.id}
               type="button"
               onClick={() => handleTabChange(tab.id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
                 isActive
                   ? "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-2xs"
                   : "text-[var(--muted-foreground)] hover:text-foreground hover:bg-[var(--surface-secondary)]"
@@ -511,7 +511,7 @@ export function AdminAllBookingsClient({
                 const [sb, so] = e.target.value.split(":");
                 handleSortChange(sb, so);
               }}
-              className="appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] text-foreground pl-3 pr-8 py-2 text-xs font-semibold shadow-2xs outline-none hover:border-[var(--accent)] transition-colors cursor-pointer"
+              className="appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] text-foreground pl-3 pr-8 py-2 text-xs font-medium shadow-2xs outline-none hover:border-[var(--accent)] transition-colors cursor-pointer"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={`${opt.sortBy}:${opt.sortOrder}`} value={`${opt.sortBy}:${opt.sortOrder}`}>
@@ -534,7 +534,7 @@ export function AdminAllBookingsClient({
           <button
             type="button"
             onClick={handleOpenDrawer}
-            className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all ${
+            className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-medium shadow-2xs transition-all ${
               activeFiltersCount > 0
                 ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]"
                 : "border-[var(--border)] bg-[var(--surface)] text-foreground hover:bg-[var(--surface-secondary)]"
@@ -545,7 +545,7 @@ export function AdminAllBookingsClient({
             </svg>
             <span>Filters</span>
             {activeFiltersCount > 0 && (
-              <span className="rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] px-1.5 py-0.2 text-[10px] font-bold">
+              <span className="rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] px-1.5 py-0.2 text-[10px] font-medium">
                 {activeFiltersCount}
               </span>
             )}
@@ -570,7 +570,7 @@ export function AdminAllBookingsClient({
           <button
             type="button"
             onClick={fetchBookings}
-            className="font-semibold underline ml-2 hover:opacity-80"
+            className="font-medium underline ml-2 hover:opacity-80"
           >
             Retry
           </button>
@@ -581,7 +581,7 @@ export function AdminAllBookingsClient({
       <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
+            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-medium uppercase tracking-wider">
               <tr>
                 <th className="py-3 px-3.5 whitespace-nowrap">Booking ID</th>
                 <th className="py-3 px-3.5">Property</th>
@@ -613,13 +613,13 @@ export function AdminAllBookingsClient({
                       <svg className="w-8 h-8 text-[var(--muted-foreground)] opacity-40" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                       </svg>
-                      <p className="font-semibold text-foreground text-sm">No bookings found matching filters</p>
+                      <p className="font-medium text-foreground text-sm">No bookings found matching filters</p>
                       <p className="text-xs text-[var(--muted-foreground)]">Try clearing active filters or adjusting search terms.</p>
                       {activeFiltersCount > 0 && (
                         <button
                           type="button"
                           onClick={handleClearAllFilters}
-                          className="mt-2 rounded-xl bg-[var(--surface-secondary)] border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-[var(--surface)] transition-all"
+                          className="mt-2 rounded-xl bg-[var(--surface-secondary)] border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-foreground hover:bg-[var(--surface)] transition-all"
                         >
                           Clear Filters
                         </button>
@@ -639,13 +639,13 @@ export function AdminAllBookingsClient({
                       onClick={() => setSelectedBooking(booking)}
                     >
                       {/* Booking ID */}
-                      <td className="py-3.5 px-3.5 whitespace-nowrap font-mono font-bold text-foreground">
+                      <td className="py-3.5 px-3.5 whitespace-nowrap font-mono font-medium text-foreground">
                         #{booking.id.slice(-8)}
                       </td>
 
                       {/* Property */}
                       <td className="py-3.5 px-3.5 max-w-[200px]">
-                        <span className="font-semibold text-foreground truncate block">{booking.listing.title}</span>
+                        <span className="font-medium text-foreground truncate block">{booking.listing.title}</span>
                         <span className="text-[10px] text-[var(--muted-foreground)] truncate block">
                           {booking.listing.city || "—"}, {booking.listing.country || "—"}
                         </span>
@@ -653,7 +653,7 @@ export function AdminAllBookingsClient({
 
                       {/* Guest */}
                       <td className="py-3.5 px-3.5">
-                        <span className="font-semibold text-foreground block">{booking.user.name || "Guest"}</span>
+                        <span className="font-medium text-foreground block">{booking.user.name || "Guest"}</span>
                         <span className="text-[10px] text-[var(--muted-foreground)] block">{booking.user.email}</span>
                       </td>
 
@@ -681,7 +681,7 @@ export function AdminAllBookingsClient({
                       {/* Booking Status */}
                       <td className="py-3.5 px-3.5 whitespace-nowrap">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${
                             booking.status === "CONFIRMED"
                               ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
                               : booking.status === "CANCELLED"
@@ -696,7 +696,7 @@ export function AdminAllBookingsClient({
                       {/* Payment Status */}
                       <td className="py-3.5 px-3.5 whitespace-nowrap">
                         <span
-                          className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold ${
+                          className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-mono font-medium ${
                             booking.paymentStatus === "CAPTURED" || booking.paymentStatus === "PAID"
                               ? "bg-emerald-100/60 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
                               : booking.paymentStatus === "FAILED"
@@ -709,7 +709,7 @@ export function AdminAllBookingsClient({
                       </td>
 
                       {/* Total */}
-                      <td className="py-3.5 px-3.5 whitespace-nowrap font-mono font-semibold text-foreground">
+                      <td className="py-3.5 px-3.5 whitespace-nowrap font-mono font-medium text-foreground">
                         {formatPrice(totalPrice, booking.currency)}
                       </td>
 
@@ -726,7 +726,7 @@ export function AdminAllBookingsClient({
                             e.stopPropagation();
                             setSelectedBooking(booking);
                           }}
-                          className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-semibold text-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+                          className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-medium text-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
                         >
                           View Details
                         </button>
@@ -763,11 +763,11 @@ export function AdminAllBookingsClient({
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <span className="font-mono font-bold text-[10px] text-foreground block">#{booking.id.slice(-8)}</span>
-                    <h3 className="font-bold text-xs text-foreground mt-0.5">{booking.listing.title}</h3>
+                    <span className="font-mono font-medium text-[10px] text-foreground block">#{booking.id.slice(-8)}</span>
+                    <h3 className="font-medium text-xs text-foreground mt-0.5">{booking.listing.title}</h3>
                   </div>
                   <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${
                       booking.status === "CONFIRMED"
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
                         : booking.status === "CANCELLED"
@@ -781,15 +781,15 @@ export function AdminAllBookingsClient({
 
                 <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-[var(--border-subtle)]">
                   <div>
-                    <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-bold">Guest</span>
-                    <span className="font-semibold text-foreground">{booking.user.name || "Guest"}</span>
+                    <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-medium">Guest</span>
+                    <span className="font-medium text-foreground">{booking.user.name || "Guest"}</span>
                   </div>
                   <div>
-                    <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-bold">Amount</span>
-                    <span className="font-bold text-foreground font-mono">{formatPrice(totalPrice, booking.currency)}</span>
+                    <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-medium">Amount</span>
+                    <span className="font-medium text-foreground font-mono">{formatPrice(totalPrice, booking.currency)}</span>
                   </div>
                   <div className="col-span-2">
-                    <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-bold">Dates</span>
+                    <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-medium">Dates</span>
                     <span className="font-mono text-[var(--muted-foreground)]">
                       {formatDate(booking.startDate)} → {formatDate(booking.endDate)} ({nights} nights)
                     </span>
@@ -806,7 +806,7 @@ export function AdminAllBookingsClient({
                       e.stopPropagation();
                       setSelectedBooking(booking);
                     }}
-                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
                   >
                     View Details
                   </button>
@@ -837,7 +837,7 @@ export function AdminAllBookingsClient({
             <div>
               <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4 mb-5">
                 <div>
-                  <h3 className="text-base font-bold text-foreground">Advanced Filters</h3>
+                  <h3 className="text-base font-medium text-foreground">Advanced Filters</h3>
                   <p className="text-xs text-[var(--muted-foreground)]">Filter booking records across properties.</p>
                 </div>
                 <button
@@ -853,7 +853,7 @@ export function AdminAllBookingsClient({
               <div className="flex flex-col gap-4 text-xs overflow-y-auto max-h-[calc(100vh-200px)] pr-1">
                 {/* Booking Mode */}
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-1">
+                  <label className="block text-[11px] font-medium uppercase tracking-wider text-[var(--muted-foreground)] mb-1">
                     Booking Mode
                   </label>
                   <select
@@ -869,7 +869,7 @@ export function AdminAllBookingsClient({
 
                 {/* Payment Status */}
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-1">
+                  <label className="block text-[11px] font-medium uppercase tracking-wider text-[var(--muted-foreground)] mb-1">
                     Payment Status
                   </label>
                   <select
@@ -889,7 +889,7 @@ export function AdminAllBookingsClient({
 
                 {/* City / Location */}
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-1">
+                  <label className="block text-[11px] font-medium uppercase tracking-wider text-[var(--muted-foreground)] mb-1">
                     City / Location
                   </label>
                   <input
@@ -903,7 +903,7 @@ export function AdminAllBookingsClient({
 
                 {/* Check-In Date Range */}
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-1">
+                  <label className="block text-[11px] font-medium uppercase tracking-wider text-[var(--muted-foreground)] mb-1">
                     Check-In Date Range
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -924,7 +924,7 @@ export function AdminAllBookingsClient({
 
                 {/* Check-Out Date Range */}
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-1">
+                  <label className="block text-[11px] font-medium uppercase tracking-wider text-[var(--muted-foreground)] mb-1">
                     Check-Out Date Range
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -945,7 +945,7 @@ export function AdminAllBookingsClient({
 
                 {/* Created Date Range */}
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-1">
+                  <label className="block text-[11px] font-medium uppercase tracking-wider text-[var(--muted-foreground)] mb-1">
                     Booking Creation Date
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -971,7 +971,7 @@ export function AdminAllBookingsClient({
               <button
                 type="button"
                 onClick={handleClearAllFilters}
-                className="text-xs font-semibold text-[var(--muted-foreground)] hover:text-foreground underline"
+                className="text-xs font-medium text-[var(--muted-foreground)] hover:text-foreground underline"
               >
                 Clear All
               </button>
@@ -979,14 +979,14 @@ export function AdminAllBookingsClient({
                 <button
                   type="button"
                   onClick={() => setFilterDrawerOpen(false)}
-                  className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)] transition-all"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)] transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleApplyFilters}
-                  className="rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] px-5 py-2 text-xs font-semibold shadow-2xs hover:bg-[var(--accent-hover)] transition-all"
+                  className="rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] px-5 py-2 text-xs font-medium shadow-2xs hover:bg-[var(--accent-hover)] transition-all"
                 >
                   Apply Filters
                 </button>
@@ -1002,7 +1002,7 @@ export function AdminAllBookingsClient({
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] text-foreground p-6 shadow-2xl border border-[var(--border)] flex flex-col gap-4 animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
-                <h3 className="text-base font-bold text-foreground">
+                <h3 className="text-base font-medium text-foreground">
                   Booking Details #{selectedBooking.id.slice(-8)}
                 </h3>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -1020,10 +1020,10 @@ export function AdminAllBookingsClient({
 
             <div className="flex flex-col gap-3 text-xs">
               <div className="rounded-xl bg-[var(--surface-secondary)] p-3.5 border border-[var(--border-subtle)] flex flex-col gap-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">
+                <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--muted-foreground)]">
                   Property Information
                 </span>
-                <p className="font-bold text-sm text-foreground">{selectedBooking.listing.title}</p>
+                <p className="font-medium text-sm text-foreground">{selectedBooking.listing.title}</p>
                 <p className="text-[var(--muted-foreground)]">
                   Location: {selectedBooking.listing.city || "—"}, {selectedBooking.listing.country || "—"}
                 </p>
@@ -1034,10 +1034,10 @@ export function AdminAllBookingsClient({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl bg-[var(--surface-secondary)] p-3 border border-[var(--border-subtle)]">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">
+                  <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">
                     Guest Information
                   </span>
-                  <p className="font-bold text-foreground">{selectedBooking.user.name || "Guest"}</p>
+                  <p className="font-medium text-foreground">{selectedBooking.user.name || "Guest"}</p>
                   <p className="text-[11px] text-[var(--muted-foreground)]">{selectedBooking.user.email}</p>
                   {selectedBooking.user.phone && (
                     <p className="text-[11px] text-[var(--muted-foreground)] font-mono">{selectedBooking.user.phone}</p>
@@ -1046,11 +1046,11 @@ export function AdminAllBookingsClient({
                 </div>
 
                 <div className="rounded-xl bg-[var(--surface-secondary)] p-3 border border-[var(--border-subtle)]">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">
+                  <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">
                     Status & Policy
                   </span>
                   <div className="flex flex-col gap-1">
-                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--accent)] text-[var(--accent-foreground)] w-fit">
+                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-[var(--accent)] text-[var(--accent-foreground)] w-fit">
                       {selectedBooking.status}
                     </span>
                     <span className="text-[11px] font-mono text-[var(--muted-foreground)]">
@@ -1066,10 +1066,10 @@ export function AdminAllBookingsClient({
 
               <div className="rounded-xl bg-[var(--surface-secondary)] p-3.5 border border-[var(--border-subtle)] flex justify-between items-center font-mono">
                 <div>
-                  <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-sans font-bold">
+                  <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-sans font-medium">
                     Stay Dates
                   </span>
-                  <span className="font-bold">
+                  <span className="font-medium">
                     {formatDate(selectedBooking.startDate)} → {formatDate(selectedBooking.endDate)}
                   </span>
                   <span className="text-[11px] text-[var(--muted-foreground)] block font-sans">
@@ -1077,10 +1077,10 @@ export function AdminAllBookingsClient({
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-sans font-bold">
+                  <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-sans font-medium">
                     Total Amount
                   </span>
-                  <span className="text-base font-bold text-amber-600 dark:text-amber-400">
+                  <span className="text-base font-medium text-amber-600 dark:text-amber-400">
                     {formatPrice(selectedBooking.totalPrice ?? 0, selectedBooking.currency)}
                   </span>
                   <span className="text-[10px] text-[var(--muted-foreground)] block font-sans">
@@ -1094,7 +1094,7 @@ export function AdminAllBookingsClient({
               <button
                 type="button"
                 onClick={() => setSelectedBooking(null)}
-                className="rounded-full bg-[var(--primary)] text-primary-foreground px-5 py-2 text-xs font-semibold shadow-2xs hover:opacity-90 transition-opacity"
+                className="rounded-full bg-[var(--primary)] text-primary-foreground px-5 py-2 text-xs font-medium shadow-2xs hover:opacity-90 transition-opacity"
               >
                 Close
               </button>

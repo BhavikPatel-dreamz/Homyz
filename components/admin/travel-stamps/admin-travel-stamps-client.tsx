@@ -356,7 +356,7 @@ export function AdminTravelStampsClient({
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-200 pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">
+          <h1 className="text-2xl font-medium tracking-tight text-zinc-900 sm:text-3xl">
             Travel Stamp Catalog
           </h1>
           <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
@@ -369,7 +369,7 @@ export function AdminTravelStampsClient({
         <button
           type="button"
           onClick={handleOpenCreate}
-          className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-black transition cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-black transition cursor-pointer"
         >
           <span className="text-base leading-none">+</span>
           <span>Create Travel Stamp</span>
@@ -382,13 +382,13 @@ export function AdminTravelStampsClient({
           <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
             Total Stamps
           </p>
-          <p className="mt-1 text-2xl font-bold text-zinc-900">{stats.total}</p>
+          <p className="mt-1 text-2xl font-medium text-zinc-900">{stats.total}</p>
         </div>
         <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-2xs">
           <p className="text-xs font-medium text-emerald-600 uppercase tracking-wider">
             Active Catalog
           </p>
-          <p className="mt-1 text-2xl font-bold text-emerald-700">
+          <p className="mt-1 text-2xl font-medium text-emerald-700">
             {stats.active}
           </p>
         </div>
@@ -396,7 +396,7 @@ export function AdminTravelStampsClient({
           <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
             Inactive / Archived
           </p>
-          <p className="mt-1 text-2xl font-bold text-zinc-600">
+          <p className="mt-1 text-2xl font-medium text-zinc-600">
             {stats.inactive}
           </p>
         </div>
@@ -404,7 +404,7 @@ export function AdminTravelStampsClient({
           <p className="text-xs font-medium text-amber-600 uppercase tracking-wider">
             Total Guest Collections
           </p>
-          <p className="mt-1 text-2xl font-bold text-amber-700">
+          <p className="mt-1 text-2xl font-medium text-amber-700">
             {stats.totalCollected}
           </p>
         </div>
@@ -453,7 +453,7 @@ export function AdminTravelStampsClient({
               key={status}
               type="button"
               onClick={() => setSelectedStatus(status)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition cursor-pointer ${
                 selectedStatus === status
                   ? "bg-white text-zinc-900 shadow-2xs"
                   : "text-zinc-500 hover:text-zinc-900"
@@ -484,12 +484,12 @@ export function AdminTravelStampsClient({
               {/* Card Top: Design preview & order badge */}
               <div>
                 <div className="flex items-start justify-between gap-2 mb-3">
-                  <span className="inline-flex items-center rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-bold text-zinc-600">
+                  <span className="inline-flex items-center rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600">
                     #{stamp.displayOrder}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
                         stamp.isActive
                           ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                           : "bg-zinc-100 text-zinc-500 border border-zinc-200"
@@ -497,7 +497,7 @@ export function AdminTravelStampsClient({
                     >
                       {stamp.isActive ? "Active" : "Archived"}
                     </span>
-                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200/70">
+                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-800 border border-amber-200/70">
                       {stamp.category}
                     </span>
                   </div>
@@ -523,7 +523,7 @@ export function AdminTravelStampsClient({
 
                 {/* Info */}
                 <div className="mt-3 text-center">
-                  <h3 className="text-sm font-bold text-zinc-900 truncate">
+                  <h3 className="text-sm font-medium text-zinc-900 truncate">
                     {stamp.title || stamp.displayName}
                   </h3>
                   <p className="text-xs text-zinc-500 mt-0.5">
@@ -560,21 +560,21 @@ export function AdminTravelStampsClient({
                   <button
                     type="button"
                     onClick={() => handleOpenEdit(stamp)}
-                    className="rounded-lg px-2.5 py-1 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition cursor-pointer"
+                    className="rounded-lg px-2.5 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-100 transition cursor-pointer"
                   >
                     Edit
                   </button>
                   <button
                     type="button"
                     onClick={() => handleToggleActive(stamp)}
-                    className="rounded-lg px-2 py-1 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 transition cursor-pointer"
+                    className="rounded-lg px-2 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-100 transition cursor-pointer"
                   >
                     {stamp.isActive ? "Deactivate" : "Activate"}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(stamp)}
-                    className="rounded-lg px-2 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                    className="rounded-lg px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 transition cursor-pointer"
                     title="Delete or safely archive"
                   >
                     ✕
@@ -589,7 +589,7 @@ export function AdminTravelStampsClient({
           <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-amber-100 text-2xl">
             🛂
           </div>
-          <h3 className="text-base font-bold text-zinc-800">
+          <h3 className="text-base font-medium text-zinc-800">
             No travel stamps found
           </h3>
           <p className="mt-1 text-xs text-zinc-500 max-w-sm mx-auto">
@@ -600,7 +600,7 @@ export function AdminTravelStampsClient({
           <button
             type="button"
             onClick={handleOpenCreate}
-            className="mt-4 rounded-full bg-zinc-900 px-5 py-2 text-xs font-semibold text-white hover:bg-black transition cursor-pointer"
+            className="mt-4 rounded-full bg-zinc-900 px-5 py-2 text-xs font-medium text-white hover:bg-black transition cursor-pointer"
           >
             Create Travel Stamp
           </button>
@@ -613,7 +613,7 @@ export function AdminTravelStampsClient({
           <div className="relative w-full max-w-xl overflow-hidden rounded-3xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-4">
               <div>
-                <h2 className="text-lg font-bold text-zinc-900">
+                <h2 className="text-lg font-medium text-zinc-900">
                   {formData.id
                     ? "Edit Travel Stamp"
                     : "Create New Travel Stamp"}
@@ -638,7 +638,7 @@ export function AdminTravelStampsClient({
             >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700">
+                  <label className="block text-xs font-medium text-zinc-700">
                     Display Name <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -657,7 +657,7 @@ export function AdminTravelStampsClient({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700">
+                  <label className="block text-xs font-medium text-zinc-700">
                     Full Title / Explorer Tag
                   </label>
                   <input
@@ -675,7 +675,7 @@ export function AdminTravelStampsClient({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700">
+                  <label className="block text-xs font-medium text-zinc-700">
                     Country
                   </label>
                   <input
@@ -690,7 +690,7 @@ export function AdminTravelStampsClient({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700">
+                  <label className="block text-xs font-medium text-zinc-700">
                     City / Destination
                   </label>
                   <input
@@ -705,7 +705,7 @@ export function AdminTravelStampsClient({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700">
+                  <label className="block text-xs font-medium text-zinc-700">
                     Category
                   </label>
                   <select
@@ -724,7 +724,7 @@ export function AdminTravelStampsClient({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700">
+                  <label className="block text-xs font-medium text-zinc-700">
                     Display Order
                   </label>
                   <input
@@ -742,7 +742,7 @@ export function AdminTravelStampsClient({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700">
+                <label className="block text-xs font-medium text-zinc-700">
                   Description
                 </label>
                 <textarea
@@ -758,7 +758,7 @@ export function AdminTravelStampsClient({
 
               {/* Artwork Upload & Preview */}
               <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-4">
-                <label className="block text-xs font-bold text-zinc-800 mb-1">
+                <label className="block text-xs font-medium text-zinc-800 mb-1">
                   Stamp Design Artwork <span className="text-rose-500">*</span>
                 </label>
                 <p className="text-[11px] text-zinc-500 mb-3">
@@ -791,7 +791,7 @@ export function AdminTravelStampsClient({
                       accept="image/png,image/jpeg,image/webp"
                       onChange={handleFileUpload}
                       disabled={isUploading}
-                      className="block w-full text-xs text-zinc-600 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-zinc-900 file:text-white hover:file:bg-black file:cursor-pointer"
+                      className="block w-full text-xs text-zinc-600 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-medium file:bg-zinc-900 file:text-white hover:file:bg-black file:cursor-pointer"
                     />
                     {isUploading && (
                       <p className="text-xs text-amber-600 font-medium mt-1">
@@ -810,7 +810,7 @@ export function AdminTravelStampsClient({
               {/* Guest Profile Live Preview Box */}
               {formData.iconUrl && (
                 <div className="rounded-2xl border border-amber-200 bg-amber-50/40 p-4">
-                  <p className="text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-2">
+                  <p className="text-[11px] font-medium text-amber-900 uppercase tracking-wider mb-2">
                     Live Guest Profile Preview (Where I&apos;ve Been)
                   </p>
                   <div className="flex justify-center py-2">
@@ -841,7 +841,7 @@ export function AdminTravelStampsClient({
               {/* Active Toggle */}
               <div className="flex items-center justify-between rounded-xl border border-zinc-200 px-4 py-3">
                 <div>
-                  <p className="text-xs font-semibold text-zinc-900">
+                  <p className="text-xs font-medium text-zinc-900">
                     Active for Traveler Selection
                   </p>
                   <p className="text-[11px] text-zinc-500">
@@ -863,14 +863,14 @@ export function AdminTravelStampsClient({
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="rounded-full border border-zinc-200 px-5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition"
+                  className="rounded-full border border-zinc-200 px-5 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPending || isUploading}
-                  className="rounded-full bg-zinc-900 px-6 py-2 text-xs font-bold text-white hover:bg-black transition disabled:opacity-50"
+                  className="rounded-full bg-zinc-900 px-6 py-2 text-xs font-medium text-white hover:bg-black transition disabled:opacity-50"
                 >
                   {isPending
                     ? "Saving..."
@@ -888,7 +888,7 @@ export function AdminTravelStampsClient({
       {previewStamp && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
           <div className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl p-6 text-center">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-amber-800">
+            <h3 className="text-sm font-medium uppercase tracking-wider text-amber-800">
               Guest Profile Preview
             </h3>
             <p className="text-xs text-zinc-500 mt-1">
@@ -914,7 +914,7 @@ export function AdminTravelStampsClient({
                     <span className="text-4xl">🏛️</span>
                   )}
                 </div>
-                <span className="text-sm font-semibold text-zinc-800 mt-3">
+                <span className="text-sm font-medium text-zinc-800 mt-3">
                   {previewStamp.displayName}
                 </span>
                 <span className="text-[11px] text-zinc-400 capitalize">
@@ -947,7 +947,7 @@ export function AdminTravelStampsClient({
             <button
               type="button"
               onClick={() => setPreviewStamp(null)}
-              className="w-full rounded-full bg-zinc-900 py-2.5 text-xs font-bold text-white hover:bg-black transition"
+              className="w-full rounded-full bg-zinc-900 py-2.5 text-xs font-medium text-white hover:bg-black transition"
             >
               Close Preview
             </button>

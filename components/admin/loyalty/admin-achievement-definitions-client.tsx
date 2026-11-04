@@ -46,7 +46,7 @@ export function AdminAchievementDefinitionsClient({ initialDefinitions }: { init
 
   return <section className="space-y-6 p-4 sm:p-6">
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div><h1 className="text-2xl font-semibold text-slate-900">Achievement management</h1><p className="mt-1 text-sm text-slate-600">Draft, review, publish, pause, and archive StayElite definitions. Publishing never enables automatic awards.</p></div>
+      <div><h1 className="text-2xl font-medium text-slate-900">Achievement management</h1><p className="mt-1 text-sm text-slate-600">Draft, review, publish, pause, and archive StayElite definitions. Publishing never enables automatic awards.</p></div>
       <button type="button" onClick={() => { setEditingId(null); setDraft(EMPTY); setOpen((value) => !value); }} className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white">{open ? "Close draft form" : "New definition"}</button>
     </div>
     {open && <form onSubmit={(event) => { event.preventDefault(); saveDefinition(); }} className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-2">

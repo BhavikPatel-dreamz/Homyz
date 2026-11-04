@@ -429,11 +429,11 @@ export default function CmsContentEditorPage() {
   if (!content) {
     return (
       <div className="py-24 text-center space-y-4">
-        <h2 className="text-lg font-bold text-zinc-800">Content Item Not Found</h2>
+        <h2 className="text-lg font-medium text-zinc-800">Content Item Not Found</h2>
         <p className="text-sm text-zinc-500">The requested content record does not exist or was deleted.</p>
         <Link
           href="/admin/cms"
-          className="inline-flex px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-semibold hover:bg-zinc-800"
+          className="inline-flex px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800"
         >
           Return to Content List
         </Link>
@@ -452,7 +452,7 @@ export default function CmsContentEditorPage() {
           <div className="flex items-center gap-2 mb-1">
             <Link
               href="/admin/cms"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-500 hover:text-zinc-900"
+              className="inline-flex items-center gap-1 text-xs font-medium text-zinc-500 hover:text-zinc-900"
             >
               ← All CMS Content
             </Link>
@@ -460,13 +460,13 @@ export default function CmsContentEditorPage() {
             <span className="text-xs text-zinc-400 font-mono">{content.type}</span>
           </div>
 
-          <h1 className="text-xl sm:text-2xl font-bold text-[var(--foreground)]">
+          <h1 className="text-xl sm:text-2xl font-medium text-[var(--foreground)]">
             {title || content.title}
           </h1>
 
           <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-[var(--muted-foreground)]">
             <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
                 isPublished
                   ? "bg-emerald-100 text-emerald-800"
                   : content.status === "DRAFT"
@@ -487,7 +487,7 @@ export default function CmsContentEditorPage() {
               )}
             </span>
             {isDirty && (
-              <span className="inline-flex items-center gap-1 text-amber-600 font-semibold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+              <span className="inline-flex items-center gap-1 text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
                 Unsaved changes
               </span>
@@ -502,7 +502,7 @@ export default function CmsContentEditorPage() {
               type="button"
               disabled={resolvingPreview}
               onClick={() => handlePreview()}
-              className="px-3 py-2 border border-zinc-200 bg-white text-zinc-700 rounded-xl text-xs font-semibold hover:bg-zinc-50 transition shadow-2xs inline-flex items-center gap-1.5 disabled:opacity-50"
+              className="px-3 py-2 border border-zinc-200 bg-white text-zinc-700 rounded-xl text-xs font-medium hover:bg-zinc-50 transition shadow-2xs inline-flex items-center gap-1.5 disabled:opacity-50"
             >
               <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -518,7 +518,7 @@ export default function CmsContentEditorPage() {
               fetchRevisions();
               setShowHistory(true);
             }}
-            className="px-3 py-2 border border-zinc-200 bg-white text-zinc-700 rounded-xl text-xs font-semibold hover:bg-zinc-50 transition shadow-2xs inline-flex items-center gap-1.5"
+            className="px-3 py-2 border border-zinc-200 bg-white text-zinc-700 rounded-xl text-xs font-medium hover:bg-zinc-50 transition shadow-2xs inline-flex items-center gap-1.5"
           >
             <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -530,7 +530,7 @@ export default function CmsContentEditorPage() {
             <button
               type="button"
               onClick={() => setShowScheduleModal(true)}
-              className="px-3 py-2 border border-zinc-200 bg-white text-zinc-700 rounded-xl text-xs font-semibold hover:bg-zinc-50 transition shadow-2xs inline-flex items-center gap-1.5"
+              className="px-3 py-2 border border-zinc-200 bg-white text-zinc-700 rounded-xl text-xs font-medium hover:bg-zinc-50 transition shadow-2xs inline-flex items-center gap-1.5"
             >
               <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -544,7 +544,7 @@ export default function CmsContentEditorPage() {
               type="button"
               disabled={unpublishing}
               onClick={handleUnpublish}
-              className="px-3 py-2 border border-rose-200 text-rose-700 bg-rose-50/50 rounded-xl text-xs font-semibold hover:bg-rose-100/60 transition disabled:opacity-50"
+              className="px-3 py-2 border border-rose-200 text-rose-700 bg-rose-50/50 rounded-xl text-xs font-medium hover:bg-rose-100/60 transition disabled:opacity-50"
             >
               {unpublishing ? "Unpublishing..." : "Unpublish"}
             </button>
@@ -555,7 +555,7 @@ export default function CmsContentEditorPage() {
               type="button"
               disabled={saving}
               onClick={() => handleSaveDraft()}
-              className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-semibold hover:bg-zinc-800 disabled:opacity-50 transition shadow-xs"
+              className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 disabled:opacity-50 transition shadow-xs"
             >
               {saving ? "Saving Draft..." : "Save Draft"}
             </button>
@@ -566,7 +566,7 @@ export default function CmsContentEditorPage() {
               type="button"
               disabled={publishing}
               onClick={handlePublish}
-              className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 transition shadow-xs inline-flex items-center gap-1.5"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-medium hover:bg-emerald-700 disabled:opacity-50 transition shadow-xs inline-flex items-center gap-1.5"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -581,7 +581,7 @@ export default function CmsContentEditorPage() {
       {error && (
         <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs sm:text-sm font-medium flex items-center justify-between">
           <span>{error}</span>
-          <button type="button" onClick={() => setError(null)} className="text-rose-500 hover:text-rose-700 font-bold ml-2">
+          <button type="button" onClick={() => setError(null)} className="text-rose-500 hover:text-rose-700 font-medium ml-2">
             ✕
           </button>
         </div>
@@ -590,7 +590,7 @@ export default function CmsContentEditorPage() {
       {successMsg && (
         <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs sm:text-sm font-medium flex items-center justify-between">
           <span>{successMsg}</span>
-          <button type="button" onClick={() => setSuccessMsg(null)} className="text-emerald-500 hover:text-emerald-700 font-bold ml-2">
+          <button type="button" onClick={() => setSuccessMsg(null)} className="text-emerald-500 hover:text-emerald-700 font-medium ml-2">
             ✕
           </button>
         </div>
@@ -600,14 +600,14 @@ export default function CmsContentEditorPage() {
       <div className="bg-white rounded-2xl border border-zinc-200 p-3 sm:p-4 shadow-xs space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-medium text-zinc-900 uppercase tracking-wider flex items-center gap-1.5">
               <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
               </svg>
               Multilingual Translations
             </span>
             {content?.locale === "ar" && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-800 border border-amber-200">
                 Arabic RTL Layout Active
               </span>
             )}
@@ -616,7 +616,7 @@ export default function CmsContentEditorPage() {
           {translationsData && (
             <div className="text-xs text-zinc-500 font-medium">
               Completeness:{" "}
-              <span className="font-bold text-zinc-800">
+              <span className="font-medium text-zinc-800">
                 {translationsData.translations?.length || 1} / {translationsData.supportedLocales?.length || 6}
               </span>{" "}
               languages
@@ -632,16 +632,16 @@ export default function CmsContentEditorPage() {
               <Link
                 key={item.id}
                 href={`/admin/cms/${item.id}`}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
                   isCurrent
                     ? "bg-zinc-900 text-white border-zinc-900 shadow-xs"
                     : "bg-zinc-50 text-zinc-700 border-zinc-200 hover:bg-zinc-100 hover:border-zinc-300"
                 }`}
               >
-                <span className="font-mono uppercase font-bold text-[11px]">{item.locale}</span>
+                <span className="font-mono uppercase font-medium text-[11px]">{item.locale}</span>
                 <span className="truncate max-w-[120px]">{item.title}</span>
                 <span
-                  className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                  className={`text-[9px] px-1.5 py-0.5 rounded font-medium uppercase ${
                     item.status === "PUBLISHED"
                       ? isCurrent
                         ? "bg-emerald-500 text-white"
@@ -662,7 +662,7 @@ export default function CmsContentEditorPage() {
             <button
               type="button"
               onClick={() => setShowAddTranslationModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition shadow-2xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition shadow-2xs"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -682,7 +682,7 @@ export default function CmsContentEditorPage() {
             <button
               type="button"
               onClick={() => setActiveTab("visual")}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition ${
+              className={`px-3 py-1.5 rounded-lg font-medium transition ${
                 activeTab === "visual"
                   ? "bg-white text-zinc-900 shadow-xs"
                   : "text-zinc-600 hover:text-zinc-900"
@@ -693,7 +693,7 @@ export default function CmsContentEditorPage() {
             <button
               type="button"
               onClick={() => setActiveTab("json")}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition ${
+              className={`px-3 py-1.5 rounded-lg font-medium transition ${
                 activeTab === "json"
                   ? "bg-white text-zinc-900 shadow-xs"
                   : "text-zinc-600 hover:text-zinc-900"
@@ -707,7 +707,7 @@ export default function CmsContentEditorPage() {
           <button
             type="button"
             onClick={() => setShowLivePreviewPane(!showLivePreviewPane)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
               showLivePreviewPane
                 ? "bg-zinc-100 border-zinc-300 text-zinc-900"
                 : "bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50"
@@ -744,7 +744,7 @@ export default function CmsContentEditorPage() {
             {(activeTab === "json" || content.type !== "HOMEPAGE_BANNER") && (
               <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-xs space-y-4">
                 <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-                  <h3 className="text-sm font-bold text-zinc-900">
+                  <h3 className="text-sm font-medium text-zinc-900">
                     {content.type === "HOMEPAGE_BANNER" ? "Advanced JSON Configuration" : `${content.type} Attributes`}
                   </h3>
                   <span className="text-[11px] text-zinc-400 font-mono">schema validated</span>
@@ -752,7 +752,7 @@ export default function CmsContentEditorPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 mb-1">Internal Title</label>
+                    <label className="block text-xs font-medium text-zinc-700 mb-1">Internal Title</label>
                     <input
                       type="text"
                       value={title}
@@ -765,7 +765,7 @@ export default function CmsContentEditorPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 mb-1">URL Slug</label>
+                    <label className="block text-xs font-medium text-zinc-700 mb-1">URL Slug</label>
                     <input
                       type="text"
                       value={slug}
@@ -778,7 +778,7 @@ export default function CmsContentEditorPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 mb-1">Structured JSON Payload</label>
+                    <label className="block text-xs font-medium text-zinc-700 mb-1">Structured JSON Payload</label>
                     <textarea
                       rows={14}
                       value={payloadText}
@@ -788,7 +788,7 @@ export default function CmsContentEditorPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 mb-1">Change Summary / Revision Note</label>
+                    <label className="block text-xs font-medium text-zinc-700 mb-1">Change Summary / Revision Note</label>
                     <input
                       type="text"
                       placeholder="e.g. Updated content fields and configuration"
@@ -808,10 +808,10 @@ export default function CmsContentEditorPage() {
               <div className="sticky top-20 bg-white p-5 rounded-2xl border border-zinc-200 shadow-xs space-y-4">
                 <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
                   <div>
-                    <h3 className="text-sm font-bold text-zinc-900">Live Visual Preview</h3>
+                    <h3 className="text-sm font-medium text-zinc-900">Live Visual Preview</h3>
                     <p className="text-[11px] text-zinc-500">Real-time storefront presentation</p>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-800">
                     Live Reactive
                   </span>
                 </div>
@@ -835,10 +835,10 @@ export default function CmsContentEditorPage() {
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] p-6 shadow-2xl border border-zinc-200 flex flex-col space-y-4 overflow-y-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
-                <span className="inline-block px-2 py-0.5 text-xs font-bold bg-amber-100 text-amber-800 rounded-md mr-2">
+                <span className="inline-block px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded-md mr-2">
                   SNAPSHOT PREVIEW
                 </span>
-                <span className="text-sm font-bold text-zinc-900">
+                <span className="text-sm font-medium text-zinc-900">
                   {previewData.content?.title} (Revision #{previewData.version?.versionNumber})
                 </span>
               </div>
@@ -862,7 +862,7 @@ export default function CmsContentEditorPage() {
             {/* Shareable Token Notice */}
             {previewToken && (
               <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-xs space-y-1">
-                <div className="flex items-center justify-between text-zinc-600 font-semibold">
+                <div className="flex items-center justify-between text-zinc-600 font-medium">
                   <span>Authorized Preview Endpoint:</span>
                   <button
                     type="button"
@@ -870,7 +870,7 @@ export default function CmsContentEditorPage() {
                       navigator.clipboard.writeText(`${window.location.origin}/api/v1/admin/cms/preview/${previewToken}`);
                       alert("Preview link copied to clipboard!");
                     }}
-                    className="text-emerald-600 hover:text-emerald-700 font-bold"
+                    className="text-emerald-600 hover:text-emerald-700 font-medium"
                   >
                     Copy Link
                   </button>
@@ -885,7 +885,7 @@ export default function CmsContentEditorPage() {
               <button
                 type="button"
                 onClick={() => setShowPreviewModal(false)}
-                className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-semibold"
+                className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium"
               >
                 Close Preview
               </button>
@@ -900,7 +900,7 @@ export default function CmsContentEditorPage() {
           <div className="bg-white w-full max-w-lg h-full p-6 shadow-2xl flex flex-col space-y-4 overflow-y-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
-                <h3 className="text-base font-bold text-zinc-900">Immutable Version History</h3>
+                <h3 className="text-base font-medium text-zinc-900">Immutable Version History</h3>
                 <p className="text-xs text-zinc-500">Every save creates a permanent, non-destructive snapshot.</p>
               </div>
               <button
@@ -929,17 +929,17 @@ export default function CmsContentEditorPage() {
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-sm text-zinc-900">
+                      <span className="font-medium text-sm text-zinc-900">
                         Revision #{rev.versionNumber}
                       </span>
                       <div className="flex items-center gap-1.5">
                         {isLive && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-800">
                             LIVE STOREFRONT
                           </span>
                         )}
                         {isCurrentDraft && !isLive && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-800">
                             CURRENT DRAFT
                           </span>
                         )}
@@ -988,7 +988,7 @@ export default function CmsContentEditorPage() {
         <ModalOverlay className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-zinc-200">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-              <h3 className="text-base font-bold text-zinc-900">Schedule Publishing Action</h3>
+              <h3 className="text-base font-medium text-zinc-900">Schedule Publishing Action</h3>
               <button
                 type="button"
                 onClick={() => setShowScheduleModal(false)}
@@ -1000,7 +1000,7 @@ export default function CmsContentEditorPage() {
 
             <form onSubmit={handleScheduleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Action Type</label>
+                <label className="block text-xs font-medium text-zinc-700 mb-1">Action Type</label>
                 <select
                   value={scheduleActionType}
                   onChange={(e) => setScheduleActionType(e.target.value as any)}
@@ -1012,7 +1012,7 @@ export default function CmsContentEditorPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Scheduled Date & Time</label>
+                <label className="block text-xs font-medium text-zinc-700 mb-1">Scheduled Date & Time</label>
                 <input
                   type="datetime-local"
                   required
@@ -1029,14 +1029,14 @@ export default function CmsContentEditorPage() {
                 <button
                   type="button"
                   onClick={() => setShowScheduleModal(false)}
-                  className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl text-xs font-semibold"
+                  className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl text-xs font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={scheduling}
-                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-semibold hover:bg-zinc-800 disabled:opacity-50"
+                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 disabled:opacity-50"
                 >
                   {scheduling ? "Scheduling..." : "Confirm Schedule"}
                 </button>
@@ -1052,7 +1052,7 @@ export default function CmsContentEditorPage() {
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 space-y-4">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
-                <h3 className="text-base font-bold text-zinc-900">Add Language Translation</h3>
+                <h3 className="text-base font-medium text-zinc-900">Add Language Translation</h3>
                 <p className="text-xs text-zinc-500">Clones current draft payload to a new locale</p>
               </div>
               <button
@@ -1065,7 +1065,7 @@ export default function CmsContentEditorPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-zinc-700">Choose Target Language</label>
+              <label className="block text-xs font-medium text-zinc-700">Choose Target Language</label>
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {translationsData?.supportedLocales
                   ?.filter((loc: any) => !loc.isTranslated)
@@ -1075,11 +1075,11 @@ export default function CmsContentEditorPage() {
                       className="flex items-center justify-between p-3 rounded-xl border border-zinc-200 hover:border-zinc-300 bg-zinc-50 hover:bg-white transition"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="font-mono uppercase text-xs font-bold px-2 py-0.5 rounded bg-zinc-200 text-zinc-800">
+                        <span className="font-mono uppercase text-xs font-medium px-2 py-0.5 rounded bg-zinc-200 text-zinc-800">
                           {loc.locale}
                         </span>
                         <div>
-                          <div className="text-xs font-semibold text-zinc-900">{loc.label}</div>
+                          <div className="text-xs font-medium text-zinc-900">{loc.label}</div>
                           <div className="text-[10px] text-zinc-500 uppercase">{loc.dir === "rtl" ? "Right-to-Left (RTL)" : "Left-to-Right (LTR)"}</div>
                         </div>
                       </div>
@@ -1088,7 +1088,7 @@ export default function CmsContentEditorPage() {
                         type="button"
                         disabled={creatingTranslationLocale !== null}
                         onClick={() => handleCreateTranslation(loc.locale)}
-                        className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 transition shadow-2xs"
+                        className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 disabled:opacity-50 transition shadow-2xs"
                       >
                         {creatingTranslationLocale === loc.locale ? "Creating..." : "Translate"}
                       </button>
@@ -1107,7 +1107,7 @@ export default function CmsContentEditorPage() {
               <button
                 type="button"
                 onClick={() => setShowAddTranslationModal(false)}
-                className="px-4 py-2 border border-zinc-200 text-zinc-600 rounded-xl text-xs font-semibold hover:bg-zinc-50 transition"
+                className="px-4 py-2 border border-zinc-200 text-zinc-600 rounded-xl text-xs font-medium hover:bg-zinc-50 transition"
               >
                 Close
               </button>

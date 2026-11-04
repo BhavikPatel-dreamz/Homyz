@@ -293,7 +293,7 @@ export function CalendarSettingsPanel({
 
       <div className="relative flex items-center rounded-lg border border-[#727272] sm:min-h-[56px] min-h-[45px] dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs transition-all focus-within:outline-0 hover:border-zinc-400 dark:hover:border-zinc-600">
         {prefix ? (
-          <span className="pl-3.5 pr-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 select-none shrink-0">
+          <span className="pl-3.5 pr-1 text-xs font-medium text-zinc-500 dark:text-zinc-400 select-none shrink-0">
             {prefix}
           </span>
         ) : null}

@@ -154,7 +154,7 @@ export function LocationSearchInput({
                   onClick={() => handleSelect(dest)}
                   className={`px-3.5 py-2 flex items-center gap-2.5 text-xs transition-colors cursor-pointer  ${
                     isSelected
-                      ? "bg-amber-100 text-amber-900 font-semibold"
+                      ? "bg-amber-100 text-amber-900 font-medium"
                       : isActive
                       ? "bg-amber-50 text-[#1F1F1F] font-medium"
                       : "hover:bg-zinc-50 text-zinc-800"
@@ -166,7 +166,7 @@ export function LocationSearchInput({
                     <p className="text-xs text-[#727272] truncate">{dest.formattedAddress}</p>
                   </div>
                   {dest.countryCode && (
-                    <span className="text-[10px] font-semibold text-[#727272] bg-zinc-100 px-1.5 py-0.5 rounded shrink-0">
+                    <span className="text-[10px] font-medium text-[#727272] bg-zinc-100 px-1.5 py-0.5 rounded shrink-0">
                       {dest.countryCode}
                     </span>
                   )}

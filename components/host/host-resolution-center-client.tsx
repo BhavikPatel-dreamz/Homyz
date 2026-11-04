@@ -297,14 +297,14 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
       {/* Disputes List */}
       {data.disputes.length === 0 ? (
         <div className="rounded-[20px] border border-dashed border-zinc-300 bg-zinc-50 px-6 py-20 text-center text-sm text-[#727272] space-y-3">
-          <p className="font-semibold text-base sm:text-lg text-[#1F1F1F]">{t("host_res_center_empty_title", "No dispute cases found")}</p>
+          <p className="font-medium text-base sm:text-lg text-[#1F1F1F]">{t("host_res_center_empty_title", "No dispute cases found")}</p>
           <p className="max-w-md mx-auto text-xs sm:text-sm">{t("host_res_center_empty_desc", "There are no cases matching the selected filter criteria.")}</p>
           {hasActiveFilters && (
             <div className="pt-2">
               <button
                 type="button"
                 onClick={() => router.push(pathname)}
-                className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-sm font-semibold text-[#1F1F1F] hover:bg-zinc-100 cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-[#1F1F1F] hover:bg-zinc-100 cursor-pointer"
               >
                 {t("host_res_center_btn_clear_filters", "Clear All Filters")}
               </button>
@@ -532,7 +532,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
                     type="button"
                     disabled={data.pagination.page <= 1}
                     onClick={() => navigate({ page: String(data.pagination.page - 1) })}
-                    className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-zinc-50 cursor-pointer"
+                    className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium disabled:opacity-40 hover:bg-zinc-50 cursor-pointer"
                   >
                     {t("host_res_center_btn_prev", "Previous")}
                   </button>
@@ -540,7 +540,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
                     type="button"
                     disabled={data.pagination.page >= data.pagination.totalPages}
                     onClick={() => navigate({ page: String(data.pagination.page + 1) })}
-                    className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-zinc-50 cursor-pointer"
+                    className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium disabled:opacity-40 hover:bg-zinc-50 cursor-pointer"
                   >
                     {t("host_res_center_btn_next", "Next")}
                   </button>

@@ -34,7 +34,7 @@ export function OnboardingPlaceTypeOption({
         </div>
 
         <div>
-          <h3 className="sm:text-lg text-sm sm:font-semibold font-normal text-[#1F1F1F] tracking-tight">
+          <h3 className="sm:text-lg text-sm sm:font-medium font-normal text-[#1F1F1F] tracking-tight">
             {option.title}
           </h3>
           <p className="mt-1.5 sm:text-sm text-xs font-normal text-[#727272] leading-relaxed max-w-lg">

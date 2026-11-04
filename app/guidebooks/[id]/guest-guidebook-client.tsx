@@ -125,7 +125,7 @@ export function GuestGuidebookClient({
     <div className="min-h-screen bg-zinc-50/50 pb-20 font-sans">
       {/* Toast Notification */}
       {copyToast && (
-        <div className="fixed bottom-6 right-6 z-9999 rounded-2xl bg-zinc-900 text-white px-5 py-3 text-xs font-semibold shadow-xl border border-zinc-700 animate-in fade-in slide-in-from-bottom-2 flex items-center gap-2">
+        <div className="fixed bottom-6 right-6 z-9999 rounded-2xl bg-zinc-900 text-white px-5 py-3 text-xs font-medium shadow-xl border border-zinc-700 animate-in fade-in slide-in-from-bottom-2 flex items-center gap-2">
           <span>✓</span>
           <span>{t("guidebook_link_copied", "Guidebook link copied to clipboard!")}</span>
         </div>
@@ -136,26 +136,26 @@ export function GuestGuidebookClient({
         <div className="flex items-center gap-4">
           <Link
             href="/"
-            className="text-sm font-bold text-[#1F1F1F] hover:text-zinc-700 transition-colors"
+            className="text-sm font-medium text-[#1F1F1F] hover:text-zinc-700 transition-colors"
           >
             {t("guidebook_back_to_homyz", "← Back to Homyz")}
           </Link>
           <span className="text-zinc-300">|</span>
-          <span className="text-xs font-semibold text-[#727272] truncate max-w-xs">
+          <span className="text-xs font-medium text-[#727272] truncate max-w-xs">
             {guidebook.title}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           {isOwner && (
-            <span className="text-[10px] font-semibold bg-amber-100 text-amber-900 px-2.5 py-1 rounded-full">
+            <span className="text-[10px] font-medium bg-amber-100 text-amber-900 px-2.5 py-1 rounded-full">
               {t("guidebook_preview_mode", "Preview Mode")}
             </span>
           )}
           <button
             type="button"
             onClick={handleShare}
-            className="rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 text-xs font-semibold px-4 py-1.5 shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+            className="rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 text-xs font-medium px-4 py-1.5 shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <span>🔗</span>
             <span>{t("guidebook_share", "Share")}</span>
@@ -172,7 +172,7 @@ export function GuestGuidebookClient({
           {/* Hero Content */}
           <div className="absolute bottom-6 left-6 right-6 text-white flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
+              <span className="text-xs font-medium uppercase tracking-wider text-amber-300">
                 {t("guidebook_local_host", "Local Host Guidebook")}
               </span>
               <h1>
@@ -193,12 +193,12 @@ export function GuestGuidebookClient({
                   className="w-11 h-11 rounded-full object-cover border border-white/40 shadow-xs"
                 />
               ) : (
-                <div className="w-11 h-11 rounded-full bg-amber-400 text-zinc-950 font-bold flex items-center justify-center text-sm shadow-xs">
+                <div className="w-11 h-11 rounded-full bg-amber-400 text-zinc-950 font-medium flex items-center justify-center text-sm shadow-xs">
                   {guidebook.host.name[0]?.toUpperCase() || "H"}
                 </div>
               )}
               <div>
-                <span className="text-xs font-bold block leading-tight text-white">
+                <span className="text-xs font-medium block leading-tight text-white">
                   {guidebook.host.name}
                 </span>
                 <span className="text-[11px] text-zinc-300 font-medium block">
@@ -227,7 +227,7 @@ export function GuestGuidebookClient({
             <button
               type="button"
               onClick={() => setActiveCategory("ALL")}
-              className={`rounded-full px-3.5 py-1.5 font-semibold text-xs transition-all shrink-0 cursor-pointer ${
+              className={`rounded-full px-3.5 py-1.5 font-medium text-xs transition-all shrink-0 cursor-pointer ${
                 activeCategory === "ALL"
                   ? "bg-zinc-900 text-white shadow-2xs"
                   : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
@@ -240,7 +240,7 @@ export function GuestGuidebookClient({
               <button
                 type="button"
                 onClick={() => setActiveCategory("FAVORITES")}
-                className={`rounded-full px-3.5 py-1.5 font-semibold text-xs transition-all shrink-0 cursor-pointer ${
+                className={`rounded-full px-3.5 py-1.5 font-medium text-xs transition-all shrink-0 cursor-pointer ${
                   activeCategory === "FAVORITES"
                     ? "bg-amber-400 text-zinc-950 shadow-2xs"
                     : "bg-amber-50 border border-amber-200 text-amber-900 hover:bg-amber-100"
@@ -258,7 +258,7 @@ export function GuestGuidebookClient({
                   key={cat.id}
                   type="button"
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`rounded-full px-3.5 py-1.5 font-semibold text-xs transition-all shrink-0 cursor-pointer ${
+                  className={`rounded-full px-3.5 py-1.5 font-medium text-xs transition-all shrink-0 cursor-pointer ${
                     activeCategory === cat.id
                       ? "bg-zinc-900 text-white shadow-2xs"
                       : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
@@ -275,7 +275,7 @@ export function GuestGuidebookClient({
                   key={categoryId}
                   type="button"
                   onClick={() => setActiveCategory(categoryId)}
-                  className={`rounded-full px-3.5 py-1.5 font-semibold text-xs transition-all shrink-0 cursor-pointer ${
+                  className={`rounded-full px-3.5 py-1.5 font-medium text-xs transition-all shrink-0 cursor-pointer ${
                     activeCategory === categoryId
                       ? "bg-zinc-900 text-white shadow-2xs"
                       : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
@@ -317,7 +317,7 @@ export function GuestGuidebookClient({
             {filteredItems.length === 0 ? (
               <div className="rounded-3xl border border-zinc-200 bg-white p-12 text-center space-y-2">
                 <span className="text-3xl">🔍</span>
-                <h3 className="text-sm font-bold text-[#1F1F1F]">{t("guidebook_no_recs_title", "No matching recommendations")}</h3>
+                <h3 className="text-sm font-medium text-[#1F1F1F]">{t("guidebook_no_recs_title", "No matching recommendations")}</h3>
                 <p className="text-xs text-[#727272] font-normal">
                   {t("guidebook_no_recs_desc", "Try clearing your search query or selecting a different category filter.")}
                 </p>
@@ -348,7 +348,7 @@ export function GuestGuidebookClient({
                         <span className="text-4xl">{icon}</span>
                       )}
                       {item.isFavorite && (
-                        <div className="absolute top-2 left-2 bg-amber-400 text-zinc-950 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
+                        <div className="absolute top-2 left-2 bg-amber-400 text-zinc-950 text-[10px] font-medium px-2 py-0.5 rounded-full shadow-xs">
                           {t("guidebook_favorite_badge", "⭐ Favorite")}
                         </div>
                       )}
@@ -358,7 +358,7 @@ export function GuestGuidebookClient({
                     <div className="flex-1 min-w-0 space-y-2">
                       <div>
                         <div className="flex items-baseline justify-between gap-2">
-                          <h3 className="text-sm font-bold text-[#1F1F1F] leading-snug truncate">
+                          <h3 className="text-sm font-medium text-[#1F1F1F] leading-snug truncate">
                             {item.title}
                           </h3>
                         </div>
@@ -380,7 +380,7 @@ export function GuestGuidebookClient({
                         <div className="p-2.5 rounded-2xl bg-amber-50/80 border border-amber-200/60 text-xs text-amber-900 font-medium flex items-start gap-2">
                           <span className="shrink-0 text-sm">💡</span>
                           <span className="leading-relaxed">
-                            <strong className="font-bold">{t("guidebook_host_tip", "Host tip:")} </strong>
+                            <strong className="font-medium">{t("guidebook_host_tip", "Host tip:")} </strong>
                             {item.hostTip}
                           </span>
                         </div>
@@ -396,7 +396,7 @@ export function GuestGuidebookClient({
           <div className="hidden lg:block lg:col-span-5 sticky top-24">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#1F1F1F] uppercase tracking-wider">
+                <span className="text-xs font-medium text-[#1F1F1F] uppercase tracking-wider">
                   {t("guidebook_area_map", `Area Map (${mapPins.length} locations)`).replace("{count}", String(mapPins.length))}
                 </span>
                 <span className="text-[11px] text-[#727272]">{t("guidebook_map_subtitle", "Interactive recommendations map")}</span>
@@ -421,7 +421,7 @@ export function GuestGuidebookClient({
           <button
             type="button"
             onClick={() => setIsMobileMapOpen(true)}
-            className="rounded-full bg-zinc-900 text-white font-semibold text-xs px-5 py-3 shadow-xl flex items-center gap-2 border border-zinc-700 cursor-pointer"
+            className="rounded-full bg-zinc-900 text-white font-medium text-xs px-5 py-3 shadow-xl flex items-center gap-2 border border-zinc-700 cursor-pointer"
           >
             <span>🗺️</span>
             <span>{t("guidebook_show_map", `Show Map (${mapPins.length})`).replace("{count}", String(mapPins.length))}</span>
@@ -434,13 +434,13 @@ export function GuestGuidebookClient({
         <ModalOverlay className="fixed inset-0 z-9999 bg-black/70 backdrop-blur-xs flex flex-col justify-end lg:hidden">
           <div className="bg-white rounded-t-3xl w-full h-[85vh] p-4 flex flex-col space-y-3 animate-in slide-in-from-bottom">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
-              <span className="text-xs font-bold text-[#1F1F1F]">
+              <span className="text-xs font-medium text-[#1F1F1F]">
                 {t("guidebook_map_modal_title", `Guidebook Map (${mapPins.length} places)`).replace("{count}", String(mapPins.length))}
               </span>
               <button
                 type="button"
                 onClick={() => setIsMobileMapOpen(false)}
-                className="w-8 h-8 rounded-full border border-zinc-200 text-zinc-600 flex items-center justify-center text-xs font-bold"
+                className="w-8 h-8 rounded-full border border-zinc-200 text-zinc-600 flex items-center justify-center text-xs font-medium"
               >
                 ✕
               </button>

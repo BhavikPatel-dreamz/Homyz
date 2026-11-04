@@ -10,7 +10,7 @@ export default async function ProfileReportsPage() {
   return (
     <main className="guest-profile mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6">
-        <Link href="/profile" className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors">
+        <Link href="/profile" className="text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors">
           ← Back to profile
         </Link>
       </div>

@@ -25,7 +25,7 @@ export function SettingsErrorState({
       <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-700">
         <AlertTriangleIcon size={24} />
       </div>
-      <h3 className="mt-4 text-base font-semibold text-rose-950 sm:text-lg">
+      <h3 className="mt-4 text-base font-medium text-rose-950 sm:text-lg">
         {title}
       </h3>
       <p className="mx-auto mt-1.5 max-w-md text-xs sm:text-sm text-rose-800 leading-relaxed">
@@ -37,7 +37,7 @@ export function SettingsErrorState({
           <button
             type="button"
             onClick={onRetry}
-            className="rounded-full bg-rose-900 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-rose-950 transition-colors"
+            className="rounded-full bg-rose-900 px-5 py-2.5 text-xs sm:text-sm font-medium text-white hover:bg-rose-950 transition-colors"
           >
             Try again
           </button>
@@ -45,7 +45,7 @@ export function SettingsErrorState({
         {backHref && (
           <Link
             href={backHref}
-            className="rounded-full border border-rose-300 bg-white px-5 py-2.5 text-xs sm:text-sm font-semibold text-rose-900 hover:bg-rose-50 transition-colors"
+            className="rounded-full border border-rose-300 bg-white px-5 py-2.5 text-xs sm:text-sm font-medium text-rose-900 hover:bg-rose-50 transition-colors"
           >
             Return to settings
           </Link>

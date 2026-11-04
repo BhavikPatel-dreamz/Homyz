@@ -92,14 +92,14 @@ export function AdminNav() {
         {/* Left: Brand & Admin Tag */}
         <div className="flex items-center gap-4">
           <Link href="/admin" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] text-primary-foreground flex items-center justify-center font-semibold text-base">
+            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] text-primary-foreground flex items-center justify-center font-medium text-base">
               H
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold tracking-tight text-muted-foreground">
+              <span className="text-sm font-medium tracking-tight text-muted-foreground">
                 homyz
               </span>
-              <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--accent)] -mt-1">
+              <span className="text-[10px] uppercase font-medium tracking-wider text-[var(--accent)] -mt-1">
                 Admin Console
               </span>
             </div>
@@ -119,7 +119,7 @@ export function AdminNav() {
                 href={item.href}
                 className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
                   isActive
-                    ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold shadow-2xs"
+                    ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-medium shadow-2xs"
                     : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground"
                 }`}
               >
@@ -156,7 +156,7 @@ export function AdminNav() {
           {user ? (
             <div className="hidden sm:flex items-center gap-2.5">
               <div className="flex flex-col text-right">
-                <span className="text-xs font-semibold text-muted-foreground">
+                <span className="text-xs font-medium text-muted-foreground">
                   {user.name || user.email?.split("@")[0]}
                 </span>
                 <span className="text-[10px] text-[var(--muted-foreground)]">
@@ -215,7 +215,7 @@ export function AdminNav() {
                   onClick={() => setMobileOpen(false)}
                   className={`rounded-xl px-3 py-2 text-xs font-medium ${
                     isActive
-                      ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold"
+                      ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-medium"
                       : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground"
                   }`}
                 >

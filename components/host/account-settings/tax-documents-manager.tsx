@@ -165,7 +165,7 @@ export function TaxDocumentsManager({
               setErrorMsg(null);
               setIsGenerateModalOpen(true);
             }}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:bg-zinc-800"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-medium text-white shadow-xs transition hover:bg-zinc-800"
           >
             <FileTextIcon size={16} />
             <span>Generate Annual Summary</span>
@@ -179,7 +179,7 @@ export function TaxDocumentsManager({
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 shadow-2xs focus:border-zinc-900 focus:outline-none"
+              className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-800 shadow-2xs focus:border-zinc-900 focus:outline-none"
             >
               <option value="ALL">All Years</option>
               {availableYears.map((yr) => (
@@ -195,7 +195,7 @@ export function TaxDocumentsManager({
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 shadow-2xs focus:border-zinc-900 focus:outline-none"
+              className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-800 shadow-2xs focus:border-zinc-900 focus:outline-none"
             >
               <option value="ALL">All Document Types</option>
               <option value="ANNUAL_TAX_SUMMARY">Annual Tax Summary</option>
@@ -226,7 +226,7 @@ export function TaxDocumentsManager({
                       </div>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-sm font-semibold text-zinc-950">
+                          <h3 className="text-sm font-medium text-zinc-950">
                             {doc.title}
                           </h3>
                           <SettingsStatusBadge label={badge.label} variant={badge.variant} />
@@ -253,7 +253,7 @@ export function TaxDocumentsManager({
                       <a
                         href={`/api/v1/host/tax-documents/${doc.id}/download`}
                         download
-                        className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 shadow-2xs transition hover:border-zinc-300 hover:bg-zinc-50"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-800 shadow-2xs transition hover:border-zinc-300 hover:bg-zinc-50"
                       >
                         <DownloadIcon size={14} className="text-zinc-600" />
                         <span>Download</span>
@@ -266,7 +266,7 @@ export function TaxDocumentsManager({
           ) : (
             <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/60 p-8 text-center">
               <FileTextIcon size={36} className="mx-auto text-zinc-400" />
-              <h3 className="mt-3 text-sm font-semibold text-zinc-900">
+              <h3 className="mt-3 text-sm font-medium text-zinc-900">
                 No tax documents match your filters
               </h3>
               <p className="mx-auto mt-1 max-w-sm text-xs text-zinc-500">
@@ -276,7 +276,7 @@ export function TaxDocumentsManager({
                 <button
                   type="button"
                   onClick={() => setIsGenerateModalOpen(true)}
-                  className="rounded-full bg-zinc-950 px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-zinc-800 transition"
+                  className="rounded-full bg-zinc-950 px-4 py-2 text-xs font-medium text-white shadow-2xs hover:bg-zinc-800 transition"
                 >
                   Generate Tax Summary
                 </button>
@@ -291,7 +291,7 @@ export function TaxDocumentsManager({
         <div className="flex items-start gap-3">
           <InfoIcon size={18} className="mt-0.5 shrink-0 text-zinc-500" />
           <div className="space-y-1">
-            <p className="font-semibold text-zinc-800">
+            <p className="font-medium text-zinc-800">
               Tax Document Specifications & Compliance
             </p>
             <p className="leading-relaxed">
@@ -316,7 +316,7 @@ export function TaxDocumentsManager({
           >
             {/* Pinned Header */}
             <div className="shrink-0 flex items-center justify-between border-b border-zinc-100 px-6 py-5 bg-white">
-              <h3 id="generate-tax-modal-title" className="text-base font-bold text-zinc-950">
+              <h3 id="generate-tax-modal-title" className="text-base font-medium text-zinc-950">
                 Generate Annual Tax Summary
               </h3>
               <button
@@ -332,13 +332,13 @@ export function TaxDocumentsManager({
             {/* Scrollable Form Body */}
             <form id="generate-tax-summary-form" onSubmit={handleGenerateSummary} className="flex-1 overflow-y-auto min-h-0 px-6 py-5 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-800">
+                <label className="block text-xs font-medium text-zinc-800">
                   Select Tax Year
                 </label>
                 <select
                   value={generateYear}
                   onChange={(e) => setGenerateYear(parseInt(e.target.value, 10))}
-                  className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-zinc-900 shadow-2xs focus:border-zinc-900 focus:outline-none"
+                  className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm font-medium text-zinc-900 shadow-2xs focus:border-zinc-900 focus:outline-none"
                 >
                   {availableYears.map((yr) => (
                     <option key={yr} value={yr}>
@@ -365,7 +365,7 @@ export function TaxDocumentsManager({
                 type="button"
                 onClick={() => setIsGenerateModalOpen(false)}
                 disabled={actionLoading}
-                className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition cursor-pointer"
+                className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-100 transition cursor-pointer"
               >
                 Cancel
               </button>
@@ -373,7 +373,7 @@ export function TaxDocumentsManager({
                 type="submit"
                 form="generate-tax-summary-form"
                 disabled={actionLoading}
-                className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-5 py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-5 py-2 text-xs font-medium text-white hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
               >
                 {actionLoading ? "Generating..." : "Generate PDF Summary"}
               </button>

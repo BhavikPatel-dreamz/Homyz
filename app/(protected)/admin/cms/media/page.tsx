@@ -449,10 +449,10 @@ export default function CmsMediaLibraryPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
+            <h1 className="text-xl sm:text-2xl font-medium tracking-tight text-zinc-900">
               CMS Media Library
             </h1>
-            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-100 text-zinc-700 border border-zinc-200">
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-700 border border-zinc-200">
               {total} assets
             </span>
           </div>
@@ -463,7 +463,7 @@ export default function CmsMediaLibraryPage() {
 
         {canUpload && (
           <div>
-            <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-zinc-800 transition cursor-pointer shadow-xs">
+            <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white rounded-xl text-xs sm:text-sm font-medium hover:bg-zinc-800 transition cursor-pointer shadow-xs">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
@@ -484,7 +484,7 @@ export default function CmsMediaLibraryPage() {
       {error && (
         <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs sm:text-sm font-medium flex items-center justify-between shadow-2xs">
           <span>{error}</span>
-          <button type="button" onClick={() => setError(null)} className="text-rose-500 hover:text-rose-700 font-bold ml-2">
+          <button type="button" onClick={() => setError(null)} className="text-rose-500 hover:text-rose-700 font-medium ml-2">
             ✕
           </button>
         </div>
@@ -493,7 +493,7 @@ export default function CmsMediaLibraryPage() {
       {success && (
         <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs sm:text-sm font-medium flex items-center justify-between shadow-2xs">
           <span>{success}</span>
-          <button type="button" onClick={() => setSuccess(null)} className="text-emerald-500 hover:text-emerald-700 font-bold ml-2">
+          <button type="button" onClick={() => setSuccess(null)} className="text-emerald-500 hover:text-emerald-700 font-medium ml-2">
             ✕
           </button>
         </div>
@@ -541,7 +541,7 @@ export default function CmsMediaLibraryPage() {
                 setFormatFilter(fmt.id);
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition ${
+              className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition ${
                 formatFilter === fmt.id
                   ? "bg-zinc-900 text-white shadow-2xs"
                   : "bg-zinc-100 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
@@ -557,7 +557,7 @@ export default function CmsMediaLibraryPage() {
       {selectedIds.size > 0 && (
         <div className="flex items-center justify-between bg-zinc-900 text-white p-3 rounded-2xl shadow-md text-xs sm:text-sm transition animate-in fade-in">
           <div className="flex items-center gap-3">
-            <span className="font-bold">{selectedIds.size} asset(s) selected</span>
+            <span className="font-medium">{selectedIds.size} asset(s) selected</span>
             <button
               type="button"
               onClick={() => setSelectedIds(new Set())}
@@ -575,7 +575,7 @@ export default function CmsMediaLibraryPage() {
                   setBulkResult(null);
                   setShowBulkDeleteModal(true);
                 }}
-                className="px-3 py-1.5 bg-rose-600 text-white rounded-xl text-xs font-semibold hover:bg-rose-700 transition shadow-xs flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-rose-600 text-white rounded-xl text-xs font-medium hover:bg-rose-700 transition shadow-xs flex items-center gap-1.5"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -624,7 +624,7 @@ export default function CmsMediaLibraryPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <p className="text-sm font-semibold text-zinc-700">No media assets found</p>
+            <p className="text-sm font-medium text-zinc-700">No media assets found</p>
             <p className="text-xs text-zinc-400">
               {search || formatFilter !== "all"
                 ? "Try adjusting your search query or format filters."
@@ -668,7 +668,7 @@ export default function CmsMediaLibraryPage() {
                         <svg className="w-8 h-8 opacity-60" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
-                        <span className="text-[10px] font-semibold text-zinc-500">Image Missing</span>
+                        <span className="text-[10px] font-medium text-zinc-500">Image Missing</span>
                       </div>
                     )}
 
@@ -694,12 +694,12 @@ export default function CmsMediaLibraryPage() {
                             e.stopPropagation();
                             openUsageModal(asset);
                           }}
-                          className="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-blue-600/90 text-white backdrop-blur-xs hover:bg-blue-700 transition shadow-2xs"
+                          className="px-1.5 py-0.5 rounded-md text-[9px] font-medium bg-blue-600/90 text-white backdrop-blur-xs hover:bg-blue-700 transition shadow-2xs"
                         >
                           {asset._count?.references} in use
                         </button>
                       ) : (
-                        <span className="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-emerald-600/90 text-white backdrop-blur-xs shadow-2xs">
+                        <span className="px-1.5 py-0.5 rounded-md text-[9px] font-medium bg-emerald-600/90 text-white backdrop-blur-xs shadow-2xs">
                           Unused
                         </span>
                       )}
@@ -710,7 +710,7 @@ export default function CmsMediaLibraryPage() {
                   <div className="p-3 text-xs flex flex-col justify-between flex-1 gap-1.5 border-t border-zinc-100">
                     <div className="flex items-start justify-between gap-1">
                       <div className="truncate flex-1">
-                        <p className="font-semibold text-zinc-900 truncate" title={asset.title || asset.originalFilename}>
+                        <p className="font-medium text-zinc-900 truncate" title={asset.title || asset.originalFilename}>
                           {asset.title || asset.originalFilename}
                         </p>
                         <p className="text-[11px] text-zinc-400 font-mono">
@@ -809,7 +809,7 @@ export default function CmsMediaLibraryPage() {
 
         {/* Pagination Bar */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-zinc-100 pt-4 text-xs font-semibold text-zinc-600">
+          <div className="flex items-center justify-between border-t border-zinc-100 pt-4 text-xs font-medium text-zinc-600">
             <button
               type="button"
               disabled={page <= 1}
@@ -843,7 +843,7 @@ export default function CmsMediaLibraryPage() {
           <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-zinc-200">
             <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
               <div className="truncate mr-4">
-                <h3 className="text-base font-bold text-zinc-900 truncate">
+                <h3 className="text-base font-medium text-zinc-900 truncate">
                   {viewAsset.title || viewAsset.originalFilename}
                 </h3>
                 <p className="text-xs text-zinc-400 font-mono">
@@ -876,7 +876,7 @@ export default function CmsMediaLibraryPage() {
                 <button
                   type="button"
                   onClick={() => handleCopyUrl(viewAsset.url, viewAsset.id)}
-                  className="px-3 py-1.5 bg-white border border-zinc-200 rounded-xl font-semibold hover:bg-zinc-100 transition shadow-2xs"
+                  className="px-3 py-1.5 bg-white border border-zinc-200 rounded-xl font-medium hover:bg-zinc-100 transition shadow-2xs"
                 >
                   {copiedId === viewAsset.id ? "Copied!" : "Copy URL"}
                 </button>
@@ -884,7 +884,7 @@ export default function CmsMediaLibraryPage() {
                   href={viewAsset.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-zinc-900 text-white rounded-xl font-semibold hover:bg-zinc-800 transition shadow-xs"
+                  className="px-3 py-1.5 bg-zinc-900 text-white rounded-xl font-medium hover:bg-zinc-800 transition shadow-xs"
                 >
                   Open in New Tab
                 </a>
@@ -902,7 +902,7 @@ export default function CmsMediaLibraryPage() {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
-                <h3 className="text-base font-bold text-zinc-900">Edit Media Details</h3>
+                <h3 className="text-base font-medium text-zinc-900">Edit Media Details</h3>
                 <p className="text-xs text-zinc-500">Update image title and accessibility alt texts</p>
               </div>
               <button
@@ -916,7 +916,7 @@ export default function CmsMediaLibraryPage() {
 
             <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">Title</label>
+                <label className="block font-medium text-zinc-700 mb-1">Title</label>
                 <input
                   type="text"
                   required
@@ -927,7 +927,7 @@ export default function CmsMediaLibraryPage() {
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">
+                <label className="block font-medium text-zinc-700 mb-1">
                   Primary Alt Text (English)
                 </label>
                 <textarea
@@ -941,7 +941,7 @@ export default function CmsMediaLibraryPage() {
 
               {/* Multilingual Alt Texts */}
               <div className="space-y-2 pt-2 border-t border-zinc-100">
-                <span className="font-semibold text-zinc-700 block">
+                <span className="font-medium text-zinc-700 block">
                   Multilingual Alt Texts (Optional)
                 </span>
 
@@ -977,14 +977,14 @@ export default function CmsMediaLibraryPage() {
                 <button
                   type="button"
                   onClick={() => setEditAsset(null)}
-                  className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl font-semibold hover:bg-zinc-50 transition"
+                  className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl font-medium hover:bg-zinc-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingEdit}
-                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl font-semibold hover:bg-zinc-800 disabled:opacity-50 transition shadow-xs"
+                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl font-medium hover:bg-zinc-800 disabled:opacity-50 transition shadow-xs"
                 >
                   {savingEdit ? "Saving..." : "Save Details"}
                 </button>
@@ -1002,7 +1002,7 @@ export default function CmsMediaLibraryPage() {
           <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-zinc-200 space-y-4 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
-                <h3 className="text-base font-bold text-zinc-900">Media Usage Analysis</h3>
+                <h3 className="text-base font-medium text-zinc-900">Media Usage Analysis</h3>
                 <p className="text-xs text-zinc-500">
                   Referencing CMS items for "{usageAsset.originalFilename}"
                 </p>
@@ -1022,7 +1022,7 @@ export default function CmsMediaLibraryPage() {
               </div>
             ) : !usageData || usageData.totalReferences === 0 ? (
               <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs space-y-1">
-                <div className="font-bold flex items-center gap-1.5">
+                <div className="font-medium flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   No Active References Found
                 </div>
@@ -1032,21 +1032,21 @@ export default function CmsMediaLibraryPage() {
               <div className="space-y-3">
                 <div className="grid grid-cols-3 gap-2 text-center text-xs">
                   <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
-                    <span className="block text-lg font-bold text-zinc-900">{usageData.livePublishedCount}</span>
-                    <span className="text-[10px] text-zinc-500 uppercase font-semibold">Live Published</span>
+                    <span className="block text-lg font-medium text-zinc-900">{usageData.livePublishedCount}</span>
+                    <span className="text-[10px] text-zinc-500 uppercase font-medium">Live Published</span>
                   </div>
                   <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
-                    <span className="block text-lg font-bold text-zinc-900">{usageData.currentDraftCount}</span>
-                    <span className="text-[10px] text-zinc-500 uppercase font-semibold">Current Drafts</span>
+                    <span className="block text-lg font-medium text-zinc-900">{usageData.currentDraftCount}</span>
+                    <span className="text-[10px] text-zinc-500 uppercase font-medium">Current Drafts</span>
                   </div>
                   <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
-                    <span className="block text-lg font-bold text-zinc-900">{usageData.historicalCount}</span>
-                    <span className="text-[10px] text-zinc-500 uppercase font-semibold">Historical</span>
+                    <span className="block text-lg font-medium text-zinc-900">{usageData.historicalCount}</span>
+                    <span className="text-[10px] text-zinc-500 uppercase font-medium">Historical</span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-xs font-semibold text-zinc-700 block">Referencing Items</span>
+                  <span className="text-xs font-medium text-zinc-700 block">Referencing Items</span>
                   <div className="space-y-1.5 max-h-56 overflow-y-auto">
                     {usageData.references.map((item, idx) => (
                       <div
@@ -1056,7 +1056,7 @@ export default function CmsMediaLibraryPage() {
                         <div className="truncate mr-2">
                           <Link
                             href={`/admin/cms/${item.contentId}`}
-                            className="font-bold text-zinc-900 hover:underline truncate block"
+                            className="font-medium text-zinc-900 hover:underline truncate block"
                           >
                             {item.contentTitle}
                           </Link>
@@ -1067,17 +1067,17 @@ export default function CmsMediaLibraryPage() {
 
                         <div className="shrink-0">
                           {item.isLivePublished && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-800">
                               LIVE STOREFRONT
                             </span>
                           )}
                           {item.isCurrentDraft && !item.isLivePublished && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-800">
                               ACTIVE DRAFT
                             </span>
                           )}
                           {item.isHistorical && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200 text-zinc-700">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-200 text-zinc-700">
                               HISTORICAL REV
                             </span>
                           )}
@@ -1093,7 +1093,7 @@ export default function CmsMediaLibraryPage() {
               <button
                 type="button"
                 onClick={() => setUsageAsset(null)}
-                className="px-4 py-2 border border-zinc-200 text-zinc-600 rounded-xl text-xs font-semibold hover:bg-zinc-50 transition"
+                className="px-4 py-2 border border-zinc-200 text-zinc-600 rounded-xl text-xs font-medium hover:bg-zinc-50 transition"
               >
                 Close
               </button>
@@ -1110,7 +1110,7 @@ export default function CmsMediaLibraryPage() {
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 space-y-4">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
-                <h3 className="text-base font-bold text-zinc-900">Replace Media Asset</h3>
+                <h3 className="text-base font-medium text-zinc-900">Replace Media Asset</h3>
                 <p className="text-xs text-zinc-500">
                   Swaps the image file while preserving all existing CMS references
                 </p>
@@ -1126,7 +1126,7 @@ export default function CmsMediaLibraryPage() {
 
             <form onSubmit={handleReplaceSubmit} className="space-y-4 text-xs">
               <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl space-y-1">
-                <span className="font-bold block">Important Notice</span>
+                <span className="font-medium block">Important Notice</span>
                 <p>
                   Replacing this asset will safely update its imagery without breaking references across live banners or revisions.
                 </p>
@@ -1142,7 +1142,7 @@ export default function CmsMediaLibraryPage() {
                 </div>
 
                 <div className="flex-1">
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-medium text-zinc-700 mb-1">
                     Select Replacement Image
                   </label>
                   <input
@@ -1156,7 +1156,7 @@ export default function CmsMediaLibraryPage() {
                         setReplacePreviewUrl(URL.createObjectURL(f));
                       }
                     }}
-                    className="text-xs file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-zinc-900 file:text-white hover:file:bg-zinc-800 cursor-pointer"
+                    className="text-xs file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-zinc-900 file:text-white hover:file:bg-zinc-800 cursor-pointer"
                   />
                   {replaceFile && (
                     <p className="text-[11px] text-zinc-500 mt-1">
@@ -1170,14 +1170,14 @@ export default function CmsMediaLibraryPage() {
                 <button
                   type="button"
                   onClick={() => setReplaceAsset(null)}
-                  className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl font-semibold hover:bg-zinc-50 transition"
+                  className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl font-medium hover:bg-zinc-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!replaceFile || replacing}
-                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl font-semibold hover:bg-zinc-800 disabled:opacity-50 transition shadow-xs"
+                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl font-medium hover:bg-zinc-800 disabled:opacity-50 transition shadow-xs"
                 >
                   {replacing ? "Replacing..." : "Confirm Replacement"}
                 </button>
@@ -1195,7 +1195,7 @@ export default function CmsMediaLibraryPage() {
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 space-y-4">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
-                <h3 className="text-base font-bold text-zinc-900">Delete Media Asset</h3>
+                <h3 className="text-base font-medium text-zinc-900">Delete Media Asset</h3>
                 <p className="text-xs text-zinc-500">{deleteAsset.originalFilename}</p>
               </div>
               <button
@@ -1213,7 +1213,7 @@ export default function CmsMediaLibraryPage() {
               </div>
             ) : deleteUsage && (deleteUsage.livePublishedCount > 0 || deleteUsage.currentDraftCount > 0 || deleteUsage.scheduledCount > 0) ? (
               <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs space-y-2">
-                <div className="font-bold flex items-center gap-1.5 text-sm">
+                <div className="font-medium flex items-center gap-1.5 text-sm">
                   <span className="w-2.5 h-2.5 rounded-full bg-rose-600" />
                   Deletion Blocked: Asset in Active Use
                 </div>
@@ -1239,7 +1239,7 @@ export default function CmsMediaLibraryPage() {
               </div>
             ) : deleteUsage && deleteUsage.historicalCount > 0 ? (
               <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl text-xs space-y-2">
-                <div className="font-bold flex items-center gap-1.5 text-sm">
+                <div className="font-medium flex items-center gap-1.5 text-sm">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                   Protected: Referenced by Historical Revisions
                 </div>
@@ -1254,7 +1254,7 @@ export default function CmsMediaLibraryPage() {
               </div>
             ) : (
               <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs space-y-2">
-                <div className="font-bold flex items-center gap-1.5 text-sm">
+                <div className="font-medium flex items-center gap-1.5 text-sm">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                   Safe to Delete
                 </div>
@@ -1268,7 +1268,7 @@ export default function CmsMediaLibraryPage() {
               <button
                 type="button"
                 onClick={() => setDeleteAsset(null)}
-                className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl font-semibold hover:bg-zinc-50 transition"
+                className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl font-medium hover:bg-zinc-50 transition"
               >
                 Cancel
               </button>
@@ -1278,7 +1278,7 @@ export default function CmsMediaLibraryPage() {
                   type="button"
                   disabled={deleting}
                   onClick={() => handleConfirmDelete(true)}
-                  className="px-4 py-2 bg-amber-600 text-white rounded-xl font-semibold hover:bg-amber-700 transition shadow-xs"
+                  className="px-4 py-2 bg-amber-600 text-white rounded-xl font-medium hover:bg-amber-700 transition shadow-xs"
                 >
                   {deleting ? "Archiving..." : "Archive from Library"}
                 </button>
@@ -1289,7 +1289,7 @@ export default function CmsMediaLibraryPage() {
                   type="button"
                   disabled={deleting}
                   onClick={() => handleConfirmDelete(false)}
-                  className="px-4 py-2 bg-rose-600 text-white rounded-xl font-semibold hover:bg-rose-700 transition shadow-xs"
+                  className="px-4 py-2 bg-rose-600 text-white rounded-xl font-medium hover:bg-rose-700 transition shadow-xs"
                 >
                   {deleting ? "Deleting..." : "Permanently Delete"}
                 </button>
@@ -1307,7 +1307,7 @@ export default function CmsMediaLibraryPage() {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 space-y-4 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
-                <h3 className="text-base font-bold text-zinc-900">Bulk Delete Management</h3>
+                <h3 className="text-base font-medium text-zinc-900">Bulk Delete Management</h3>
                 <p className="text-xs text-zinc-500">
                   {selectedIds.size} assets queued for deletion
                 </p>
@@ -1322,7 +1322,7 @@ export default function CmsMediaLibraryPage() {
             </div>
 
             <div className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs space-y-1 text-zinc-700">
-              <span className="font-bold block text-zinc-900">Safety Guardrail Notice</span>
+              <span className="font-medium block text-zinc-900">Safety Guardrail Notice</span>
               <p>
                 Each selected asset will be analyzed. Any asset actively in use by live published or draft CMS content will be automatically protected and skipped. Only completely unreferenced files will be permanently deleted.
               </p>
@@ -1330,7 +1330,7 @@ export default function CmsMediaLibraryPage() {
 
             {bulkResult && (
               <div className="space-y-2 text-xs">
-                <span className="font-bold text-zinc-900 block">Operation Results</span>
+                <span className="font-medium text-zinc-900 block">Operation Results</span>
                 <div className="p-3 bg-zinc-100 rounded-xl space-y-1">
                   <div>✅ Deleted: {bulkResult.deleted?.length ?? 0} unreferenced asset(s)</div>
                   <div>🛡️ Protected from deletion: {bulkResult.blocked?.length ?? 0} in-use asset(s)</div>
@@ -1345,7 +1345,7 @@ export default function CmsMediaLibraryPage() {
               <button
                 type="button"
                 onClick={() => setShowBulkDeleteModal(false)}
-                className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl font-semibold hover:bg-zinc-50 transition"
+                className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl font-medium hover:bg-zinc-50 transition"
               >
                 {bulkResult ? "Done" : "Cancel"}
               </button>
@@ -1355,7 +1355,7 @@ export default function CmsMediaLibraryPage() {
                   type="button"
                   disabled={bulkDeleting}
                   onClick={handleConfirmBulkDelete}
-                  className="px-4 py-2 bg-rose-600 text-white rounded-xl font-semibold hover:bg-rose-700 disabled:opacity-50 transition shadow-xs"
+                  className="px-4 py-2 bg-rose-600 text-white rounded-xl font-medium hover:bg-rose-700 disabled:opacity-50 transition shadow-xs"
                 >
                   {bulkDeleting ? "Processing..." : `Confirm Delete (${selectedIds.size})`}
                 </button>

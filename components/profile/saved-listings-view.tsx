@@ -238,7 +238,7 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
           <button
             type="button"
             onClick={() => setCategoryFilter("ALL")}
-            className="mt-3 text-xs font-semibold text-amber-700 underline"
+            className="mt-3 text-xs font-medium text-amber-700 underline"
           >
             {t("profile_saved_show_all", "Show all saved stays")}
           </button>
@@ -265,7 +265,7 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
                 type="button"
                 onClick={() => void loadMore()}
                 disabled={isLoadingMore}
-                className="rounded-full border border-[#D7D7D7] bg-white px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full border border-[#D7D7D7] bg-white px-5 py-2.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
               >
                 {isLoadingMore
                   ? t("profile_saved_loading_more" as any, "Loading...")

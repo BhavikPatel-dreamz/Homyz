@@ -35,7 +35,7 @@ export default function CmsAuditHistoryPage() {
   return (
     <div className="space-y-6">
       <div className="border-b border-[var(--border)] pb-5">
-        <h1 className="text-xl font-bold text-[var(--foreground)]">
+        <h1 className="text-xl font-medium text-[var(--foreground)]">
           CMS Audit History
         </h1>
         <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
@@ -45,7 +45,7 @@ export default function CmsAuditHistoryPage() {
         <div className="flex items-center justify-between">
           <Link
             href="/admin/cms"
-            className="text-xs font-semibold text-zinc-600 hover:text-zinc-900"
+            className="text-xs font-medium text-zinc-600 hover:text-zinc-900"
           >
             ← Back to Content List
           </Link>
@@ -57,7 +57,7 @@ export default function CmsAuditHistoryPage() {
         <div className="bg-white border border-zinc-200 rounded-2xl shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-zinc-50 border-b border-zinc-200 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              <thead className="bg-zinc-50 border-b border-zinc-200 text-xs font-medium text-zinc-500 uppercase tracking-wider">
                 <tr>
                   <th className="px-5 py-3.5">Timestamp</th>
                   <th className="px-5 py-3.5">Action</th>
@@ -86,7 +86,7 @@ export default function CmsAuditHistoryPage() {
                       <td className="px-5 py-3.5 text-xs text-zinc-500 whitespace-nowrap">
                         {new Date(log.createdAt).toLocaleString()}
                       </td>
-                      <td className="px-5 py-3.5 font-mono text-xs font-bold text-zinc-800">
+                      <td className="px-5 py-3.5 font-mono text-xs font-medium text-zinc-800">
                         {log.action}
                       </td>
                       <td className="px-5 py-3.5 text-xs text-zinc-600">
@@ -100,7 +100,7 @@ export default function CmsAuditHistoryPage() {
                       </td>
                       <td className="px-5 py-3.5">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
                             log.status === "SUCCESS"
                               ? "bg-emerald-100 text-emerald-800"
                               : "bg-rose-100 text-rose-800"

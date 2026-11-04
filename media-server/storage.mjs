@@ -8,6 +8,8 @@ import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 export const MEDIA_KINDS = Object.freeze([
+  "branding",
+  "homepage",
   "listing-photos",
   "stamp-icons",
   "guidebook-photos",
@@ -24,6 +26,8 @@ export const MEDIA_KINDS = Object.freeze([
 ]);
 
 export const PUBLIC_MEDIA_KINDS = Object.freeze([
+  "branding",
+  "homepage",
   "listing-photos",
   "stamp-icons",
   "guidebook-photos",

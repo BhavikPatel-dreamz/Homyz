@@ -420,7 +420,7 @@ export function ProfileClient({
                     {/* Name, Location & 3 Circular Stats */}
                     <div className="flex min-h-[124px] min-w-0 flex-1 flex-col justify-center gap-3 sm:min-h-[151px] sm:w-[195px] sm:flex-none sm:gap-4">
                       <div className="flex flex-col gap-1 sm:gap-2">
-                        <h3 className="truncate text-sm leading-5 font-semibold text-[#1F1F1F] sm:text-base sm:leading-6">
+                        <h3 className="truncate text-sm leading-5 font-medium text-[#1F1F1F] sm:text-base sm:leading-6">
                           {currentUser.name || "Name"}
                         </h3>
                         <p className="truncate text-xs leading-[18px] font-normal text-[#727272] sm:text-sm sm:leading-[21px]">
@@ -471,13 +471,13 @@ export function ProfileClient({
                       <h3 className="profile-section-title text-[#1F1F1F]">{t("profile_about_me", "About me")}</h3>
                       {pub.bio && <p className="text-sm leading-6 text-zinc-700">{pub.bio}</p>}
                       <div className="space-y-3 text-sm text-zinc-700">
-                        {hostPrompts.homeUnique && <p><span className="font-semibold">{t("profile_prompt_home_unique", "What makes my home unique")}: </span>{hostPrompts.homeUnique}</p>}
-                        {hostPrompts.guestsShouldKnow && <p><span className="font-semibold">{t("profile_prompt_guests_should_know", "What guests should know")}: </span>{hostPrompts.guestsShouldKnow}</p>}
-                        {hostPrompts.education && <p><span className="font-semibold">{t("profile_prompt_education", "Education / background")}: </span>{hostPrompts.education}</p>}
-                        {hostPrompts.perfectGuest && <p><span className="font-semibold">{t("profile_prompt_perfect_guest", "Perfect guest")}: </span>{hostPrompts.perfectGuest}</p>}
+                        {hostPrompts.homeUnique && <p><span className="font-medium">{t("profile_prompt_home_unique", "What makes my home unique")}: </span>{hostPrompts.homeUnique}</p>}
+                        {hostPrompts.guestsShouldKnow && <p><span className="font-medium">{t("profile_prompt_guests_should_know", "What guests should know")}: </span>{hostPrompts.guestsShouldKnow}</p>}
+                        {hostPrompts.education && <p><span className="font-medium">{t("profile_prompt_education", "Education / background")}: </span>{hostPrompts.education}</p>}
+                        {hostPrompts.perfectGuest && <p><span className="font-medium">{t("profile_prompt_perfect_guest", "Perfect guest")}: </span>{hostPrompts.perfectGuest}</p>}
                       </div>
-                      {hostHobbies.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_hobbies", "Hobbies")}</p><div className="flex flex-wrap gap-2">{hostHobbies.map((hobby) => <span key={hobby} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{hobby}</span>)}</div></div>}
-                      {hostInterests.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_my_interests", "My interests")}</p><div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{interest}</span>)}</div></div>}
+                      {hostHobbies.length > 0 && <div><p className="mb-2 text-sm font-medium text-zinc-700">{t("profile_hobbies", "Hobbies")}</p><div className="flex flex-wrap gap-2">{hostHobbies.map((hobby) => <span key={hobby} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{hobby}</span>)}</div></div>}
+                      {hostInterests.length > 0 && <div><p className="mb-2 text-sm font-medium text-zinc-700">{t("profile_my_interests", "My interests")}</p><div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{interest}</span>)}</div></div>}
                     </section>
                   )}
 

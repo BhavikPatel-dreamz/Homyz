@@ -306,7 +306,7 @@ export function AdminRefundDetailsClient({
           <div className="flex items-center gap-2">
             <Link
               href="/admin/bookings/refunds"
-              className="text-xs font-semibold text-[var(--accent)] hover:underline flex items-center gap-1"
+              className="text-xs font-medium text-[var(--accent)] hover:underline flex items-center gap-1"
             >
               ← Refunds Queue
             </Link>
@@ -320,7 +320,7 @@ export function AdminRefundDetailsClient({
               Refund Request: {refund.refundReference || refund.id}
             </h1>
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wider ${
                 refund.status === "SUCCEEDED"
                   ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
                   : refund.status === "PENDING"
@@ -342,13 +342,13 @@ export function AdminRefundDetailsClient({
         <div className="flex flex-wrap items-center gap-2.5">
           <Link
             href="/admin/bookings/all"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>All Bookings</span>
           </Link>
           <Link
             href="/admin/bookings/cancellations"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>Cancellations</span>
           </Link>
@@ -366,7 +366,7 @@ export function AdminRefundDetailsClient({
           </div>
           <button
             onClick={() => setActionSuccess(null)}
-            className="text-emerald-700 hover:text-emerald-800 text-xs font-bold"
+            className="text-emerald-700 hover:text-emerald-800 text-xs font-medium"
           >
             ✕
           </button>
@@ -383,7 +383,7 @@ export function AdminRefundDetailsClient({
           </div>
           <button
             onClick={() => setActionError(null)}
-            className="text-rose-700 hover:text-rose-800 text-xs font-bold"
+            className="text-rose-700 hover:text-rose-800 text-xs font-medium"
           >
             ✕
           </button>
@@ -397,7 +397,7 @@ export function AdminRefundDetailsClient({
           {/* Section 1: Refund Calculation & Policy Snapshot */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-4 mb-5">
-              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+              <h2 className="text-base font-medium text-foreground flex items-center gap-2">
                 <svg className="w-5 h-5 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
@@ -421,7 +421,7 @@ export function AdminRefundDetailsClient({
 
               <div className="p-4 rounded-xl bg-[var(--surface-secondary)]/50 border border-[var(--border)]">
                 <p className="text-xs text-[var(--muted-foreground)] font-medium">Policy Evaluated</p>
-                <p className="text-sm font-bold text-foreground mt-1">
+                <p className="text-sm font-medium text-foreground mt-1">
                   {calculation?.policyName || booking.listing.cancellationPolicy || "STANDARD"}
                 </p>
                 <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">
@@ -431,7 +431,7 @@ export function AdminRefundDetailsClient({
 
               <div className="p-4 rounded-xl bg-[var(--surface-secondary)]/50 border border-[var(--border)]">
                 <p className="text-xs text-[var(--muted-foreground)] font-medium">Eligibility Status</p>
-                <p className={`text-sm font-bold mt-1 ${calculation?.isEligible ? "text-emerald-600" : "text-amber-600"}`}>
+                <p className={`text-sm font-medium mt-1 ${calculation?.isEligible ? "text-emerald-600" : "text-amber-600"}`}>
                   {calculation?.isEligible ? "ELIGIBLE" : "RESTRICTED / REVIEW"}
                 </p>
                 <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">
@@ -443,37 +443,37 @@ export function AdminRefundDetailsClient({
             {/* Breakdown table if calculation details exist */}
             {calculation && (
               <div className="border border-[var(--border)] rounded-xl overflow-hidden mb-5">
-                <div className="bg-[var(--surface-secondary)] px-4 py-2.5 text-xs font-semibold text-foreground">
+                <div className="bg-[var(--surface-secondary)] px-4 py-2.5 text-xs font-medium text-foreground">
                   Policy Breakdown Items
                 </div>
                 <div className="divide-y divide-[var(--border)] text-xs">
                   <div className="flex items-center justify-between px-4 py-2.5">
                     <span className="text-[var(--muted-foreground)]">Guest Nights Refund</span>
-                    <span className="font-semibold text-foreground">
+                    <span className="font-medium text-foreground">
                       {formatPrice((calculation.breakdown?.nightsRefundMinor || 0) / 100, refund.currency)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between px-4 py-2.5">
                     <span className="text-[var(--muted-foreground)]">Cleaning Fee Refund</span>
-                    <span className="font-semibold text-foreground">
+                    <span className="font-medium text-foreground">
                       {formatPrice((calculation.breakdown?.cleaningFeeRefundMinor || 0) / 100, refund.currency)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between px-4 py-2.5">
                     <span className="text-[var(--muted-foreground)]">Platform Service Fee Refund</span>
-                    <span className="font-semibold text-foreground">
+                    <span className="font-medium text-foreground">
                       {formatPrice((calculation.breakdown?.platformFeeRefundMinor || 0) / 100, refund.currency)}
                     </span>
                   </div>
                   {calculation.breakdown?.hostCompensationMinor ? (
                     <div className="flex items-center justify-between px-4 py-2.5 bg-amber-500/5">
                       <span className="text-amber-700">Host Payout Retained / Compensation</span>
-                      <span className="font-semibold text-amber-700">
+                      <span className="font-medium text-amber-700">
                         {formatPrice(calculation.breakdown.hostCompensationMinor / 100, refund.currency)}
                       </span>
                     </div>
                   ) : null}
-                  <div className="flex items-center justify-between px-4 py-3 bg-[var(--surface-secondary)]/30 font-bold">
+                  <div className="flex items-center justify-between px-4 py-3 bg-[var(--surface-secondary)]/30 font-medium">
                     <span className="text-foreground">Net Eligible Refund Total</span>
                     <span className="text-foreground text-sm">
                       {formatPrice((calculation.eligibleAmountMinor || 0) / 100, refund.currency)}
@@ -486,14 +486,14 @@ export function AdminRefundDetailsClient({
             {/* Request Reason & Admin Notes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <p className="text-xs font-semibold text-foreground mb-1">Reason for Request:</p>
+                <p className="text-xs font-medium text-foreground mb-1">Reason for Request:</p>
                 <div className="p-3 rounded-xl bg-[var(--surface-secondary)] text-xs text-[var(--muted-foreground)] min-h-[60px]">
                   {refund.reason || "No explicit reason specified."}
                 </div>
               </div>
 
               <div>
-                <p className="text-xs font-semibold text-foreground mb-1">Administrative Notes:</p>
+                <p className="text-xs font-medium text-foreground mb-1">Administrative Notes:</p>
                 <div className="p-3 rounded-xl bg-[var(--surface-secondary)] text-xs text-[var(--muted-foreground)] min-h-[60px]">
                   {refund.adminNotes || "No administrator notes recorded."}
                 </div>
@@ -504,7 +504,7 @@ export function AdminRefundDetailsClient({
           {/* Section 2: Associated Booking Details */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-4 mb-5">
-              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+              <h2 className="text-base font-medium text-foreground flex items-center gap-2">
                 <svg className="w-5 h-5 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0V7m0 4h4m-4 0H7" />
                 </svg>
@@ -533,7 +533,7 @@ export function AdminRefundDetailsClient({
 
               <div className="flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-foreground">
+                  <h3 className="text-base font-medium text-foreground">
                     {booking.listing.title}
                   </h3>
                   <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
@@ -544,21 +544,21 @@ export function AdminRefundDetailsClient({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 text-xs">
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Check-in</span>
-                    <span className="font-semibold text-foreground">{formatDate(booking.startDate)}</span>
+                    <span className="font-medium text-foreground">{formatDate(booking.startDate)}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Check-out</span>
-                    <span className="font-semibold text-foreground">{formatDate(booking.endDate)}</span>
+                    <span className="font-medium text-foreground">{formatDate(booking.endDate)}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Duration</span>
-                    <span className="font-semibold text-foreground">
+                    <span className="font-medium text-foreground">
                       {getDurationNights(booking.startDate, booking.endDate)} nights
                     </span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Booking Status</span>
-                    <span className="font-semibold uppercase text-foreground">{booking.status}</span>
+                    <span className="font-medium uppercase text-foreground">{booking.status}</span>
                   </div>
                 </div>
               </div>
@@ -571,14 +571,14 @@ export function AdminRefundDetailsClient({
                   {booking.user.image ? (
                     <Image src={booking.user.image} alt={booking.user.name || "Guest"} fill className="object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center font-bold text-zinc-600 text-sm">
+                    <div className="w-full h-full flex items-center justify-center font-medium text-zinc-600 text-sm">
                       {booking.user.name?.charAt(0) || "G"}
                     </div>
                   )}
                 </div>
                 <div>
-                  <span className="text-2xs text-[var(--muted-foreground)] uppercase font-bold tracking-wider block">Guest</span>
-                  <p className="text-xs font-semibold text-foreground">{booking.user.name || "Unknown Guest"}</p>
+                  <span className="text-2xs text-[var(--muted-foreground)] uppercase font-medium tracking-wider block">Guest</span>
+                  <p className="text-xs font-medium text-foreground">{booking.user.name || "Unknown Guest"}</p>
                   <p className="text-2xs text-[var(--muted-foreground)]">{booking.user.email || "No email"}</p>
                 </div>
               </div>
@@ -588,14 +588,14 @@ export function AdminRefundDetailsClient({
                   {booking.listing.host.image ? (
                     <Image src={booking.listing.host.image} alt={booking.listing.host.name || "Host"} fill className="object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center font-bold text-zinc-600 text-sm">
+                    <div className="w-full h-full flex items-center justify-center font-medium text-zinc-600 text-sm">
                       {booking.listing.host.name?.charAt(0) || "H"}
                     </div>
                   )}
                 </div>
                 <div>
-                  <span className="text-2xs text-[var(--muted-foreground)] uppercase font-bold tracking-wider block">Host</span>
-                  <p className="text-xs font-semibold text-foreground">{booking.listing.host.name || "Unknown Host"}</p>
+                  <span className="text-2xs text-[var(--muted-foreground)] uppercase font-medium tracking-wider block">Host</span>
+                  <p className="text-xs font-medium text-foreground">{booking.listing.host.name || "Unknown Host"}</p>
                   <p className="text-2xs text-[var(--muted-foreground)]">{booking.listing.host.email || "No email"}</p>
                 </div>
               </div>
@@ -605,7 +605,7 @@ export function AdminRefundDetailsClient({
           {/* Section 3: Original Payment Record */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-4 mb-5">
-              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+              <h2 className="text-base font-medium text-foreground flex items-center gap-2">
                 <svg className="w-5 h-5 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
@@ -626,19 +626,19 @@ export function AdminRefundDetailsClient({
                 </div>
                 <div>
                   <span className="text-[var(--muted-foreground)] block">Captured Amount</span>
-                  <span className="font-semibold text-foreground">
+                  <span className="font-medium text-foreground">
                     {formatPrice(payment.capturedAmount / 100, payment.currency)}
                   </span>
                 </div>
                 <div>
                   <span className="text-[var(--muted-foreground)] block">Previously Refunded</span>
-                  <span className="font-semibold text-foreground">
+                  <span className="font-medium text-foreground">
                     {formatPrice(payment.refundedAmount / 100, payment.currency)}
                   </span>
                 </div>
                 <div>
                   <span className="text-[var(--muted-foreground)] block">Available Balance</span>
-                  <span className="font-semibold text-emerald-600">
+                  <span className="font-medium text-emerald-600">
                     {formatPrice(remainingBalanceMajor, payment.currency)}
                   </span>
                 </div>
@@ -652,7 +652,7 @@ export function AdminRefundDetailsClient({
 
           {/* Section 4: Audit Logs & Activity Trail */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
-            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-base font-medium text-foreground mb-4 flex items-center gap-2">
               <svg className="w-5 h-5 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -669,7 +669,7 @@ export function AdminRefundDetailsClient({
                     <span className="w-2 h-2 rounded-full bg-[var(--accent)] mt-1.5 shrink-0" />
                     <div className="flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold text-foreground uppercase tracking-wider text-2xs">
+                        <span className="font-medium text-foreground uppercase tracking-wider text-2xs">
                           {log.action}
                         </span>
                         <span className="text-[var(--muted-foreground)] text-2xs">
@@ -698,7 +698,7 @@ export function AdminRefundDetailsClient({
         <div className="flex flex-col gap-6">
           {/* Financial Summary Card */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-4">
+            <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--muted-foreground)] mb-4">
               Financial Summary
             </h2>
 
@@ -708,28 +708,28 @@ export function AdminRefundDetailsClient({
                 <p className="text-3xl font-black text-foreground mt-1">
                   {formatPrice(refundAmountMajor, refund.currency)}
                 </p>
-                <span className="inline-block mt-2 px-2 py-0.5 rounded text-2xs font-semibold bg-[var(--surface)] border border-[var(--border)] text-[var(--muted-foreground)]">
+                <span className="inline-block mt-2 px-2 py-0.5 rounded text-2xs font-medium bg-[var(--surface)] border border-[var(--border)] text-[var(--muted-foreground)]">
                   {refund.refundType} REFUND
                 </span>
               </div>
 
               <div className="flex items-center justify-between text-xs py-2 border-b border-[var(--border)]">
                 <span className="text-[var(--muted-foreground)]">Captured Gross</span>
-                <span className="font-semibold text-foreground">
+                <span className="font-medium text-foreground">
                   {formatPrice(capturedAmountMajor, refund.currency)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between text-xs py-2 border-b border-[var(--border)]">
                 <span className="text-[var(--muted-foreground)]">Prior Refunds</span>
-                <span className="font-semibold text-foreground">
+                <span className="font-medium text-foreground">
                   {formatPrice(refundedAmountMajor, refund.currency)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between text-xs py-2">
                 <span className="text-[var(--muted-foreground)]">Remaining Refundable</span>
-                <span className="font-bold text-emerald-600">
+                <span className="font-medium text-emerald-600">
                   {formatPrice(remainingBalanceMajor, refund.currency)}
                 </span>
               </div>
@@ -738,13 +738,13 @@ export function AdminRefundDetailsClient({
 
           {/* Workflow Status & Reference */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs text-xs space-y-3">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
+            <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
               Workflow Status
             </h2>
 
             <div>
               <span className="text-[var(--muted-foreground)] block">Reference Number</span>
-              <span className="font-mono font-semibold text-foreground">{refund.refundReference || refund.id}</span>
+              <span className="font-mono font-medium text-foreground">{refund.refundReference || refund.id}</span>
             </div>
 
             <div>
@@ -755,7 +755,7 @@ export function AdminRefundDetailsClient({
             {isApproved && (
               <div>
                 <span className="text-[var(--muted-foreground)] block">Approved</span>
-                <span className="text-sky-600 font-semibold">
+                <span className="text-sky-600 font-medium">
                   Yes ({refund.metadata?.approvedByEmail || "By Administrator"})
                 </span>
               </div>
@@ -764,13 +764,13 @@ export function AdminRefundDetailsClient({
             {refund.providerRefundId && (
               <div>
                 <span className="text-[var(--muted-foreground)] block">Provider Settlement ID</span>
-                <span className="font-mono text-emerald-600 font-semibold">{refund.providerRefundId}</span>
+                <span className="font-mono text-emerald-600 font-medium">{refund.providerRefundId}</span>
               </div>
             )}
 
             {refund.failureReason && (
               <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700">
-                <span className="font-bold block">Rejection / Failure Reason:</span>
+                <span className="font-medium block">Rejection / Failure Reason:</span>
                 <span className="text-xs">{refund.failureReason}</span>
               </div>
             )}
@@ -778,7 +778,7 @@ export function AdminRefundDetailsClient({
 
           {/* Admin Action Controls */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-4">
+            <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--muted-foreground)] mb-4">
               Administrative Actions
             </h2>
 
@@ -789,7 +789,7 @@ export function AdminRefundDetailsClient({
                   <button
                     type="button"
                     onClick={() => setApproveModalOpen(true)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-2"
+                    className="w-full py-2.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-medium shadow-2xs transition-all flex items-center justify-center gap-2"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -800,7 +800,7 @@ export function AdminRefundDetailsClient({
                   <button
                     type="button"
                     onClick={() => setRejectModalOpen(true)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-500/20 text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-2"
+                    className="w-full py-2.5 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-500/20 text-xs font-medium shadow-2xs transition-all flex items-center justify-center gap-2"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -816,7 +816,7 @@ export function AdminRefundDetailsClient({
                   <button
                     type="button"
                     onClick={() => setProcessModalOpen(true)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-2"
+                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium shadow-2xs transition-all flex items-center justify-center gap-2"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -827,7 +827,7 @@ export function AdminRefundDetailsClient({
                   <button
                     type="button"
                     onClick={() => setRejectModalOpen(true)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-500/20 text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-2"
+                    className="w-full py-2.5 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-500/20 text-xs font-medium shadow-2xs transition-all flex items-center justify-center gap-2"
                   >
                     Reject Refund
                   </button>
@@ -838,7 +838,7 @@ export function AdminRefundDetailsClient({
               {isSucceeded && (
                 <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 text-xs text-center font-medium">
                   ✓ This refund has been successfully settled with provider ID{" "}
-                  <span className="font-mono font-bold">{refund.providerRefundId}</span>.
+                  <span className="font-mono font-medium">{refund.providerRefundId}</span>.
                 </div>
               )}
 
@@ -855,7 +855,7 @@ export function AdminRefundDetailsClient({
                   <button
                     type="button"
                     onClick={() => setProcessModalOpen(true)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-2"
+                    className="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium shadow-2xs transition-all flex items-center justify-center gap-2"
                   >
                     Retry Gateway Processing
                   </button>
@@ -863,7 +863,7 @@ export function AdminRefundDetailsClient({
                   <button
                     type="button"
                     onClick={() => setRejectModalOpen(true)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-500/20 text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-2"
+                    className="w-full py-2.5 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-500/20 text-xs font-medium shadow-2xs transition-all flex items-center justify-center gap-2"
                   >
                     Reject Refund
                   </button>
@@ -874,7 +874,7 @@ export function AdminRefundDetailsClient({
                 type="button"
                 onClick={handleReconcile}
                 disabled={loadingAction}
-                className="w-full py-2.5 px-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/50 hover:bg-[var(--surface-secondary)] text-foreground text-xs font-semibold shadow-2xs transition-all flex items-center justify-center gap-2 mt-2"
+                className="w-full py-2.5 px-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/50 hover:bg-[var(--surface-secondary)] text-foreground text-xs font-medium shadow-2xs transition-all flex items-center justify-center gap-2 mt-2"
               >
                 <svg className="w-4 h-4 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -891,10 +891,10 @@ export function AdminRefundDetailsClient({
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-bold text-foreground">Approve Refund Request</h3>
+              <h3 className="text-base font-medium text-foreground">Approve Refund Request</h3>
               <button
                 onClick={() => setApproveModalOpen(false)}
-                className="text-[var(--muted-foreground)] hover:text-foreground text-sm font-bold"
+                className="text-[var(--muted-foreground)] hover:text-foreground text-sm font-medium"
               >
                 ✕
               </button>
@@ -914,7 +914,7 @@ export function AdminRefundDetailsClient({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Administrative Approval Notes (Optional)
               </label>
               <textarea
@@ -931,7 +931,7 @@ export function AdminRefundDetailsClient({
                 type="button"
                 onClick={() => setApproveModalOpen(false)}
                 disabled={loadingAction}
-                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)]"
+                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)]"
               >
                 Cancel
               </button>
@@ -939,7 +939,7 @@ export function AdminRefundDetailsClient({
                 type="button"
                 onClick={handleApprove}
                 disabled={loadingAction}
-                className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-2xs disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-medium shadow-2xs disabled:opacity-50"
               >
                 {loadingAction ? "Approving..." : "Confirm Approval"}
               </button>
@@ -953,10 +953,10 @@ export function AdminRefundDetailsClient({
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-bold text-rose-600">Reject Refund Request</h3>
+              <h3 className="text-base font-medium text-rose-600">Reject Refund Request</h3>
               <button
                 onClick={() => setRejectModalOpen(false)}
-                className="text-[var(--muted-foreground)] hover:text-foreground text-sm font-bold"
+                className="text-[var(--muted-foreground)] hover:text-foreground text-sm font-medium"
               >
                 ✕
               </button>
@@ -971,11 +971,11 @@ export function AdminRefundDetailsClient({
             </p>
 
             {rejectError && (
-              <p className="text-xs text-rose-600 font-semibold">{rejectError}</p>
+              <p className="text-xs text-rose-600 font-medium">{rejectError}</p>
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Mandatory Rejection Reason *
               </label>
               <textarea
@@ -993,7 +993,7 @@ export function AdminRefundDetailsClient({
                 type="button"
                 onClick={() => setRejectModalOpen(false)}
                 disabled={loadingAction}
-                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)]"
+                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)]"
               >
                 Cancel
               </button>
@@ -1001,7 +1001,7 @@ export function AdminRefundDetailsClient({
                 type="button"
                 onClick={handleReject}
                 disabled={loadingAction}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-2xs disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium shadow-2xs disabled:opacity-50"
               >
                 {loadingAction ? "Rejecting..." : "Confirm Rejection"}
               </button>
@@ -1015,17 +1015,17 @@ export function AdminRefundDetailsClient({
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-bold text-foreground">Process Refund Settlement</h3>
+              <h3 className="text-base font-medium text-foreground">Process Refund Settlement</h3>
               <button
                 onClick={() => setProcessModalOpen(false)}
-                className="text-[var(--muted-foreground)] hover:text-foreground text-sm font-bold"
+                className="text-[var(--muted-foreground)] hover:text-foreground text-sm font-medium"
               >
                 ✕
               </button>
             </div>
 
             <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-800 space-y-1">
-              <p className="font-bold">Gateway Execution Confirmation</p>
+              <p className="font-medium">Gateway Execution Confirmation</p>
               <p>
                 Amount to settle:{" "}
                 <strong>{formatPrice(refundAmountMajor, refund.currency)}</strong> ({refund.currency})
@@ -1050,7 +1050,7 @@ export function AdminRefundDetailsClient({
                 type="button"
                 onClick={() => setProcessModalOpen(false)}
                 disabled={loadingAction}
-                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)]"
+                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)]"
               >
                 Cancel
               </button>
@@ -1058,7 +1058,7 @@ export function AdminRefundDetailsClient({
                 type="button"
                 onClick={handleProcess}
                 disabled={loadingAction || !confirmProcessCheck}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium shadow-2xs disabled:opacity-50"
               >
                 {loadingAction ? "Processing Settlement..." : "Execute Settlement"}
               </button>

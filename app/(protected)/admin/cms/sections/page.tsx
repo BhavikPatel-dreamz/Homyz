@@ -28,7 +28,7 @@ export default function CmsSectionTemplatesPage() {
   return (
     <div className="space-y-6">
       <div className="border-b border-[var(--border)] pb-5">
-        <h1 className="text-xl font-bold text-[var(--foreground)]">
+        <h1 className="text-xl font-medium text-[var(--foreground)]">
           Homepage Section Templates
         </h1>
         <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
@@ -38,7 +38,7 @@ export default function CmsSectionTemplatesPage() {
         <div className="flex items-center justify-between">
           <Link
             href="/admin/cms"
-            className="text-xs font-semibold text-zinc-600 hover:text-zinc-900"
+            className="text-xs font-medium text-zinc-600 hover:text-zinc-900"
           >
             ← Back to Content List
           </Link>
@@ -60,7 +60,7 @@ export default function CmsSectionTemplatesPage() {
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-100 text-zinc-700">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wider bg-zinc-100 text-zinc-700">
                       {tpl.category}
                     </span>
                     <span className="font-mono text-[10px] text-zinc-400">
@@ -68,7 +68,7 @@ export default function CmsSectionTemplatesPage() {
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-base text-zinc-900">{tpl.name}</h3>
+                  <h3 className="font-medium text-base text-zinc-900">{tpl.name}</h3>
                   <p className="text-xs text-zinc-600 leading-relaxed">
                     {tpl.description}
                   </p>
@@ -77,19 +77,19 @@ export default function CmsSectionTemplatesPage() {
                 <div className="pt-3 border-t border-zinc-100 space-y-2 text-xs">
                   <div className="flex items-center justify-between text-zinc-500">
                     <span>Listing Query Engine:</span>
-                    <span className={`font-semibold ${tpl.supportsPropertyQuery ? "text-emerald-600" : "text-zinc-400"}`}>
+                    <span className={`font-medium ${tpl.supportsPropertyQuery ? "text-emerald-600" : "text-zinc-400"}`}>
                       {tpl.supportsPropertyQuery ? "Supported" : "N/A"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-zinc-500">
                     <span>Media Uploads:</span>
-                    <span className={`font-semibold ${tpl.supportsMedia ? "text-emerald-600" : "text-zinc-400"}`}>
+                    <span className={`font-medium ${tpl.supportsMedia ? "text-emerald-600" : "text-zinc-400"}`}>
                       {tpl.supportsMedia ? "Supported" : "N/A"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-zinc-500">
                     <span>Call-to-Action Link:</span>
-                    <span className={`font-semibold ${tpl.supportsCta ? "text-emerald-600" : "text-zinc-400"}`}>
+                    <span className={`font-medium ${tpl.supportsCta ? "text-emerald-600" : "text-zinc-400"}`}>
                       {tpl.supportsCta ? "Supported" : "N/A"}
                     </span>
                   </div>

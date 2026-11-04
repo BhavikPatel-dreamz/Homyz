@@ -384,7 +384,7 @@ export function PropertySelector({
                     <path d="m21 21-4.3-4.3" />
                   </svg>
                 </div>
-                <p className="mt-2 text-xs font-semibold text-[#1F1F1F]">No properties found</p>
+                <p className="mt-2 text-xs font-medium text-[#1F1F1F]">No properties found</p>
                 <p className="text-xs text-[#727272]">Try searching by another title or city</p>
               </div>
             )}
@@ -466,7 +466,7 @@ export function PropertySelector({
                     </svg>
                   </div>
                   <div>
-                    <p className={`text-sm font-semibold ${selectedListingId === null ? "text-white" : "text-[#1F1F1F]"}`}>
+                    <p className={`text-sm font-medium ${selectedListingId === null ? "text-white" : "text-[#1F1F1F]"}`}>
                       All listings
                     </p>
                     <p className={`text-xs ${selectedListingId === null ? "text-zinc-300" : "text-[#727272]"}`}>
@@ -496,7 +496,7 @@ export function PropertySelector({
                     <div className="flex min-w-0 items-center gap-3">
                       <SafeListingThumbnail src={listing.photo} />
                       <div className="min-w-0 flex-1 truncate">
-                        <p className="truncate text-sm font-semibold text-[#1F1F1F]">{listing.title}</p>
+                        <p className="truncate text-sm font-medium text-[#1F1F1F]">{listing.title}</p>
                         <p className="truncate text-xs text-[#727272]">
                           {[listing.city, listing.country].filter(Boolean).join(", ") || "Active property"}
                         </p>

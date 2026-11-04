@@ -224,7 +224,7 @@ export function PublicHostProfileView({ host, stats, reviews, guestStats, guestR
                       ) : (
                         <span
                           aria-hidden="true"
-                          className="flex size-12 items-center justify-center rounded-full border-2 border-[#e9a400] bg-amber-100 text-sm font-semibold text-amber-950"
+                          className="flex size-12 items-center justify-center rounded-full border-2 border-[#e9a400] bg-amber-100 text-sm font-medium text-amber-950"
                         >
                           {(review.author.name || "G")[0]?.toUpperCase()}
                         </span>

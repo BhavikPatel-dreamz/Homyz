@@ -20,6 +20,8 @@ import {
 } from "@/lib/notifications/unread-count-store";
 import { HostNavigationDrawer } from "@/components/host/navigation/host-navigation-drawer";
 import { UnifiedGuestHeader } from "@/components/header/unified-guest-header";
+import { BrandLogo } from "@/components/branding/brand-logo";
+import { useBranding } from "@/components/branding/branding-provider";
 
 const BecomeHostModal = dynamic(
   () => import("@/components/host/become-host-modal").then((mod) => mod.BecomeHostModal),
@@ -38,6 +40,7 @@ type AppHeaderProps = {
 };
 
 export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }: AppHeaderProps = {}) {
+  const branding = useBranding();
   const pathname = usePathname();
   const router = useRouter();
   const { data: session, status: sessionStatus, update } = useSession();
@@ -258,14 +261,14 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
             className="absolute left-0 top-1/2 -translate-y-1/2 block h-[68px] w-[66px] shrink-0 overflow-hidden transition-opacity hover:opacity-80 md:hidden"
             aria-label={logoAriaLabel}
           >
-            <Image
-              src="/images/brand/homyz-mobile-logo-dark-v1.svg"
+            <BrandLogo
+              src={branding.mobileLogoUrl}
+              fallbackSrc="/images/brand/homyz-mobile-logo-dark-v1.svg"
               alt=""
               width={199}
               height={72}
-              className="h-[49px] w-[57px] max-w-none"
-              priority
-              unoptimized
+                  className="h-[49px] w-[57px] max-w-none"
+                  priority
             />
           </Link>
 
@@ -276,20 +279,20 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                 className="shrink-0 transition-opacity hover:opacity-80 focus-visible:outline-none"
                 aria-label={logoAriaLabel}
               >
-                <Image
-                  src="/images/brand/homyz-logo-dark-v1.svg"
+                <BrandLogo
+                  src={branding.hostHeaderLogoUrl}
+                  fallbackSrc="/images/brand/homyz-logo-dark-v1.svg"
                   alt="Homyz"
                   width={160}
                   height={58}
                   className="h-auto w-[125px] md:w-[135px] lg:w-[145px]"
                   priority
-                  unoptimized
                 />
               </Link>
             </div>
           ) : (
             <Link href={logoHref} className="hidden shrink-0 transition-opacity hover:opacity-80 md:block focus-visible:outline-none" aria-label={logoAriaLabel}>
-              <Image src="/images/brand/homyz-logo-dark-v2.svg" alt="Stay like a homie." width={200} height={53} className="h-auto w-[145px] md:w-[150px] lg:w-[160px] xl:w-[185px] 2xl:w-[200px]" priority unoptimized />
+              <BrandLogo src={branding.guestHeaderLogoUrl} fallbackSrc="/images/brand/homyz-logo-dark-v2.svg" alt="Homyz" width={200} height={53} className="h-auto w-[145px] md:w-[150px] lg:w-[160px] xl:w-[185px] 2xl:w-[200px]" priority />
             </Link>
           )}
 
@@ -313,14 +316,14 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                 className="group absolute left-[53%] top-1/2 block -translate-x-1/2 -translate-y-1/2 md:hidden outline-0"
                 aria-label={logoAriaLabel}
               >
-                <Image
-                  src="/images/brand/homyz-logo-dark-v2.svg"
+                <BrandLogo
+                  src={branding.mobileLogoUrl}
+                  fallbackSrc="/images/brand/homyz-logo-dark-v2.svg"
                   alt="Stay like a homie."
                   width={200}
                   height={53}
                   className="h-auto w-[149px] transition-transform"
                   priority
-                  unoptimized
                 />
               </Link>
 
@@ -396,20 +399,20 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
           ) : (
             <>
               <Link href={logoHref} className="group absolute left-[53%] top-1/2 block -translate-x-1/2 -translate-y-1/2 md:hidden outline-0" aria-label={logoAriaLabel}>
-                <Image
-                  src="/images/brand/homyz-logo-dark-v2.svg"
-                  alt="Stay like a homie."
+                <BrandLogo
+                  src={branding.mobileLogoUrl}
+                  fallbackSrc="/images/brand/homyz-logo-dark-v2.svg"
+                  alt="Homyz"
                   width={200}
                   height={53}
                   className="h-auto w-[149px] transition-transform"
                   priority
-                  unoptimized
                 />
               </Link>
 
               <Link href={logoHref} className="group absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block" aria-label={logoAriaLabel}>
                 <span className="relative block aspect-[199/72] w-[125px] md:w-[135px] lg:w-[145px] xl:w-[170px] 2xl:w-[198px]">
-                  <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" fill sizes="(min-width: 1536px) 198px, (min-width: 1280px) 170px, (min-width: 1024px) 145px, (min-width: 768px) 135px, 125px" className="object-contain" priority unoptimized />
+                  <BrandLogo src={branding.guestHeaderLogoUrl} fallbackSrc="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} sizes="(min-width: 1536px) 198px, (min-width: 1280px) 170px, (min-width: 1024px) 145px, (min-width: 768px) 135px, 125px" className="h-full w-full object-contain" priority />
                 </span>
               </Link>
             </>

@@ -157,7 +157,7 @@ export function LoyaltyWalletView() {
           </div>
 
           <div className="flex flex-col items-start sm:items-end gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] px-3.5 py-1 text-xs font-semibold text-[#1F1F1F]">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] px-3.5 py-1 text-xs font-medium text-[#1F1F1F]">
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
@@ -188,18 +188,18 @@ export function LoyaltyWalletView() {
       {/* Ways to Earn 3-Column Strip */}
       <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-4">
-          <span className="text-xs font-semibold text-[#1F1F1F]">{t("profile_loyalty_earn_book_title", "Book a Stay")}</span>
-          <span className="mt-1 text-lg font-semibold text-[#1F1F1F]">{t("profile_loyalty_earn_book_value", "10 pts / $1")}</span>
+          <span className="text-xs font-medium text-[#1F1F1F]">{t("profile_loyalty_earn_book_title", "Book a Stay")}</span>
+          <span className="mt-1 text-lg font-medium text-[#1F1F1F]">{t("profile_loyalty_earn_book_value", "10 pts / $1")}</span>
           <span className="mt-0.5 text-xs text-[#727272]">{t("profile_loyalty_earn_book_desc", "Earn on all homes & villas")}</span>
         </div>
         <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-4">
-          <span className="text-xs font-semibold text-[#1F1F1F]">{t("profile_loyalty_earn_review_title", "Write Reviews")}</span>
-          <span className="mt-1 text-lg font-semibold text-[#1F1F1F]">{t("profile_loyalty_earn_review_value", "50 pts each")}</span>
+          <span className="text-xs font-medium text-[#1F1F1F]">{t("profile_loyalty_earn_review_title", "Write Reviews")}</span>
+          <span className="mt-1 text-lg font-medium text-[#1F1F1F]">{t("profile_loyalty_earn_review_value", "50 pts each")}</span>
           <span className="mt-0.5 text-xs text-[#727272]">{t("profile_loyalty_earn_review_desc", "After every completed trip")}</span>
         </div>
         <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-4">
-          <span className="text-xs font-semibold text-[#1F1F1F]">{t("profile_loyalty_earn_refer_title", "Refer Friends")}</span>
-          <span className="mt-1 text-lg font-semibold text-[#1F1F1F]">{t("profile_loyalty_earn_refer_value", "250 pts")}</span>
+          <span className="text-xs font-medium text-[#1F1F1F]">{t("profile_loyalty_earn_refer_title", "Refer Friends")}</span>
+          <span className="mt-1 text-lg font-medium text-[#1F1F1F]">{t("profile_loyalty_earn_refer_value", "250 pts")}</span>
           <span className="mt-0.5 text-xs text-[#727272]">{t("profile_loyalty_earn_refer_desc", "When friend completes first stay")}</span>
         </div>
       </div>
@@ -218,7 +218,7 @@ export function LoyaltyWalletView() {
                 className="relative flex flex-col justify-between rounded-2xl border border-[#E5E5E5] bg-white p-5 transition-all hover:border-[#1F1F1F]/40 hover:shadow-xs"
               >
                 {reward.badge && (
-                  <span className="absolute right-4 top-4 rounded-full bg-[#FFF8E8] border border-[#FCDF9C] px-2.5 py-0.5 text-[10px] font-semibold text-[#1F1F1F]">
+                  <span className="absolute right-4 top-4 rounded-full bg-[#FFF8E8] border border-[#FCDF9C] px-2.5 py-0.5 text-[10px] font-medium text-[#1F1F1F]">
                     {reward.badge}
                   </span>
                 )}
@@ -229,7 +229,7 @@ export function LoyaltyWalletView() {
                   <p className="mt-1 text-xs text-[#727272] leading-relaxed">
                     {reward.description}
                   </p>
-                  <p className="mt-3 text-sm font-semibold text-[#1F1F1F]">
+                  <p className="mt-3 text-sm font-medium text-[#1F1F1F]">
                     {reward.points.toLocaleString()} pts
                   </p>
                 </div>
@@ -237,7 +237,7 @@ export function LoyaltyWalletView() {
                   type="button"
                   onClick={() => handleRedeem(reward)}
                   disabled={!canAfford}
-                  className={`mt-4 w-full rounded-full py-2 text-xs font-semibold transition-colors ${
+                  className={`mt-4 w-full rounded-full py-2 text-xs font-medium transition-colors ${
                     canAfford
                       ? "bg-[#FCDF9C] text-[#1F1F1F] hover:bg-[#F7D37D]"
                       : "cursor-not-allowed bg-zinc-100 text-[#727272]"
@@ -263,11 +263,11 @@ export function LoyaltyWalletView() {
               className="flex items-center justify-between p-4 transition-colors hover:bg-zinc-50"
             >
               <div className="flex flex-col">
-                <span className="text-sm font-semibold text-[#1F1F1F]">{tx.title}</span>
+                <span className="text-sm font-medium text-[#1F1F1F]">{tx.title}</span>
                 <span className="text-xs text-[#727272]">{tx.date} • {tx.category}</span>
               </div>
               <span
-                className={`text-sm font-semibold ${
+                className={`text-sm font-medium ${
                   tx.points > 0 ? "text-emerald-700" : "text-zinc-700"
                 }`}
               >
@@ -282,7 +282,7 @@ export function LoyaltyWalletView() {
       {redeemingReward && (
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in zoom-in-95">
-            <h3 className="text-lg font-semibold text-[#1F1F1F]">
+            <h3 className="text-lg font-medium text-[#1F1F1F]">
               {t("profile_loyalty_confirm_modal_title", "Confirm Reward Redemption")}
             </h3>
             <p className="mt-2 text-sm text-[#727272]">
@@ -292,14 +292,14 @@ export function LoyaltyWalletView() {
               <button
                 type="button"
                 onClick={() => setRedeemingReward(null)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-medium text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {t("profile_loyalty_cancel_btn", "Cancel")}
               </button>
               <button
                 type="button"
                 onClick={confirmRedeem}
-                className="rounded-full bg-[#FCDF9C] px-5 py-2 text-xs font-semibold text-[#1F1F1F] hover:bg-[#F7D37D]"
+                className="rounded-full bg-[#FCDF9C] px-5 py-2 text-xs font-medium text-[#1F1F1F] hover:bg-[#F7D37D]"
               >
                 {t("profile_loyalty_confirm_btn", "Confirm & Deduct")}
               </button>

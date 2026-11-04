@@ -334,7 +334,7 @@ export function HostReviewIntroduction({
         <div className="mt-8 flex justify-center">
           <Link
             href={returnHref}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white transition-colors hover:bg-zinc-700"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1F1F1F] px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
           >
             Back to reservations
           </Link>
@@ -600,7 +600,7 @@ export function HostReviewIntroduction({
                         type="button"
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="inline-flex min-h-9 items-center justify-center rounded-xl bg-red-700 px-4 text-xs font-semibold text-white transition-colors hover:bg-red-800 disabled:opacity-50"
+                        className="inline-flex min-h-9 items-center justify-center rounded-xl bg-red-700 px-4 text-xs font-medium text-white transition-colors hover:bg-red-800 disabled:opacity-50"
                       >
                         Try again
                       </button>

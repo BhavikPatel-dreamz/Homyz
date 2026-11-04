@@ -185,7 +185,7 @@ export function ChangeReservationModal({
             </svg>
           </div>
           <div>
-            <h2 id="change-modal-title" className="text-xl font-semibold text-[#1F1F1F]">
+            <h2 id="change-modal-title" className="text-xl font-medium text-[#1F1F1F]">
               {t("booking_details_change_reservation", "Change reservation")}
             </h2>
             <p className="text-xs text-[#727272] line-clamp-1">{propertyName}</p>
@@ -195,7 +195,7 @@ export function ChangeReservationModal({
         <div className="mt-6 space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="change-checkin" className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider">
+              <label htmlFor="change-checkin" className="block text-xs font-medium text-zinc-700 uppercase tracking-wider">
                 {t("booking_details_check_in", "Check-in")}
               </label>
               <input
@@ -209,7 +209,7 @@ export function ChangeReservationModal({
               />
             </div>
             <div>
-              <label htmlFor="change-checkout" className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider">
+              <label htmlFor="change-checkout" className="block text-xs font-medium text-zinc-700 uppercase tracking-wider">
                 {t("booking_details_check_out", "Check-out")}
               </label>
               <input
@@ -226,7 +226,7 @@ export function ChangeReservationModal({
 
           <div>
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider">
+              <label className="block text-xs font-medium text-zinc-700 uppercase tracking-wider">
                 {t("booking_details_guests", "Guests")}
               </label>
               <span className="text-xs text-[#727272]">
@@ -283,7 +283,7 @@ export function ChangeReservationModal({
                   <CurrencyPrice amountMinorUnits={currentTotalPrice} sourceCurrency={currency} fractionDigits={2} />
                 </dd>
               </div>
-              <div className="flex justify-between font-semibold text-[#1F1F1F] border-t border-zinc-200/80 pt-2">
+              <div className="flex justify-between font-medium text-[#1F1F1F] border-t border-zinc-200/80 pt-2">
                 <dt>
                   {t("booking_details_new_total", {
                     count: previewData.newNights,
@@ -294,7 +294,7 @@ export function ChangeReservationModal({
                   <CurrencyPrice amountMinorUnits={previewData.newTotal} sourceCurrency={currency} fractionDigits={2} />
                 </dd>
               </div>
-              <div className="flex justify-between font-bold pt-1">
+              <div className="flex justify-between font-medium pt-1">
                 <dt>
                   {previewData.difference > 0
                     ? t("booking_details_add_payment", "Additional payment required")

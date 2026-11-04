@@ -218,7 +218,7 @@ export function CancellationPolicyView({
   };
 
   return (
-    <div className="w-full max-w-[880px] mx-auto space-y-8 pb-16 font-sans animate-in fade-in">
+    <div className="w-full max-w-3xl space-y-8 pb-16 font-sans animate-in fade-in">
       {/* Header */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-6">
@@ -608,7 +608,7 @@ export function CancellationPolicyView({
               <button
                 type="button"
                 onClick={() => setInfoModalTopic(null)}
-                className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-xs font-medium text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer"
               >
                 ✕
               </button>
@@ -642,7 +642,7 @@ export function CancellationPolicyView({
               <button
                 type="button"
                 onClick={() => setIsLearnMoreOpen(false)}
-                className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-xs font-medium text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer"
               >
                 ✕
               </button>
@@ -652,7 +652,7 @@ export function CancellationPolicyView({
                 {t("host_non_refundable_learn_p1")}
               </p>
               <div className="sm:rounded-xl rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 p-4 space-y-2">
-                <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{t("host_non_refundable_learn_how")}</span>
+                <span className="font-medium text-[#1F1F1F] dark:text-zinc-100 block">{t("host_non_refundable_learn_how")}</span>
                 <ul className="space-y-1.5 list-disc list-inside text-zinc-600 dark:text-zinc-300">
                   <li>{t("host_non_refundable_learn_b1")}</li>
                   <li>{t("host_non_refundable_learn_b2")}</li>
@@ -687,7 +687,7 @@ export function CancellationPolicyView({
               <button
                 type="button"
                 onClick={() => setIsHelpCentreOpen(false)}
-                className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-xs font-medium text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer"
               >
                 ✕
               </button>
@@ -698,19 +698,19 @@ export function CancellationPolicyView({
               </p>
               <div className="space-y-2.5 pt-1">
                 <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
-                  <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{t("host_cancellation_policy_flexible")}</span>
+                  <span className="font-medium text-[#1F1F1F] dark:text-zinc-100 block">{t("host_cancellation_policy_flexible")}</span>
                   <p className="text-[11px] text-[#727272] dark:text-[#727272] mt-0.5">{t("host_help_centre_flexible_desc")}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
-                  <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{t("host_cancellation_policy_moderate")}</span>
+                  <span className="font-medium text-[#1F1F1F] dark:text-zinc-100 block">{t("host_cancellation_policy_moderate")}</span>
                   <p className="text-[11px] text-[#727272] dark:text-[#727272] mt-0.5">{t("host_help_centre_moderate_desc")}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
-                  <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{t("host_cancellation_policy_limited")}</span>
+                  <span className="font-medium text-[#1F1F1F] dark:text-zinc-100 block">{t("host_cancellation_policy_limited")}</span>
                   <p className="text-[11px] text-[#727272] dark:text-[#727272] mt-0.5">{t("host_help_centre_limited_desc")}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
-                  <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{t("host_cancellation_policy_firm")}</span>
+                  <span className="font-medium text-[#1F1F1F] dark:text-zinc-100 block">{t("host_cancellation_policy_firm")}</span>
                   <p className="text-[11px] text-[#727272] dark:text-[#727272] mt-0.5">{t("host_help_centre_firm_desc")}</p>
                 </div>
               </div>

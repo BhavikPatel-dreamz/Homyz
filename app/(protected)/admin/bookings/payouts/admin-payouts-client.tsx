@@ -287,13 +287,13 @@ export function AdminPayoutsClient({
         <div className="flex flex-wrap items-center gap-2.5">
           <Link
             href="/admin/bookings/payments"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>Payments</span>
           </Link>
           <Link
             href="/admin/bookings/refunds"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>Refunds</span>
           </Link>
@@ -301,7 +301,7 @@ export function AdminPayoutsClient({
             type="button"
             onClick={handleBatchSettlementExport}
             disabled={actionLoading}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>SARIE Batch Export</span>
           </button>
@@ -309,7 +309,7 @@ export function AdminPayoutsClient({
             type="button"
             onClick={exportCSV}
             disabled={payouts.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all disabled:opacity-50"
           >
             <span>Export CSV</span>
           </button>
@@ -319,14 +319,14 @@ export function AdminPayoutsClient({
       {actionSuccess && (
         <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs flex justify-between items-center">
           <span>{actionSuccess}</span>
-          <button onClick={() => setActionSuccess(null)} className="font-bold">✕</button>
+          <button onClick={() => setActionSuccess(null)} className="font-medium">✕</button>
         </div>
       )}
 
       {actionError && (
         <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-300 text-xs flex justify-between items-center">
           <span>{actionError}</span>
-          <button onClick={() => setActionError(null)} className="font-bold">✕</button>
+          <button onClick={() => setActionError(null)} className="font-medium">✕</button>
         </div>
       )}
 
@@ -336,7 +336,7 @@ export function AdminPayoutsClient({
           <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div>
-          <p className="font-bold">Automated Gateway Settlement Status</p>
+          <p className="font-medium">Automated Gateway Settlement Status</p>
           <p className="mt-0.5">
             Automated direct bank wire execution is currently unconfigured in the payment gateway.
             The figures below reflect authoritative, verified platform earnings readiness derived from completed
@@ -349,80 +349,80 @@ export function AdminPayoutsClient({
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         {/* 1. Total Paid Volume */}
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Total Paid Vol
           </p>
-          <p className="text-base sm:text-lg font-bold text-foreground mt-1">
+          <p className="text-base sm:text-lg font-medium text-foreground mt-1">
             {formatPrice((summary.totalPaidVolume || 0) / 100, summary.currency)}
           </p>
         </div>
 
         {/* 2. Total Paid Count */}
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+          <p className="text-2xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
             Total Paid Count
           </p>
-          <p className="text-base sm:text-lg font-bold text-foreground mt-1">
+          <p className="text-base sm:text-lg font-medium text-foreground mt-1">
             {summary.totalPaidCount || 0}
           </p>
         </div>
 
         {/* 3. Eligible Settlement Volume */}
         <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+          <p className="text-2xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
             Eligible Vol
           </p>
-          <p className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+          <p className="text-base sm:text-lg font-medium text-emerald-600 dark:text-emerald-400 mt-1">
             {formatPrice(summary.eligibleSettlementVolume / 100, summary.currency)}
           </p>
         </div>
 
         {/* 4. Eligible Settlement Count */}
         <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+          <p className="text-2xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
             Eligible Count
           </p>
-          <p className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+          <p className="text-base sm:text-lg font-medium text-emerald-600 dark:text-emerald-400 mt-1">
             {summary.eligibleSettlementCount}
           </p>
         </div>
 
         {/* 5. Scheduled / Pending Stay Volume */}
         <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
+          <p className="text-2xs font-medium text-sky-600 dark:text-sky-400 uppercase tracking-wider">
             Pending Stay Vol
           </p>
-          <p className="text-base sm:text-lg font-bold text-sky-600 dark:text-sky-400 mt-1">
+          <p className="text-base sm:text-lg font-medium text-sky-600 dark:text-sky-400 mt-1">
             {formatPrice(summary.pendingStayVolume / 100, summary.currency)}
           </p>
         </div>
 
         {/* 6. Scheduled / Pending Stay Count */}
         <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
+          <p className="text-2xs font-medium text-sky-600 dark:text-sky-400 uppercase tracking-wider">
             Pending Count
           </p>
-          <p className="text-base sm:text-lg font-bold text-sky-600 dark:text-sky-400 mt-1">
+          <p className="text-base sm:text-lg font-medium text-sky-600 dark:text-sky-400 mt-1">
             {summary.pendingStayCount}
           </p>
         </div>
 
         {/* 7. On Hold Volume */}
         <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+          <p className="text-2xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider">
             On Hold Vol
           </p>
-          <p className="text-base sm:text-lg font-bold text-amber-600 dark:text-amber-400 mt-1">
+          <p className="text-base sm:text-lg font-medium text-amber-600 dark:text-amber-400 mt-1">
             {formatPrice(summary.onHoldVolume / 100, summary.currency)}
           </p>
         </div>
 
         {/* 8. On Hold Count */}
         <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+          <p className="text-2xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider">
             On Hold Count
           </p>
-          <p className="text-base sm:text-lg font-bold text-amber-600 dark:text-amber-400 mt-1">
+          <p className="text-base sm:text-lg font-medium text-amber-600 dark:text-amber-400 mt-1">
             {summary.onHoldCount}
           </p>
         </div>
@@ -457,7 +457,7 @@ export function AdminPayoutsClient({
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-foreground"
+            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-medium text-foreground"
           >
             <option value="ALL">All Statuses</option>
             <option value="ELIGIBLE_SETTLEMENT">Eligible for Settlement</option>
@@ -471,7 +471,7 @@ export function AdminPayoutsClient({
             type="button"
             onClick={() => fetchPayouts(pagination.page)}
             disabled={loading}
-            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50"
+            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-medium text-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50"
           >
             Refresh
           </button>
@@ -482,7 +482,7 @@ export function AdminPayoutsClient({
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[var(--surface-secondary)]/50 text-[var(--muted-foreground)] font-semibold border-b border-[var(--border)]">
+            <thead className="bg-[var(--surface-secondary)]/50 text-[var(--muted-foreground)] font-medium border-b border-[var(--border)]">
               <tr>
                 <th className="py-3 px-4">Payout / Booking</th>
                 <th className="py-3 px-4">Host</th>
@@ -511,13 +511,13 @@ export function AdminPayoutsClient({
               ) : (
                 payouts.map((p) => (
                   <tr key={p.id} className="hover:bg-[var(--surface-secondary)]/40 transition-colors">
-                    <td className="py-3.5 px-4 font-mono text-2xs text-foreground font-semibold">
+                    <td className="py-3.5 px-4 font-mono text-2xs text-foreground font-medium">
                       <Link href={`/admin/bookings/all?search=${p.bookingId}`} className="hover:underline">
                         {p.bookingId.slice(0, 10)}...
                       </Link>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="font-semibold text-foreground block truncate">{p.host?.name || "Host"}</span>
+                      <span className="font-medium text-foreground block truncate">{p.host?.name || "Host"}</span>
                       <span className="text-3xs text-[var(--muted-foreground)] block truncate">{p.host?.email}</span>
                     </td>
                     <td className="py-3.5 px-4 max-w-[160px] truncate font-medium text-foreground">
@@ -532,12 +532,12 @@ export function AdminPayoutsClient({
                     <td className="py-3.5 px-4 whitespace-nowrap text-rose-600">
                       -{formatPrice(p.platformFee / 100, p.currency)}
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-foreground whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-medium text-foreground whitespace-nowrap">
                       {formatPrice(p.netPayout / 100, p.currency)}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-semibold ${
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-medium ${
                           p.status === "PAID"
                             ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
                             : p.status === "ELIGIBLE_SETTLEMENT"
@@ -556,7 +556,7 @@ export function AdminPayoutsClient({
                       <button
                         type="button"
                         onClick={() => setSelectedPayout(p)}
-                        className="px-2.5 py-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-xs font-semibold text-foreground transition-all"
+                        className="px-2.5 py-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-xs font-medium text-foreground transition-all"
                       >
                         Breakdown & Actions
                       </button>
@@ -578,14 +578,14 @@ export function AdminPayoutsClient({
             <button
               onClick={() => fetchPayouts(pagination.page - 1)}
               disabled={pagination.page <= 1 || loading}
-              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-semibold"
+              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-medium"
             >
               ← Prev
             </button>
             <button
               onClick={() => fetchPayouts(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages || loading}
-              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-semibold"
+              className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-foreground disabled:opacity-40 hover:bg-[var(--surface-secondary)] transition-all font-medium"
             >
               Next →
             </button>
@@ -598,10 +598,10 @@ export function AdminPayoutsClient({
         <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-bold text-foreground">Host Payout Breakdown</h3>
+              <h3 className="text-base font-medium text-foreground">Host Payout Breakdown</h3>
               <button
                 onClick={() => setSelectedPayout(null)}
-                className="text-[var(--muted-foreground)] hover:text-foreground text-sm font-bold"
+                className="text-[var(--muted-foreground)] hover:text-foreground text-sm font-medium"
               >
                 ✕
               </button>
@@ -613,11 +613,11 @@ export function AdminPayoutsClient({
                 {formatPrice(selectedPayout.netPayout / 100, selectedPayout.currency)}
               </p>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                   Status: {selectedPayout.status}
                 </span>
                 {selectedPayout.holdDetails?.isHeld && (
-                  <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                  <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
                     Hold: {selectedPayout.holdDetails.holdType}
                   </span>
                 )}
@@ -627,17 +627,17 @@ export function AdminPayoutsClient({
             <div className="divide-y divide-[var(--border)] border border-[var(--border)] rounded-xl text-xs overflow-hidden">
               <div className="flex justify-between p-3">
                 <span className="text-[var(--muted-foreground)]">Gross Booking Value</span>
-                <span className="font-semibold text-foreground">
+                <span className="font-medium text-foreground">
                   {formatPrice(selectedPayout.grossEarnings / 100, selectedPayout.currency)}
                 </span>
               </div>
               <div className="flex justify-between p-3">
                 <span className="text-[var(--muted-foreground)]">Platform Commission Deducted</span>
-                <span className="font-semibold text-rose-600">
+                <span className="font-medium text-rose-600">
                   -{formatPrice(selectedPayout.platformFee / 100, selectedPayout.currency)}
                 </span>
               </div>
-              <div className="flex justify-between p-3 bg-[var(--surface-secondary)]/30 font-bold">
+              <div className="flex justify-between p-3 bg-[var(--surface-secondary)]/30 font-medium">
                 <span className="text-foreground">Net Payout to Host</span>
                 <span className="text-foreground">
                   {formatPrice(selectedPayout.netPayout / 100, selectedPayout.currency)}
@@ -660,7 +660,7 @@ export function AdminPayoutsClient({
             {/* Hold Reason if on hold */}
             {selectedPayout.holdDetails?.isHeld && (
               <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-2xs text-amber-800 dark:text-amber-300">
-                <p className="font-bold">Hold Reason:</p>
+                <p className="font-medium">Hold Reason:</p>
                 <p>{selectedPayout.holdDetails.reason}</p>
                 <p className="mt-1 text-3xs opacity-80">Held by: {selectedPayout.holdDetails.heldBy}</p>
               </div>
@@ -669,9 +669,9 @@ export function AdminPayoutsClient({
             {/* Hold Form Modal Sub-section */}
             {holdModalOpen && (
               <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-3">
-                <h4 className="text-xs font-bold text-foreground">Place Administrative Hold</h4>
+                <h4 className="text-xs font-medium text-foreground">Place Administrative Hold</h4>
                 <div>
-                  <label className="text-3xs font-semibold text-[var(--muted-foreground)] uppercase">Hold Type</label>
+                  <label className="text-3xs font-medium text-[var(--muted-foreground)] uppercase">Hold Type</label>
                   <select
                     value={holdType}
                     onChange={(e) => setHoldType(e.target.value)}
@@ -684,7 +684,7 @@ export function AdminPayoutsClient({
                   </select>
                 </div>
                 <div>
-                  <label className="text-3xs font-semibold text-[var(--muted-foreground)] uppercase">Mandatory Reason</label>
+                  <label className="text-3xs font-medium text-[var(--muted-foreground)] uppercase">Mandatory Reason</label>
                   <textarea
                     value={holdReason}
                     onChange={(e) => setHoldReason(e.target.value)}
@@ -697,7 +697,7 @@ export function AdminPayoutsClient({
                   <button
                     type="button"
                     onClick={() => setHoldModalOpen(false)}
-                    className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs font-semibold"
+                    className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs font-medium"
                   >
                     Cancel
                   </button>
@@ -705,7 +705,7 @@ export function AdminPayoutsClient({
                     type="button"
                     onClick={handleHoldPayout}
                     disabled={!holdReason.trim() || actionLoading}
-                    className="px-3 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-semibold disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-medium disabled:opacity-50"
                   >
                     {actionLoading ? "Holding..." : "Confirm Hold"}
                   </button>
@@ -721,7 +721,7 @@ export function AdminPayoutsClient({
                     type="button"
                     onClick={handleReleasePayout}
                     disabled={actionLoading}
-                    className="px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-semibold hover:bg-emerald-500/20 disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-medium hover:bg-emerald-500/20 disabled:opacity-50"
                   >
                     {actionLoading ? "Releasing..." : "Release Hold"}
                   </button>
@@ -729,7 +729,7 @@ export function AdminPayoutsClient({
                   <button
                     type="button"
                     onClick={() => setHoldModalOpen(true)}
-                    className="px-3 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-semibold hover:bg-amber-500/20"
+                    className="px-3 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-medium hover:bg-amber-500/20"
                   >
                     Place Hold
                   </button>
@@ -745,7 +745,7 @@ export function AdminPayoutsClient({
               <button
                 type="button"
                 onClick={() => setSelectedPayout(null)}
-                className="px-4 py-2 rounded-xl bg-[var(--surface-secondary)] text-foreground text-xs font-semibold hover:bg-[var(--surface)] border border-[var(--border)]"
+                className="px-4 py-2 rounded-xl bg-[var(--surface-secondary)] text-foreground text-xs font-medium hover:bg-[var(--surface)] border border-[var(--border)]"
               >
                 Close
               </button>

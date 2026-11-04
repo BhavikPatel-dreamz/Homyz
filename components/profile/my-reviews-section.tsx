@@ -207,7 +207,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
               <button
                 type="button"
                 onClick={() => setSelectedReview(null)}
-                className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors"
+                className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
               >
                 {t("profile_reviews_close", "Close")}
               </button>

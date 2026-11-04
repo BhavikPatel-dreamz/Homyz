@@ -92,7 +92,7 @@ export function AcceptInvitationForm({
         </div>
 
         <div>
-          <h2 className="text-2xl font-semibold text-zinc-950 font-['Poppins']">
+          <h2 className="text-2xl font-medium text-zinc-950 font-['Poppins']">
             {t("accept_inv_success_title", "Account Activated!")}
           </h2>
           <p className="text-sm text-[#727272] mt-1.5 leading-relaxed font-['Poppins']">
@@ -124,9 +124,9 @@ export function AcceptInvitationForm({
       <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 flex items-center justify-between gap-3 text-xs sm:text-sm font-['Poppins']">
         <div className="min-w-0 truncate">
           <span className="text-[#727272]">{t("accept_inv_account_for", "Account for: ")}</span>
-          <strong className="text-[#1F1F1F] font-semibold">{name ? `${name} (${email})` : email}</strong>
+          <strong className="text-[#1F1F1F] font-medium">{name ? `${name} (${email})` : email}</strong>
         </div>
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
           {roleName}
         </span>
       </div>
@@ -175,9 +175,9 @@ export function AcceptInvitationForm({
 
         {/* Password Requirements Box - Exactly matching register page */}
         <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 text-zinc-600 flex flex-col gap-1 mt-1 font-['Poppins']">
-          <div className="font-semibold text-zinc-800 mb-0.5 text-xs sm:text-sm">{t("auth_pwd_requirements", "Password Requirements:")}</div>
+          <div className="font-medium text-zinc-800 mb-0.5 text-xs sm:text-sm">{t("auth_pwd_requirements", "Password Requirements:")}</div>
           <div className="flex items-center gap-2 text-xs sm:text-sm">
-            <span className={hasMinLength ? "text-emerald-600 font-semibold" : "text-[#727272]"}>
+            <span className={hasMinLength ? "text-emerald-600 font-medium" : "text-[#727272]"}>
               {hasMinLength ? "✓" : "○"}
             </span>
             <span className={hasMinLength ? "text-[#1F1F1F] font-medium" : "text-[#727272]"}>
@@ -185,7 +185,7 @@ export function AcceptInvitationForm({
             </span>
           </div>
           <div className="flex items-center gap-2 text-xs sm:text-sm">
-            <span className={hasUppercase ? "text-emerald-600 font-semibold" : "text-[#727272]"}>
+            <span className={hasUppercase ? "text-emerald-600 font-medium" : "text-[#727272]"}>
               {hasUppercase ? "✓" : "○"}
             </span>
             <span className={hasUppercase ? "text-[#1F1F1F] font-medium" : "text-[#727272]"}>
@@ -193,7 +193,7 @@ export function AcceptInvitationForm({
             </span>
           </div>
           <div className="flex items-center gap-2 text-xs sm:text-sm">
-            <span className={hasNumber ? "text-emerald-600 font-semibold" : "text-[#727272]"}>
+            <span className={hasNumber ? "text-emerald-600 font-medium" : "text-[#727272]"}>
               {hasNumber ? "✓" : "○"}
             </span>
             <span className={hasNumber ? "text-[#1F1F1F] font-medium" : "text-[#727272]"}>

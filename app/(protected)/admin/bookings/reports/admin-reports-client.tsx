@@ -113,7 +113,7 @@ export function AdminReportsClient({
           <div className="flex items-center gap-2">
             <Link
               href="/admin/bookings"
-              className="text-xs font-semibold text-[var(--accent)] hover:underline flex items-center gap-1"
+              className="text-xs font-medium text-[var(--accent)] hover:underline flex items-center gap-1"
             >
               ← Bookings Hub
             </Link>
@@ -131,7 +131,7 @@ export function AdminReportsClient({
         <div className="flex items-center gap-2">
           <Link
             href="/admin/bookings/analytics"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>Analytics Dashboard</span>
           </Link>
@@ -139,7 +139,7 @@ export function AdminReportsClient({
             type="button"
             onClick={handleExportCsv}
             disabled={exporting || loading}
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-xs font-medium shadow-2xs transition-all disabled:opacity-50"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -177,7 +177,7 @@ export function AdminReportsClient({
                 )}
               </div>
               <div>
-                <h4 className="text-xs font-bold text-foreground">{rt.label}</h4>
+                <h4 className="text-xs font-medium text-foreground">{rt.label}</h4>
                 <p className="text-3xs text-[var(--muted-foreground)] mt-0.5 line-clamp-1">{rt.desc}</p>
               </div>
             </button>
@@ -189,7 +189,7 @@ export function AdminReportsClient({
       <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] flex flex-wrap items-center justify-between gap-3 shadow-2xs">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-3xs uppercase font-semibold text-[var(--muted-foreground)]">From</span>
+            <span className="text-3xs uppercase font-medium text-[var(--muted-foreground)]">From</span>
             <input
               type="date"
               value={startDate}
@@ -198,7 +198,7 @@ export function AdminReportsClient({
             />
           </div>
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-3xs uppercase font-semibold text-[var(--muted-foreground)]">To</span>
+            <span className="text-3xs uppercase font-medium text-[var(--muted-foreground)]">To</span>
             <input
               type="date"
               value={endDate}
@@ -207,7 +207,7 @@ export function AdminReportsClient({
             />
           </div>
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-3xs uppercase font-semibold text-[var(--muted-foreground)]">Currency</span>
+            <span className="text-3xs uppercase font-medium text-[var(--muted-foreground)]">Currency</span>
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
@@ -224,7 +224,7 @@ export function AdminReportsClient({
         <button
           type="button"
           onClick={() => fetchReport(reportType)}
-          className="px-3.5 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--surface)] text-xs font-semibold text-foreground transition-all"
+          className="px-3.5 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--surface)] text-xs font-medium text-foreground transition-all"
         >
           Apply Filters
         </button>
@@ -234,7 +234,7 @@ export function AdminReportsClient({
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <div className="p-4 border-b border-[var(--border)] flex justify-between items-center bg-[var(--surface-secondary)]/30">
           <div>
-            <h3 className="text-xs font-bold text-foreground">
+            <h3 className="text-xs font-medium text-foreground">
               Preview: {REPORT_TYPES.find((r) => r.id === reportType)?.label}
             </h3>
             <span className="text-3xs text-[var(--muted-foreground)]">
@@ -249,7 +249,7 @@ export function AdminReportsClient({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-[var(--border)] bg-[var(--surface-secondary)]/50 text-[var(--muted-foreground)] font-semibold uppercase text-3xs tracking-wider">
+              <tr className="border-b border-[var(--border)] bg-[var(--surface-secondary)]/50 text-[var(--muted-foreground)] font-medium uppercase text-3xs tracking-wider">
                 {reportData.columns?.map((col: string, idx: number) => (
                   <th key={idx} className="py-3 px-4 whitespace-nowrap">
                     {col}

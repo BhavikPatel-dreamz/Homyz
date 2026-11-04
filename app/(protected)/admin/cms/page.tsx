@@ -213,22 +213,22 @@ export default function CmsManagementPage() {
   const statusBadge = (status: string) => {
     switch (status) {
       case "PUBLISHED":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Published</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Published</span>;
       case "DRAFT":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">Draft</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Draft</span>;
       case "UNPUBLISHED":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-200 text-zinc-700">Unpublished</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-200 text-zinc-700">Unpublished</span>;
       case "ARCHIVED":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800">Archived</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800">Archived</span>;
       default:
-        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-800">{status}</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-800">{status}</span>;
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="border-b border-[var(--border)] pb-5">
-        <h1 className="text-xl font-bold text-[var(--foreground)]">
+        <h1 className="text-xl font-medium text-[var(--foreground)]">
           CMS Content Management
         </h1>
         <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
@@ -279,7 +279,7 @@ export default function CmsManagementPage() {
               <button
                 type="button"
                 onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-sm font-semibold hover:bg-zinc-800 transition"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-sm font-medium hover:bg-zinc-800 transition"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -300,7 +300,7 @@ export default function CmsManagementPage() {
         <div className="bg-white border border-zinc-200 rounded-2xl shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-zinc-50 border-b border-zinc-200 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              <thead className="bg-zinc-50 border-b border-zinc-200 text-xs font-medium text-zinc-500 uppercase tracking-wider">
                 <tr>
                   <th className="px-5 py-3.5">Content Item</th>
                   <th className="px-5 py-3.5">Type</th>
@@ -327,7 +327,7 @@ export default function CmsManagementPage() {
                   items.map((item) => (
                     <tr key={item.id} className="hover:bg-zinc-50/60 transition">
                       <td className="px-5 py-4">
-                        <Link href={`/admin/cms/${item.id}`} className="font-semibold text-zinc-900 hover:underline">
+                        <Link href={`/admin/cms/${item.id}`} className="font-medium text-zinc-900 hover:underline">
                           {item.title}
                         </Link>
                         {item.slug && (
@@ -351,7 +351,7 @@ export default function CmsManagementPage() {
                       <td className="px-5 py-4 text-right space-x-2">
                         <Link
                           href={`/admin/cms/${item.id}`}
-                          className="inline-flex items-center px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition"
+                          className="inline-flex items-center px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs font-medium text-zinc-700 hover:bg-zinc-100 transition"
                         >
                           Edit
                         </Link>
@@ -359,7 +359,7 @@ export default function CmsManagementPage() {
                           <button
                             type="button"
                             onClick={(e) => handlePublish(item.id, e)}
-                            className="inline-flex items-center px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition"
+                            className="inline-flex items-center px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 transition"
                           >
                             Publish
                           </button>
@@ -368,7 +368,7 @@ export default function CmsManagementPage() {
                           <button
                             type="button"
                             onClick={(e) => handleUnpublish(item.id, e)}
-                            className="inline-flex items-center px-2.5 py-1.5 border border-zinc-200 text-zinc-600 rounded-lg text-xs font-semibold hover:bg-zinc-100 transition"
+                            className="inline-flex items-center px-2.5 py-1.5 border border-zinc-200 text-zinc-600 rounded-lg text-xs font-medium hover:bg-zinc-100 transition"
                           >
                             Unpublish
                           </button>
@@ -384,7 +384,7 @@ export default function CmsManagementPage() {
           {/* Pagination Bar */}
           <div className="flex items-center justify-between px-5 py-3.5 border-t border-zinc-200 bg-zinc-50 text-xs text-zinc-500">
             <div>
-              Total: <span className="font-semibold text-zinc-700">{total}</span> content items
+              Total: <span className="font-medium text-zinc-700">{total}</span> content items
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -413,7 +413,7 @@ export default function CmsManagementPage() {
         <ModalOverlay className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-zinc-200">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-zinc-900">Create New Content</h3>
+              <h3 className="text-lg font-medium text-zinc-900">Create New Content</h3>
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
@@ -425,7 +425,7 @@ export default function CmsManagementPage() {
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Content Type</label>
+                <label className="block text-xs font-medium text-zinc-700 mb-1">Content Type</label>
                 <select
                   value={createType}
                   onChange={(e) => setCreateType(e.target.value)}
@@ -438,7 +438,7 @@ export default function CmsManagementPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Internal Title / Name</label>
+                <label className="block text-xs font-medium text-zinc-700 mb-1">Internal Title / Name</label>
                 <input
                   type="text"
                   required
@@ -450,7 +450,7 @@ export default function CmsManagementPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-medium text-zinc-700 mb-1">
                   URL Slug (Optional for pages/collections)
                 </label>
                 <input
@@ -466,14 +466,14 @@ export default function CmsManagementPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 border border-zinc-200 text-zinc-700 rounded-xl text-sm font-semibold hover:bg-zinc-50"
+                  className="px-4 py-2 border border-zinc-200 text-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-sm font-semibold hover:bg-zinc-800 disabled:opacity-50"
+                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-sm font-medium hover:bg-zinc-800 disabled:opacity-50"
                 >
                   {creating ? "Creating..." : "Create & Edit"}
                 </button>

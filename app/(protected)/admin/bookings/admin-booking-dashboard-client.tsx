@@ -240,7 +240,7 @@ export function AdminBookingDashboardClient({
               value={period}
               onChange={(e) => handlePeriodChange(e.target.value)}
               disabled={isRefreshing}
-              className="appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] text-foreground pl-3 pr-8 py-2 text-xs font-semibold shadow-2xs outline-none hover:border-[var(--accent)] transition-colors cursor-pointer disabled:opacity-50"
+              className="appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] text-foreground pl-3 pr-8 py-2 text-xs font-medium shadow-2xs outline-none hover:border-[var(--accent)] transition-colors cursor-pointer disabled:opacity-50"
             >
               <option value="all">Date: All Time</option>
               <option value="today">Date: Today</option>
@@ -279,7 +279,7 @@ export function AdminBookingDashboardClient({
               <button
                 type="button"
                 onClick={handleApplyCustomDate}
-                className="rounded-xl bg-[var(--primary)] text-primary-foreground px-3 py-1.5 text-xs font-semibold hover:opacity-90 transition-opacity"
+                className="rounded-xl bg-[var(--primary)] text-primary-foreground px-3 py-1.5 text-xs font-medium hover:opacity-90 transition-opacity"
               >
                 Apply
               </button>
@@ -291,7 +291,7 @@ export function AdminBookingDashboardClient({
             type="button"
             onClick={() => loadData(period, customFrom, customTo)}
             disabled={isRefreshing}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-medium shadow-2xs transition-all disabled:opacity-50"
             title="Refresh dashboard metrics"
           >
             <svg
@@ -311,7 +311,7 @@ export function AdminBookingDashboardClient({
           {/* View All Bookings Navigation */}
           <Link
             href="/admin/bookings/all"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-4 py-2 text-xs font-semibold shadow-2xs transition-all"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-4 py-2 text-xs font-medium shadow-2xs transition-all"
           >
             <span>View All Bookings</span>
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -327,7 +327,7 @@ export function AdminBookingDashboardClient({
           <button
             type="button"
             onClick={() => loadData(period, customFrom, customTo)}
-            className="font-semibold underline ml-2 hover:opacity-80"
+            className="font-medium underline ml-2 hover:opacity-80"
           >
             Retry
           </button>
@@ -342,7 +342,7 @@ export function AdminBookingDashboardClient({
           className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs hover:border-[var(--accent)] hover:shadow-sm transition-all flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Total Bookings</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Total Bookings</span>
             <span className="p-2 rounded-xl bg-[var(--surface-secondary)] text-[var(--muted-foreground)] group-hover:text-[var(--accent)] transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -350,7 +350,7 @@ export function AdminBookingDashboardClient({
             </span>
           </div>
           <div className="mt-3">
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-mono">
+            <p className="text-2xl sm:text-3xl font-medium tracking-tight text-foreground font-mono">
               {summary.totalBookings}
             </p>
             <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">
@@ -365,7 +365,7 @@ export function AdminBookingDashboardClient({
           className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs hover:border-amber-400 hover:shadow-sm transition-all flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Pending Requests</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Pending Requests</span>
             <span className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -373,7 +373,7 @@ export function AdminBookingDashboardClient({
             </span>
           </div>
           <div className="mt-3">
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono">
+            <p className="text-2xl sm:text-3xl font-medium tracking-tight text-amber-600 dark:text-amber-400 font-mono">
               {summary.pendingRequests}
             </p>
             <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">
@@ -388,7 +388,7 @@ export function AdminBookingDashboardClient({
           className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs hover:border-emerald-400 hover:shadow-sm transition-all flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Confirmed Bookings</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Confirmed Bookings</span>
             <span className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -396,7 +396,7 @@ export function AdminBookingDashboardClient({
             </span>
           </div>
           <div className="mt-3">
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
+            <p className="text-2xl sm:text-3xl font-medium tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
               {summary.confirmedBookings}
             </p>
             <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">
@@ -411,7 +411,7 @@ export function AdminBookingDashboardClient({
           className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs hover:border-blue-400 hover:shadow-sm transition-all flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Upcoming Bookings</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Upcoming Bookings</span>
             <span className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -419,7 +419,7 @@ export function AdminBookingDashboardClient({
             </span>
           </div>
           <div className="mt-3">
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono">
+            <p className="text-2xl sm:text-3xl font-medium tracking-tight text-blue-600 dark:text-blue-400 font-mono">
               {summary.upcomingBookings}
             </p>
             <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">
@@ -434,7 +434,7 @@ export function AdminBookingDashboardClient({
           className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs hover:border-indigo-400 hover:shadow-sm transition-all flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Active Stays</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Active Stays</span>
             <span className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -442,7 +442,7 @@ export function AdminBookingDashboardClient({
             </span>
           </div>
           <div className="mt-3">
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400 font-mono">
+            <p className="text-2xl sm:text-3xl font-medium tracking-tight text-indigo-600 dark:text-indigo-400 font-mono">
               {summary.activeStays}
             </p>
             <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">
@@ -457,7 +457,7 @@ export function AdminBookingDashboardClient({
           className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs hover:border-[var(--accent)] hover:shadow-sm transition-all flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Completed Bookings</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Completed Bookings</span>
             <span className="p-2 rounded-xl bg-[var(--surface-secondary)] text-[var(--muted-foreground)] group-hover:text-[var(--accent)] transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
@@ -465,7 +465,7 @@ export function AdminBookingDashboardClient({
             </span>
           </div>
           <div className="mt-3">
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-mono">
+            <p className="text-2xl sm:text-3xl font-medium tracking-tight text-foreground font-mono">
               {summary.completedBookings}
             </p>
             <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">
@@ -480,7 +480,7 @@ export function AdminBookingDashboardClient({
           className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs hover:border-rose-400 hover:shadow-sm transition-all flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Canceled Bookings</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Canceled Bookings</span>
             <span className="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -488,7 +488,7 @@ export function AdminBookingDashboardClient({
             </span>
           </div>
           <div className="mt-3">
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 font-mono">
+            <p className="text-2xl sm:text-3xl font-medium tracking-tight text-rose-600 dark:text-rose-400 font-mono">
               {summary.canceledBookings}
             </p>
             <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">
@@ -503,7 +503,7 @@ export function AdminBookingDashboardClient({
           className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-2xs hover:border-red-400 hover:shadow-sm transition-all flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)]">Payment Issues</span>
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">Payment Issues</span>
             <span className="p-2 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -511,7 +511,7 @@ export function AdminBookingDashboardClient({
             </span>
           </div>
           <div className="mt-3">
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-red-600 dark:text-red-400 font-mono">
+            <p className="text-2xl sm:text-3xl font-medium tracking-tight text-red-600 dark:text-red-400 font-mono">
               {summary.paymentIssues}
             </p>
             <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">
@@ -526,11 +526,11 @@ export function AdminBookingDashboardClient({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-4 mb-4">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm sm:text-base font-bold text-foreground">
+              <h2 className="text-sm sm:text-base font-medium text-foreground">
                 Pending Booking Requests
               </h2>
               {pendingRequests.length > 0 && (
-                <span className="rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 px-2 py-0.5 text-[10px] font-bold">
+                <span className="rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 px-2 py-0.5 text-[10px] font-medium">
                   {pendingRequests.length} Urgent
                 </span>
               )}
@@ -542,7 +542,7 @@ export function AdminBookingDashboardClient({
 
           <Link
             href="/admin/bookings/all?tab=pending"
-            className="text-xs font-semibold text-[var(--accent)] hover:underline inline-flex items-center gap-1 shrink-0"
+            className="text-xs font-medium text-[var(--accent)] hover:underline inline-flex items-center gap-1 shrink-0"
           >
             <span>View All Pending</span>
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -561,7 +561,7 @@ export function AdminBookingDashboardClient({
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
+              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-medium uppercase tracking-wider">
                 <tr>
                   <th className="py-3 px-3 whitespace-nowrap">Booking ID</th>
                   <th className="py-3 px-3">Property</th>
@@ -581,12 +581,12 @@ export function AdminBookingDashboardClient({
                     className="hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
                     onClick={() => setSelectedBooking(req)}
                   >
-                    <td className="py-3.5 px-3 font-mono font-bold text-foreground whitespace-nowrap">
+                    <td className="py-3.5 px-3 font-mono font-medium text-foreground whitespace-nowrap">
                       #{req.id.slice(-8)}
                     </td>
 
                     <td className="py-3.5 px-3 max-w-[180px]">
-                      <span className="font-semibold text-foreground truncate block">{req.listing.title}</span>
+                      <span className="font-medium text-foreground truncate block">{req.listing.title}</span>
                       <span className="text-[10px] text-[var(--muted-foreground)] truncate block">{req.listing.city || "—"}</span>
                     </td>
 
@@ -610,7 +610,7 @@ export function AdminBookingDashboardClient({
 
                     <td className="py-3.5 px-3 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${
                           req.isExpired
                             ? "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300"
                             : req.isUrgent
@@ -626,7 +626,7 @@ export function AdminBookingDashboardClient({
                     </td>
 
                     <td className="py-3.5 px-3 whitespace-nowrap">
-                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300">
                         PENDING
                       </span>
                     </td>
@@ -638,7 +638,7 @@ export function AdminBookingDashboardClient({
                           e.stopPropagation();
                           setSelectedBooking(req);
                         }}
-                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-semibold text-foreground hover:bg-[var(--surface-secondary)] transition-all"
+                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-medium text-foreground hover:bg-[var(--surface-secondary)] transition-all"
                       >
                         View Details
                       </button>
@@ -655,7 +655,7 @@ export function AdminBookingDashboardClient({
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-6 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-4 mb-4">
           <div>
-            <h2 className="text-sm sm:text-base font-bold text-foreground">
+            <h2 className="text-sm sm:text-base font-medium text-foreground">
               Recent Bookings
             </h2>
             <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
@@ -665,7 +665,7 @@ export function AdminBookingDashboardClient({
 
           <Link
             href="/admin/bookings/all"
-            className="text-xs font-semibold text-[var(--accent)] hover:underline inline-flex items-center gap-1 shrink-0"
+            className="text-xs font-medium text-[var(--accent)] hover:underline inline-flex items-center gap-1 shrink-0"
           >
             <span>View All Bookings</span>
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -681,7 +681,7 @@ export function AdminBookingDashboardClient({
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
+              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-medium uppercase tracking-wider">
                 <tr>
                   <th className="py-3 px-3 whitespace-nowrap">Booking ID</th>
                   <th className="py-3 px-3">Property</th>
@@ -701,12 +701,12 @@ export function AdminBookingDashboardClient({
                     className="hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
                     onClick={() => setSelectedBooking(b)}
                   >
-                    <td className="py-3.5 px-3 font-mono font-bold text-foreground whitespace-nowrap">
+                    <td className="py-3.5 px-3 font-mono font-medium text-foreground whitespace-nowrap">
                       #{b.id.slice(-8)}
                     </td>
 
                     <td className="py-3.5 px-3 max-w-[180px]">
-                      <span className="font-semibold text-foreground truncate block">{b.listing.title}</span>
+                      <span className="font-medium text-foreground truncate block">{b.listing.title}</span>
                       <span className="text-[10px] text-[var(--muted-foreground)] truncate block">{b.listing.city || "—"}</span>
                     </td>
 
@@ -722,7 +722,7 @@ export function AdminBookingDashboardClient({
 
                     <td className="py-3.5 px-3 whitespace-nowrap">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${
                           b.status === "CONFIRMED"
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
                             : b.status === "CANCELLED"
@@ -736,7 +736,7 @@ export function AdminBookingDashboardClient({
 
                     <td className="py-3.5 px-3 whitespace-nowrap">
                       <span
-                        className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold ${
+                        className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-mono font-medium ${
                           b.paymentStatus === "CAPTURED" || b.paymentStatus === "PAID"
                             ? "bg-emerald-100/60 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
                             : b.paymentStatus === "FAILED"
@@ -748,7 +748,7 @@ export function AdminBookingDashboardClient({
                       </span>
                     </td>
 
-                    <td className="py-3.5 px-3 whitespace-nowrap font-mono font-semibold text-foreground">
+                    <td className="py-3.5 px-3 whitespace-nowrap font-mono font-medium text-foreground">
                       {formatPrice(b.totalPrice ?? 0, b.currency)}
                     </td>
 
@@ -763,7 +763,7 @@ export function AdminBookingDashboardClient({
                           e.stopPropagation();
                           setSelectedBooking(b);
                         }}
-                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-semibold text-foreground hover:bg-[var(--surface-secondary)] transition-all"
+                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-medium text-foreground hover:bg-[var(--surface-secondary)] transition-all"
                       >
                         View Details
                       </button>
@@ -779,7 +779,7 @@ export function AdminBookingDashboardClient({
       {/* 3.6 — Recent Booking Activity Timeline */}
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-6 shadow-2xs">
         <div className="border-b border-[var(--border-subtle)] pb-4 mb-4">
-          <h2 className="text-sm sm:text-base font-bold text-foreground">
+          <h2 className="text-sm sm:text-base font-medium text-foreground">
             Recent Booking Activity
           </h2>
           <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
@@ -815,7 +815,7 @@ export function AdminBookingDashboardClient({
                         </div>
                         <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4 text-xs">
                           <div>
-                            <p className="font-semibold text-foreground">
+                            <p className="font-medium text-foreground">
                               {event.action.replace(/_/g, " ")}
                             </p>
                             <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">
@@ -847,7 +847,7 @@ export function AdminBookingDashboardClient({
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] text-foreground p-6 shadow-2xl border border-[var(--border)] flex flex-col gap-4 animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
-                <h3 className="text-base font-bold text-foreground">
+                <h3 className="text-base font-medium text-foreground">
                   Booking Details #{selectedBooking.id.slice(-8)}
                 </h3>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -865,10 +865,10 @@ export function AdminBookingDashboardClient({
 
             <div className="flex flex-col gap-3 text-xs">
               <div className="rounded-xl bg-[var(--surface-secondary)] p-3.5 border border-[var(--border-subtle)] flex flex-col gap-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">
+                <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--muted-foreground)]">
                   Property
                 </span>
-                <p className="font-bold text-sm text-foreground">{selectedBooking.listing.title}</p>
+                <p className="font-medium text-sm text-foreground">{selectedBooking.listing.title}</p>
                 <p className="text-[var(--muted-foreground)]">
                   Location: {selectedBooking.listing.city || "—"}, {selectedBooking.listing.country || "—"}
                 </p>
@@ -879,20 +879,20 @@ export function AdminBookingDashboardClient({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl bg-[var(--surface-secondary)] p-3 border border-[var(--border-subtle)]">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">
+                  <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">
                     Guest
                   </span>
-                  <p className="font-bold text-foreground">{selectedBooking.user.name || "Guest"}</p>
+                  <p className="font-medium text-foreground">{selectedBooking.user.name || "Guest"}</p>
                   <p className="text-[11px] text-[var(--muted-foreground)]">{selectedBooking.user.email}</p>
                   <p className="text-[11px] text-[var(--muted-foreground)] mt-1">{selectedBooking.guests} Guests</p>
                 </div>
 
                 <div className="rounded-xl bg-[var(--surface-secondary)] p-3 border border-[var(--border-subtle)]">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">
+                  <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">
                     Status & Mode
                   </span>
                   <div className="flex flex-col gap-1">
-                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--accent)] text-[var(--accent-foreground)] w-fit">
+                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-[var(--accent)] text-[var(--accent-foreground)] w-fit">
                       {selectedBooking.status}
                     </span>
                     <span className="text-[11px] font-mono text-[var(--muted-foreground)]">
@@ -904,10 +904,10 @@ export function AdminBookingDashboardClient({
 
               <div className="rounded-xl bg-[var(--surface-secondary)] p-3.5 border border-[var(--border-subtle)] flex justify-between items-center font-mono">
                 <div>
-                  <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-sans font-bold">
+                  <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-sans font-medium">
                     Stay Dates
                   </span>
-                  <span className="font-bold">
+                  <span className="font-medium">
                     {formatDate(selectedBooking.startDate)} → {formatDate(selectedBooking.endDate)}
                   </span>
                   <span className="text-[11px] text-[var(--muted-foreground)] block font-sans">
@@ -915,10 +915,10 @@ export function AdminBookingDashboardClient({
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-sans font-bold">
+                  <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-sans font-medium">
                     Total Amount
                   </span>
-                  <span className="text-base font-bold text-amber-600 dark:text-amber-400">
+                  <span className="text-base font-medium text-amber-600 dark:text-amber-400">
                     {formatPrice(selectedBooking.totalPrice ?? 0, selectedBooking.currency)}
                   </span>
                 </div>
@@ -928,7 +928,7 @@ export function AdminBookingDashboardClient({
             <div className="flex justify-between items-center pt-2 border-t border-[var(--border-subtle)]">
               <Link
                 href={`/admin/bookings/all?search=${encodeURIComponent(selectedBooking.id)}`}
-                className="text-xs font-semibold text-[var(--accent)] hover:underline"
+                className="text-xs font-medium text-[var(--accent)] hover:underline"
               >
                 Find in All Bookings →
               </Link>
@@ -936,7 +936,7 @@ export function AdminBookingDashboardClient({
               <button
                 type="button"
                 onClick={() => setSelectedBooking(null)}
-                className="rounded-full bg-[var(--primary)] text-primary-foreground px-5 py-2 text-xs font-semibold shadow-2xs hover:opacity-90 transition-opacity"
+                className="rounded-full bg-[var(--primary)] text-primary-foreground px-5 py-2 text-xs font-medium shadow-2xs hover:opacity-90 transition-opacity"
               >
                 Close
               </button>

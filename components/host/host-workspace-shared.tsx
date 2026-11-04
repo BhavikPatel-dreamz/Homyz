@@ -1062,7 +1062,7 @@ export function MoneyDialog({
           <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
             {t("host_cal_money_from", "From")}
           </p>
-          <p className="my-1 font-bold text-base text-[#1F1F1F] dark:text-zinc-100">
+          <p className="my-1 font-medium text-base text-[#1F1F1F] dark:text-zinc-100">
             {booking.guestName}
           </p>
           <p className="text-xs text-[#727272] dark:text-[#727272]">

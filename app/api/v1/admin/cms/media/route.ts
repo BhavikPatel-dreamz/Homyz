@@ -33,6 +33,10 @@ export const POST = apiHandler(async (req) => {
   const file = formData.get("file") as File | null;
   const title = (formData.get("title") as string | null) || undefined;
   const altText = (formData.get("altText") as string | null) || undefined;
+  const requestedKind = formData.get("kind");
+  const kind = requestedKind === "branding" || requestedKind === "homepage"
+    ? requestedKind
+    : "cms-media";
 
   if (!file || typeof file === "string") {
     throw AppError.badRequest("No image file provided in form data");
@@ -48,9 +52,9 @@ export const POST = apiHandler(async (req) => {
     size: file.size,
     title,
     altText,
+    kind,
   });
 
   console.log("[CMS MEDIA] Uploaded media asset:", mediaAsset);
   return created(mediaAsset);
 });
-

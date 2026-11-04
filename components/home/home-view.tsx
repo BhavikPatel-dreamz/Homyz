@@ -530,7 +530,7 @@ export function HomeView({
                     🏡
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-[#1F1F1F]">
+                    <h3 className="text-lg font-medium text-[#1F1F1F]">
                       {mode === "SEARCH"
                         ? t("home_no_stays_found_in", { location: searchContext?.displayName ?? t("home_this_location", "this location") })
                         : t("home_discover_handpicked_stays", "Discover hand-picked stays on Homyz")}

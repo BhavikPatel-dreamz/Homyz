@@ -181,7 +181,7 @@ function LocationContextEditor(props: Props) {
   return (
     <section className="max-w-xl space-y-5 pb-10">
       <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
-        <h2 className="text-sm font-semibold">{t("host_location_features_card_title") || "Location features"}</h2>
+        <h2 className="text-sm font-medium">{t("host_location_features_card_title") || "Location features"}</h2>
         <p className="text-xs text-[#727272]">
           {t("host_location_features_card_desc") || "Choose up to three location advantages. Beach access is managed as an amenity."}
         </p>
@@ -199,7 +199,7 @@ function LocationContextEditor(props: Props) {
         />
       </section>
       <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
-        <h2 className="text-sm font-semibold">{t("host_location_neighborhood_card_title") || "Neighborhood"}</h2>
+        <h2 className="text-sm font-medium">{t("host_location_neighborhood_card_title") || "Neighborhood"}</h2>
         <p className="text-xs text-[#727272]">
           {t("host_location_neighborhood_desc") || "Tell guests what they can expect from the neighborhood and what is nearby."}
         </p>
@@ -218,7 +218,7 @@ function LocationContextEditor(props: Props) {
         />
       </section>
       <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
-        <h2 className="text-sm font-semibold">{t("host_location_getting_around_card_title") || "Getting around"}</h2>
+        <h2 className="text-sm font-medium">{t("host_location_getting_around_card_title") || "Getting around"}</h2>
         <textarea
           value={props.gettingAround}
           maxLength={2000}
@@ -232,7 +232,7 @@ function LocationContextEditor(props: Props) {
         />
       </section>
       <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
-        <h2 className="text-sm font-semibold">{t("host_location_scenic_card_title") || "Scenic views"}</h2>
+        <h2 className="text-sm font-medium">{t("host_location_scenic_card_title") || "Scenic views"}</h2>
         <div className="grid grid-cols-2 gap-3">
           {SCENIC_VIEWS.map(([id, label]) => (
             <FeatureToggle
@@ -376,7 +376,7 @@ function LocationView(props: Props) {
   };
 
   return (
-    <div className="w-full max-w-[880px] mx-auto space-y-3 pb-10 sm:space-y-5">
+    <div className="w-full max-w-3xl space-y-3 pb-10 sm:space-y-5">
       <div className="relative flex items-start gap-6 pt-1 sm:pt-0">
         <BackButton onClick={onBack} className="mt-1" />
         <h1>{t("host_location_title") || "Location"}</h1>
@@ -877,7 +877,7 @@ function CoHostView(props: Props) {
   );
   const hasCoHosts = active.length > 0;
   return (
-    <div className="w-full max-w-full space-y-5 pb-10 lg:max-w-[calc(100%-75px)]">
+    <div className="w-full max-w-3xl space-y-5 pb-10">
       {hasCoHosts && (
         <div className="flex items-start gap-6">
           <BackButton onClick={onBack} className="mt-2" />

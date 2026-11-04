@@ -20,11 +20,11 @@ export interface HostPhase1DashboardProps {
 function StatusBadge({ status }: { status: string }) {
   const isSuspended = status === "SUSPENDED";
   return isSuspended ? (
-    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100/90 text-rose-800 border border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60 shadow-2xs">
+    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-rose-100/90 text-rose-800 border border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60 shadow-2xs">
       Suspended
     </span>
   ) : (
-    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100/90 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60 shadow-2xs">
+    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100/90 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60 shadow-2xs">
       Active
     </span>
   );
@@ -45,7 +45,7 @@ export function DashboardAccessBadge({ access }: { access?: string }) {
   }
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border shadow-2xs whitespace-nowrap ${colorClass}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium border shadow-2xs whitespace-nowrap ${colorClass}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${
         value.startsWith("Plus") ? (value.includes("Expired") ? "bg-rose-500" : "bg-amber-500") : "bg-zinc-400"
       }`} />
@@ -307,7 +307,7 @@ export function HostPhase1Dashboard({
           type="button"
           onClick={exportCSV}
           disabled={filteredHosts.length === 0}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-2 text-xs font-semibold transition-all shadow-2xs shrink-0 disabled:opacity-50 cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-2 text-xs font-medium transition-all shadow-2xs shrink-0 disabled:opacity-50 cursor-pointer self-start sm:self-auto"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -328,8 +328,8 @@ export function HostPhase1Dashboard({
               : "border-[var(--border)] bg-[var(--surface)] text-muted-foreground hover:border-amber-500/50 hover:bg-[var(--surface-secondary)]/50"
           }`}
         >
-          <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Hosts</p>
-          <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-muted-foreground">
+          <p className="text-xs font-medium text-[var(--muted-foreground)]">Total Hosts</p>
+          <p className="mt-2 text-2xl sm:text-3xl font-medium tracking-tight text-muted-foreground">
             {hostMetrics.totalHosts}
           </p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">Registered hosts</p>
@@ -345,8 +345,8 @@ export function HostPhase1Dashboard({
               : "border-[var(--border)] bg-[var(--surface)] text-muted-foreground hover:border-emerald-500/50 hover:bg-[var(--surface-secondary)]/50"
           }`}
         >
-          <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Active Hosts</p>
-          <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-emerald-600 dark:text-emerald-400">
+          <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Active Hosts</p>
+          <p className="mt-2 text-2xl sm:text-3xl font-medium tracking-tight text-emerald-600 dark:text-emerald-400">
             {hostMetrics.activeHosts}
           </p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">Normal standing</p>
@@ -362,8 +362,8 @@ export function HostPhase1Dashboard({
               : "border-[var(--border)] bg-[var(--surface)] text-muted-foreground hover:border-rose-500/50 hover:bg-[var(--surface-secondary)]/50"
           }`}
         >
-          <p className="text-xs font-semibold text-rose-500">Suspended Hosts</p>
-          <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-rose-500">
+          <p className="text-xs font-medium text-rose-500">Suspended Hosts</p>
+          <p className="mt-2 text-2xl sm:text-3xl font-medium tracking-tight text-rose-500">
             {hostMetrics.suspendedHosts}
           </p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">Disabled accounts</p>
@@ -379,8 +379,8 @@ export function HostPhase1Dashboard({
               : "border-[var(--border)] bg-[var(--surface)] text-muted-foreground hover:border-amber-500/50 hover:bg-[var(--surface-secondary)]/50"
           }`}
         >
-          <p className="text-xs font-semibold text-[var(--muted-foreground)]">New Hosts (30d)</p>
-          <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-muted-foreground">
+          <p className="text-xs font-medium text-[var(--muted-foreground)]">New Hosts (30d)</p>
+          <p className="mt-2 text-2xl sm:text-3xl font-medium tracking-tight text-muted-foreground">
             {hostMetrics.newHosts}
           </p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">Recent signups</p>
@@ -392,20 +392,20 @@ export function HostPhase1Dashboard({
           className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 text-left shadow-2xs transition-all hover:border-amber-500/50 hover:bg-[var(--surface-secondary)]/50 group block cursor-pointer"
         >
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Listings</p>
-            <span className="text-[10px] text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
+            <p className="text-xs font-medium text-[var(--muted-foreground)]">Total Listings</p>
+            <span className="text-[10px] text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">
               View →
             </span>
           </div>
-          <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-muted-foreground">
+          <p className="mt-2 text-2xl sm:text-3xl font-medium tracking-tight text-muted-foreground">
             {hostMetrics.totalListings}
           </p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">Properties managed</p>
         </Link>
 
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 text-left shadow-2xs">
-          <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Bookings</p>
-          <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-muted-foreground">
+          <p className="text-xs font-medium text-[var(--muted-foreground)]">Total Bookings</p>
+          <p className="mt-2 text-2xl sm:text-3xl font-medium tracking-tight text-muted-foreground">
             {hostMetrics.totalBookings}
           </p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">Reservations received</p>
@@ -492,7 +492,7 @@ export function HostPhase1Dashboard({
             type="button"
             onClick={handleSortOrderToggle}
             title={sortOrder === "asc" ? "Sort Ascending (click for Descending)" : "Sort Descending (click for Ascending)"}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs cursor-pointer"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs cursor-pointer"
           >
             {sortOrder === "asc" ? "↑ ASC" : "↓ DESC"}
           </button>
@@ -503,7 +503,7 @@ export function HostPhase1Dashboard({
       <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
+            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-medium uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4">Host</th>
                 <th className="py-3.5 px-4">Email</th>
@@ -520,7 +520,7 @@ export function HostPhase1Dashboard({
               {paginatedHosts.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="py-12 text-center text-[var(--muted-foreground)]">
-                    <p className="text-sm font-semibold text-muted-foreground">No hosts found matching your criteria.</p>
+                    <p className="text-sm font-medium text-muted-foreground">No hosts found matching your criteria.</p>
                     {(search || statusFilter !== "ALL" || dashboardAccessFilter !== "ALL") && (
                       <button
                         type="button"
@@ -531,7 +531,7 @@ export function HostPhase1Dashboard({
                           setCurrentPage(1);
                           syncUrl("", "ALL", "ALL", sortBy, sortOrder, 1, pageSize);
                         }}
-                        className="mt-3 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-1.5 text-xs font-semibold transition-all cursor-pointer"
+                        className="mt-3 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-1.5 text-xs font-medium transition-all cursor-pointer"
                       >
                         Reset filters
                       </button>
@@ -548,11 +548,11 @@ export function HostPhase1Dashboard({
                     {/* Host Avatar & Name */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold flex items-center justify-center text-xs shrink-0">
+                        <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-medium flex items-center justify-center text-xs shrink-0">
                           {(host.name?.[0] || host.email?.[0] || "H").toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-semibold text-muted-foreground">
+                          <div className="font-medium text-muted-foreground">
                             {host.name || "Unnamed Host"}
                           </div>
                           <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{host.id}</div>
@@ -581,12 +581,12 @@ export function HostPhase1Dashboard({
                     </td>
 
                     {/* Listings Count */}
-                    <td className="py-3.5 px-4 text-center font-semibold text-muted-foreground">
+                    <td className="py-3.5 px-4 text-center font-medium text-muted-foreground">
                       {host.listingsCount}
                     </td>
 
                     {/* Bookings Count */}
-                    <td className="py-3.5 px-4 text-center font-semibold text-muted-foreground">
+                    <td className="py-3.5 px-4 text-center font-medium text-muted-foreground">
                       {host.bookingsCount}
                     </td>
 
@@ -601,14 +601,14 @@ export function HostPhase1Dashboard({
                         <Link
                           href={`/admin/hosts/${host.id}?tab=permissions`}
                           onClick={(e) => e.stopPropagation()}
-                          className="rounded-full border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/40 px-3 py-1.5 text-xs text-amber-900 dark:text-amber-200 font-semibold transition-all inline-block shadow-2xs"
+                          className="rounded-full border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/40 px-3 py-1.5 text-xs text-amber-900 dark:text-amber-200 font-medium transition-all inline-block shadow-2xs"
                         >
                           Manage Access
                         </Link>
                         <Link
                           href={`/admin/hosts/${host.id}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-muted-foreground font-semibold transition-all inline-block shadow-2xs hover:border-amber-500/50"
+                          className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-muted-foreground font-medium transition-all inline-block shadow-2xs hover:border-amber-500/50"
                         >
                           View Details →
                         </Link>
@@ -626,7 +626,7 @@ export function HostPhase1Dashboard({
       <div className="md:hidden flex flex-col gap-3">
         {paginatedHosts.length === 0 ? (
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center text-xs text-[var(--muted-foreground)]">
-            <p className="font-semibold text-muted-foreground">No hosts found matching your criteria.</p>
+            <p className="font-medium text-muted-foreground">No hosts found matching your criteria.</p>
             {(search || statusFilter !== "ALL" || dashboardAccessFilter !== "ALL") && (
               <button
                 type="button"
@@ -637,7 +637,7 @@ export function HostPhase1Dashboard({
                   setCurrentPage(1);
                   syncUrl("", "ALL", "ALL", sortBy, sortOrder, 1, pageSize);
                 }}
-                className="mt-3 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-1.5 text-xs font-semibold transition-all cursor-pointer"
+                className="mt-3 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-1.5 text-xs font-medium transition-all cursor-pointer"
               >
                 Reset filters
               </button>
@@ -652,11 +652,11 @@ export function HostPhase1Dashboard({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold flex items-center justify-center text-xs shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-medium flex items-center justify-center text-xs shrink-0">
                     {(host.name?.[0] || host.email?.[0] || "H").toUpperCase()}
                   </div>
                   <div>
-                    <h3 className="text-xs font-semibold text-muted-foreground">
+                    <h3 className="text-xs font-medium text-muted-foreground">
                       {host.name || "Unnamed Host"}
                     </h3>
                     <p className="font-mono text-[11px] text-[var(--muted-foreground)]">
@@ -673,22 +673,22 @@ export function HostPhase1Dashboard({
               <div className="grid grid-cols-3 gap-2 border-t border-[var(--border-subtle)] pt-2 text-xs">
                 <div>
                   <span className="text-[var(--muted-foreground)] text-[11px] block">Listings</span>
-                  <span className="font-semibold text-muted-foreground">{host.listingsCount}</span>
+                  <span className="font-medium text-muted-foreground">{host.listingsCount}</span>
                 </div>
                 <div>
                   <span className="text-[var(--muted-foreground)] text-[11px] block">Bookings</span>
-                  <span className="font-semibold text-muted-foreground">{host.bookingsCount}</span>
+                  <span className="font-medium text-muted-foreground">{host.bookingsCount}</span>
                 </div>
                 <div>
                   <span className="text-[var(--muted-foreground)] text-[11px] block">Joined</span>
-                  <span className="font-semibold text-muted-foreground" suppressHydrationWarning>
+                  <span className="font-medium text-muted-foreground" suppressHydrationWarning>
                     {new Date(host.createdAt).toLocaleDateString("en-US")}
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center justify-end gap-2 border-t border-[var(--border-subtle)] pt-2">
-                <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
                   Manage Access & Permissions →
                 </span>
               </div>

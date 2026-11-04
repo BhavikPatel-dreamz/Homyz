@@ -96,11 +96,11 @@ export function AdminPersonalInformationPanel({
     <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
         <div>
-          <h2 className="text-sm font-semibold text-muted-foreground">Personal information</h2>
+          <h2 className="text-sm font-medium text-muted-foreground">Personal information</h2>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">Account settings record</p>
         </div>
         <span
-          className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${statusClasses(data.identityStatus)}`}
+          className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${statusClasses(data.identityStatus)}`}
         >
           Identity: {data.identityStatus.replace(/_/g, " ").toLowerCase()}
         </span>
@@ -109,29 +109,29 @@ export function AdminPersonalInformationPanel({
       <dl className="grid grid-cols-1 gap-x-6 gap-y-4 py-5 text-sm sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <dt className="text-xs text-[var(--muted-foreground)]">Legal name</dt>
-          <dd className="mt-1 font-semibold">{displayValue(data.legalName)}</dd>
+          <dd className="mt-1 font-medium">{displayValue(data.legalName)}</dd>
         </div>
         <div>
           <dt className="text-xs text-[var(--muted-foreground)]">Preferred first name</dt>
-          <dd className="mt-1 font-semibold">{displayValue(data.preferredFirstName)}</dd>
+          <dd className="mt-1 font-medium">{displayValue(data.preferredFirstName)}</dd>
         </div>
         <div>
           <dt className="text-xs text-[var(--muted-foreground)]">Email address</dt>
-          <dd className="mt-1 break-all font-semibold">{displayValue(data.email)}</dd>
+          <dd className="mt-1 break-all font-medium">{displayValue(data.email)}</dd>
         </div>
         <div>
           <dt className="text-xs text-[var(--muted-foreground)]">Phone number</dt>
-          <dd className="mt-1 font-semibold">{displayValue(data.phone)}</dd>
+          <dd className="mt-1 font-medium">{displayValue(data.phone)}</dd>
         </div>
       </dl>
 
       <div className="grid grid-cols-1 gap-5 border-t border-[var(--border-subtle)] py-5 text-sm md:grid-cols-3">
         <div>
-          <h3 className="text-xs font-semibold text-[var(--muted-foreground)]">Residential address</h3>
+          <h3 className="text-xs font-medium text-[var(--muted-foreground)]">Residential address</h3>
           <p className="mt-2 whitespace-pre-line leading-6">{formatAddress(data.residentialAddress)}</p>
         </div>
         <div>
-          <h3 className="text-xs font-semibold text-[var(--muted-foreground)]">Postal address</h3>
+          <h3 className="text-xs font-medium text-[var(--muted-foreground)]">Postal address</h3>
           <p className="mt-2 whitespace-pre-line leading-6">
             {data.sameAsResidential
               ? formatAddress(data.residentialAddress)
@@ -142,10 +142,10 @@ export function AdminPersonalInformationPanel({
           )}
         </div>
         <div>
-          <h3 className="text-xs font-semibold text-[var(--muted-foreground)]">Emergency contact</h3>
+          <h3 className="text-xs font-medium text-[var(--muted-foreground)]">Emergency contact</h3>
           {emergency ? (
             <div className="mt-2 space-y-1 leading-6">
-              <p className="font-semibold">{displayValue(emergency.name)}</p>
+              <p className="font-medium">{displayValue(emergency.name)}</p>
               <p>{displayValue(emergency.relationship)}</p>
               <p>{displayValue(`${emergency.countryCode} ${emergency.phoneNumber}`)}</p>
               <p className="break-all">{displayValue(emergency.email)}</p>
@@ -160,10 +160,10 @@ export function AdminPersonalInformationPanel({
       <div className="border-t border-[var(--border-subtle)] pt-5">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div className="min-w-0">
-            <h3 className="text-xs font-semibold text-[var(--muted-foreground)]">Identity document</h3>
+            <h3 className="text-xs font-medium text-[var(--muted-foreground)]">Identity document</h3>
             {data.identityDocument ? (
               <div className="mt-2 text-sm">
-                <p className="truncate font-semibold">{data.identityDocument.fileName}</p>
+                <p className="truncate font-medium">{data.identityDocument.fileName}</p>
                 <p className="mt-1 text-xs text-[var(--muted-foreground)]">
                   {data.identityDocument.documentType.replace(/_/g, " ")} · Uploaded{" "}
                   <span suppressHydrationWarning>
@@ -187,7 +187,7 @@ export function AdminPersonalInformationPanel({
                 href={data.identityDocument.previewUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-[var(--border)] px-3 py-2 text-xs font-semibold hover:bg-[var(--surface-secondary)]"
+                className="rounded-full border border-[var(--border)] px-3 py-2 text-xs font-medium hover:bg-[var(--surface-secondary)]"
               >
                 View document
               </a>
@@ -197,7 +197,7 @@ export function AdminPersonalInformationPanel({
                     type="button"
                     disabled={pending}
                     onClick={() => reviewDocument("VERIFIED")}
-                    className="rounded-full bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                    className="rounded-full bg-emerald-600 px-3 py-2 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
                   >
                     Verify
                   </button>
@@ -205,7 +205,7 @@ export function AdminPersonalInformationPanel({
                     type="button"
                     disabled={pending}
                     onClick={() => setRejectOpen(true)}
-                    className="rounded-full border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-50 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
+                    className="rounded-full border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 hover:bg-rose-100 disabled:opacity-50 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
                   >
                     Reject
                   </button>
@@ -228,10 +228,10 @@ export function AdminPersonalInformationPanel({
             className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xl"
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <h2 id="identity-rejection-title" className="text-lg font-semibold">
+            <h2 id="identity-rejection-title" className="text-lg font-medium">
               Reject identity document
             </h2>
-            <label className="mt-4 block text-xs font-semibold text-[var(--muted-foreground)]">
+            <label className="mt-4 block text-xs font-medium text-[var(--muted-foreground)]">
               Rejection reason
               <textarea
                 value={rejectionReason}
@@ -246,7 +246,7 @@ export function AdminPersonalInformationPanel({
                 type="button"
                 disabled={pending}
                 onClick={() => setRejectOpen(false)}
-                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold disabled:opacity-50"
+                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-medium disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -254,7 +254,7 @@ export function AdminPersonalInformationPanel({
                 type="button"
                 disabled={pending || !rejectionReason.trim()}
                 onClick={() => reviewDocument("REJECTED", rejectionReason)}
-                className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
+                className="rounded-full bg-rose-600 px-4 py-2 text-xs font-medium text-white hover:bg-rose-700 disabled:opacity-50"
               >
                 {pending ? "Rejecting..." : "Reject document"}
               </button>

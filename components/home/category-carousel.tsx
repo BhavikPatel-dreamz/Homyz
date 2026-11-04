@@ -290,7 +290,7 @@ function HomePropertySectionComponent({
     <section data-purpose="category-carousel">
       <div className="mb-3 flex items-center justify-between sm:mb-5">
         <div className="flex items-center gap-3">
-          <h2 className="max-w-[calc(100vw-7rem)] truncate text-[18px] font-semibold leading-6 tracking-[-.25px] text-[#1f1f1f] sm:max-w-none sm:text-[22px] sm:leading-8 sm:font-medium">
+          <h2 className="max-w-[calc(100vw-7rem)] truncate text-[18px] font-medium leading-6 tracking-[-.25px] text-[#1f1f1f] sm:max-w-none sm:text-[22px] sm:leading-8 sm:font-medium">
             {displayTitle}
           </h2>
           {seeAllHref && (

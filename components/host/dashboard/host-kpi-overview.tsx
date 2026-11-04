@@ -325,7 +325,7 @@ export function HostKpiOverview({
         aria-live="polite"
         className="mx-auto mb-10 w-full rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-900 font-sans"
       >
-        <p className="font-semibold text-base">{t("host_dash_load_failed", "Unable to load dashboard")}</p>
+        <p className="font-medium text-base">{t("host_dash_load_failed", "Unable to load dashboard")}</p>
         <p className="mt-1 text-[#727272]">{error}</p>
         <button
           type="button"
@@ -440,7 +440,7 @@ export function HostKpiOverview({
       <header className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-[#1F1F1F]/10 pb-5 sm:mb-8">
         <div>
           <div className="flex items-center gap-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#727272]">
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#727272]">
               {t("host_dash_subhead", "Hosting dashboard")}
             </p>
             {data.isAccountInGoodStanding && (
@@ -449,7 +449,7 @@ export function HostKpiOverview({
               </span>
             )}
           </div>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-[#1F1F1F] sm:text-3xl">
+          <h1 className="mt-1 text-2xl font-medium tracking-tight text-[#1F1F1F] sm:text-3xl">
             {t("host_dash_header_title", "Performance overview")}
           </h1>
           <p className="mt-1 text-sm text-[#727272]">
@@ -745,7 +745,7 @@ export function HostKpiOverview({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <span className="rounded-full bg-amber-400/20 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-300">
+                <span className="rounded-full bg-amber-400/20 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-amber-300">
                   Dashboard Plus
                 </span>
                 <span className="text-xs text-zinc-400">
@@ -758,7 +758,7 @@ export function HostKpiOverview({
                     : "Active"}
                 </span>
               </div>
-              <h2 id="dashboard-plus-tools-heading" className="mt-1 text-base font-semibold text-white">
+              <h2 id="dashboard-plus-tools-heading" className="mt-1 text-base font-medium text-white">
                 Dashboard Plus host tools
               </h2>
               <p className="mt-0.5 text-xs text-zinc-300">
@@ -768,28 +768,28 @@ export function HostKpiOverview({
             <div className="flex flex-wrap items-center gap-2">
               <Link
                 href={buildPlusHref("/host/insights/stats/booking-analytics")}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-950 transition hover:bg-zinc-100"
+                className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-950 transition hover:bg-zinc-100"
               >
                 <span>Booking Analytics</span>
                 <span aria-hidden="true">→</span>
               </Link>
               <Link
                 href={buildPlusHref("/host/earnings/analytics/revpan")}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20"
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-white/20"
               >
                 <span>RevPAN</span>
                 <span aria-hidden="true">→</span>
               </Link>
               <Link
                 href={buildPlusHref("/host/operations")}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20"
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-white/20"
               >
                 <span>Operations</span>
                 <span aria-hidden="true">→</span>
               </Link>
               <Link
                 href={buildPlusHref("/host/insights/listing-performance")}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20"
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-white/20"
               >
                 <span>Comparisons</span>
                 <span aria-hidden="true">→</span>
@@ -805,12 +805,12 @@ export function HostKpiOverview({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="rounded-full bg-zinc-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-700">
+                <span className="rounded-full bg-zinc-200 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-zinc-700">
                   Standard Dashboard
                 </span>
                 <span className="text-xs text-[#727272]">Included with hosting</span>
               </div>
-              <h2 id="dashboard-tier-heading" className="mt-1 text-sm font-semibold text-[#1F1F1F]">
+              <h2 id="dashboard-tier-heading" className="mt-1 text-sm font-medium text-[#1F1F1F]">
                 Standard Hosting Tools Active
               </h2>
               <p className="mt-0.5 text-xs text-[#727272]">
@@ -830,7 +830,7 @@ export function HostKpiOverview({
       <section className={`mt-4 ${cardClass} p-4 sm:p-5`} aria-labelledby="this-month-snapshot-heading">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 id="this-month-snapshot-heading" className="text-base font-semibold text-[#1F1F1F]">
+            <h2 id="this-month-snapshot-heading" className="text-base font-medium text-[#1F1F1F]">
               {t("host_dash_this_month_snapshot_title", "This month snapshot")}
             </h2>
             <p className="mt-0.5 text-xs text-[#727272]">
@@ -845,7 +845,7 @@ export function HostKpiOverview({
         <div className="mt-4 grid grid-cols-1 gap-3 min-[480px]:grid-cols-3 border-t border-[#1F1F1F]/10 pt-4">
           <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs`}>
             <p className="text-xs font-medium text-[#727272]">{t("host_dash_bookings_this_month", "Bookings this month")}</p>
-            <p className="mt-2 text-2xl font-semibold text-[#1F1F1F]">{thisMonthSnapshot.bookingsCount}</p>
+            <p className="mt-2 text-2xl font-medium text-[#1F1F1F]">{thisMonthSnapshot.bookingsCount}</p>
             <p className="mt-1 text-xs text-[#727272]">
               {thisMonthSnapshot.bookingsChangePercentage === null
                 ? t("host_dash_no_prev_bookings", "No prior month comparison")
@@ -854,14 +854,14 @@ export function HostKpiOverview({
           </div>
           <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs`}>
             <p className="text-xs font-medium text-[#727272]">{t("host_dash_cancellations_this_month", "This month cancellations")}</p>
-            <p className="mt-2 text-2xl font-semibold text-[#1F1F1F]">{thisMonthSnapshot.cancellationsCount}</p>
+            <p className="mt-2 text-2xl font-medium text-[#1F1F1F]">{thisMonthSnapshot.cancellationsCount}</p>
             <p className="mt-1 text-xs text-[#727272]">
               {thisMonthSnapshot.cancellationRatePercentage}% {t("host_dash_monthly_cancel_rate", "month cohort rate")}
             </p>
           </div>
           <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs`}>
             <p className="text-xs font-medium text-[#727272]">{t("host_dash_avg_stay_this_month", "Average stay length")}</p>
-            <p className="mt-2 text-2xl font-semibold text-[#1F1F1F]">
+            <p className="mt-2 text-2xl font-medium text-[#1F1F1F]">
               {thisMonthSnapshot.averageStayNights} {t("host_dash_nights", "nights")}
             </p>
             <p className="mt-1 text-xs text-[#727272]">
@@ -877,7 +877,7 @@ export function HostKpiOverview({
       <section className={`mt-4 ${cardClass} p-4 sm:p-5`} aria-labelledby="upcoming-payout-details-heading">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h2 id="upcoming-payout-details-heading" className="text-base font-semibold text-[#1F1F1F]">
+            <h2 id="upcoming-payout-details-heading" className="text-base font-medium text-[#1F1F1F]">
               {t("host_dash_upcoming_payout_title", "Upcoming payout")}
             </h2>
             <p className="mt-0.5 text-xs text-[#727272]">
@@ -897,18 +897,18 @@ export function HostKpiOverview({
           <div className="mt-4 grid gap-3 border-t border-[#1F1F1F]/10 pt-4 sm:grid-cols-3">
             <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs`}>
               <p className="text-xs text-[#727272]">{t("host_dash_next_payout_amount", "Next payout amount")}</p>
-              <p className="mt-1 text-2xl font-bold text-[#1F1F1F]">
+              <p className="mt-1 text-2xl font-medium text-[#1F1F1F]">
                 {formatCurrency(kpis.upcomingPayout.nextPayoutAmountCents, kpis.upcomingPayout.currency)}
               </p>
               <div className="mt-2.5">
-                <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-800">
+                <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-medium text-emerald-800">
                   {kpis.upcomingPayout.nextPayoutStatus || "SCHEDULED"}
                 </span>
               </div>
             </div>
             <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs`}>
               <p className="text-xs text-[#727272]">{t("host_dash_settlement_status", "Settlement status")}</p>
-              <p className="mt-1.5 text-sm font-semibold text-[#1F1F1F]">
+              <p className="mt-1.5 text-sm font-medium text-[#1F1F1F]">
                 {kpis.upcomingPayout.nextPayoutExpectedArrival || "Settlement timing pending confirmation"}
               </p>
               <p className="mt-1 text-xs text-[#727272]">
@@ -919,7 +919,7 @@ export function HostKpiOverview({
             </div>
             <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs`}>
               <p className="text-xs text-[#727272]">{t("host_dash_payment_method", "Payout method")}</p>
-              <p className="mt-1.5 text-sm font-semibold text-[#1F1F1F]">
+              <p className="mt-1.5 text-sm font-medium text-[#1F1F1F]">
                 {kpis.upcomingPayout.nextPayoutMethodMasked || t("host_dash_no_payout_method", "No payout method configured")}
               </p>
               <p className="mt-1 text-xs text-[#727272] truncate">
@@ -1032,7 +1032,7 @@ export function HostKpiOverview({
                 >
                   <div>
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-sm font-semibold text-[#1F1F1F]">{rec.title}</h3>
+                      <h3 className="text-sm font-medium text-[#1F1F1F]">{rec.title}</h3>
                       <PriorityBadge priority={rec.priority} />
                     </div>
                     <p className="mt-2 text-xs text-[#727272] leading-relaxed">{rec.description}</p>
@@ -1040,7 +1040,7 @@ export function HostKpiOverview({
                   <div className="mt-4 border-t border-zinc-100 pt-3">
                     <Link
                       href={rec.actionHref}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1F1F1F] hover:underline"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-[#1F1F1F] hover:underline"
                     >
                       <span>{rec.actionLabel}</span>
                       <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6"/></svg>
@@ -1057,7 +1057,7 @@ export function HostKpiOverview({
       <section className={`mt-4 ${cardClass} p-4 sm:p-5`} aria-labelledby="upcoming-reservation-heading">
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 id="upcoming-reservation-heading" className="text-base font-semibold text-[#1F1F1F]">
+            <h2 id="upcoming-reservation-heading" className="text-base font-medium text-[#1F1F1F]">
               {t("host_dash_upcoming_res_title", "Upcoming reservation")}
             </h2>
             <p className="mt-0.5 text-xs text-[#727272]">
@@ -1066,7 +1066,7 @@ export function HostKpiOverview({
           </div>
           <Link
             href="/host/today?tab=upcoming"
-            className="shrink-0 rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white"
+            className="shrink-0 rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white"
           >
             {t("host_dash_view_all_reservations", "View all bookings")}
           </Link>
@@ -1082,7 +1082,7 @@ export function HostKpiOverview({
             />
             {kpis.upcomingReservations && kpis.upcomingReservations.length > 1 && (
               <div className="mt-4 border-t border-zinc-100 pt-3">
-                <p className="text-xs font-semibold text-[#727272] mb-2">
+                <p className="text-xs font-medium text-[#727272] mb-2">
                   {t("host_dash_other_upcoming", "Other upcoming reservations:")}
                 </p>
                 <div className="space-y-2">
@@ -1158,7 +1158,7 @@ export function HostKpiOverview({
             <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs`}>
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-[#1F1F1F]">
+                  <h3 className="text-sm font-medium text-[#1F1F1F]">
                     {t("host_dash_guest_origins_title", "Guest origins")}
                   </h3>
                   <p className="mt-0.5 text-xs text-[#727272]">
@@ -1167,7 +1167,7 @@ export function HostKpiOverview({
                 </div>
                 <Link
                   href="/host/insights/stats/guests/origins"
-                  className="text-xs font-semibold text-zinc-900 underline underline-offset-2 hover:text-zinc-600"
+                  className="text-xs font-medium text-zinc-900 underline underline-offset-2 hover:text-zinc-600"
                 >
                   View details →
                 </Link>
@@ -1204,7 +1204,7 @@ export function HostKpiOverview({
 
             {/* Guest Quality Indicators */}
             <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs`}>
-              <h3 className="text-sm font-semibold text-[#1F1F1F]">
+              <h3 className="text-sm font-medium text-[#1F1F1F]">
                 {t("host_dash_guest_quality_title", "Guest quality indicators")}
               </h3>
               <p className="mt-0.5 text-xs text-[#727272]">
@@ -1219,7 +1219,7 @@ export function HostKpiOverview({
                     <p className="text-xs font-medium text-[#1F1F1F] group-hover:underline">{t("host_dash_returning_guests", "Returning guests")}</p>
                     <p className="text-[11px] text-[#727272]">{t("host_dash_repeat_stay_desc", "Guests with 2+ completed stays")}</p>
                   </div>
-                  <span className="text-sm font-bold text-[#1F1F1F]">{guestAnalytics.returningGuestsPercentage}%</span>
+                  <span className="text-sm font-medium text-[#1F1F1F]">{guestAnalytics.returningGuestsPercentage}%</span>
                 </Link>
 
                 <Link
@@ -1230,7 +1230,7 @@ export function HostKpiOverview({
                     <p className="text-xs font-medium text-[#1F1F1F] group-hover:underline">{t("host_dash_avg_rating_given", "Average rating per stay")}</p>
                     <p className="text-[11px] text-[#727272]">{t("host_dash_from_published_reviews", "From published guest reviews")}</p>
                   </div>
-                  <span className="text-sm font-bold text-[#1F1F1F]">
+                  <span className="text-sm font-medium text-[#1F1F1F]">
                     {reviews.overallRating !== null ? `★ ${reviews.overallRating.toFixed(2)}` : "—"}
                   </span>
                 </Link>
@@ -1249,7 +1249,7 @@ export function HostKpiOverview({
                         : guestAnalytics.checkInInstructionsViewed.message}
                     </p>
                   </div>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${guestAnalytics.checkInInstructionsViewed.status === "ACTIVE" ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-zinc-500"}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${guestAnalytics.checkInInstructionsViewed.status === "ACTIVE" ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-zinc-500"}`}>
                     {guestAnalytics.checkInInstructionsViewed.status === "ACTIVE"
                       ? `${guestAnalytics.checkInInstructionsViewed.eligibleReservationsCount} eligible`
                       : t("host_dash_status_unavailable", "Unavailable")}
@@ -1280,7 +1280,7 @@ export function HostKpiOverview({
               {t("host_dash_all_reviews_link", "Manage reviews")}
             </Link>
             <div className="text-right">
-              <p className="text-2xl font-semibold tracking-[-0.04em] text-[#1F1F1F]">
+              <p className="text-2xl font-medium tracking-[-0.04em] text-[#1F1F1F]">
                 {reviews.overallRating === null ? "—" : `★ ${reviews.overallRating.toFixed(2)}`}
               </p>
               <p className="mt-0.5 text-xs font-medium text-[#727272]">
@@ -1296,7 +1296,7 @@ export function HostKpiOverview({
         <div className="mt-4 grid gap-4 border-t border-[#1F1F1F]/10 pt-4 lg:grid-cols-2">
           {/* Category Subratings */}
           <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs space-y-2`}>
-            <p className="text-xs font-semibold text-[#1F1F1F] mb-2">{t("host_dash_category_breakdown", "Category subratings")}</p>
+            <p className="text-xs font-medium text-[#1F1F1F] mb-2">{t("host_dash_category_breakdown", "Category subratings")}</p>
             {[
               ["Cleanliness", reviews.categoryRatings.cleanliness],
               ["Accuracy", reviews.categoryRatings.accuracy],
@@ -1311,7 +1311,7 @@ export function HostKpiOverview({
 
           {/* Rating Distribution */}
           <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs`}>
-            <p className="text-xs font-semibold text-[#1F1F1F] mb-2">{t("host_dash_star_distribution", "Star rating distribution")}</p>
+            <p className="text-xs font-medium text-[#1F1F1F] mb-2">{t("host_dash_star_distribution", "Star rating distribution")}</p>
             <div className="space-y-1.5">
               {([5, 4, 3, 2, 1] as const).map((star) => {
                 const count = reviews.ratingDistribution[star];
@@ -1421,7 +1421,7 @@ export function HostKpiOverview({
       {showCustomModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl">
-            <h3 className="text-base font-semibold text-[#1F1F1F]">
+            <h3 className="text-base font-medium text-[#1F1F1F]">
               {t("host_dash_select_custom_range", "Select date range")}
             </h3>
             <form onSubmit={handleApplyCustomDates} className="mt-4 space-y-3">
@@ -1504,7 +1504,7 @@ function PrimaryKpi({
         {refreshing ? (
           <div className="mt-2 h-7 w-28 animate-pulse rounded bg-zinc-100" />
         ) : (
-          <p className="mt-3 lg:text-2xl text-xl font-semibold text-[#1F1F1F]">
+          <p className="mt-3 lg:text-2xl text-xl font-medium text-[#1F1F1F]">
             {value}
           </p>
         )}
@@ -1584,7 +1584,7 @@ function SecondaryKpi({
       {refreshing ? (
         <div className="mt-3 h-5 w-16 animate-pulse rounded bg-zinc-100" />
       ) : (
-        <p className="mt-2 text-lg font-semibold text-[#1F1F1F]">{value}</p>
+        <p className="mt-2 text-lg font-medium text-[#1F1F1F]">{value}</p>
       )}
       <div className="mt-auto pt-2 flex items-center justify-between">
         <p className="text-[11px] text-[#727272]">{detail}</p>
@@ -1612,7 +1612,7 @@ function PriorityBadge({ priority }: { priority: string }) {
         ? "bg-amber-100 text-amber-900"
         : "bg-zinc-200 text-zinc-700";
   return (
-    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold leading-tight ${tone}`}>
+    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-medium leading-tight ${tone}`}>
       {priority}
     </span>
   );
@@ -1629,7 +1629,7 @@ function UpcomingReservation({
   return (
     <div className="mt-4 grid gap-4 border-t border-zinc-100 pt-4 md:grid-cols-[minmax(0,1fr)_auto]">
       <div className="flex min-w-0 items-start gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white border border-[#727272] text-sm font-semibold text-zinc-700">
+        <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white border border-[#727272] text-sm font-medium text-zinc-700">
           {reservation.guestImage ? (
             <Image
               src={reservation.guestImage}
@@ -1662,7 +1662,7 @@ function UpcomingReservation({
               ? t("host_dash_eligible_payout", "Eligible payout")
               : t("host_dash_payment_status", "Payment status")}
           </p>
-          <p className="mt-0.5 text-sm font-semibold text-[#1F1F1F]">
+          <p className="mt-0.5 text-sm font-medium text-[#1F1F1F]">
             {reservation.isPayoutEligible
               ? formatCurrency(reservation.hostPayoutCents, reservation.currency)
               : t("host_dash_pending_payment", "Pending payment")}
@@ -1671,7 +1671,7 @@ function UpcomingReservation({
         <Link
           href={`/host/bookings/${reservation.id}`}
           onClick={() => onSelectBookingId?.(reservation.id)}
-          className="rounded-full border border-zinc-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-[#1F1F1F] shadow-xs transition hover:border-zinc-500 hover:bg-zinc-50"
+          className="rounded-full border border-zinc-300 bg-white px-3.5 py-1.5 text-xs font-medium text-[#1F1F1F] shadow-xs transition hover:border-zinc-500 hover:bg-zinc-50"
         >
           {t("host_dash_btn_details", "Details")}
         </Link>
@@ -1716,7 +1716,7 @@ function StatusCard({
     <article className={`${insetSurfaceClass} min-h-39 border border-zinc-100 p-4 shadow-2xs sm:p-5 flex flex-col justify-between`}>
       <div>
         <div className="flex items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-[#1F1F1F]">{title}</p>
+          <p className="text-sm font-medium text-[#1F1F1F]">{title}</p>
           {actionHref && actionLabel && (
             <Link href={actionHref} className="text-xs font-medium text-[#1F1F1F] underline hover:text-black">
               {actionLabel}

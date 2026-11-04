@@ -183,7 +183,7 @@ export function ReservationCard({
             {reviewSubmitted ? (
               <Link
                 href={detailsHref}
-                className="flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-center text-[11px] font-semibold text-emerald-800 transition-colors hover:bg-emerald-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
+                className="flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-center text-[11px] font-medium text-emerald-800 transition-colors hover:bg-emerald-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="m5 12 4 4L19 6" />
@@ -193,7 +193,7 @@ export function ReservationCard({
             ) : isCompletedStay ? (
               <Link
                 href={`/bookings/${data.id}/review`}
-                className={`flex min-h-10 w-full items-center justify-center gap-2 rounded-xl px-3 text-center text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F] ${
+                className={`flex min-h-10 w-full items-center justify-center gap-2 rounded-xl px-3 text-center text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F] ${
                   isCompactVariant
                     ? "border border-[#1F1F1F] bg-white text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
                     : "bg-[#1F1F1F] text-white hover:bg-zinc-700"

@@ -165,11 +165,11 @@ export function AdminJobsClient({
   const healthBadge = (h: "HEALTHY" | "DEGRADED" | "BACKLOGGED") => {
     switch (h) {
       case "HEALTHY":
-        return <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">● Operational / Healthy</span>;
+        return <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800">● Operational / Healthy</span>;
       case "DEGRADED":
-        return <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">▲ Degraded / Elevated Failures</span>;
+        return <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">▲ Degraded / Elevated Failures</span>;
       case "BACKLOGGED":
-        return <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-800">■ Backlogged / High Queued Volume</span>;
+        return <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-3 py-1 text-xs font-medium text-rose-800">■ Backlogged / High Queued Volume</span>;
     }
   };
 
@@ -216,7 +216,7 @@ export function AdminJobsClient({
             <span className="font-medium text-slate-800">Background Operations &amp; Automation</span>
           </nav>
           <div className="mt-2 flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Background Jobs &amp; Queue</h1>
+            <h1 className="text-2xl font-medium tracking-tight text-slate-900">Background Jobs &amp; Queue</h1>
             {healthBadge(stats.health)}
           </div>
           <p className="mt-1 text-sm text-slate-600">
@@ -232,7 +232,7 @@ export function AdminJobsClient({
                 type="button"
                 onClick={handleRunBatch}
                 disabled={actionLoading === "batch"}
-                className="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-3.5 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 disabled:opacity-50"
               >
                 {actionLoading === "batch" ? "Processing…" : "Run Queue Batch Now"}
               </button>
@@ -240,7 +240,7 @@ export function AdminJobsClient({
                 type="button"
                 onClick={() => handleTriggerJob("REVIEW_EXPIRY_PUBLISH")}
                 disabled={actionLoading === "REVIEW_EXPIRY_PUBLISH"}
-                className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
               >
                 Publish Expired Reviews
               </button>
@@ -248,7 +248,7 @@ export function AdminJobsClient({
                 type="button"
                 onClick={() => handleTriggerJob("ACCOUNT_RESTRICTION_EXPIRY")}
                 disabled={actionLoading === "ACCOUNT_RESTRICTION_EXPIRY"}
-                className="inline-flex items-center gap-1.5 rounded-md bg-amber-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-700 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-md bg-amber-600 px-3.5 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-700 disabled:opacity-50"
               >
                 Expire Restrictions
               </button>
@@ -269,32 +269,32 @@ export function AdminJobsClient({
       <section className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Pending Backlog</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{stats.pending}</p>
+          <p className="mt-1 text-2xl font-medium text-slate-900">{stats.pending}</p>
           <span className="text-xs text-slate-500">Ready to execute</span>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Active Workers</p>
-          <p className="mt-1 text-2xl font-bold text-sky-600">{stats.running}</p>
+          <p className="mt-1 text-2xl font-medium text-sky-600">{stats.running}</p>
           <span className="text-xs text-slate-500">Currently executing</span>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Retry Scheduled</p>
-          <p className="mt-1 text-2xl font-bold text-amber-600">{stats.retryScheduled}</p>
+          <p className="mt-1 text-2xl font-medium text-amber-600">{stats.retryScheduled}</p>
           <span className="text-xs text-slate-500">Exponential backoff</span>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Failed / Dead-Letter</p>
-          <p className="mt-1 text-2xl font-bold text-rose-600">{stats.failed}</p>
+          <p className="mt-1 text-2xl font-medium text-rose-600">{stats.failed}</p>
           <span className="text-xs text-slate-500">Requires investigation</span>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Completed</p>
-          <p className="mt-1 text-2xl font-bold text-emerald-600">{stats.completed}</p>
+          <p className="mt-1 text-2xl font-medium text-emerald-600">{stats.completed}</p>
           <span className="text-xs text-slate-500">Successfully handled</span>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Oldest Pending</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">
+          <p className="mt-1 text-2xl font-medium text-slate-900">
             {stats.oldestPendingJobAgeSeconds > 0
               ? `${Math.floor(stats.oldestPendingJobAgeSeconds / 60)}m`
               : "0m"}
@@ -353,7 +353,7 @@ export function AdminJobsClient({
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-            <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <thead className="bg-slate-50 text-xs font-medium uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-4 py-3">Job ID &amp; Type</th>
                 <th className="px-4 py-3">Status</th>
@@ -367,7 +367,7 @@ export function AdminJobsClient({
               {jobs.map((job) => (
                 <tr key={job.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-4 py-3">
-                    <p className="font-mono text-xs font-semibold text-slate-900">{job.id}</p>
+                    <p className="font-mono text-xs font-medium text-slate-900">{job.id}</p>
                     <p className="text-xs font-medium text-indigo-600">{job.type}</p>
                     {job.idempotencyKey && (
                       <p className="text-[11px] text-slate-500 font-mono truncate max-w-xs" title={job.idempotencyKey}>
@@ -378,7 +378,7 @@ export function AdminJobsClient({
                   <td className="px-4 py-3 whitespace-nowrap">
                     {statusBadge(job.status)}
                     {job.priority > 0 && (
-                      <span className="ml-1.5 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
+                      <span className="ml-1.5 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
                         P{job.priority}
                       </span>
                     )}
@@ -418,7 +418,7 @@ export function AdminJobsClient({
                           type="button"
                           onClick={() => handleRetryJob(job.id)}
                           disabled={actionLoading === `retry_${job.id}`}
-                          className="rounded bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                          className="rounded bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
                         >
                           {actionLoading === `retry_${job.id}` ? "Retrying…" : "Retry Now"}
                         </button>
@@ -478,7 +478,7 @@ export function AdminJobsClient({
           >
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <div>
-                <h3 className="text-lg font-semibold text-slate-900">Background Job Details</h3>
+                <h3 className="text-lg font-medium text-slate-900">Background Job Details</h3>
                 <p className="font-mono text-xs text-slate-500">{selectedJob.id}</p>
               </div>
               <div className="flex items-center gap-2">
@@ -497,21 +497,21 @@ export function AdminJobsClient({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <span className="font-medium text-slate-500">Type:</span>
-                  <p className="font-semibold text-slate-800">{selectedJob.type}</p>
+                  <p className="font-medium text-slate-800">{selectedJob.type}</p>
                 </div>
                 <div>
                   <span className="font-medium text-slate-500">Priority:</span>
-                  <p className="font-semibold text-slate-800">{selectedJob.priority}</p>
+                  <p className="font-medium text-slate-800">{selectedJob.priority}</p>
                 </div>
                 <div>
                   <span className="font-medium text-slate-500">Attempts:</span>
-                  <p className="font-semibold text-slate-800">
+                  <p className="font-medium text-slate-800">
                     {selectedJob.attempts} of {selectedJob.maxAttempts} (Backoff: {selectedJob.backoffSeconds}s)
                   </p>
                 </div>
                 <div>
                   <span className="font-medium text-slate-500">Run Schedule:</span>
-                  <p className="font-semibold text-slate-800">{formatDateTime(selectedJob.runAt)}</p>
+                  <p className="font-medium text-slate-800">{formatDateTime(selectedJob.runAt)}</p>
                 </div>
                 {selectedJob.lockedBy && (
                   <div className="col-span-2">
@@ -532,7 +532,7 @@ export function AdminJobsClient({
               {/* Error Details */}
               {selectedJob.lastError && (
                 <div className="rounded-lg border border-rose-200 bg-rose-50 p-3">
-                  <h4 className="text-xs font-semibold text-rose-800 uppercase tracking-wide">Last Error</h4>
+                  <h4 className="text-xs font-medium text-rose-800 uppercase tracking-wide">Last Error</h4>
                   <p className="mt-1 font-mono text-xs text-rose-900 break-words">{selectedJob.lastError}</p>
                   {selectedJob.errorStack && (
                     <details className="mt-2 text-[11px] text-rose-700">
@@ -547,7 +547,7 @@ export function AdminJobsClient({
 
               {/* Payload Viewer */}
               <div>
-                <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Payload</h4>
+                <h4 className="text-xs font-medium text-slate-700 uppercase tracking-wide mb-1">Payload</h4>
                 <pre className="max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-slate-900 p-3 font-mono text-xs text-slate-100">
                   {JSON.stringify(selectedJob.payload || {}, null, 2)}
                 </pre>
@@ -560,7 +560,7 @@ export function AdminJobsClient({
                   type="button"
                   onClick={() => handleRetryJob(selectedJob.id)}
                   disabled={actionLoading === `retry_${selectedJob.id}`}
-                  className="rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+                  className="rounded-md bg-indigo-600 px-4 py-2 text-xs font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
                 >
                   {actionLoading === `retry_${selectedJob.id}` ? "Retrying…" : "Retry Job Now"}
                 </button>

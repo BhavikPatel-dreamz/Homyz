@@ -110,7 +110,7 @@ export function SessionManager({
       <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
+            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-medium uppercase tracking-wider">
               <tr>
                 <th className="py-3 px-4">User</th>
                 <th className="py-3 px-4">Surface / Type</th>
@@ -131,14 +131,14 @@ export function SessionManager({
                 paginatedSessions.map((s) => (
                   <tr key={s.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-muted-foreground">
+                      <div className="font-medium text-muted-foreground">
                         {s.userName || "User"}
                       </div>
                       <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{s.userEmail || s.userId}</div>
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${s.type === "web"
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium ${s.type === "web"
                             ? "bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300 border border-sky-200 dark:border-sky-800/50"
                             : "bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50"
                           }`}
@@ -165,7 +165,7 @@ export function SessionManager({
                         type="button"
                         onClick={() => handleRevokeOne(s)}
                         disabled={pending}
-                        className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-[11px] font-semibold transition-all shadow-2xs disabled:opacity-50"
+                        className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-[11px] font-medium transition-all shadow-2xs disabled:opacity-50"
                       >
                         Revoke
                       </button>
@@ -192,13 +192,13 @@ export function SessionManager({
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h3 className="font-semibold text-xs text-muted-foreground">
+                  <h3 className="font-medium text-xs text-muted-foreground">
                     {s.userName || "User"}
                   </h3>
                   <p className="text-[11px] text-[var(--muted-foreground)] font-mono">{s.userEmail || s.userId}</p>
                 </div>
                 <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
                     s.type === "web"
                       ? "bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300 border border-sky-200 dark:border-sky-800/50"
                       : "bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50"
@@ -210,15 +210,15 @@ export function SessionManager({
 
               <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-[var(--border-subtle)]">
                 <div>
-                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Device & OS</span>
+                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-medium">Device & OS</span>
                   <span className="font-medium text-muted-foreground truncate block">{s.deviceInfo}</span>
                 </div>
                 <div>
-                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">IP Address</span>
+                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-medium">IP Address</span>
                   <span className="font-mono text-[var(--muted-foreground)]">{s.ip || "—"}</span>
                 </div>
                 <div className="col-span-2">
-                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Last Active</span>
+                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-medium">Last Active</span>
                   <span className="text-[var(--muted-foreground)] font-mono">
                     {new Date(s.lastActiveAt).toLocaleString([], {
                       month: "short",
@@ -235,7 +235,7 @@ export function SessionManager({
                   type="button"
                   onClick={() => handleRevokeOne(s)}
                   disabled={pending}
-                  className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-3.5 py-1.5 text-xs font-semibold transition-all shadow-2xs disabled:opacity-50"
+                  className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-3.5 py-1.5 text-xs font-medium transition-all shadow-2xs disabled:opacity-50"
                 >
                   Revoke Session
                 </button>
@@ -293,7 +293,7 @@ export function SessionManager({
                 type="button"
                 onClick={() => setSessionToRevoke(null)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -301,7 +301,7 @@ export function SessionManager({
                 type="button"
                 onClick={confirmRevokeOne}
                 disabled={pending}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 text-xs font-semibold transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 text-xs font-medium transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
               >
                 {pending && (
                   <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />

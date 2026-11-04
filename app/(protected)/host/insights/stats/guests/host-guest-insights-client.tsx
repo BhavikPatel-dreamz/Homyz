@@ -68,7 +68,7 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href={withCurrentFilters("/host/insights?tab=stats")}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-600 transition-colors hover:text-zinc-950"
+          className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-950"
         >
           <span className="text-base">←</span>
           <span>Back to Stats</span>
@@ -80,7 +80,7 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
             <select
               value={data.selectedListingId || "all"}
               onChange={(e) => updateFilters({ propertyId: e.target.value === "all" ? null : e.target.value })}
-              className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-800 shadow-2xs focus:border-zinc-900 focus:outline-hidden"
+              className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-800 shadow-2xs focus:border-zinc-900 focus:outline-hidden"
               disabled={isPending}
             >
               <option value="all">All properties</option>
@@ -95,7 +95,7 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
           <select
             value={data.reportingPeriod.preset}
             onChange={(e) => updateFilters({ period: e.target.value })}
-            className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-800 shadow-2xs focus:border-zinc-900 focus:outline-hidden"
+            className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-800 shadow-2xs focus:border-zinc-900 focus:outline-hidden"
             disabled={isPending}
           >
             {PERIOD_OPTIONS.map((p) => (
@@ -108,7 +108,7 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-800">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-800">
           {error}
         </div>
       )}
@@ -116,8 +116,8 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
       {/* Header Banner */}
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
         <div className="border-b border-zinc-100 pb-6">
-          <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Audience & Demographics</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">Guest Insights</h1>
+          <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">Audience & Demographics</p>
+          <h1 className="mt-1 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">Guest Insights</h1>
           <p className="mt-1 text-xs text-zinc-500 max-w-xl">
             Understand where your guests come from, how often they return, and how they engage with your listings.
           </p>
@@ -128,7 +128,7 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
           {/* 1. Total Unique Guests */}
           <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
             <p className="text-xs text-zinc-500">Total Unique Guests</p>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">{summary.uniqueGuestsCount}</p>
+            <p className="mt-1 text-2xl font-medium tracking-tight text-zinc-950">{summary.uniqueGuestsCount}</p>
             <p className="mt-2 text-[11px] text-zinc-500">{summary.completedGuestStaysCount} stays completed</p>
           </div>
 
@@ -141,7 +141,7 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
               <p className="text-xs text-zinc-500 group-hover:text-zinc-900">Origin Countries</p>
               <span className="text-[10px] text-zinc-400 group-hover:text-zinc-950">→</span>
             </div>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">{summary.originCountriesCount}</p>
+            <p className="mt-1 text-2xl font-medium tracking-tight text-zinc-950">{summary.originCountriesCount}</p>
             <p className="mt-2 text-[11px] text-zinc-500">View country origins</p>
           </Link>
 
@@ -154,7 +154,7 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
               <p className="text-xs text-zinc-500 group-hover:text-zinc-900">Returning Guests</p>
               <span className="text-[10px] text-zinc-400 group-hover:text-zinc-950">→</span>
             </div>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">{summary.returningGuestsPercentage}%</p>
+            <p className="mt-1 text-2xl font-medium tracking-tight text-zinc-950">{summary.returningGuestsPercentage}%</p>
             <p className="mt-2 text-[11px] text-zinc-500">{summary.returningGuestsCount} repeat guests</p>
           </Link>
 
@@ -168,7 +168,7 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
               <span className="text-[10px] text-zinc-400 group-hover:text-zinc-950">→</span>
             </div>
             <div className="mt-1 flex items-baseline gap-1">
-              <span className="text-2xl font-bold tracking-tight text-zinc-950">
+              <span className="text-2xl font-medium tracking-tight text-zinc-950">
                 {summary.averageRatingReceived !== null ? summary.averageRatingReceived.toFixed(2) : "—"}
               </span>
               <span className="text-amber-500 text-sm">★</span>
@@ -185,7 +185,7 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
               <p className="text-xs text-zinc-500 group-hover:text-zinc-900">Check-in Viewed</p>
               <span className="text-[10px] text-zinc-400 group-hover:text-zinc-950">→</span>
             </div>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">
+            <p className="mt-1 text-2xl font-medium tracking-tight text-zinc-950">
               {summary.checkInInstructionsViewedPercentage !== null
                 ? `${summary.checkInInstructionsViewedPercentage}%`
                 : "Active"}
@@ -199,12 +199,12 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
         <div className="flex items-baseline justify-between border-b border-zinc-100 pb-4">
           <div>
-            <h2 className="text-lg font-bold text-zinc-950">Guest Origins (Last 6 Months)</h2>
+            <h2 className="text-lg font-medium text-zinc-950">Guest Origins (Last 6 Months)</h2>
             <p className="text-xs text-zinc-500">Distribution of distinct guests with verified stays</p>
           </div>
           <Link
             href={withCurrentFilters("/host/insights/stats/guests/origins")}
-            className="text-xs font-semibold text-zinc-900 underline underline-offset-4 hover:text-zinc-600"
+            className="text-xs font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-600"
           >
             See full origin details →
           </Link>
@@ -214,7 +214,7 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
           <div className="mt-6 space-y-4">
             {origins.countries.slice(0, 5).map((country) => (
               <div key={country.country} className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-semibold text-zinc-900">
+                <div className="flex items-center justify-between text-xs font-medium text-zinc-900">
                   <span className="flex items-center gap-2">
                     <span>{country.country}</span>
                     {country.topCities.length > 0 && (
@@ -249,19 +249,19 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
         <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
           <div className="flex items-baseline justify-between border-b border-zinc-100 pb-4">
             <div>
-              <h2 className="text-lg font-bold text-zinc-950">Returning Guests</h2>
+              <h2 className="text-lg font-medium text-zinc-950">Returning Guests</h2>
               <p className="text-xs text-zinc-500">Guests with 2+ completed reservations</p>
             </div>
             <Link
               href={withCurrentFilters("/host/insights/stats/guests/returning")}
-              className="text-xs font-semibold text-zinc-900 underline underline-offset-4 hover:text-zinc-600"
+              className="text-xs font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-600"
             >
               Cohort details →
             </Link>
           </div>
 
           <div className="mt-6 flex items-baseline gap-3">
-            <span className="text-4xl font-bold tracking-tight text-zinc-950 sm:text-5xl">
+            <span className="text-4xl font-medium tracking-tight text-zinc-950 sm:text-5xl">
               {returning.returningPercentage}%
             </span>
             <span className="text-xs text-zinc-500">
@@ -273,15 +273,15 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
             {returning.repeatStayBreakdown.map((item) => (
               <div key={item.category} className="flex items-center justify-between text-xs">
                 <span className="text-zinc-600 font-medium">{item.category}</span>
-                <span className="font-mono font-bold text-zinc-950">
+                <span className="font-mono font-medium text-zinc-950">
                   {item.percentage}% ({item.guestCount})
                 </span>
               </div>
             ))}
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3 border-t border-zinc-100 pt-5 text-xs">
-            <div className="rounded-xl bg-zinc-50 p-3"><p className="text-zinc-500">Repeat bookings</p><p className="mt-1 font-bold text-zinc-950">{returning.repeatBookingCount}</p></div>
-            <div className="rounded-xl bg-zinc-50 p-3"><p className="text-zinc-500">Observed repeat value</p><p className="mt-1 font-bold text-zinc-950">{formatMoney(returning.realizedRepeatGuestRevenueCents, returning.currency)}</p></div>
+            <div className="rounded-xl bg-zinc-50 p-3"><p className="text-zinc-500">Repeat bookings</p><p className="mt-1 font-medium text-zinc-950">{returning.repeatBookingCount}</p></div>
+            <div className="rounded-xl bg-zinc-50 p-3"><p className="text-zinc-500">Observed repeat value</p><p className="mt-1 font-medium text-zinc-950">{formatMoney(returning.realizedRepeatGuestRevenueCents, returning.currency)}</p></div>
           </div>
         </section>
 
@@ -289,12 +289,12 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
         <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
           <div className="flex items-baseline justify-between border-b border-zinc-100 pb-4">
             <div>
-              <h2 className="text-lg font-bold text-zinc-950">Check-In Instructions Engagement</h2>
+              <h2 className="text-lg font-medium text-zinc-950">Check-In Instructions Engagement</h2>
               <p className="text-xs text-zinc-500">Verified arrival instructions viewing status</p>
             </div>
             <Link
               href={withCurrentFilters("/host/insights/stats/guests/check-in")}
-              className="text-xs font-semibold text-zinc-900 underline underline-offset-4 hover:text-zinc-600"
+              className="text-xs font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-600"
             >
               Engagement details →
             </Link>
@@ -302,8 +302,8 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
 
           <div className="mt-6">
             <div className="flex items-baseline justify-between">
-              <span className="text-xs font-semibold text-zinc-700">Viewed by guests</span>
-              <span className="text-xl font-bold text-zinc-950 font-mono">
+              <span className="text-xs font-medium text-zinc-700">Viewed by guests</span>
+              <span className="text-xl font-medium text-zinc-950 font-mono">
                 {checkInEngagement.viewedPercentage}%
               </span>
             </div>
@@ -316,11 +316,11 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
             <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
               <div className="rounded-xl border border-zinc-100 bg-zinc-50/60 p-3">
                 <p className="text-zinc-500">Viewed before arrival</p>
-                <p className="mt-1 font-bold text-zinc-950">{checkInEngagement.viewedCount} stays</p>
+                <p className="mt-1 font-medium text-zinc-950">{checkInEngagement.viewedCount} stays</p>
               </div>
               <div className="rounded-xl border border-zinc-100 bg-zinc-50/60 p-3">
                 <p className="text-zinc-500">Not yet opened</p>
-                <p className="mt-1 font-bold text-zinc-950">{checkInEngagement.notViewedCount} stays</p>
+                <p className="mt-1 font-medium text-zinc-950">{checkInEngagement.notViewedCount} stays</p>
               </div>
             </div>
           </div>
@@ -328,9 +328,9 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
       </div>
 
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
-        <div className="border-b border-zinc-100 pb-4"><h2 className="text-lg font-bold text-zinc-950">Trip purpose</h2><p className="mt-1 text-xs text-zinc-500">{data.tripPurpose.message}</p></div>
+        <div className="border-b border-zinc-100 pb-4"><h2 className="text-lg font-medium text-zinc-950">Trip purpose</h2><p className="mt-1 text-xs text-zinc-500">{data.tripPurpose.message}</p></div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {data.tripPurpose.items.map((item) => <div key={item.purpose} className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4"><div className="flex justify-between gap-3"><p className="text-sm font-semibold text-zinc-900">{item.label}</p><p className="text-sm font-bold text-zinc-950">{item.percentage}%</p></div><p className="mt-3 text-2xl font-bold tracking-tight text-zinc-950">{item.bookingCount}</p><p className="mt-1 text-[11px] text-zinc-500">{item.averageStayNights === null ? "No completed stays" : `${item.averageStayNights} avg. nights`} · {formatMoney(item.eligibleRevenueCents, data.tripPurpose.currency)} eligible revenue</p></div>)}
+          {data.tripPurpose.items.map((item) => <div key={item.purpose} className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4"><div className="flex justify-between gap-3"><p className="text-sm font-medium text-zinc-900">{item.label}</p><p className="text-sm font-medium text-zinc-950">{item.percentage}%</p></div><p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950">{item.bookingCount}</p><p className="mt-1 text-[11px] text-zinc-500">{item.averageStayNights === null ? "No completed stays" : `${item.averageStayNights} avg. nights`} · {formatMoney(item.eligibleRevenueCents, data.tripPurpose.currency)} eligible revenue</p></div>)}
         </div>
       </section>
     </div>

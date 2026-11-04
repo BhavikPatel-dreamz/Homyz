@@ -163,14 +163,14 @@ export function ReportContentModal({
                   const currentPath = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
                   router.push(`/login?callbackUrl=${encodeURIComponent(currentPath)}`);
                 }}
-                className="w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                className="w-full rounded-xl bg-slate-900 py-3 text-sm font-medium text-white hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 Sign in to continue
               </button>
               <button
                 type="button"
                 onClick={handleClose}
-                className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -183,14 +183,14 @@ export function ReportContentModal({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 id="report-modal-title" className="text-xl font-bold text-slate-900">
+            <h2 id="report-modal-title" className="text-xl font-medium text-slate-900">
               Report Submitted
             </h2>
             <p className="text-sm text-slate-600">
               Thank you for helping keep the Homyz community safe and honest. Our trust & safety team has received your report.
             </p>
             <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs text-slate-700">
-              <span className="font-semibold">Case Reference: </span>
+              <span className="font-medium">Case Reference: </span>
               <code className="font-mono text-indigo-700">{successReference}</code>
             </div>
             <p className="text-xs text-[#727272]">
@@ -200,7 +200,7 @@ export function ReportContentModal({
               <button
                 type="button"
                 onClick={handleClose}
-                className="w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
+                className="w-full rounded-xl bg-slate-900 py-3 text-sm font-medium text-white hover:bg-slate-800 transition-colors"
               >
                 Close
               </button>
@@ -210,7 +210,7 @@ export function ReportContentModal({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <div className="flex items-center justify-between">
-                <h2 id="report-modal-title" className="text-xl font-bold text-slate-900">
+                <h2 id="report-modal-title" className="text-xl font-medium text-slate-900">
                   {targetType === "LISTING_PHOTO"
                     ? "Report Photo"
                     : targetType === "LISTING"
@@ -250,7 +250,7 @@ export function ReportContentModal({
                   />
                 </div>
                 <div className="min-w-0 flex-1 text-xs">
-                  <p className="font-semibold text-slate-800 truncate">{targetTitle || "Property Photo"}</p>
+                  <p className="font-medium text-slate-800 truncate">{targetTitle || "Property Photo"}</p>
                   <p className="text-[#727272] truncate mt-0.5">{targetId}</p>
                 </div>
               </div>
@@ -317,7 +317,7 @@ export function ReportContentModal({
 
             {relatedBookingId ? (
               <div className="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-600">
-                <span className="font-semibold text-slate-700">Booking Reference: </span>
+                <span className="font-medium text-slate-700">Booking Reference: </span>
                 <span className="font-mono">{relatedBookingId}</span>
               </div>
             ) : (
@@ -338,7 +338,7 @@ export function ReportContentModal({
             )}
 
             <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900">
-              <span className="font-semibold">Review Moderation Policy: </span>
+              <span className="font-medium">Review Moderation Policy: </span>
               Submitting a report opens an investigation. Reviews remain published during review unless a severe policy violation is confirmed by our moderators.
             </div>
 

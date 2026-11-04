@@ -142,7 +142,7 @@ function ToastCard({ item }: { item: ToastItem }) {
         {iconMap[item.type]}
         <div className="flex-1 text-xs space-y-0.5 pr-2">
           {item.title && (
-            <div className="font-bold text-[#1F1F1F] dark:text-zinc-100">{item.title}</div>
+            <div className="font-medium text-[#1F1F1F] dark:text-zinc-100">{item.title}</div>
           )}
           <div className="font-medium text-zinc-700 dark:text-zinc-300 leading-relaxed">
             {item.message}
@@ -152,7 +152,7 @@ function ToastCard({ item }: { item: ToastItem }) {
           type="button"
           onClick={handleDismiss}
           aria-label="Close notification"
-          className="text-[#727272] hover:text-zinc-700 dark:hover:text-zinc-200 p-1 rounded-lg transition-colors text-xs font-semibold shrink-0 cursor-pointer"
+          className="text-[#727272] hover:text-zinc-700 dark:hover:text-zinc-200 p-1 rounded-lg transition-colors text-xs font-medium shrink-0 cursor-pointer"
         >
           ✕
         </button>

@@ -756,7 +756,7 @@ export function HostListingsWorkspace({
         <div className="mx-auto box-border w-full min-w-0 max-w-[1600px] px-4 sm:px-6 lg:px-8">
           {/* Toast Alert */}
           {toastMsg && (
-            <div className={`fixed top-5 right-4 left-4 sm:left-auto sm:max-w-md z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-semibold transition-all ${toastMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"
+            <div className={`fixed top-5 right-4 left-4 sm:left-auto sm:max-w-md z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-medium transition-all ${toastMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"
               }`}>
               {toastMsg.text}
             </div>
@@ -764,12 +764,12 @@ export function HostListingsWorkspace({
 
           {/* Refresh Error Alert */}
           {refreshError && (
-            <div className="mb-6 flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-800">
+            <div className="mb-6 flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-800">
               <span>{refreshError}</span>
               <button
                 type="button"
                 onClick={() => fetchListings(activeTab, page, searchQuery.trim(), { bypassCache: true })}
-                className="ml-4 rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white hover:bg-rose-700 cursor-pointer"
+                className="ml-4 rounded-full bg-rose-600 px-3 py-1 text-xs font-medium text-white hover:bg-rose-700 cursor-pointer"
               >
                 {t("host_listings_btn_retry")}
               </button>
@@ -778,7 +778,7 @@ export function HostListingsWorkspace({
 
           {/* Listings Title & Actions Bar (Fully Responsive without changing flow) */}
           <div className="listing-title mb-6 flex min-w-0 flex-col gap-4 sm:mb-8 min-[900px]:flex-row min-[900px]:items-center min-[900px]:justify-between">
-            <h1 className="min-w-0 text-2xl font-semibold text-[#1F1F1F]">
+            <h1 className="min-w-0 text-2xl sm:text-[28px] font-medium text-[#1F1F1F]">
               {t("host_listings_title")}
             </h1>
 
@@ -956,7 +956,7 @@ export function HostListingsWorkspace({
 
                           {/* Below Card Information */}
                           <div className="min-w-0 px-0 pt-3">
-                            <h3 className="line-clamp-2 text-sm font-semibold leading-5 text-[#1f1f1f]">
+                            <h3 className="line-clamp-2 text-sm font-medium leading-5 text-[#1f1f1f]">
                               <Link
                                 href={`/host/listings/${item.id}`}
                                 className="after:absolute after:inset-0 after:rounded-[14px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
@@ -1056,7 +1056,7 @@ export function HostListingsWorkspace({
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
               <div>
-                <h2 className="text-lg font-semibold text-muted-foreground">
+                <h2 className="text-lg font-medium text-muted-foreground">
                   {editingListing ? t("host_listings_modal_edit_title", { title: editingListing.title }) : t("host_listings_modal_create_title", "Create Property Listing")}
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
@@ -1066,14 +1066,14 @@ export function HostListingsWorkspace({
               <button
                 type="button"
                 onClick={() => setShowEditorModal(false)}
-                className="h-8 w-8 rounded-full bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground flex items-center justify-center font-semibold text-sm"
+                className="h-8 w-8 rounded-full bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground flex items-center justify-center font-medium text-sm"
               >
                 ✕
               </button>
             </div>
 
             {/* Wizard Steps Navigation Bar */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-2 border-b border-[var(--border-subtle)] text-xs font-semibold scrollbar-none">
+            <div className="flex items-center gap-1 overflow-x-auto pb-2 border-b border-[var(--border-subtle)] text-xs font-medium scrollbar-none">
               {[
                 { step: 1, label: t("host_listings_modal_step_1", "1. Basic Info") },
                 { step: 2, label: t("host_listings_modal_step_2", "2. Location & Capacity") },
@@ -1101,7 +1101,7 @@ export function HostListingsWorkspace({
               {editorStep === 1 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_title", "Listing Title *")}</label>
+                    <label className="block font-medium text-muted-foreground mb-1">{t("host_listings_modal_title", "Listing Title *")}</label>
                     <input
                       type="text"
                       value={formData.title}
@@ -1113,7 +1113,7 @@ export function HostListingsWorkspace({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_desc", "Detailed Description *")}</label>
+                    <label className="block font-medium text-muted-foreground mb-1">{t("host_listings_modal_desc", "Detailed Description *")}</label>
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -1126,11 +1126,11 @@ export function HostListingsWorkspace({
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_category", "Hosting Category")}</label>
+                      <label className="block font-medium text-muted-foreground mb-1">{t("host_listings_modal_category", "Hosting Category")}</label>
                       <select
                         value={formData.hostingType}
                         onChange={(e) => setFormData({ ...formData, hostingType: e.target.value })}
-                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-semibold"
+                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-medium"
                       >
                         <option value="HOME">{t("host_listings_modal_cat_home", "Residential Home")}</option>
                         <option value="EXPERIENCE">{t("host_listings_modal_cat_exp", "Experience")}</option>
@@ -1139,11 +1139,11 @@ export function HostListingsWorkspace({
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_prop_type", "Property Type")}</label>
+                      <label className="block font-medium text-muted-foreground mb-1">{t("host_listings_modal_prop_type", "Property Type")}</label>
                       <select
                         value={formData.propertyType}
                         onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
-                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-semibold"
+                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-medium"
                       >
                         {PROPERTY_TYPES.map((pt) => (
                           <option key={pt} value={pt}>{pt}</option>
@@ -1152,11 +1152,11 @@ export function HostListingsWorkspace({
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_listing_type", "Listing Type")}</label>
+                      <label className="block font-medium text-muted-foreground mb-1">{t("host_listings_modal_listing_type", "Listing Type")}</label>
                       <select
                         value={formData.listingType}
                         onChange={(e) => setFormData({ ...formData, listingType: e.target.value })}
-                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-semibold"
+                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-medium"
                       >
                         {LISTING_TYPES.map((lt) => (
                           <option key={lt} value={lt}>{lt}</option>
@@ -1172,7 +1172,7 @@ export function HostListingsWorkspace({
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
-                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_street", "Street Address *")}</label>
+                      <label className="block font-medium text-muted-foreground mb-1">{t("host_listings_modal_street", "Street Address *")}</label>
                       <input
                         type="text"
                         value={formData.address}
@@ -1183,7 +1183,7 @@ export function HostListingsWorkspace({
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_city", "City / Region *")}</label>
+                      <label className="block font-medium text-muted-foreground mb-1">{t("host_listings_modal_city", "City / Region *")}</label>
                       <input
                         type="text"
                         value={formData.city}
@@ -1194,7 +1194,7 @@ export function HostListingsWorkspace({
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_district", "District / State")}</label>
+                      <label className="block font-medium text-muted-foreground mb-1">{t("host_listings_modal_district", "District / State")}</label>
                       <input
                         type="text"
                         value={formData.district}
@@ -1204,7 +1204,7 @@ export function HostListingsWorkspace({
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_zip", "Postal Code")}</label>
+                      <label className="block font-medium text-muted-foreground mb-1">{t("host_listings_modal_zip", "Postal Code")}</label>
                       <input
                         type="text"
                         value={formData.postalCode}
@@ -1214,7 +1214,7 @@ export function HostListingsWorkspace({
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_country", "Country")}</label>
+                      <label className="block font-medium text-muted-foreground mb-1">{t("host_listings_modal_country", "Country")}</label>
                       <input
                         type="text"
                         value={formData.country}
@@ -1226,7 +1226,7 @@ export function HostListingsWorkspace({
                   </div>
 
                   <div className="border-t border-[var(--border-subtle)] pt-4">
-                    <h4 className="font-semibold text-muted-foreground mb-3">{t("host_listings_modal_capacity", "Property Capacity")}</h4>
+                    <h4 className="font-medium text-muted-foreground mb-3">{t("host_listings_modal_capacity", "Property Capacity")}</h4>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       <div>
                         <label className="block text-[var(--muted-foreground)] font-medium mb-1">{t("host_listings_modal_guests_cap", "Guests Capacity")}</label>
@@ -1236,7 +1236,7 @@ export function HostListingsWorkspace({
                           max={50}
                           value={formData.guests}
                           onChange={(e) => setFormData({ ...formData, guests: Number(e.target.value) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-medium text-center outline-none"
                         />
                       </div>
                       <div>
@@ -1247,7 +1247,7 @@ export function HostListingsWorkspace({
                           max={30}
                           value={formData.bedrooms}
                           onChange={(e) => setFormData({ ...formData, bedrooms: Number(e.target.value) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-medium text-center outline-none"
                         />
                       </div>
                       <div>
@@ -1258,7 +1258,7 @@ export function HostListingsWorkspace({
                           max={50}
                           value={formData.beds}
                           onChange={(e) => setFormData({ ...formData, beds: Number(e.target.value) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-medium text-center outline-none"
                         />
                       </div>
                       <div>
@@ -1269,7 +1269,7 @@ export function HostListingsWorkspace({
                           max={20}
                           value={formData.bathrooms}
                           onChange={(e) => setFormData({ ...formData, bathrooms: Number(e.target.value) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-medium text-center outline-none"
                         />
                       </div>
                     </div>
@@ -1282,12 +1282,12 @@ export function HostListingsWorkspace({
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-semibold text-muted-foreground">{t("host_listings_modal_photos", "Property Photos Gallery")}</h4>
+                      <h4 className="font-medium text-muted-foreground">{t("host_listings_modal_photos", "Property Photos Gallery")}</h4>
                       <p className="text-[11px] text-[var(--muted-foreground)]">
                         Add high quality image URLs. Minimum 5 photos required for Admin review & approval.
                       </p>
                     </div>
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${formData.photos.length >= 5 ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-amber-50 text-amber-800 border border-amber-300"
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${formData.photos.length >= 5 ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-amber-50 text-amber-800 border border-amber-300"
                       }`}>
                       {formData.photos.length} / 5 photos minimum
                     </span>
@@ -1296,7 +1296,7 @@ export function HostListingsWorkspace({
                   {/* Add photo File Upload & URL input */}
                   <div className="space-y-2">
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <label className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-[#1F1F1F] font-semibold px-4 py-2.5 hover:opacity-90 transition-all shrink-0">
+                      <label className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-[#1F1F1F] font-medium px-4 py-2.5 hover:opacity-90 transition-all shrink-0">
                         <span>{t("host_listings_modal_upload_btn", "📁 Choose & Upload File")}</span>
                         <input
                           type="file"
@@ -1349,7 +1349,7 @@ export function HostListingsWorkspace({
                               newPhotoUrl: "",
                             });
                           }}
-                          className="rounded-xl bg-emerald-600 text-white font-semibold px-4 py-2 hover:bg-emerald-700 transition-all shrink-0"
+                          className="rounded-xl bg-emerald-600 text-white font-medium px-4 py-2 hover:bg-emerald-700 transition-all shrink-0"
                         >
                           + Add URL
                         </button>
@@ -1369,7 +1369,7 @@ export function HostListingsWorkspace({
                               const updated = formData.photos.filter((_, i) => i !== idx);
                               setFormData({ ...formData, photos: updated });
                             }}
-                            className="bg-rose-600 text-white rounded-full p-1.5 text-xs font-semibold"
+                            className="bg-rose-600 text-white rounded-full p-1.5 text-xs font-medium"
                             title="Remove Photo"
                           >
                             🗑 Remove
@@ -1388,7 +1388,7 @@ export function HostListingsWorkspace({
               {editorStep === 4 && (
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-semibold text-muted-foreground mb-1">{t("host_listings_modal_amenities", "Property Amenities")}</h4>
+                    <h4 className="font-medium text-muted-foreground mb-1">{t("host_listings_modal_amenities", "Property Amenities")}</h4>
                     <p className="text-[11px] text-[var(--muted-foreground)] mb-3">{t("host_listings_modal_amenities_sub", "Select all amenities available to guests:")}</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                       {AMENITY_OPTIONS.map((item) => {
@@ -1404,7 +1404,7 @@ export function HostListingsWorkspace({
                               setFormData({ ...formData, amenities: updated });
                             }}
                             className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all ${isSelected
-                                ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 font-semibold"
+                                ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 font-medium"
                                 : "border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground"
                               }`}
                           >
@@ -1417,7 +1417,7 @@ export function HostListingsWorkspace({
                   </div>
 
                   <div className="border-t border-[var(--border-subtle)] pt-4 space-y-2">
-                    <h4 className="font-semibold text-muted-foreground">{t("host_listings_modal_rules", "House Rules")}</h4>
+                    <h4 className="font-medium text-muted-foreground">{t("host_listings_modal_rules", "House Rules")}</h4>
                     <p className="text-[11px] text-[var(--muted-foreground)]">{t("host_listings_modal_rules_sub", "Select house rules for guests staying at your place:")}</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {HOUSE_RULE_OPTIONS.map((rule) => {
@@ -1448,7 +1448,7 @@ export function HostListingsWorkspace({
               {editorStep === 5 && (
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-semibold text-muted-foreground mb-3">{t("host_listings_modal_pricing", "Pricing")}</h4>
+                    <h4 className="font-medium text-muted-foreground mb-3">{t("host_listings_modal_pricing", "Pricing")}</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[var(--muted-foreground)] font-medium mb-1">Nightly Rate ({getCurrencyForCountry(formData.country)}) *</label>
@@ -1458,7 +1458,7 @@ export function HostListingsWorkspace({
                           value={formData.price / 100}
                           onChange={(e) => setFormData({ ...formData, price: Math.round(Number(e.target.value) * 100) })}
                           required
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold text-base outline-none text-emerald-600"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-medium text-base outline-none text-emerald-600"
                         />
                       </div>
                       <div>
@@ -1468,21 +1468,21 @@ export function HostListingsWorkspace({
                           min={0}
                           value={(formData.weekendPrice || 0) / 100}
                           onChange={(e) => setFormData({ ...formData, weekendPrice: Math.round(Number(e.target.value) * 100) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-medium outline-none"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div className="border-t border-[var(--border-subtle)] pt-4 space-y-4">
-                    <h4 className="font-semibold text-muted-foreground">{t("host_listings_modal_checkin_details", "Check-in Details & Policies")}</h4>
+                    <h4 className="font-medium text-muted-foreground">{t("host_listings_modal_checkin_details", "Check-in Details & Policies")}</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-[var(--muted-foreground)] font-medium mb-1">{t("host_listings_modal_checkin_method", "Check-in Method")}</label>
                         <select
                           value={formData.checkInMethod}
                           onChange={(e) => setFormData({ ...formData, checkInMethod: e.target.value })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-medium outline-none"
                         >
                           {CHECK_IN_METHODS.map((m) => (
                             <option key={m.id} value={m.id}>{m.label}</option>
@@ -1496,14 +1496,14 @@ export function HostListingsWorkspace({
                             type="time"
                             value={formData.checkInStart}
                             onChange={(e) => setFormData({ ...formData, checkInStart: e.target.value })}
-                            className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
+                            className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-medium text-center outline-none"
                           />
                           <span>to</span>
                           <input
                             type="time"
                             value={formData.checkInEnd}
                             onChange={(e) => setFormData({ ...formData, checkInEnd: e.target.value })}
-                            className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
+                            className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-medium text-center outline-none"
                           />
                         </div>
                       </div>
@@ -1513,7 +1513,7 @@ export function HostListingsWorkspace({
                           type="time"
                           value={formData.checkOutTime}
                           onChange={(e) => setFormData({ ...formData, checkOutTime: e.target.value })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-medium text-center outline-none"
                         />
                       </div>
                     </div>
@@ -1523,7 +1523,7 @@ export function HostListingsWorkspace({
                       <select
                         value={formData.cancellationPolicy}
                         onChange={(e) => setFormData({ ...formData, cancellationPolicy: e.target.value })}
-                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold outline-none"
+                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-medium outline-none"
                       >
                         {CANCELLATION_POLICIES.map((p) => (
                           <option key={p.id} value={p.id}>{p.label}</option>
@@ -1532,7 +1532,7 @@ export function HostListingsWorkspace({
                     </div>
 
                     <div className="flex items-center gap-6 pt-2">
-                      <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground cursor-pointer">
+                      <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground cursor-pointer">
                         <input
                           type="checkbox"
                           checked={formData.instantBook}
@@ -1542,7 +1542,7 @@ export function HostListingsWorkspace({
                         <span>{t("host_listings_modal_instant_book", "Enable Instant Booking")}</span>
                       </label>
 
-                      <label className="flex items-center gap-2 text-xs font-semibold text-zinc-600 dark:text-[#727272] cursor-pointer">
+                      <label className="flex items-center gap-2 text-xs font-medium text-zinc-600 dark:text-[#727272] cursor-pointer">
                         <input
                           type="checkbox"
                           checked={formData.isPaused}
@@ -1562,7 +1562,7 @@ export function HostListingsWorkspace({
                   type="button"
                   disabled={editorStep === 1}
                   onClick={() => setEditorStep((prev) => Math.max(1, prev - 1))}
-                  className="rounded-full px-4 py-2 border border-[var(--border)] text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)] transition-all cursor-pointer disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                  className="rounded-full px-4 py-2 border border-[var(--border)] text-xs font-medium text-muted-foreground hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)] transition-all cursor-pointer disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                 >
                   ← {t("host_back", "Back")}
                 </button>
@@ -1572,7 +1572,7 @@ export function HostListingsWorkspace({
                     <button
                       type="button"
                       onClick={() => setEditorStep((prev) => Math.min(5, prev + 1))}
-                      className="rounded-full bg-[var(--foreground)] text-[var(--background)] px-5 py-2 text-xs font-semibold hover:opacity-90 transition-all"
+                      className="rounded-full bg-[var(--foreground)] text-[var(--background)] px-5 py-2 text-xs font-medium hover:opacity-90 transition-all"
                     >
                       {t("host_next", "Next")} →
                     </button>
@@ -1580,7 +1580,7 @@ export function HostListingsWorkspace({
                     <button
                       type="submit"
                       disabled={pending}
-                      className="rounded-full bg-emerald-600 text-white px-6 py-2 text-xs font-semibold hover:bg-emerald-700 transition-all shadow-md disabled:opacity-50"
+                      className="rounded-full bg-emerald-600 text-white px-6 py-2 text-xs font-medium hover:bg-emerald-700 transition-all shadow-md disabled:opacity-50"
                     >
                       {editingListing ? t("host_save_changes", "Save Changes") : t("host_listings_create_draft_btn", "Create Listing Draft")}
                     </button>
@@ -1609,7 +1609,7 @@ export function HostListingsWorkspace({
                   type="date"
                   value={blockedDateInput}
                   onChange={(e) => setBlockedDateInput(e.target.value)}
-                  className="flex-1 rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-semibold"
+                  className="flex-1 rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-medium"
                 />
                 <button
                   type="button"
@@ -1618,25 +1618,25 @@ export function HostListingsWorkspace({
                     setTempBlockedDates([...tempBlockedDates, blockedDateInput].sort());
                     setBlockedDateInput("");
                   }}
-                  className="rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-[#1F1F1F] font-semibold px-4 py-2"
+                  className="rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-[#1F1F1F] font-medium px-4 py-2"
                 >
                   {t("host_listings_block_date")}
                 </button>
               </div>
 
               <div className="space-y-2">
-                <span className="font-semibold text-muted-foreground block">Blocked Dates List ({tempBlockedDates.length})</span>
+                <span className="font-medium text-muted-foreground block">Blocked Dates List ({tempBlockedDates.length})</span>
                 <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
                   {tempBlockedDates.length === 0 ? (
                     <p className="text-xs text-[var(--muted-foreground)] italic">{t("host_listings_modal_no_dates_blocked", "No dates blocked.")}</p>
                   ) : (
                     tempBlockedDates.map((dateStr) => (
-                      <div key={dateStr} className="flex items-center justify-between p-2 rounded-lg bg-[var(--surface-secondary)] border border-[var(--border-subtle)] font-mono font-semibold">
+                      <div key={dateStr} className="flex items-center justify-between p-2 rounded-lg bg-[var(--surface-secondary)] border border-[var(--border-subtle)] font-mono font-medium">
                         <span>📅 {dateStr}</span>
                         <button
                           type="button"
                           onClick={() => setTempBlockedDates(tempBlockedDates.filter((d) => d !== dateStr))}
-                          className="text-rose-600 font-semibold text-xs"
+                          className="text-rose-600 font-medium text-xs"
                         >
                           {t("host_listings_unblock")}
                         </button>
@@ -1650,14 +1650,14 @@ export function HostListingsWorkspace({
                 <button
                   type="button"
                   onClick={() => setShowAvailabilityModal(false)}
-                  className="rounded-full px-4 py-2 text-xs font-semibold border border-[var(--border)] text-muted-foreground"
+                  className="rounded-full px-4 py-2 text-xs font-medium border border-[var(--border)] text-muted-foreground"
                 >
                   {t("host_cancel", "Cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-emerald-600 text-white px-5 py-2 text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50"
+                  className="rounded-full bg-emerald-600 text-white px-5 py-2 text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"
                 >
                   {t("host_save_availability", "Save Availability")}
                 </button>

@@ -65,7 +65,7 @@ function AllowDenyButtons({
         aria-label={t("host_safety_allow_deny_no").replace("{label}", label)}
         aria-pressed={value === false}
         onClick={() => onChange(false)}
-        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 cursor-pointer ${value === false
+        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition-all duration-300 cursor-pointer ${value === false
           ? "border border-[#727272] bg-[#FCDF9C] hover:bg-zinc-200/80 dark:border-zinc-100 dark:bg-zinc-100 dark:!text-[#1F1F1F] hover:!text-white"
           : "border border-[#727272] bg-white hover:bg-zinc-200/80 !text-zinc-600 hover:!text-white dark:border-zinc-700 dark:bg-zinc-800/80 dark:!text-zinc-300 dark:hover:bg-zinc-700/80"
           }`}
@@ -84,7 +84,7 @@ function AllowDenyButtons({
         aria-label={t("host_safety_allow_deny_yes").replace("{label}", label)}
         aria-pressed={value === true}
         onClick={() => onChange(true)}
-        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 cursor-pointer ${value === true
+        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition-all duration-300 cursor-pointer ${value === true
           ? "border border-[#727272] hover:bg-zinc-200/80 bg-[#FCDF9C] dark:border-zinc-100 dark:bg-zinc-100 dark:!text-[#1F1F1F] hover:!text-white"
           : "border border-[#727272] hover:bg-zinc-200/80 bg-white !text-zinc-600 hover:!text-white dark:border-zinc-700 dark:bg-zinc-800/80 dark:!text-zinc-300 dark:hover:bg-zinc-700/80"
           }`}
@@ -321,7 +321,7 @@ export function GuestsSafetyView({
       {/* --------------------------------------------------------- */}
       {/* MAIN VIEW: GUEST SAFETY 3 CATEGORY ROWS */}
       {/* --------------------------------------------------------- */}
-      <div className="space-y-6 animate-in fade-in max-w-xl mx-auto pb-12 font-sans">
+      <div className="w-full max-w-2xl space-y-6 animate-in fade-in pb-12 font-sans">
         {/* Header with Back Button */}
         <div className="space-y-2 border-b border-zinc-200/80 dark:border-zinc-800 pb-5">
           <div className="flex items-start gap-6">
@@ -414,7 +414,7 @@ export function GuestsSafetyView({
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-[#1f1f1f] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-[#727272] font-semibold text-base cursor-pointer p-1"
+                className="text-[#1f1f1f] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-[#727272] font-medium text-base cursor-pointer p-1"
               >
                 <CloseIcon className="size-6" />
               </button>
@@ -810,7 +810,7 @@ export function GuestsSafetyView({
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-[#727272] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-zinc-100 font-semibold text-base cursor-pointer p-1"
+                className="text-[#727272] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-zinc-100 font-medium text-base cursor-pointer p-1"
               >
                 ✕
               </button>
@@ -1078,7 +1078,7 @@ export function GuestsSafetyView({
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-[#727272] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-zinc-100 font-semibold text-base cursor-pointer p-1"
+                className="text-[#727272] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-zinc-100 font-medium text-base cursor-pointer p-1"
               >
                 ✕
               </button>
@@ -1513,12 +1513,12 @@ export function GuestsSafetyView({
             <button
               type="button"
               onClick={() => setLearnMoreTopic(null)}
-              className="absolute top-5 right-5 text-[#727272] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-zinc-100 font-semibold text-sm cursor-pointer p-1"
+              className="absolute top-5 right-5 text-[#727272] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-zinc-100 font-medium text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
-            <h3 className="font-semibold text-lg text-[#1F1F1F] dark:text-zinc-100">
+            <h3 className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100">
               {learnMoreTopic === "camera" && t("host_safety_learn_camera_title")}
               {learnMoreTopic === "noise" && t("host_safety_learn_noise_title")}
               {learnMoreTopic === "co" && t("host_safety_learn_co_title")}

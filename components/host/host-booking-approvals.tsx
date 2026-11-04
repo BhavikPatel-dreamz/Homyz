@@ -244,7 +244,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
           <button
             type="button"
             onClick={() => setIsBulkConfirmOpen(true)}
-            className="min-h-11 rounded-xl bg-zinc-100 px-4 text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-200"
+            className="min-h-11 rounded-xl bg-zinc-100 px-4 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-200"
           >
             {t("host_booking_approvals_approve_all", `Approve all (${bookings.length})`).replace("{count}", String(bookings.length))}
           </button>
@@ -263,7 +263,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
           <button
             type="button"
             onClick={() => setSuccessMessage(null)}
-            className="text-xs font-semibold uppercase tracking-wider text-emerald-700 hover:underline"
+            className="text-xs font-medium uppercase tracking-wider text-emerald-700 hover:underline"
           >
             {t("host_booking_approvals_dismiss", "Dismiss")}
           </button>
@@ -304,18 +304,18 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                       </div>
                     )}
                     {deadline.isExpired || booking.isExpired ? (
-                      <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-zinc-700/90 px-3 py-1 text-xs font-semibold text-white shadow-sm backdrop-blur-sm">
+                      <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-zinc-700/90 px-3 py-1 text-xs font-medium text-white shadow-sm backdrop-blur-sm">
                         {t("host_booking_approvals_expired", "Expired")}
                       </span>
                     ) : (
-                      <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-amber-500/90 px-3 py-1 text-xs font-semibold text-white shadow-sm backdrop-blur-sm">
+                      <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-amber-500/90 px-3 py-1 text-xs font-medium text-white shadow-sm backdrop-blur-sm">
                         {t("host_booking_approvals_pending", "Pending approval")}
                       </span>
                     )}
                   </div>
 
                   {/* Title & Location */}
-                  <h2 className="mt-4 truncate text-lg font-semibold text-zinc-900" title={booking.listing.title}>
+                  <h2 className="mt-4 truncate text-lg font-medium text-zinc-900" title={booking.listing.title}>
                     {booking.listing.title}
                   </h2>
                   {location && <p className="mt-0.5 truncate text-sm text-zinc-500">{location}</p>}
@@ -366,7 +366,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                   {booking.totalPrice != null && (
                     <div className="mt-3 flex items-center justify-between px-1">
                       <span className="text-xs text-zinc-500">{t("host_booking_approvals_total_amount", "Total amount")}</span>
-                      <span className="text-sm font-semibold text-zinc-900">
+                      <span className="text-sm font-medium text-zinc-900">
                         {formatMoney(booking.totalPrice, booking.currency || "SAR")}
                       </span>
                     </div>
@@ -378,7 +378,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                   <button
                     type="button"
                     onClick={() => openRequestDetails(booking)}
-                    className="w-full min-h-11 rounded-xl bg-[#1F1F1F] px-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-700"
+                    className="w-full min-h-11 rounded-xl bg-[#1F1F1F] px-4 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
                   >
                     {t("host_booking_approvals_view_request", "View request")}
                   </button>
@@ -402,15 +402,15 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
             <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-5">
               <div className="flex items-center gap-3">
                 {details?.isExpired ? (
-                  <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-600 border border-zinc-200">
+                  <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600 border border-zinc-200">
                     {t("host_booking_approvals_expired", "Expired")}
                   </span>
                 ) : (
-                  <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
+                  <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
                     {t("host_booking_approvals_pending", "Pending approval")}
                   </span>
                 )}
-                <h2 id="request-details-title" className="text-lg font-semibold text-zinc-900">
+                <h2 id="request-details-title" className="text-lg font-medium text-zinc-900">
                   {t("host_booking_approvals_details_title", "Booking Request Details")}
                 </h2>
               </div>
@@ -448,7 +448,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                     <div>
-                      <p className="font-semibold">{t("host_booking_approvals_payment_notice_title", "Payment Authorization Required")}</p>
+                      <p className="font-medium">{t("host_booking_approvals_payment_notice_title", "Payment Authorization Required")}</p>
                       <p className="mt-1 text-xs text-amber-800 leading-relaxed">
                         {t("host_booking_approvals_payment_notice_desc", "Payment authorization is required before this booking request can be accepted. Payment capture is currently blocked by provider.")}
                       </p>
@@ -464,7 +464,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                     <div role="status" className="rounded-2xl bg-zinc-100 p-4 border border-zinc-200 text-zinc-800">
                       <div className="flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full bg-zinc-500" />
-                        <p className="font-semibold text-sm">{t("host_booking_approvals_deadline_expired_title", "Response deadline expired")}</p>
+                        <p className="font-medium text-sm">{t("host_booking_approvals_deadline_expired_title", "Response deadline expired")}</p>
                       </div>
                       <p className="mt-1 text-xs text-zinc-600 leading-relaxed">
                         {t("host_booking_approvals_deadline_expired_desc", "The 24-hour response window for this booking request has passed. The temporary date hold has been released back to your calendar.")}
@@ -503,12 +503,12 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                           className="h-12 w-12 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-700">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-sm font-medium text-zinc-700">
                           {(details.guest.name || "G")[0].toUpperCase()}
                         </div>
                       )}
                       <div>
-                        <h4 className="font-semibold text-zinc-900">{details.guest.name || t("host_booking_approvals_guest", "Guest")}</h4>
+                        <h4 className="font-medium text-zinc-900">{details.guest.name || t("host_booking_approvals_guest", "Guest")}</h4>
                         <p className="text-xs text-zinc-500">
                           {t("host_booking_approvals_member_since", `Member since ${new Date(details.guest.createdAt).getFullYear()}`).replace("{year}", String(new Date(details.guest.createdAt).getFullYear()))}
                         </p>
@@ -518,14 +518,14 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                     {details.conversationId ? (
                       <Link
                         href={`/host/messages?conversationId=${details.conversationId}`}
-                        className="rounded-xl border border-zinc-200 px-3.5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+                        className="rounded-xl border border-zinc-200 px-3.5 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
                       >
                         {t("host_booking_approvals_message_guest", "Message guest")}
                       </Link>
                     ) : (
                       <Link
                         href="/host/messages"
-                        className="rounded-xl border border-zinc-200 px-3.5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+                        className="rounded-xl border border-zinc-200 px-3.5 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
                       >
                         {t("host_booking_approvals_message_guest", "Message guest")}
                       </Link>
@@ -534,19 +534,19 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
 
                   {/* Trip Details */}
                   <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">{t("host_booking_approvals_trip_details", "Trip details")}</h4>
+                    <h4 className="text-xs font-medium uppercase tracking-wider text-zinc-500 mb-2">{t("host_booking_approvals_trip_details", "Trip details")}</h4>
                     <dl className="grid grid-cols-2 sm:grid-cols-4 gap-3 rounded-2xl bg-zinc-50 p-4 text-sm">
                       <div>
                         <dt className="text-xs text-zinc-500">{t("host_booking_approvals_checkin", "Check-in")}</dt>
-                        <dd className="mt-1 font-semibold text-zinc-900">{formatBookingDate(details.startDate)}</dd>
+                        <dd className="mt-1 font-medium text-zinc-900">{formatBookingDate(details.startDate)}</dd>
                       </div>
                       <div>
                         <dt className="text-xs text-zinc-500">{t("host_booking_approvals_checkout", "Check-out")}</dt>
-                        <dd className="mt-1 font-semibold text-zinc-900">{formatBookingDate(details.endDate)}</dd>
+                        <dd className="mt-1 font-medium text-zinc-900">{formatBookingDate(details.endDate)}</dd>
                       </div>
                       <div>
                         <dt className="text-xs text-zinc-500">{t("host_booking_details_guests", "Guests")}</dt>
-                        <dd className="mt-1 font-semibold text-zinc-900">
+                        <dd className="mt-1 font-medium text-zinc-900">
                           {t("host_booking_approvals_guests", `${details.guests} ${details.guests === 1 ? "guest" : "guests"}`)
                             .replace("{count}", String(details.guests))
                             .replace("{unit}", details.guests === 1 ? t("host_booking_approvals_unit_guest", "guest") : t("host_booking_approvals_unit_guests", "guests"))}
@@ -554,7 +554,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                       </div>
                       <div>
                         <dt className="text-xs text-zinc-500">{t("host_booking_approvals_response_deadline", "Response deadline")}</dt>
-                        <dd className="mt-1 font-semibold text-amber-700">
+                        <dd className="mt-1 font-medium text-amber-700">
                           {formatDeadlineCountdown(details.createdAt).text}
                         </dd>
                       </div>
@@ -564,7 +564,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                   {/* Guest Message */}
                   {details.guestMessage && (
                     <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-blue-800">
+                      <p className="text-xs font-medium uppercase tracking-wider text-blue-800">
                         {t("host_booking_approvals_message_from_guest", "Message from guest")}
                       </p>
                       <p className="mt-2 text-sm text-zinc-800 italic whitespace-pre-wrap leading-relaxed">
@@ -575,7 +575,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
 
                   {/* Pricing Breakdown */}
                   <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">{t("host_booking_approvals_price_breakdown", "Price breakdown")}</h4>
+                    <h4 className="text-xs font-medium uppercase tracking-wider text-zinc-500 mb-2">{t("host_booking_approvals_price_breakdown", "Price breakdown")}</h4>
                     <div className="rounded-2xl border border-zinc-200 p-4 text-sm space-y-2.5">
                       {details.nightlyPrice != null && (
                         <div className="flex justify-between text-zinc-600 text-xs sm:text-sm">
@@ -583,9 +583,9 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                           <span>{formatMoney(details.nightlyPrice, details.currency)} / night</span>
                         </div>
                       )}
-                      <div className="flex justify-between items-center border-t border-zinc-200 pt-3 font-semibold text-zinc-900 text-base">
+                      <div className="flex justify-between items-center border-t border-zinc-200 pt-3 font-medium text-zinc-900 text-base">
                         <span>{t("host_booking_approvals_total_guest_pays", "Total (guest pays)")}</span>
-                        <span className="text-lg font-bold">{formatMoney(details.totalPrice, details.currency)}</span>
+                        <span className="text-lg font-medium">{formatMoney(details.totalPrice, details.currency)}</span>
                       </div>
                       <p className="text-[11px] text-zinc-500">
                         {t("host_booking_approvals_payment_status_deferred", "Payment status: Deferred (no online payment gateway required).")}
@@ -607,7 +607,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                     <button
                       type="button"
                       onClick={closeDetailsModal}
-                      className="min-h-11 rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white transition-colors hover:bg-zinc-700"
+                      className="min-h-11 rounded-xl bg-[#1F1F1F] px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
                     >
                       {t("host_booking_approvals_close", "Close")}
                     </button>
@@ -618,7 +618,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                       type="button"
                       disabled={isAccepting || isRejecting}
                       onClick={() => setIsRejectOpen(true)}
-                      className="min-h-11 rounded-xl border border-red-200 px-4 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                      className="min-h-11 rounded-xl border border-red-200 px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                     >
                       {t("host_booking_approvals_decline_request", "Decline request")}
                     </button>
@@ -628,7 +628,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                         type="button"
                         disabled={isAccepting || isRejecting}
                         onClick={closeDetailsModal}
-                        className="min-h-11 rounded-xl px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-200/60"
+                        className="min-h-11 rounded-xl px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-200/60"
                       >
                         {t("host_booking_approvals_close", "Close")}
                       </button>
@@ -636,7 +636,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                         type="button"
                         disabled={isAccepting || isRejecting}
                         onClick={handleAccept}
-                        className="min-h-11 rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 disabled:bg-zinc-400"
+                        className="min-h-11 rounded-xl bg-[#1F1F1F] px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:bg-zinc-400"
                       >
                         {isAccepting ? t("host_booking_approvals_validating", "Validating…") : t("host_booking_approvals_accept_request", "Accept request")}
                       </button>
@@ -658,7 +658,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
             aria-labelledby="reject-dialog-title"
             className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
           >
-            <h3 id="reject-dialog-title" className="text-xl font-semibold text-zinc-900">
+            <h3 id="reject-dialog-title" className="text-xl font-medium text-zinc-900">
               {t("host_booking_approvals_decline_modal_title", "Decline booking request?")}
             </h3>
             <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
@@ -685,7 +685,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                 type="button"
                 disabled={isRejecting}
                 onClick={() => setIsRejectOpen(false)}
-                className="min-h-11 rounded-xl px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-100"
+                className="min-h-11 rounded-xl px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
               >
                 {t("host_booking_approvals_cancel", "Cancel")}
               </button>
@@ -693,7 +693,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                 type="button"
                 disabled={isRejecting}
                 onClick={handleReject}
-                className="min-h-11 rounded-xl bg-red-600 px-5 text-sm font-semibold text-white hover:bg-red-700 disabled:bg-red-300"
+                className="min-h-11 rounded-xl bg-red-600 px-5 text-sm font-medium text-white hover:bg-red-700 disabled:bg-red-300"
               >
                 {isRejecting ? t("host_booking_approvals_declining", "Declining…") : t("host_booking_approvals_confirm_decline", "Confirm Decline")}
               </button>
@@ -711,7 +711,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
             aria-labelledby="approve-bookings-title"
             className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
           >
-            <h2 id="approve-bookings-title" className="text-xl font-semibold text-zinc-900">
+            <h2 id="approve-bookings-title" className="text-xl font-medium text-zinc-900">
               {t("host_booking_approvals_bulk_modal_title", "Approve all pending bookings?")}
             </h2>
             <p className="mt-3 text-sm leading-6 text-[#727272]">
@@ -722,7 +722,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                 type="button"
                 disabled={isBulkSubmitting}
                 onClick={() => setIsBulkConfirmOpen(false)}
-                className="min-h-11 rounded-xl px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-100"
+                className="min-h-11 rounded-xl px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
               >
                 {t("host_booking_approvals_cancel", "Cancel")}
               </button>
@@ -730,7 +730,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                 type="button"
                 disabled={isBulkSubmitting}
                 onClick={approveAll}
-                className="min-h-11 rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white hover:bg-zinc-700 disabled:bg-zinc-300"
+                className="min-h-11 rounded-xl bg-[#1F1F1F] px-5 text-sm font-medium text-white hover:bg-zinc-700 disabled:bg-zinc-300"
               >
                 {isBulkSubmitting ? t("host_booking_approvals_bulk_approving", "Approving…") : t("host_booking_approvals_bulk_approve_btn", "Approve all")}
               </button>
