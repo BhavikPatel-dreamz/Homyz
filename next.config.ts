@@ -45,6 +45,14 @@ const actionOrigins = extraOrigins();
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  typescript: {
+    // Type-checking is run out-of-band via `pnpm run typecheck` (and `build:ci`),
+    // not inside `next build`. On memory-constrained servers, type-checking
+    // Prisma 7's ~21MB generated client (6.3MB User.ts) in the build worker
+    // OOMs at the ~2GB default heap. Keeping it out of the production build makes
+    // the build fast and memory-light; CI still enforces types.
+    ignoreBuildErrors: true,
+  },
   allowedDevOrigins: actionOrigins,
   images: {
     dangerouslyAllowSVG: true,

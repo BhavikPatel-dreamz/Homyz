@@ -136,14 +136,18 @@ const createPrismaClient = () => {
   });
 };
 
-type PrismaWithDiagnostics = ReturnType<typeof createPrismaClient>;
-
+// Keep the exported client typed as the base PrismaClient. The runtime instance
+// is wrapped with a diagnostic query extension, but that extension changes the
+// transaction-client type enough to break callers annotated with
+// Prisma.TransactionClient. Casting back to the base client preserves the
+// familiar types while the extension continues to run at runtime.
 const globalForPrisma = globalThis as typeof globalThis & {
-  prisma?: PrismaWithDiagnostics;
+  prisma?: PrismaClient;
 };
 
 // Reuse one Prisma client and its pool across every Turbopack hot reload.
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+export const prisma =
+  (globalForPrisma.prisma ?? createPrismaClient()) as PrismaClient;
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
