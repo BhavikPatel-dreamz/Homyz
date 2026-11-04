@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { NextIntlClientProvider, createTranslator } from "next-intl";
+import { NextIntlClientProvider } from "next-intl";
 
 import enMessages from "@/messages/en.json";
 import esMessages from "@/messages/es.json";
@@ -85,26 +85,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, [applyLanguage]);
 
   const messages = MESSAGES[language] || MESSAGES.en;
-  const translator = createTranslator({
-    locale: language,
-    messages,
-    onError: () => {},
-  });
 
   const t = (
     key: TranslationKey,
     valuesOrFallback?: Record<string, string | number | boolean> | string,
     fallback?: string
   ): string => {
-    try {
-      const res = typeof valuesOrFallback === "object" && valuesOrFallback !== null
-        ? translator(key, valuesOrFallback as Parameters<typeof translator>[1])
-        : translator(key);
-      if (res && res !== key) {
-        return res;
-      }
-    } catch {}
-
     let text =
       messages[key] ||
       MESSAGES.en[key] ||
