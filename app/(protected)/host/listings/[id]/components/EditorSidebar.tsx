@@ -504,7 +504,7 @@ export function EditorSidebar({
             {mobileOpen && (
               <button
                 type="button"
-                aria-label="Return to listing form"
+                aria-label="Back to listings"
                 onClick={onMobileClose}
                 className="flex h-10 w-10 items-center justify-center text-[#1F1F1F] dark:text-zinc-100 lg:hidden"
               >

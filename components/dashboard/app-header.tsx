@@ -70,7 +70,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if ((event.target as Element)?.closest?.("[data-host-navigation-drawer-root]")) {
+      if ((event.target as Element)?.closest?.("[data-host-navigation-drawer-root], [data-host-mobile-nav]")) {
         return;
       }
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -130,6 +130,13 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   }, [hasUser, notificationAccountKey]);
 
   const isHostRoute = pathname?.startsWith("/host") ?? false;
+  useEffect(() => {
+    if (!isHostRoute) return;
+    window.dispatchEvent(
+      new CustomEvent("homyz:host-menu-state", { detail: { open: menuOpen } }),
+    );
+  }, [isHostRoute, menuOpen]);
+
   const logoHref = isHostRoute ? "/host/today" : "/";
   const logoAriaLabel = "Homyz home";
   const isListingRoute = showSearchBar === true;
@@ -250,15 +257,15 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   }
 
   return (
-    <header className="header sticky top-0 lg:z-99 z-40 w-full bg-white text-[#1F1F1F]" suppressHydrationWarning>
+    <header className="hidden header sticky top-0 lg:z-99 z-40 w-full bg-white text-[#1F1F1F] md:block" suppressHydrationWarning>
       <Container>
         <div
-          className={`header-wrapper relative flex min-h-[96px] w-full items-center justify-between border-b-0 py-0 md:min-h-0 md:py-4 lg:py-5 ${hasHeaderDivider ? "md:border-b md:border-[#727272]/20" : ""
+          className={`header-wrapper relative flex min-h-[80px] w-full items-center justify-between border-b-0 py-0 md:h-[88px] md:min-h-0 md:py-0 lg:h-[96px] ${hasHeaderDivider ? "md:border-b md:border-[#727272]/20" : ""
             }`}
         >
           <Link
             href={logoHref}
-            className="absolute left-0 top-1/2 -translate-y-1/2 block h-[68px] w-[66px] shrink-0 overflow-hidden transition-opacity hover:opacity-80 md:hidden"
+            className="absolute left-0 top-1/2 flex h-[56px] w-[56px] -translate-y-1/2 items-center justify-start shrink-0 transition-opacity hover:opacity-80 md:hidden"
             aria-label={logoAriaLabel}
           >
             <BrandLogo
@@ -267,7 +274,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               alt=""
               width={199}
               height={72}
-                  className="h-[49px] w-[57px] max-w-none"
+                  className="h-[32px] w-[37px] max-w-none"
                   priority
             />
           </Link>
@@ -279,15 +286,17 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                 className="shrink-0 transition-opacity hover:opacity-80 focus-visible:outline-none"
                 aria-label={logoAriaLabel}
               >
-                <BrandLogo
-                  src={branding.hostHeaderLogoUrl}
-                  fallbackSrc="/images/brand/homyz-logo-dark-v1.svg"
-                  alt="Homyz"
-                  width={160}
-                  height={58}
-                  className="h-auto w-[125px] md:w-[135px] lg:w-[145px]"
-                  priority
-                />
+                <span className="relative block aspect-[199/72] w-[125px] md:w-[135px] lg:w-[145px]">
+                  <BrandLogo
+                    src={branding.hostHeaderLogoUrl}
+                    fallbackSrc="/images/brand/homyz-logo-dark-v1.svg"
+                    alt="Homyz"
+                    width={199}
+                    height={72}
+                    className="h-full w-full object-contain"
+                    priority
+                  />
+                </span>
               </Link>
             </div>
           ) : (
@@ -310,23 +319,6 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
             </>
           ) : isHostRoute ? (
             <>
-              {/* Mobile Center Logo for <= 767px (matches Figma All listing pages_Homyz/mobile) */}
-              <Link
-                href={logoHref}
-                className="group absolute left-[53%] top-1/2 block -translate-x-1/2 -translate-y-1/2 md:hidden outline-0"
-                aria-label={logoAriaLabel}
-              >
-                <BrandLogo
-                  src={branding.mobileLogoUrl}
-                  fallbackSrc="/images/brand/homyz-logo-dark-v2.svg"
-                  alt="Stay like a homie."
-                  width={200}
-                  height={53}
-                  className="h-auto w-[149px] transition-transform"
-                  priority
-                />
-              </Link>
-
               {/* Primary Host Navigation Tabs (Today, Calendar, Listing, Messages) with sliding indicator */}
               <nav
                 aria-label={t("header_aria_host_navigation" as TranslationKey, "Host primary navigation")}

@@ -2,9 +2,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect, react-hooks/preserve-manual-memoization */
 
 import {
-  Fragment,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -16,7 +16,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { CalendarSettingsPanel } from "./calendar-settings-panel";
+import { CalendarSettingsPanel, MobileCalendarSettings } from "./calendar-settings-panel";
 import { updateListingAction, bulkUpdateAvailabilityAction } from "@/actions/host/listings";
 import type { ListingDTO } from "@/services/mappers";
 import { resolvePropertyCurrency } from "@/lib/currency";
@@ -41,11 +41,18 @@ import {
   differenceInBookingNights,
 } from "@/lib/booking/booking-date";
 import { buildHostCalendarReservationSpans } from "@/lib/booking/host-calendar-spans";
+import {
+  dateScopedCancellationPolicyOptions,
+  getCancellationPolicyForCheckIn,
+} from "@/lib/booking/date-cancellation-policy";
 import { getCalendarWeeks, getWeekBookingSegments } from "@/lib/booking/calendar-week-layout";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { CloseButton } from "@/components/ui/close-button";
+import { CloseIcon } from "@/components/ui/close-icon";
 import { calculatePriceTips } from "@/lib/pricing/price-tips";
+import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
 import {
+  resolveCalendarDatePricing,
   resolveCalendarMonthPricing,
   analyzeSelectionPromotion,
   type SelectionPromotionStats,
@@ -54,7 +61,7 @@ import {
 export interface HostCalendarWorkspaceProps extends HostWorkspaceProps {
   initialListingId?: string;
   initialMonth?: string; // YYYY-MM
-  initialView?: string; // "month" | "year"
+  initialView?: string; // "list" | "month" | "year"
 }
 
 export interface CalendarSelection {
@@ -62,6 +69,9 @@ export interface CalendarSelection {
   end: string | null; // YYYY-MM-DD
   isDragging?: boolean;
 }
+
+type MobileDateSelectionMode = "idle" | "single-date" | "multi-select" | "year-month";
+type CalendarView = "list" | "month" | "year";
 
 const monthName = (date: Date, locale = "en") =>
   date.toLocaleDateString(locale, { month: "long" });
@@ -174,8 +184,8 @@ function MobileViewSelector({
   view,
   onSelectView,
 }: {
-  view: "month" | "year";
-  onSelectView: (view: "month" | "year") => void;
+  view: CalendarView;
+  onSelectView: (view: CalendarView) => void;
 }) {
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 
@@ -189,7 +199,7 @@ function MobileViewSelector({
         aria-label="Calendar view"
         className="flex items-center gap-1.5 rounded-full bg-[#F3F4F5] px-3.5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#e9e9e9]"
       >
-        {view === "month" ? "Month" : "Year"}
+        {view === "list" ? "List" : view === "month" ? "Month" : "Year"}
         <svg
           className={`size-4 transition-transform ${isViewMenuOpen ? "rotate-180" : ""}`}
           viewBox="0 0 24 24"
@@ -210,7 +220,7 @@ function MobileViewSelector({
           aria-label="Calendar view switcher"
           className="absolute right-0 top-full z-20 mt-2 w-28 overflow-hidden rounded-xl border border-[#d7d7d7] bg-white p-1.5 shadow-xl"
         >
-          {(["month", "year"] as const).map((option) => {
+          {(["list", "month", "year"] as const).map((option) => {
             const isSelected = view === option;
             return (
               <button
@@ -251,8 +261,8 @@ function MobileCalendarIndex({
   selectedId: string;
   onSelect: (id: string) => void;
   onOpenCalendar: () => void;
-  view: "month" | "year";
-  onSelectView: (view: "month" | "year") => void;
+  view: CalendarView;
+  onSelectView: (view: CalendarView) => void;
 }) {
   const { t } = useLanguage();
   return (
@@ -327,7 +337,7 @@ function MobileYearCalendar({
   listing,
   bookingsByDate,
   blockedDatesSet,
-  onBack,
+  onOpenPropertySelector,
   onOpenSettings,
   onOpenMonth,
   view,
@@ -337,11 +347,11 @@ function MobileYearCalendar({
   listing: ListingDTO | null;
   bookingsByDate: Map<string, HostReservation[]>;
   blockedDatesSet: Set<string>;
-  onBack: () => void;
+  onOpenPropertySelector: () => void;
   onOpenSettings: () => void;
   onOpenMonth: (month: Date) => void;
-  view: "month" | "year";
-  onSelectView: (view: "month" | "year") => void;
+  view: CalendarView;
+  onSelectView: (view: CalendarView) => void;
 }) {
   const { t, language } = useLanguage();
   const months = Array.from(
@@ -369,43 +379,15 @@ function MobileYearCalendar({
 
   return (
     <section className="sm:hidden">
-      <div className="mb-8 flex items-center justify-between">
-        <h1>
-          {t("host_calendar_title", "Calendar")}
-        </h1>
-        <div className="flex items-center gap-2">
-          <MobileViewSelector view={view} onSelectView={onSelectView} />
-          <button
-            type="button"
-            onClick={onOpenSettings}
-            aria-label="Calendar settings"
-            className="flex size-10 items-center justify-center rounded-full bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-[#ebebeb] dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
-          >
-            <Image
-              src="/images/icons/filter-icon.svg"
-              alt=""
-              width={18}
-              height={18}
-              aria-hidden="true"
-            />
-          </button>
-        </div>
-      </div >
-
-      <div className="mb-8 flex items-center gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label={t("host_calendar_back_to_calendars", "Back to calendars")}
-          className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] text-[#555555] transition-colors bg-[#F3F4F5] hover:bg-[#f7f7f7] dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
-        >
-          <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="m15 18-6-6 6-6" />
-          </svg>
+      <div className="mb-6 flex min-w-0 items-center gap-2">
+        <button type="button" onClick={onOpenPropertySelector} aria-label={t("host_calendar_change_property_aria", "Change selected property")} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+          {listing && <PropertyPhoto listing={listing} className="size-8 shrink-0 rounded-full object-cover" />}
+          <span className="min-w-0"><span className="flex items-center gap-1"><span className="truncate text-[15px] font-semibold leading-5 text-[#1F1F1F] dark:text-zinc-100">{propertyLabel}</span><svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span><span className="block truncate text-xs leading-4 text-[#727272] dark:text-zinc-400">{location || t("host_calendar_location", "Location")}</span></span>
         </button>
-        <p className="truncate text-base font-normal text-[#1f1f1f] dark:text-zinc-100">
-          {propertyLabel}{location ? `, ${location}` : ""}
-        </p>
+        <MobileViewSelector view={view} onSelectView={onSelectView} />
+        <button type="button" onClick={onOpenSettings} aria-label={t("host_calendar_settings", "Calendar settings")} className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f3f3f3] text-[#1F1F1F] transition-colors hover:bg-[#e8e8e8] dark:bg-zinc-800 dark:text-zinc-100">
+          <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.28 2.28-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56v.09h-3.22v-.09A1.7 1.7 0 0 0 10.3 18.8a1.7 1.7 0 0 0-1.88.34l-.06.06-2.28-2.28.06-.06A1.7 1.7 0 0 0 6.48 15a1.7 1.7 0 0 0-1.56-1.03h-.09v-3.22h.09A1.7 1.7 0 0 0 6.48 9.72a1.7 1.7 0 0 0-.34-1.88l-.06-.06L8.36 5.5l.06.06a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1.03-1.56v-.09h3.22v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.28 2.28-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.56 1.03h.09v3.22h-.09A1.7 1.7 0 0 0 19.4 15Z" /></svg>
+        </button>
       </div>
 
       <div>
@@ -461,6 +443,404 @@ function MobileYearCalendar({
   );
 }
 
+function DesktopYearMonth({
+  month,
+  listing,
+  bookingsByDate,
+  blockedDatesSet,
+  customPricesMap,
+  selection,
+  onDayClick,
+  onOpenMonth,
+}: {
+  month: Date;
+  listing: ListingDTO | null;
+  bookingsByDate: Map<string, HostReservation[]>;
+  blockedDatesSet: Set<string>;
+  customPricesMap: Map<string, number>;
+  selection: CalendarSelection;
+  onDayClick: MonthGridProps["onDayClick"];
+  onOpenMonth: (month: Date) => void;
+}) {
+  const { formatPrice } = useCurrency();
+  const { t, language } = useLanguage();
+  const sourceCurrency = listing ? resolvePropertyCurrency(listing) : "SAR";
+  const monthIndex = month.getMonth();
+  const year = month.getFullYear();
+  const today = dateKey(new Date());
+  const selectedRange = getNormalizedRange(selection);
+  const pricing = useMemo(() => resolveCalendarMonthPricing({
+    year,
+    monthIndex,
+    listing: listing as Parameters<typeof resolveCalendarMonthPricing>[0]["listing"],
+  }), [year, monthIndex, listing]);
+  const weeks = useMemo(() => getCalendarWeeks(month), [month]);
+  const discounts = useMemo(() => {
+    const applied = [...pricing.values()].filter((day) => day.promotion?.applied);
+    return new Set(applied.map((day) => `${day.promotion?.key}:${day.promotion?.percentage}`)).size;
+  }, [pricing]);
+  const weekdays = useMemo(() => Array.from({ length: 7 }, (_, index) => (
+    new Date(2026, 0, 4 + index).toLocaleDateString(language || "en", { weekday: "narrow" })
+  )), [language]);
+
+  return (
+    <article className="min-w-0">
+      <div className="mb-2 flex min-h-10 items-start justify-between gap-2">
+        <button type="button" onClick={() => onOpenMonth(month)} className="text-left text-[17px] font-medium leading-5 text-[#222222] transition-colors hover:text-[#ff385c] dark:text-zinc-100">
+          {monthName(month, language)}
+        </button>
+        {discounts > 0 && <button type="button" onClick={() => onOpenMonth(month)} className="shrink-0 text-[11px] text-[#717171] underline underline-offset-2 hover:text-[#222222] dark:text-zinc-400">{discounts} {discounts === 1 ? t("host_calendar_discount", "discount") : t("host_calendar_discounts", "discounts")}</button>}
+      </div>
+      <div className="grid grid-cols-7 border-l border-t border-[#ececec] text-center text-[10px] font-medium text-[#717171] dark:border-zinc-800 dark:text-zinc-400">
+        {weekdays.map((weekday, index) => <span key={index} className="py-1.5">{weekday}</span>)}
+      </div>
+      <div className="grid grid-cols-7 border-l border-t border-[#ececec] dark:border-zinc-800">
+        {weeks.flatMap((week) => week.dates).map((date) => {
+          const key = dateKey(date);
+          const outside = date.getMonth() !== monthIndex;
+          if (outside) return <span key={key} className="min-h-12 border-b border-r border-[#ececec] bg-[#fafafa] dark:border-zinc-800 dark:bg-zinc-900/30" />;
+          const booking = bookingsByDate.get(key)?.[0];
+          const blocked = blockedDatesSet.has(key);
+          const past = key < today;
+          const selected = Boolean(selectedRange && key >= selectedRange.start && key <= selectedRange.end && !booking);
+          const dayPricing = pricing.get(key);
+          const price = dayPricing?.promotion?.applied ? dayPricing.promotion.promotionalPrice : dayPricing?.originalPrice ?? customPricesMap.get(key) ?? listing?.price ?? 0;
+          const tone = booking ? booking.status === "PENDING" ? "bg-amber-50 text-amber-950 dark:bg-amber-950/30 dark:text-amber-200" : "bg-rose-50 text-rose-950 dark:bg-rose-950/30 dark:text-rose-200"
+            : blocked ? "bg-[#f1f1f1] text-[#717171] dark:bg-zinc-900 dark:text-zinc-400"
+              : past ? "bg-[#fafafa] text-[#9a9a9a] dark:bg-zinc-900/40 dark:text-zinc-500"
+                : "bg-white text-[#222222] hover:bg-[#fafafa] dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-900";
+          return (
+            <button key={key} type="button" onClick={(event) => onDayClick(key, booking, undefined, event.shiftKey)} aria-pressed={selected} aria-label={`${key}: ${booking ? booking.status === "PENDING" ? t("host_calendar_status_pending", "Pending reservation") : t("host_calendar_status_booked", "Booked") : blocked ? t("host_cal_blocked_label", "Blocked") : t("host_calendar_status_available", "Available")}`} className={`relative min-h-12 border-b border-r border-[#ececec] p-1 text-left transition-colors dark:border-zinc-800 ${tone} ${selected ? "z-10 ring-2 ring-inset ring-[#222222] dark:ring-white" : ""}`}>
+              <span className="block text-[11px] font-medium leading-4">{date.getDate()}</span>
+              {booking ? <span className="mt-0.5 block truncate text-[8px] font-medium">{booking.status === "PENDING" ? t("host_calendar_status_pending", "Pending") : t("host_calendar_status_booked", "Booked")}</span>
+                : blocked ? <span className="mt-0.5 block text-[8px] line-through">{t("host_cal_blocked_label", "Blocked")}</span>
+                  : <span className={`mt-0.5 block truncate text-[9px] ${dayPricing?.promotion?.applied ? "font-medium text-emerald-700 dark:text-emerald-400" : ""}`}>{formatPrice(price, sourceCurrency, 0)}</span>}
+              {dayPricing?.promotion?.applied && <span className="block truncate text-[8px] text-[#8a8a8a] line-through">{formatPrice(dayPricing.originalPrice, sourceCurrency, 0)}</span>}
+            </button>
+          );
+        })}
+      </div>
+    </article>
+  );
+}
+
+/**
+ * A compact, data-backed calendar for the Year view.  It deliberately uses
+ * the same Map/Set indexes and date click handler as Month view, so dots are
+ * never a second calendar with a separate availability model.
+ */
+function YearDotCalendar({
+  startMonth,
+  listing,
+  bookingsByDate,
+  blockedDatesSet,
+  customPricesMap,
+  selection,
+  onDayClick,
+  onOpenMonth,
+  onReferenceMonth,
+  onSelectMonthRange,
+  mobileHeader,
+}: {
+  startMonth: Date;
+  listing: ListingDTO | null;
+  bookingsByDate: Map<string, HostReservation[]>;
+  blockedDatesSet: Set<string>;
+  customPricesMap: Map<string, number>;
+  selection: CalendarSelection;
+  onDayClick: MonthGridProps["onDayClick"];
+  onOpenMonth: (month: Date) => void;
+  onReferenceMonth: (month: Date) => void;
+  onSelectMonthRange?: (month: Date) => void;
+  mobileHeader?: {
+    onOpenPropertySelector: () => void;
+    onOpenSettings: () => void;
+    view: CalendarView;
+    onSelectView: (view: CalendarView) => void;
+  };
+}) {
+  const { t, language } = useLanguage();
+  const MAX_YEAR_VIEW_MONTHS = 48;
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const prependHeightRef = useRef<number | null>(null);
+  const trimmedTopHeightRef = useRef(0);
+  const yearElementsRef = useRef(new Map<number, HTMLElement>());
+  const scrollFrameRef = useRef<number | null>(null);
+  const extendingRef = useRef(false);
+  const initialMonths = useCallback((anchor: Date) => (
+    Array.from({ length: 27 }, (_, index) => new Date(anchor.getFullYear(), anchor.getMonth() - 3 + index, 1))
+  ), []);
+  const [months, setMonths] = useState<Date[]>(() => initialMonths(startMonth));
+  const anchorKey = formatMonthKey(startMonth);
+  const previousAnchorKey = useRef(anchorKey);
+  const today = dateKey(new Date());
+  const selectedRange = getNormalizedRange(selection);
+  const isWholeMobileMonthSelected = Boolean(mobileHeader && selectedRange && (() => {
+    const start = new Date(`${selectedRange.start}T12:00:00Z`);
+    const end = new Date(`${selectedRange.end}T12:00:00Z`);
+    return start.getUTCDate() === 1 && end.getUTCDate() === new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() + 1, 0)).getUTCDate() && start.getUTCFullYear() === end.getUTCFullYear() && start.getUTCMonth() === end.getUTCMonth();
+  })());
+  const propertyLabel = listing?.title || t("host_calendar_property_name", "Property name");
+  const location = [listing?.district, listing?.city].filter(Boolean).join(", ") || listing?.country;
+
+  const groups = useMemo(() => months.reduce<Array<{ year: number; months: Date[] }>>((current, calendarMonth) => {
+    const year = calendarMonth.getFullYear();
+    const lastGroup = current.at(-1);
+    if (lastGroup?.year === year) lastGroup.months.push(calendarMonth);
+    else current.push({ year, months: [calendarMonth] });
+    return current;
+  }, []), [months]);
+
+  // Pricing is one of the most expensive pieces of a mini calendar. Resolve it
+  // once for each retained month, then keep selection/settings re-renders to
+  // O(1) set lookups for every dot.
+  const promotionDateKeys = useMemo(() => {
+    const promoted = new Set<string>();
+    if (!listing) return promoted;
+    for (const calendarMonth of months) {
+      const pricing = resolveCalendarMonthPricing({
+        year: calendarMonth.getFullYear(),
+        monthIndex: calendarMonth.getMonth(),
+        listing: listing as Parameters<typeof resolveCalendarMonthPricing>[0]["listing"],
+      });
+      for (const [key, day] of pricing) {
+        if (day.promotion?.applied) promoted.add(key);
+      }
+    }
+    return promoted;
+  }, [listing, months]);
+
+  useEffect(() => {
+    if (previousAnchorKey.current === anchorKey) return;
+    previousAnchorKey.current = anchorKey;
+    trimmedTopHeightRef.current = 0;
+    setMonths(initialMonths(startMonth));
+    requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: 0, behavior: "auto" }));
+  }, [anchorKey, initialMonths, startMonth]);
+
+  useLayoutEffect(() => {
+    const previousHeight = prependHeightRef.current;
+    const element = scrollRef.current;
+    if (previousHeight !== null && element) {
+      element.scrollTop += element.scrollHeight - previousHeight;
+      prependHeightRef.current = null;
+    }
+    if (trimmedTopHeightRef.current && element) {
+      element.scrollTop = Math.max(0, element.scrollTop - trimmedTopHeightRef.current);
+      trimmedTopHeightRef.current = 0;
+    }
+    extendingRef.current = false;
+  }, [months]);
+
+  const extend = useCallback((direction: "before" | "after") => {
+    const element = scrollRef.current;
+    const first = months[0];
+    const last = months.at(-1);
+    if (!element || !first || !last || extendingRef.current) return;
+    const year = direction === "before" ? first.getFullYear() - 1 : last.getFullYear() + 1;
+    if (year < 1900 || year > 2100) return;
+    extendingRef.current = true;
+    const additions = Array.from({ length: 12 }, (_, monthIndex) => new Date(year, monthIndex, 1));
+    let nextMonths = direction === "before" ? [...additions, ...months] : [...months, ...additions];
+    let removedTopHeight = 0;
+    let removedBottomHeight = 0;
+
+    while (nextMonths.length > MAX_YEAR_VIEW_MONTHS) {
+      if (direction === "after") {
+        const oldestYear = nextMonths[0]?.getFullYear();
+        const count = nextMonths.findIndex((candidate) => candidate.getFullYear() !== oldestYear);
+        const removeCount = count === -1 ? nextMonths.length : count;
+        removedTopHeight += oldestYear === undefined ? 0 : yearElementsRef.current.get(oldestYear)?.offsetHeight || 0;
+        nextMonths = nextMonths.slice(removeCount);
+      } else {
+        const newestYear = nextMonths.at(-1)?.getFullYear();
+        const firstIndexOfNewestYear = nextMonths.findIndex((candidate) => candidate.getFullYear() === newestYear);
+        removedBottomHeight += newestYear === undefined ? 0 : yearElementsRef.current.get(newestYear)?.offsetHeight || 0;
+        nextMonths = nextMonths.slice(0, firstIndexOfNewestYear);
+      }
+    }
+
+    if (direction === "before") {
+      // The tail was removed outside the viewport. Discount it from the old
+      // height so the prepend correction preserves the visible month exactly.
+      prependHeightRef.current = element.scrollHeight - removedBottomHeight;
+    } else if (removedTopHeight) {
+      trimmedTopHeightRef.current = removedTopHeight;
+    }
+    setMonths(nextMonths);
+  }, [months]);
+
+  const handleScroll = useCallback(() => {
+    if (scrollFrameRef.current !== null) return;
+    scrollFrameRef.current = requestAnimationFrame(() => {
+      scrollFrameRef.current = null;
+      const element = scrollRef.current;
+      if (!element || extendingRef.current) return;
+      if (element.scrollTop < 180) extend("before");
+      else if (element.scrollHeight - element.scrollTop - element.clientHeight < 220) extend("after");
+    });
+  }, [extend]);
+
+  useEffect(() => () => {
+    if (scrollFrameRef.current !== null) cancelAnimationFrame(scrollFrameRef.current);
+  }, []);
+
+  const dotState = (key: string, booking?: HostReservation) => {
+    const selected = Boolean(!isWholeMobileMonthSelected && selectedRange && key >= selectedRange.start && key <= selectedRange.end);
+    const blocked = blockedDatesSet.has(key);
+    const isPast = key < today;
+    const customPrice = customPricesMap.has(key);
+    const promotion = promotionDateKeys.has(key);
+    const status = booking
+      ? booking.status === "PENDING" ? t("host_calendar_status_pending", "Pending reservation") : t("host_calendar_status_booked", "Booked")
+      : blocked ? t("host_cal_blocked_label", "Blocked")
+        : isPast ? t("host_calendar_status_past", "Past") : t("host_calendar_status_available", "Available");
+    const fill = booking
+      ? booking.status === "PENDING" ? "bg-amber-500" : "bg-[#ff385c]"
+      : blocked ? "bg-[#717171]"
+        : isPast ? "bg-[#c7c7c7] dark:bg-zinc-600" : "bg-[#222222] dark:bg-zinc-100";
+    const marker = selected ? "ring-2 ring-[#ff385c] ring-offset-2 dark:ring-offset-zinc-950"
+      : customPrice ? "ring-1 ring-[#6876d8] ring-offset-1 dark:ring-offset-zinc-950"
+        : promotion ? "ring-1 ring-emerald-500 ring-offset-1 dark:ring-offset-zinc-950" : "";
+    return { status, className: `${fill} ${marker}`, customPrice, promotion };
+  };
+
+  return (
+    <section className={mobileHeader ? "relative sm:hidden" : "relative h-full"}>
+      {mobileHeader && (
+        <div className="sticky top-0 z-20 mb-3 flex min-w-0 items-center gap-2 bg-white pb-3 pt-1 dark:bg-zinc-950">
+          <button type="button" onClick={mobileHeader.onOpenPropertySelector} aria-label={t("host_calendar_change_property_aria", "Change selected property")} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+            {listing && <PropertyPhoto listing={listing} className="size-8 shrink-0 rounded-full object-cover" />}
+            <span className="min-w-0"><span className="flex items-center gap-1"><span className="truncate text-[15px] font-semibold text-[#1F1F1F] dark:text-zinc-100">{propertyLabel}</span><svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span><span className="block truncate text-xs text-[#727272] dark:text-zinc-400">{location || t("host_calendar_location", "Location")}</span></span>
+          </button>
+          <MobileViewSelector view={mobileHeader.view} onSelectView={mobileHeader.onSelectView} />
+          <button type="button" onClick={mobileHeader.onOpenSettings} aria-label={t("host_calendar_settings", "Calendar settings")} className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f3f3f3] text-lg dark:bg-zinc-800" aria-hidden="false">⚙</button>
+        </div>
+      )}
+      <div ref={scrollRef} onScroll={handleScroll} className={`relative overflow-y-auto overscroll-contain [scrollbar-width:thin] ${mobileHeader ? `h-[calc(100dvh-158px)] ${isWholeMobileMonthSelected ? "pb-[calc(328px+env(safe-area-inset-bottom))]" : "pb-[calc(108px+env(safe-area-inset-bottom))]"}` : "h-full min-h-[520px] pb-8"}`}>
+        {groups.map((group) => (
+          <section key={group.year} ref={(element) => {
+            if (element) yearElementsRef.current.set(group.year, element);
+            else yearElementsRef.current.delete(group.year);
+          }} className="pt-1 first:pt-0">
+            <h2 className="sticky top-0 z-10 mb-7 bg-white/95 py-2 text-[22px] font-semibold tracking-[-0.03em] text-[#222222] backdrop-blur-sm dark:bg-zinc-950/95 dark:text-zinc-100">{group.year}</h2>
+            <div className={mobileHeader ? "grid grid-cols-3 items-start gap-x-1 gap-y-8" : "grid grid-cols-2 items-start gap-x-7 gap-y-10 lg:grid-cols-3 xl:gap-x-9"}>
+              {group.months.map((calendarMonth) => {
+                const year = calendarMonth.getFullYear();
+                const monthIndex = calendarMonth.getMonth();
+                const days = new Date(year, monthIndex + 1, 0).getDate();
+                const offset = new Date(year, monthIndex, 1).getDay();
+                const monthStart = dateKey(new Date(year, monthIndex, 1));
+                const monthEnd = dateKey(new Date(year, monthIndex, days));
+                const isSelectedMonth = Boolean(mobileHeader && selectedRange?.start === monthStart && selectedRange.end === monthEnd);
+                if (!mobileHeader) {
+                  return <DesktopYearMonth key={formatMonthKey(calendarMonth)} month={calendarMonth} listing={listing} bookingsByDate={bookingsByDate} blockedDatesSet={blockedDatesSet} customPricesMap={customPricesMap} selection={selection} onDayClick={onDayClick} onOpenMonth={onOpenMonth} />;
+                }
+                return (
+                  <article
+                    key={formatMonthKey(calendarMonth)}
+                    onClick={() => onSelectMonthRange ? onSelectMonthRange(calendarMonth) : onOpenMonth(calendarMonth)}
+                    className={`w-full max-w-[94px] cursor-pointer rounded-[12px] p-1 transition-[border,box-shadow,transform] active:scale-[0.98] ${isSelectedMonth ? "border-2 border-[#222222] shadow-[0_2px_6px_rgba(0,0,0,0.08)] dark:border-white" : "border-2 border-transparent"}`}
+                  >
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        if (onSelectMonthRange) onSelectMonthRange(calendarMonth);
+                        else onOpenMonth(calendarMonth);
+                      }}
+                      className="mb-4 text-left text-[16px] font-medium leading-5 text-[#222222] transition-colors hover:text-[#ff385c] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ff385c] dark:text-zinc-100"
+                    >
+                      {monthName(calendarMonth, language).slice(0, 3)}
+                    </button>
+                    <div className="grid grid-cols-7 place-items-center gap-y-[6px]">
+                      {Array.from({ length: 42 }, (_, cell) => {
+                        const day = cell - offset + 1;
+                        if (day < 1 || day > days) return <span key={cell} className="size-[3px]" aria-hidden="true" />;
+                        const key = dateKey(new Date(year, monthIndex, day));
+                        const booking = bookingsByDate.get(key)?.[0];
+                        const dot = dotState(key, booking);
+                        const pricingLabel = dot.customPrice ? ` · ${t("host_calendar_custom_price", "Custom price")}` : dot.promotion ? ` · ${t("host_calendar_promo", "Promotion")}` : "";
+                        return <button key={cell} type="button" onClick={(event) => {
+                          event.stopPropagation();
+                          onDayClick(key, booking);
+                        }} title={`${key}: ${dot.status}${pricingLabel}`} aria-label={`${key}: ${dot.status}${pricingLabel}`} className={`size-[3px] rounded-full transition-transform hover:scale-[2] focus-visible:scale-[2] focus-visible:outline-none min-[375px]:size-[3.5px] sm:size-1 motion-reduce:transition-none ${dot.className}`} />;
+                      })}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+        <p className="sr-only" aria-live="polite">{t("host_calendar_year_dot_legend", "Dark dots are available; pink dots are booked; amber dots are pending; grey dots are blocked or past.")}</p>
+      </div>
+      <button type="button" onClick={() => onReferenceMonth(new Date(new Date().getFullYear(), new Date().getMonth(), 1))} aria-label={t("host_calendar_jump_current_month", "Jump to current month")} className={`absolute right-3 z-20 flex size-12 items-center justify-center rounded-full bg-white text-[#222222] shadow-[0_4px_16px_rgba(0,0,0,0.16)] transition-transform hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ff385c] dark:bg-zinc-800 dark:text-zinc-100 motion-reduce:transition-none ${mobileHeader ? "bottom-[calc(84px+env(safe-area-inset-bottom))]" : "bottom-4"}`}><svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5" /><path d="m5 12 7-7 7 7" /></svg></button>
+    </section>
+  );
+}
+
+function MobileListCalendar({
+  month,
+  listing,
+  bookingsByDate,
+  blockedDatesSet,
+  onDayClick,
+}: {
+  month: Date;
+  listing: ListingDTO;
+  bookingsByDate: Map<string, HostReservation[]>;
+  blockedDatesSet: Set<string>;
+  onDayClick: MonthGridProps["onDayClick"];
+}) {
+  const { formatPrice } = useCurrency();
+  const { t, language } = useLanguage();
+  const sourceCurrency = resolvePropertyCurrency(listing);
+  const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+
+  return (
+    <div className="space-y-2 pb-4" aria-label={t("host_calendar_view_list", "Calendar list") }>
+      {Array.from({ length: days }, (_, index) => {
+        const date = new Date(month.getFullYear(), month.getMonth(), index + 1);
+        const key = dateKey(date);
+        const booking = bookingsByDate.get(key)?.[0];
+        const blocked = blockedDatesSet.has(key);
+        const pricing = resolveCalendarDatePricing({
+          dateKey: key,
+          listing: listing as Parameters<typeof resolveCalendarDatePricing>[0]["listing"],
+        });
+        const price = pricing.promotion?.promotionalPrice ?? pricing.originalPrice;
+        const status = booking
+          ? t("host_calendar_status_reserved", { count: 1 }, "Booked")
+          : blocked
+            ? t("host_cal_blocked_label", "Blocked")
+            : t("host_calendar_status_available", { count: 1 }, "Available");
+        return (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onDayClick(key, booking)}
+            className="flex w-full items-center gap-3 rounded-2xl border border-[#e5e5e5] bg-white px-4 py-3 text-left transition-colors hover:bg-[#fafafa] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+          >
+            <span className="flex size-11 shrink-0 flex-col items-center justify-center rounded-xl bg-[#f5f5f5] text-sm font-semibold dark:bg-zinc-800">
+              <span>{date.getDate()}</span>
+              <span className="text-[10px] font-normal text-[#727272]">{date.toLocaleDateString(language || "en", { weekday: "short" })}</span>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium">{status}</span>
+              <span className="mt-0.5 block truncate text-xs text-[#727272]">{booking ? booking.guestName : pricing.promotion?.applied ? `${pricing.promotion.percentage}% ${t("host_calendar_promo", "promotion")}` : pricing.rateSource === "WEEKEND" ? t("host_calendar_source_weekend", "Weekend rate") : t("host_calendar_source_base", "Base price")}</span>
+            </span>
+            <span className="text-right">
+              <span className="block text-sm font-semibold">{formatPrice(price, sourceCurrency, 2)}</span>
+              {pricing.promotion?.applied && <span className="block text-[11px] text-[#727272] line-through">{formatPrice(pricing.originalPrice, sourceCurrency, 2)}</span>}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function MonthGrid({
   month,
   listing,
@@ -478,9 +858,15 @@ function MonthGrid({
   onDayPointerEnter,
   onKeyDown,
 }: MonthGridProps) {
-  const { formatPrice: formatMoney } = useCurrency();
+  const { formatPrice: formatMoney, convert, displayCurrency } = useCurrency();
   const { t, language } = useLanguage();
   const sourceCurrency = resolvePropertyCurrency(listing);
+  const compactPriceFormatter = useMemo(
+    () => new Intl.NumberFormat(language || "en", { notation: "compact", maximumFractionDigits: 2 }),
+    [language],
+  );
+  const formatCompactPrice = (amountMinorUnits: number) =>
+    compactPriceFormatter.format(convert(amountMinorUnits, sourceCurrency) / 100);
 
   const year = month.getFullYear();
   const monthIndex = month.getMonth();
@@ -524,7 +910,7 @@ function MonthGrid({
     <div className="min-w-0 select-none">
       {/* Weekday headers */}
       <div
-        className={`mb-3 grid grid-cols-7 border-b border-b-[#dddddd] py-3 text-center text-base font-medium text-[#1F1F1F] dark:border-b-zinc-800 dark:text-zinc-300 ${compact ? "max-sm:hidden text-[12px]" : ""
+        className={`mb-2 grid grid-cols-7 border-b border-b-[#dddddd] py-2 text-center text-[12px] font-medium text-[#1F1F1F] dark:border-b-zinc-800 dark:text-zinc-300 sm:mb-3 sm:py-3 sm:text-base ${compact ? "max-sm:hidden text-[12px]" : ""
           }`}
       >
         {localizedWeekdays.map((d, i) => (
@@ -536,7 +922,7 @@ function MonthGrid({
       </div>
 
       {/* Every week owns the same seven-column coordinate system as its booking bars. */}
-      <div className="space-y-2">
+      <div className="space-y-1.5 sm:space-y-2">
         {calendarWeeks.map((week, weekIndex) => {
           const weekSegments = bookingSegmentsByWeek[weekIndex];
           const bookingLaneCount = isAllListings
@@ -547,8 +933,12 @@ function MonthGrid({
           } as CSSProperties;
 
           return (
-            <div key={week.key} className="relative" style={rowStyle}>
-              <div className="grid min-w-0 grid-cols-7 gap-1.5 sm:gap-2">
+            <div
+              key={week.key}
+              className="relative"
+              style={rowStyle}
+            >
+              <div className="grid min-w-0 grid-cols-7 gap-1 sm:gap-2">
                 {week.dates.map((date) => {
           const dayNum = date.getDate();
           const key = dateKey(date);
@@ -564,10 +954,10 @@ function MonthGrid({
               <div
                 key={key}
                 aria-hidden="true"
-                className={`min-w-0 rounded-[14px] border border-[#ececef] bg-[#fafafa] p-2.5 text-left opacity-55 dark:border-zinc-800 dark:bg-zinc-900 ${compact ? "min-h-[48px] sm:min-h-[68px]" : "min-h-[76px] sm:min-h-[102px] lg:min-h-[calc(104px+var(--calendar-booking-lanes)*36px)]"}`}
+                className={`min-w-0 rounded-[14px] border border-[#ececef] bg-[#fafafa] p-2.5 text-left opacity-55 max-sm:p-1 max-sm:text-center dark:border-zinc-800 dark:bg-zinc-900 ${compact ? "min-h-[48px] sm:min-h-[68px]" : "min-h-[76px] sm:min-h-[102px] lg:min-h-[calc(104px+var(--calendar-booking-lanes)*36px)]"}`}
               >
                 <span className="block text-xs font-medium text-[#737780]">{dayNum}</span>
-                {!compact && <span className="mt-2 block text-[10px] font-medium text-[#858991] sm:text-sm">{formatMoney(adjacentRate, sourceCurrency, 2)}</span>}
+                {!compact && <span className="mt-2 hidden text-[10px] font-medium text-[#858991] sm:block sm:text-sm">{formatMoney(adjacentRate, sourceCurrency, 2)}</span>}
               </div>
             );
           }
@@ -579,9 +969,8 @@ function MonthGrid({
           const isSelected =
             !isAllListings &&
             !primaryReservation &&
-            normalizedRange !== null &&
-            key >= normalizedRange.start &&
-            key <= normalizedRange.end;
+            ((normalizedRange !== null && key >= normalizedRange.start && key <= normalizedRange.end) ||
+              (selection.start === key && selection.end === null));
           const isRangeStart =
             isSelected && key === normalizedRange?.start;
           const isRangeEnd = isSelected && key === normalizedRange?.end;
@@ -738,14 +1127,14 @@ function MonthGrid({
               onKeyDown={(e) => onKeyDown?.(key, e)}
               aria-label={`${key}, ${statusDescription}, ${promo?.applied ? `${formatMoney(promo.promotionalPrice, sourceCurrency, 2)} (${promo.percentage}% promo, regular ${formatMoney(rate, sourceCurrency, 2)})` : formatMoney(rate, sourceCurrency, 2)}${isSelected ? ", selected" : ""}`}
               aria-pressed={isSelected}
-              className={`group relative flex min-w-0 self-stretch flex-col items-start border text-left transition-all duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 ${cellRoundingClass} ${cellBgClass} ${compact
+              className={`group relative flex min-w-0 self-stretch flex-col items-start border text-left transition-all duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 max-sm:items-center max-sm:text-center ${cellRoundingClass} ${cellBgClass} ${compact
                 ? "min-h-[48px] p-1 sm:min-h-[68px] sm:py-1.5"
-                : "min-h-[76px] p-2 sm:min-h-[102px] sm:p-2.5 lg:min-h-[calc(104px+var(--calendar-booking-lanes)*36px)] lg:p-3"
+                  : "min-h-[76px] p-2 max-sm:min-h-[72px] max-sm:p-1 sm:min-h-[102px] sm:p-2.5 lg:min-h-[calc(104px+var(--calendar-booking-lanes)*36px)] lg:p-3"
                 }`}
             >
-              <div className="flex min-h-0 w-full flex-1 flex-col items-start lg:pb-[calc(var(--calendar-booking-lanes)*36px)]">
+              <div className="flex min-h-0 w-full flex-1 flex-col items-start max-sm:items-center lg:pb-[calc(var(--calendar-booking-lanes)*36px)]">
                 {/* Day number */}
-                <div className="flex w-full items-center justify-start px-1">
+                <div className="flex w-full items-center justify-start px-1 max-sm:justify-center">
                   <span
                     className={`flex items-center justify-center rounded-full font-medium transition-transform ${compact
                       ? "size-5 max-[360px]:text-[9px] text-xs sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px]"
@@ -761,16 +1150,25 @@ function MonthGrid({
                 </div>
 
                 {/* Price / Status */}
-                <div className="mt-1 flex min-h-8 w-full flex-1 flex-col items-start justify-start px-0.5 text-left">
+                <div className={`mt-1 flex min-h-8 w-full flex-1 flex-col items-start justify-start px-0.5 text-left max-sm:items-center max-sm:text-center ${!compact && !isAllListings && weekSegments.length > 0 ? "max-lg:pt-[calc(var(--calendar-booking-lanes)*18px)]" : ""}`}>
                   {blocked ? (
-                    <span className="text-xs text-[#727272] line-through font-medium">{t("host_cal_blocked_label", "Blocked")}</span>
+                    <>
+                      <span className="hidden text-xs font-medium text-[#727272] line-through sm:block">{t("host_cal_blocked_label", "Blocked")}</span>
+                      <span className="text-[12px] font-medium leading-none text-[#727272] sm:hidden" aria-hidden="true" title={t("host_cal_blocked_label", "Blocked")}>×</span>
+                    </>
                   ) : primaryReservation ? (
                     <span className={`font-['Poppins'] leading-normal tracking-normal text-[#1F1F1F] dark:text-zinc-100 ${compact
                       ? "mt-0.5 block text-[12px] font-medium"
-                      : "text-[10px] lg:text-[16px] font-medium"
-                      }`}>{formatMoney(rate, sourceCurrency, 2)}</span>
+                      : "text-[10px] font-medium lg:text-[16px]"
+                      }`}>
+                      {!compact && <span className="mr-0.5 text-[8px] font-medium text-rose-700 sm:hidden" aria-hidden="true" title={t("host_calendar_status_booked", "Booked")}>B</span>}
+                      {compact ? formatMoney(rate, sourceCurrency, 2) : <><span className="sm:hidden">{formatCompactPrice(rate)}</span><span className="hidden sm:inline">{formatMoney(rate, sourceCurrency, 2)}</span></>}
+                    </span>
                   ) : isPast ? (
-                    <span className="sm:text-sm text-[10px] leading-tight text-[#727272] line-through font-medium">{formatMoney(rate, sourceCurrency, 2)}</span>
+                    <span className="text-[10px] font-medium leading-tight text-[#727272] line-through sm:text-sm">
+                      <span className="sm:hidden">{formatCompactPrice(rate)}</span>
+                      <span className="hidden sm:inline">{formatMoney(rate, sourceCurrency, 2)}</span>
+                    </span>
                   ) : promo?.applied ? (
                     compact ? (
                       <>
@@ -783,18 +1181,20 @@ function MonthGrid({
                       </>
                     ) : (
                       <>
-                        <span className="text-[10px] sm:text-xs text-[#727272] dark:text-[#727272] line-through leading-none block mb-1">
+                        <span className="hidden text-[10px] leading-none text-[#727272] line-through sm:mb-1 sm:block sm:text-xs dark:text-[#727272]">
                           {formatMoney(dayPricing?.originalPrice ?? rate, sourceCurrency, 2)}
                         </span>
-                        <span className="text-[10px] sm:text-[14px] font-medium text-emerald-700 dark:text-emerald-400 leading-tight block">
-                          {formatMoney(promo.promotionalPrice, sourceCurrency, 2)}
+                        <span className="block text-[10px] font-medium leading-tight text-emerald-700 dark:text-emerald-400 sm:text-[14px]">
+                          <span className="sm:hidden">{formatCompactPrice(promo.promotionalPrice)}</span>
+                          <span className="hidden sm:inline">{formatMoney(promo.promotionalPrice, sourceCurrency, 2)}</span>
                         </span>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <span className="rounded-sm border border-[#a7e9ce] bg-emerald-100 px-1.5 py-1 text-[8px] font-medium capitalize leading-tight tracking-tight text-[#08785d] dark:border-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 sm:rounded-md sm:text-[10px]">
+                        <div className="mt-0.5 flex items-center gap-1 max-sm:justify-center">
+                          <span className="hidden rounded-sm border border-[#a7e9ce] bg-emerald-100 px-1.5 py-1 text-[8px] font-medium capitalize leading-tight tracking-tight text-[#08785d] dark:border-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 sm:inline sm:rounded-md sm:text-[10px]">
                             {promo.percentage}% promo
                           </span>
+                          <span className="rounded-sm border border-[#a7e9ce] bg-[#d9f7eb] px-1 py-0.5 text-[9px] font-medium leading-tight text-[#08785d] sm:hidden">-{promo.percentage}%</span>
                           {customPrice !== null && (
-                            <span className="text-[9px] font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1 rounded">
+                            <span className="hidden text-[9px] font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1 rounded sm:inline">
                               custom
                             </span>
                           )}
@@ -818,10 +1218,12 @@ function MonthGrid({
                                 : "text-[#1F1F1F] dark:text-zinc-100"
                           }`}
                       >
-                        {formatMoney(rate, sourceCurrency, 2)}
+                        {compact
+                          ? formatMoney(rate, sourceCurrency, 2)
+                          : <><span className="sm:hidden">{formatCompactPrice(rate)}</span><span className="hidden sm:inline">{formatMoney(rate, sourceCurrency, 2)}</span></>}
                       </span>
                       {customPrice !== null && (
-                        <span className="text-[9px] font-medium text-[#1f1f1f] dark:text-amber-300 bg-[#FCDF9C] dark:bg-amber-950/60 px-1.5 py-1 rounded mt-0.5 border border-[#EBA900] leading-tight capitalize">
+                        <span className="mt-0.5 rounded border border-[#EBA900] bg-[#FCDF9C] px-1.5 py-1 text-[9px] font-medium capitalize leading-tight text-[#1f1f1f] dark:bg-amber-950/60 dark:text-amber-300">
                           custom
                         </span>
                       )}
@@ -834,6 +1236,47 @@ function MonthGrid({
           );
         })}
               </div>
+
+              {!compact && !isAllListings && weekSegments.length > 0 && (
+                <div
+                  className="pointer-events-none absolute inset-x-0 top-[32px] z-20 grid grid-cols-7 gap-1 sm:gap-2 lg:hidden"
+                  style={{ gridTemplateRows: `repeat(${bookingLaneCount}, 18px)` }}
+                >
+                  {weekSegments.map((segment) => {
+                    const startsHere = !segment.continuesBefore;
+                    const endsHere = !segment.continuesAfter;
+                    const spansMultipleDays = segment.endColumn - segment.startColumn > 1;
+
+                    return (
+                      <button
+                        key={`mobile:${week.key}:${segment.booking.id}`}
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onDayClick(dateKey(week.dates[segment.startColumn - 1]), segment.booking);
+                        }}
+                        aria-label={`Open reservation for ${segment.booking.guestName}`}
+                        style={{
+                          gridColumn: `${segment.startColumn} / ${segment.endColumn}`,
+                          gridRow: segment.lane + 1,
+                        }}
+                        className={`pointer-events-auto flex h-[18px] min-w-0 items-center justify-center gap-1 overflow-hidden border px-1 text-center text-[8px] font-medium leading-none focus-visible:outline-2 focus-visible:outline-offset-1 ${bookingBarTone(segment.booking)} ${startsHere ? "rounded-l-full" : "rounded-l-sm border-l-0"} ${endsHere ? "rounded-r-full" : "rounded-r-sm border-r-0"}`}
+                      >
+                        {startsHere && (
+                          <span className="flex size-3 shrink-0 items-center justify-center rounded-full border border-white bg-white/90 text-[6px] font-semibold leading-none">
+                            {guestInitials(segment.booking.guestName)}
+                          </span>
+                        )}
+                        {spansMultipleDays && (
+                          <span className="min-w-0 truncate">
+                            {startsHere ? segment.booking.guestName : t("host_calendar_stay_continues", "Continues")}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               {!compact && !isAllListings && weekSegments.length > 0 && (
                 <div
@@ -1357,6 +1800,60 @@ interface SelectedDatesStats {
   promoStats: SelectionPromotionStats;
 }
 
+/** The compact bulk editor used only after selecting a whole month in mobile Year view. */
+function MobileYearMonthEditor({
+  range,
+  stats,
+  sourceCurrency,
+  saving,
+  notice,
+  onClear,
+  onBulkAvailability,
+  onOpenEditor,
+}: {
+  range: { start: string; end: string };
+  stats: SelectedDatesStats;
+  sourceCurrency: string;
+  saving: boolean;
+  notice: string;
+  onClear: () => void;
+  onBulkAvailability: (action: "BLOCK" | "UNBLOCK") => void;
+  onOpenEditor: () => void;
+}) {
+  const { formatPrice } = useCurrency();
+  const { t, language } = useLanguage();
+  const label = new Date(`${range.start}T12:00:00Z`).toLocaleDateString(language || "en", { month: "long", year: "numeric", timeZone: "UTC" });
+  const priceText = stats.minPrice === null
+    ? t("host_calendar_no_editable_price", "No editable nights")
+    : stats.minPrice === stats.maxPrice
+      ? formatPrice(stats.minPrice, sourceCurrency, 0)
+      : `${formatPrice(stats.minPrice, sourceCurrency, 0)} – ${formatPrice(stats.maxPrice ?? stats.minPrice, sourceCurrency, 0)}`;
+  const status = stats.isMixedAvailability
+    ? t("host_calendar_status_mixed", "Mixed availability")
+    : stats.allBlocked ? t("host_cal_blocked_label", "Blocked") : t("host_calendar_status_available", "Available");
+
+  return (
+    <>
+      <div className="fixed inset-x-0 bottom-[calc(292px+env(safe-area-inset-bottom))] z-[61] flex justify-center px-4 sm:hidden">
+        <div className="flex max-w-[270px] items-center gap-3 rounded-2xl bg-[#202020] px-4 py-2.5 text-white shadow-lg">
+          <button type="button" onClick={onClear} aria-label={t("host_calendar_clear_selection_aria", "Clear date selection")} className="-ml-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-lg transition-colors hover:bg-white/20">×</button>
+          <span className="min-w-0"><span className="block truncate text-sm font-medium">{label}</span><span className="block truncate text-xs text-white/70">{t("host_calendar_editable_count", { count: stats.editableKeys.length }, `${stats.editableKeys.length} nights can be edited`)}</span></span>
+        </div>
+      </div>
+      <aside aria-label={t("host_calendar_manage_selected_dates", "Manage selected dates")} className="fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-[60] grid grid-cols-[1fr_1fr] gap-2 bg-white/95 px-4 pb-3 pt-2 shadow-[0_-8px_24px_rgba(0,0,0,0.12)] backdrop-blur-sm dark:bg-zinc-950/95 sm:hidden">
+        <section className="row-span-2 flex min-h-[174px] flex-col rounded-[22px] bg-[#151515] p-4 text-white">
+          <div className="flex items-center justify-between gap-2"><span className="text-sm text-white/70">{status}</span><span className={`size-2 rounded-full ${stats.allBlocked ? "bg-zinc-400" : stats.isMixedAvailability ? "bg-amber-400" : "bg-emerald-400"}`} /></div>
+          <p className="mt-2 text-xs text-white/55">{stats.editableKeys.length > 0 ? t("host_calendar_editable_count", { count: stats.editableKeys.length }, `${stats.editableKeys.length} editable`) : t("host_calendar_no_editable_dates", "No editable dates")}</p>
+          <div className="mt-auto grid grid-cols-2 gap-2"><button type="button" disabled={saving || stats.editableKeys.length === 0} onClick={() => onBulkAvailability("BLOCK")} className="rounded-full bg-white/10 py-2 text-xs font-medium disabled:opacity-40">{t("host_calendar_block", "Block")}</button><button type="button" disabled={saving || stats.editableKeys.length === 0} onClick={() => onBulkAvailability("UNBLOCK")} className="rounded-full bg-white py-2 text-xs font-medium text-[#151515] disabled:opacity-40">{t("host_calendar_open", "Open")}</button></div>
+        </section>
+        <button type="button" onClick={onOpenEditor} className="min-h-[112px] rounded-[22px] bg-[#151515] p-4 text-left text-white transition-transform hover:scale-[1.01] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ff385c]"><span className="block text-sm text-white/65">{t("host_calendar_new_listing_price", "New listing price")}</span><span className="mt-4 block text-[20px] font-semibold leading-6">{priceText}</span>{stats.promoStats.enabled && <span className="mt-2 block text-xs text-white/60 line-through">{formatPrice(stats.promoStats.avgOriginalPrice, sourceCurrency, 0)}</span>}</button>
+        <button type="button" onClick={onOpenEditor} className="flex min-h-[54px] items-center justify-between rounded-[18px] bg-[#151515] px-4 text-sm font-medium text-white"><span>{t("host_calendar_custom_settings", "Custom settings")}</span><span className="text-xl">+</span></button>
+        {(notice || saving) && <p role={notice ? "status" : undefined} className="col-span-2 truncate text-center text-xs text-[#555555] dark:text-zinc-400">{saving ? t("host_calendar_saving", "Saving…") : notice}</p>}
+      </aside>
+    </>
+  );
+}
+
 function getLocalizedReason(reason: string, t: (k: any, ...args: any[]) => string): string {
   if (reason.includes("High calendar compression")) return t("host_calendar_tip_high_occupancy", reason);
   if (reason.includes("Healthy booking pace")) return t("host_calendar_tip_strong_occupancy", reason);
@@ -1367,6 +1864,396 @@ function getLocalizedReason(reason: string, t: (k: any, ...args: any[]) => strin
   if (reason.includes("already well-aligned with demand signals")) return t("host_calendar_tip_optimal_rate", reason);
   if (reason.includes("Standard nightly rate")) return t("host_calendar_tip_standard_baseline", reason);
   return reason;
+}
+
+type SingleDatePanelView = "details" | "price" | "custom" | "minimumNights" | "cancellationPolicy";
+
+function SingleDateManagementPanel({
+  listing,
+  dateKey: selectedDateKey,
+  stats,
+  sourceCurrency,
+  saving,
+  notice,
+  selectedDayBookings = [],
+  onSave,
+  onClear,
+  onContinueSelecting,
+  onBulkAvailability,
+}: {
+  listing: ListingDTO;
+  dateKey: string;
+  stats: SelectedDatesStats;
+  sourceCurrency: string;
+  saving: boolean;
+  notice: string;
+  selectedDayBookings?: HostReservation[];
+  onSave: (values: Record<string, unknown>) => Promise<unknown>;
+  onClear: () => void;
+  onContinueSelecting?: () => void;
+  onBulkAvailability?: (
+    action: "BLOCK" | "UNBLOCK" | "RESTORE",
+    dates: string[],
+  ) => Promise<any>;
+}) {
+  const { formatPrice: formatMoney, displayCurrency } = useCurrency();
+  const { t, language } = useLanguage();
+  const [view, setView] = useState<SingleDatePanelView>("details");
+  const discounts = typeof listing.discounts === "object" && listing.discounts !== null
+    ? listing.discounts as Record<string, any>
+    : {};
+  const customPrices = typeof listing.customPrices === "object" && listing.customPrices !== null
+    ? listing.customPrices as Record<string, number>
+    : {};
+  const customMinNights = discounts.customMinNights && typeof discounts.customMinNights === "object"
+    ? discounts.customMinNights as Record<string, number>
+    : {};
+  const customCancellationPolicies = discounts.customCancellationPolicies && typeof discounts.customCancellationPolicies === "object"
+    ? discounts.customCancellationPolicies as Record<string, string>
+    : {};
+  const customPrice = customPrices[selectedDateKey];
+  const minimumNightsDefault = Math.max(1, Math.round(listing.minNights ?? 1));
+  const minimumNightsOverride = customMinNights[selectedDateKey];
+  const [priceInput, setPriceInput] = useState(
+    typeof customPrice === "number" ? String(customPrice / 100) : "",
+  );
+  const [minimumNightsInput, setMinimumNightsInput] = useState(
+    String(minimumNightsOverride ?? minimumNightsDefault),
+  );
+  const [policyInput, setPolicyInput] = useState(
+    getCancellationPolicyForCheckIn(listing, selectedDateKey),
+  );
+  const [validationError, setValidationError] = useState("");
+  const [viewDirection, setViewDirection] = useState<"forward" | "back">("forward");
+
+  const datePricing = useMemo(
+    () => resolveCalendarDatePricing({
+      dateKey: selectedDateKey,
+      listing: listing as unknown as Parameters<typeof resolveCalendarDatePricing>[0]["listing"],
+    }),
+    [listing, selectedDateKey],
+  );
+  const blocked = (listing.blockedDates || []).includes(selectedDateKey);
+  const dayBookings = selectedDayBookings;
+  const isReserved = dayBookings.length > 0;
+  const isPast = selectedDateKey < dateKey(new Date());
+  const isEditable = !isPast && !isReserved && stats.editableKeys.includes(selectedDateKey);
+  const effectivePrice = datePricing.promotion?.promotionalPrice ?? datePricing.originalPrice;
+  const selectedPolicy = customCancellationPolicies[selectedDateKey]
+    || getCancellationPolicyForCheckIn(listing, selectedDateKey);
+  const dateLabel = formatBookingDate(selectedDateKey, { locale: language || "en" });
+  const rateSourceLabel = datePricing.rateSource === "CUSTOM"
+    ? t("host_calendar_source_custom", "Custom price")
+    : datePricing.rateSource === "WEEKEND"
+      ? t("host_calendar_source_weekend", "Weekend rate")
+      : t("host_calendar_source_base", "Base price");
+
+  const savePrice = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const value = Number(priceInput);
+    const priceInMinorUnits = Math.round(value * 100);
+    if (!Number.isFinite(value) || value <= 0 || priceInMinorUnits < 1) {
+      setValidationError(t("host_calendar_err_valid_price", "Enter a valid price greater than 0."));
+      return;
+    }
+    setValidationError("");
+    const saved = await onSave({ customPrices: { ...customPrices, [selectedDateKey]: priceInMinorUnits } });
+    if (saved === true) setViewDirection("back");
+    if (saved === true) setView("details");
+  };
+
+  const clearPrice = async () => {
+    const next = { ...customPrices };
+    delete next[selectedDateKey];
+    setValidationError("");
+    setPriceInput("");
+    const saved = await onSave({ customPrices: next });
+    if (saved === true) setViewDirection("back");
+    if (saved === true) setView("details");
+  };
+
+  const saveMinimumNights = async () => {
+    const value = Number(minimumNightsInput);
+    if (!Number.isInteger(value) || value < 1 || value > 365) {
+      setValidationError(t("host_calendar_err_min_stay_range", "Enter a minimum stay between 1 and 365 nights."));
+      return;
+    }
+    setValidationError("");
+    const saved = await onSave({
+      discounts: {
+        ...discounts,
+        customMinNights: { ...customMinNights, [selectedDateKey]: value },
+      },
+    });
+    if (saved === true) setViewDirection("back");
+    if (saved === true) setView("custom");
+  };
+
+  const resetMinimumNights = async () => {
+    const next = { ...customMinNights };
+    delete next[selectedDateKey];
+    setMinimumNightsInput(String(minimumNightsDefault));
+    const saved = await onSave({ discounts: { ...discounts, customMinNights: next } });
+    if (saved === true) setViewDirection("back");
+    if (saved === true) setView("custom");
+  };
+
+  const saveCancellationPolicy = async () => {
+    if (!dateScopedCancellationPolicyOptions.some((policy) => policy.policyId === policyInput)) {
+      setValidationError(t("host_calendar_err_cancellation_policy", "Choose a supported cancellation policy."));
+      return;
+    }
+    setValidationError("");
+    const saved = await onSave({
+      discounts: {
+        ...discounts,
+        customCancellationPolicies: { ...customCancellationPolicies, [selectedDateKey]: policyInput },
+      },
+    });
+    if (saved === true) setViewDirection("back");
+    if (saved === true) setView("custom");
+  };
+
+  const resetCancellationPolicy = async () => {
+    const next = { ...customCancellationPolicies };
+    delete next[selectedDateKey];
+    setPolicyInput(listing.cancellationPolicy || "FLEXIBLE");
+    const saved = await onSave({ discounts: { ...discounts, customCancellationPolicies: next } });
+    if (saved === true) setViewDirection("back");
+    if (saved === true) setView("custom");
+  };
+
+  const toggleAvailability = async () => {
+    if (!isEditable) return;
+    if (onBulkAvailability) {
+      await onBulkAvailability(blocked ? "UNBLOCK" : "BLOCK", [selectedDateKey]);
+      return;
+    }
+    const nextBlocked = new Set(listing.blockedDates || []);
+    if (blocked) nextBlocked.delete(selectedDateKey);
+    else nextBlocked.add(selectedDateKey);
+    await onSave({ blockedDates: Array.from(nextBlocked) });
+  };
+
+  const openView = (target: SingleDatePanelView) => {
+    setValidationError("");
+    setViewDirection("forward");
+    setView(target);
+  };
+
+  const backTo = (target: SingleDatePanelView) => {
+    setValidationError("");
+    setViewDirection("back");
+    setView(target);
+  };
+
+  const selectedHeader = (
+    <div className="mb-4 hidden items-center justify-between gap-3 lg:flex">
+      <div className="min-w-0">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-[#727272]">{t("host_calendar_selected_date", "Selected date")}</p>
+        <h2 className="truncate text-lg font-medium">{dateLabel}</h2>
+      </div>
+      <button type="button" onClick={onClear} aria-label={t("host_calendar_clear_selection_aria", "Clear date selection")} className="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-700 hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900">
+        <CloseIcon className="size-4" />
+      </button>
+    </div>
+  );
+
+  const secondaryHeader = (title: string, parent: "details" | "custom") => (
+    <div className="mb-4 flex items-center gap-3">
+      <button type="button" onClick={() => backTo(parent)} aria-label={t("host_back", "Back")} className="flex size-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+      </button>
+      <div className="min-w-0">
+        <p className="truncate text-xs text-white/60">{dateLabel}</p>
+        <h3 className="truncate text-lg font-medium text-white">{title}</h3>
+      </div>
+    </div>
+  );
+
+  const cardClass = "rounded-[22px] border border-white/[0.07] bg-[#111111] p-5 text-white shadow-[0_12px_30px_rgba(0,0,0,0.13)]";
+  const actionClass = "inline-flex min-h-11 items-center justify-center rounded-xl bg-white/10 px-4 text-sm font-medium text-white transition-all duration-200 hover:bg-white/15 hover:shadow-[0_4px_12px_rgba(0,0,0,0.16)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:transition-none";
+  const primaryActionClass = "inline-flex min-h-11 items-center justify-center rounded-xl bg-white px-4 text-sm font-medium text-zinc-950 transition-all duration-200 hover:bg-zinc-200 hover:shadow-[0_4px_14px_rgba(0,0,0,0.18)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:transition-none";
+
+  return (
+    <div className="space-y-4 pb-4">
+      {selectedHeader}
+      <div
+        key={view}
+        className={`space-y-4 animate-in fade-in duration-200 motion-reduce:animate-none ${viewDirection === "forward" ? "slide-in-from-right-2" : "slide-in-from-left-2"}`}
+      >
+        {view === "details" ? (
+          <>
+            <section className={cardClass} aria-label={t("host_calendar_current_status", "Availability")}>
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-sm font-medium">{isReserved ? t("host_calendar_status_reserved", { count: dayBookings.length }, "Booked") : blocked ? t("host_calendar_status_blocked", { count: 1 }, "Unavailable") : isPast ? t("host_calendar_past_date", "Past date") : t("host_calendar_status_available", { count: 1 }, "Available")}</p>
+                <p className="mt-1 text-xs text-white/65">
+                  {isReserved
+                    ? t("host_calendar_reserved_no_edit", "This date is part of a reservation and cannot be changed.")
+                    : blocked
+                    ? t("host_calendar_date_blocked_message", "This date is blocked.")
+                    : isPast
+                      ? t("host_calendar_past_readonly", "Past dates are read-only.")
+                      : t("host_calendar_date_available_message", "This date can be booked.")}
+                </p>
+              </div>
+              <span className={`mt-1 size-2.5 shrink-0 rounded-full ${isReserved ? "bg-zinc-400" : blocked ? "bg-rose-500" : "bg-emerald-400"}`} aria-hidden="true" />
+            </div>
+            {dayBookings.length > 0 ? (
+              <div className="mt-3 space-y-2 border-t border-white/10 pt-3">
+                {dayBookings.map((booking) => (
+                  <div key={booking.id} className="flex items-center justify-between gap-3 text-xs">
+                    <span className="min-w-0 truncate">{booking.guestName}</span>
+                    <span className="shrink-0 text-white/60">{booking.status}</span>
+                  </div>
+                ))}
+              </div>
+            ) : isPast ? (
+              <p className="mt-4 rounded-xl bg-white/5 px-3 py-2 text-xs text-white/60">{t("host_calendar_past_readonly", "Past dates are read-only.")}</p>
+            ) : (
+              <button type="button" onClick={toggleAvailability} disabled={!isEditable || saving} className={`${actionClass} mt-4 w-full`}>
+                {saving
+                  ? t("host_calendar_saving", "Saving…")
+                  : blocked
+                    ? t("host_calendar_open_date", "Open date")
+                    : t("host_calendar_block_date", "Block date")}
+              </button>
+            )}
+            </section>
+
+            <button type="button" onClick={() => openView("price")} className={`${cardClass} block w-full text-left transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#171717] hover:shadow-[0_16px_30px_rgba(0,0,0,0.18)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 motion-reduce:transform-none motion-reduce:transition-none`}>
+            <span className="block text-xs text-white/60">{datePricing.promotion?.name || rateSourceLabel}</span>
+            <span className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="text-[25px] font-medium leading-tight">{formatMoney(effectivePrice, sourceCurrency, 2)}</span>
+              {datePricing.promotion?.applied && <span className="text-sm text-white/55 line-through">{formatMoney(datePricing.originalPrice, sourceCurrency, 2)}</span>}
+            </span>
+            <span className="mt-2 flex items-center justify-between gap-2 text-xs text-white/60">
+              <span>{rateSourceLabel}</span>
+              {datePricing.promotion?.applied && <span className="rounded-full bg-emerald-400/15 px-2 py-1 text-emerald-300">-{datePricing.promotion.percentage}%</span>}
+            </span>
+            </button>
+
+            <button type="button" onClick={() => openView("custom")} className={`${cardClass} flex w-full items-center justify-between gap-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#171717] hover:shadow-[0_16px_30px_rgba(0,0,0,0.18)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 motion-reduce:transform-none motion-reduce:transition-none`}>
+            <span className="min-w-0">
+              <span className="block text-sm font-medium">{t("host_calendar_custom_settings", "Custom settings")}</span>
+              <span className="mt-1 block truncate text-xs text-white/60">
+                {t("host_calendar_nights", { count: minimumNightsOverride ?? minimumNightsDefault }, `${minimumNightsOverride ?? minimumNightsDefault} nights`)} · {cancellationPolicyLabel(selectedPolicy, t)}
+              </span>
+            </span>
+            <span className="text-xl leading-none" aria-hidden="true">+</span>
+            </button>
+            {onContinueSelecting && (
+              <button type="button" onClick={onContinueSelecting} className="min-h-11 w-full rounded-xl border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-900 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 lg:hidden">
+                {t("host_calendar_select_more_dates", "Select more dates")}
+              </button>
+            )}
+          </>
+        ) : view === "price" ? (
+        <section className={cardClass}>
+          {secondaryHeader(t("host_calendar_nightly_price", "Nightly price"), "details")}
+          <p className="text-sm font-medium">{formatMoney(effectivePrice, sourceCurrency, 2)}</p>
+          {datePricing.promotion?.applied && <p className="mt-1 text-xs text-white/60">{datePricing.promotion.percentage}% · {formatMoney(datePricing.originalPrice, sourceCurrency, 2)} {t("host_calendar_original_price", "original")}</p>}
+          <form onSubmit={savePrice} className="mt-4 space-y-3">
+            <label htmlFor="single-date-custom-price" className="block text-xs text-white/65">{t("host_calendar_set_custom_rate", "Set custom nightly rate")} ({sourceCurrency})</label>
+            <input id="single-date-custom-price" type="number" min="0.01" step="0.01" inputMode="decimal" value={priceInput} onChange={(event) => setPriceInput(event.target.value)} placeholder={String(datePricing.originalPrice / 100)} disabled={!isEditable} className="min-h-12 w-full rounded-xl border border-white/15 bg-white/5 px-3 text-base text-white placeholder:text-white/35 outline-none focus:border-white/50 disabled:opacity-50" />
+            {customPrice !== undefined && <button type="button" onClick={clearPrice} disabled={saving || !isEditable} className={`${actionClass} w-full`}>{t("host_calendar_reset_price", "Use default price")}</button>}
+            {validationError && <p role="alert" className="text-sm text-rose-300">{validationError}</p>}
+            <button type="submit" disabled={saving || !isEditable || !priceInput} className={`${primaryActionClass} w-full`}>{saving ? t("host_calendar_saving", "Saving…") : t("host_calendar_save", "Save")}</button>
+          </form>
+        </section>
+      ) : view === "custom" ? (
+        <section className={cardClass}>
+          {secondaryHeader(t("host_calendar_custom_settings", "Custom settings"), "details")}
+          <div className="space-y-2">
+            <button type="button" onClick={() => { setMinimumNightsInput(String(minimumNightsOverride ?? minimumNightsDefault)); openView("minimumNights"); }} disabled={!isEditable} className={`${actionClass} w-full justify-between`}>
+              <span className="min-w-0 flex-1 truncate pr-4 text-left">{t("host_calendar_minimum_nights", "Minimum nights")}</span>
+              <span className="ml-auto flex shrink-0 items-center gap-3">
+                <span className="text-xs text-white/60 underline underline-offset-2">{t("host_calendar_nights", { count: minimumNightsOverride ?? minimumNightsDefault }, `${minimumNightsOverride ?? minimumNightsDefault} nights`)}</span>
+                <span aria-hidden="true">+</span>
+              </span>
+            </button>
+            <button type="button" onClick={() => { setPolicyInput(selectedPolicy); openView("cancellationPolicy"); }} disabled={!isEditable} className={`${actionClass} w-full justify-between`}>
+              <span className="min-w-0 flex-1 truncate pr-4 text-left">{t("host_calendar_cancellation_policy", "Cancellation policy")}</span>
+              <span className="ml-auto flex shrink-0 items-center gap-3">
+                <span className="text-xs text-white/60 underline underline-offset-2">{cancellationPolicyLabel(selectedPolicy, t)}</span>
+                <span aria-hidden="true">+</span>
+              </span>
+            </button>
+          </div>
+          <button type="button" onClick={() => backTo("details")} className={`${primaryActionClass} mt-4 w-full`}>{t("host_done", "Done")}</button>
+          {!isEditable && <p className="mt-3 text-xs text-white/55">{t("host_calendar_past_readonly", "Past and reserved dates are read-only.")}</p>}
+        </section>
+      ) : view === "minimumNights" ? (
+        <section className={cardClass}>
+          {secondaryHeader(t("host_calendar_minimum_nights", "Minimum nights"), "custom")}
+          <p className="text-sm text-white/70">{t("host_calendar_min_nights_date_scope", "This overrides the listing minimum for reservations checking in on this date.")}</p>
+          <div className="mt-5 flex items-center justify-center gap-7">
+            <button type="button" onClick={() => setMinimumNightsInput(String(Math.max(1, Number(minimumNightsInput) - 1)))} disabled={Number(minimumNightsInput) <= 1} aria-label={t("host_decrease", "Decrease")} className={actionClass}>−</button>
+            <span className="min-w-12 text-center text-4xl font-medium">{minimumNightsInput}</span>
+            <button type="button" onClick={() => setMinimumNightsInput(String(Math.min(365, Number(minimumNightsInput) + 1)))} disabled={Number(minimumNightsInput) >= 365} aria-label={t("host_increase", "Increase")} className={actionClass}>+</button>
+          </div>
+          <p className="mt-3 text-center text-xs text-white/55">{minimumNightsOverride ? t("host_calendar_overrides_default", { value: minimumNightsDefault }, `Overrides default of ${minimumNightsDefault} nights`) : t("host_calendar_default_value", { value: minimumNightsDefault }, `Listing default: ${minimumNightsDefault} nights`)}</p>
+          {validationError && <p role="alert" className="mt-3 text-sm text-rose-300">{validationError}</p>}
+          <div className="mt-5 flex gap-2">
+            <button type="button" onClick={() => backTo("custom")} className={`${actionClass} flex-1`}>{t("host_cancel", "Cancel")}</button>
+            {minimumNightsOverride && <button type="button" onClick={resetMinimumNights} disabled={saving} className={actionClass}>{t("host_reset", "Reset")}</button>}
+            <button type="button" onClick={() => void saveMinimumNights()} disabled={saving || !isEditable} className={`${primaryActionClass} flex-1`}>{t("host_save", "Save")}</button>
+          </div>
+        </section>
+        ) : (
+        <section className={cardClass}>
+          {secondaryHeader(t("host_calendar_cancellation_policy", "Cancellation policy"), "custom")}
+          <p className="mb-4 text-sm text-white/70">{t("host_calendar_policy_checkin_scope", "Applies to new reservations checking in on this date. Reservations of 28 nights or more use the listing’s long-term policy. Existing bookings keep their saved terms.")}</p>
+          <div className="space-y-2">
+            {dateScopedCancellationPolicyOptions.map((policy) => (
+              <button key={policy.policyId} type="button" role="radio" aria-checked={policyInput === policy.policyId} onClick={() => setPolicyInput(policy.policyId)} className={`w-full rounded-xl border p-3 text-left transition-colors ${policyInput === policy.policyId ? "border-white bg-white/10" : "border-white/10 hover:bg-white/5"}`}>
+                <span className="flex items-center justify-between gap-3 text-sm font-medium"><span>{policy.policyName.replace(/ Policy$/, "")}</span>{policyInput === policy.policyId && <span aria-hidden="true">✓</span>}</span>
+                <span className="mt-1 block text-xs text-white/60">{policy.description}</span>
+              </button>
+            ))}
+          </div>
+          {validationError && <p role="alert" className="mt-3 text-sm text-rose-300">{validationError}</p>}
+          <div className="mt-5 flex gap-2">
+            <button type="button" onClick={() => backTo("custom")} className={`${actionClass} flex-1`}>{t("host_cancel", "Cancel")}</button>
+            {customCancellationPolicies[selectedDateKey] && <button type="button" onClick={resetCancellationPolicy} disabled={saving} className={actionClass}>{t("host_reset", "Reset")}</button>}
+            <button type="button" onClick={() => void saveCancellationPolicy()} disabled={saving || !isEditable} className={`${primaryActionClass} flex-1`}>{t("host_save", "Save")}</button>
+          </div>
+        </section>
+        )}
+      </div>
+      {notice && <p role="status" className="px-1 text-sm text-emerald-700 dark:text-emerald-400">{notice}</p>}
+    </div>
+  );
+}
+
+function CalendarSelectionManagementPanel({
+  onContinueSelecting,
+  selectedDayBookings,
+  ...props
+}: Parameters<typeof ContextualManagementPanel>[0] & {
+  onContinueSelecting?: () => void;
+  selectedDayBookings?: HostReservation[];
+}) {
+  if (props.range.start !== props.range.end) {
+    return <ContextualManagementPanel {...props} />;
+  }
+
+  return (
+    <SingleDateManagementPanel
+      listing={props.listing}
+      dateKey={props.range.start}
+      stats={props.stats}
+      sourceCurrency={props.sourceCurrency}
+      saving={props.saving}
+      notice={props.notice}
+      selectedDayBookings={selectedDayBookings || []}
+      onSave={props.onSave}
+      onClear={props.onClear}
+      onContinueSelecting={onContinueSelecting}
+      onBulkAvailability={props.onBulkAvailability}
+    />
+  );
 }
 
 function ContextualManagementPanel({
@@ -1388,7 +2275,7 @@ function ContextualManagementPanel({
   sourceCurrency: string;
   saving: boolean;
   notice: string;
-  onSave: (values: Record<string, unknown>) => Promise<void>;
+  onSave: (values: Record<string, unknown>) => Promise<unknown>;
   onClear: () => void;
   onPreviewPrice?: (priceInCents: number | null) => void;
   onBulkAvailability?: (
@@ -1423,9 +2310,12 @@ function ContextualManagementPanel({
   const [promoValidationError, setPromoValidationError] = useState("");
   const [customMinStayInput, setCustomMinStayInput] = useState("");
   const [minStayValidationError, setMinStayValidationError] = useState("");
+  const [selectedCancellationPolicyInput, setSelectedCancellationPolicyInput] = useState("");
+  const [cancellationPolicyValidationError, setCancellationPolicyValidationError] = useState("");
   const isDirty = Boolean(
     customPriceInput ||
     customMinStayInput ||
+    selectedCancellationPolicyInput ||
     specialDaysDiscountInput !== String(stats.promoStats.percentage || 15),
   );
 
@@ -1447,6 +2337,15 @@ function ContextualManagementPanel({
     typeof listing.discounts === "object" && listing.discounts !== null
       ? (listing.discounts as Record<string, any>)
       : {};
+  const currentCancellationOverrides = rawDiscounts.customCancellationPolicies && typeof rawDiscounts.customCancellationPolicies === "object"
+    ? rawDiscounts.customCancellationPolicies as Record<string, string>
+    : {};
+  const defaultCancellationPolicy = listing.cancellationPolicy || "FLEXIBLE";
+  const selectedCancellationPolicies = stats.editableKeys.map(
+    (key) => currentCancellationOverrides[key] || defaultCancellationPolicy,
+  );
+  const distinctSelectedCancellationPolicies = Array.from(new Set(selectedCancellationPolicies));
+  const isMixedCancellationPolicy = distinctSelectedCancellationPolicies.length > 1;
 
   const activePromo =
     rawDiscounts.custom_promotion &&
@@ -2381,6 +3280,66 @@ function ContextualManagementPanel({
             </button>
           </div>
 
+          {stats.editableKeys.length > 0 && (
+            <section className="space-y-3 rounded-[12px] border border-white bg-[#F3F4F5] px-4 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
+              <div>
+                <h3 className="text-base font-normal text-[#1f1f1f] dark:text-zinc-100">{t("host_calendar_cancellation_policy_override", "Cancellation policy override")}</h3>
+                <p className="mt-1 text-xs text-[#727272] dark:text-zinc-400">
+                  {t("host_calendar_policy_checkin_scope", "Applies to new reservations checking in on these dates. Confirmed stays keep their saved terms.")}
+                </p>
+              </div>
+              <p className="text-xs font-medium text-[#1f1f1f] dark:text-zinc-200">
+                {isMixedCancellationPolicy
+                  ? t("host_calendar_mixed_policies", "Mixed cancellation policies")
+                  : t("host_calendar_current_policy", { policy: selectedCancellationPolicies[0] || defaultCancellationPolicy }, `Current: ${selectedCancellationPolicies[0] || defaultCancellationPolicy}`)}
+              </p>
+              <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
+                <select
+                  value={selectedCancellationPolicyInput || (isMixedCancellationPolicy ? "" : (selectedCancellationPolicies[0] === defaultCancellationPolicy ? "__DEFAULT__" : selectedCancellationPolicies[0] || "__DEFAULT__"))}
+                  onChange={(event) => {
+                    setSelectedCancellationPolicyInput(event.target.value);
+                    setCancellationPolicyValidationError("");
+                  }}
+                  aria-label={t("host_calendar_cancellation_policy", "Cancellation policy")}
+                  className="min-h-11 min-w-0 flex-1 rounded-lg border border-[#727272] bg-white px-3 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                >
+                  {isMixedCancellationPolicy && <option value="">{t("host_calendar_mixed_values", "Mixed values")}</option>}
+                  <option value="__DEFAULT__">{t("host_calendar_use_listing_default", "Use listing default")} ({defaultCancellationPolicy})</option>
+                  {dateScopedCancellationPolicyOptions.map((policy) => (
+                    <option key={policy.policyId} value={policy.policyId}>{policy.policyName.replace(/ Policy$/, "")}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  disabled={saving || !selectedCancellationPolicyInput}
+                  onClick={async () => {
+                    const policy = selectedCancellationPolicyInput;
+                    if (policy !== "__DEFAULT__" && !dateScopedCancellationPolicyOptions.some((option) => option.policyId === policy)) {
+                      setCancellationPolicyValidationError(t("host_calendar_err_cancellation_policy", "Choose a supported cancellation policy."));
+                      return;
+                    }
+                    if (typeof window !== "undefined" && !window.confirm(t("host_calendar_confirm_policy_bulk", { count: stats.editableKeys.length }, `Apply this policy to ${stats.editableKeys.length} eligible check-in dates?`))) return;
+                    const nextOverrides = { ...currentCancellationOverrides };
+                    for (const key of stats.editableKeys) {
+                      if (policy === "__DEFAULT__") delete nextOverrides[key];
+                      else nextOverrides[key] = policy;
+                    }
+                    setCancellationPolicyValidationError("");
+                    await onSave({ discounts: { ...rawDiscounts, customCancellationPolicies: nextOverrides } });
+                    setSelectedCancellationPolicyInput("");
+                  }}
+                  className="min-h-11 rounded-full bg-[#1f1f1f] px-4 text-xs font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-[#F3F4F5] dark:text-zinc-900 dark:hover:bg-white"
+                >
+                  {saving ? t("host_calendar_saving", "Saving…") : t("host_calendar_apply", "Apply")}
+                </button>
+              </div>
+              {cancellationPolicyValidationError && <p role="alert" className="text-xs text-rose-600 dark:text-rose-400">{cancellationPolicyValidationError}</p>}
+              <p className="text-[11px] text-[#727272] dark:text-zinc-400">
+                {t("host_calendar_policy_dates_skipped", { protected: stats.bookedCount, past: stats.pastCount }, `${stats.bookedCount} reserved and ${stats.pastCount} past dates are excluded.`)}
+              </p>
+            </section>
+          )}
+
           {/* Phase 11: Property Availability Rules (Collapsible) */}
           <details className="group rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-[#F3F4F5] dark:bg-zinc-800/40 overflow-hidden transition-colors shadow-[0_2px_4px_rgba(0,0,0,0.25)]">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3.5 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/70 transition-colors [&::-webkit-details-marker]:hidden">
@@ -2602,12 +3561,12 @@ export function HostCalendarWorkspace({
   const calendarScrollRef = useRef<HTMLDivElement>(null);
 
   // Initialize view from initialView / searchParams or default to "month"
-  const defaultView = useMemo<"month" | "year">(() => {
+  const defaultView = useMemo<CalendarView>(() => {
     const requested = initialView || searchParams?.get("view");
-    return requested === "year" ? "year" : "month";
+    return requested === "year" || requested === "list" ? requested : "month";
   }, [initialView, searchParams]);
 
-  const [view, setView] = useState<"month" | "year">(defaultView);
+  const [view, setView] = useState<CalendarView>(defaultView);
 
   // Range & Date Selection state
   const [selection, setSelection] = useState<CalendarSelection>({
@@ -2615,6 +3574,7 @@ export function HostCalendarWorkspace({
     end: null,
     isDragging: false,
   });
+  const dragSelectionChangedRef = useRef(false);
   const [focusedDateKey, setFocusedDateKey] = useState<string | null>(null);
   const [previewPrice, setPreviewPrice] = useState<number | null>(null);
 
@@ -2652,6 +3612,9 @@ export function HostCalendarWorkspace({
   const [mobileCalendarOpen, setMobileCalendarOpen] = useState(false);
   const [propertySearchQuery, setPropertySearchQuery] = useState("");
   const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
+  const [mobileCalendarSettingsOpen, setMobileCalendarSettingsOpen] = useState(false);
+  const [mobileSelectionMode, setMobileSelectionMode] =
+    useState<MobileDateSelectionMode>("idle");
   const [selectedBooking, setSelectedBooking] =
     useState<HostReservation | null>(null);
   const [allListingsDayBookings, setAllListingsDayBookings] = useState<{
@@ -2698,7 +3661,7 @@ export function HostCalendarWorkspace({
 
   // Deep-linking URL synchronization (refresh-safe, back/forward-safe)
   const syncUrl = useCallback(
-    (newListingId: string, newMonth: Date, newView: "month" | "year") => {
+    (newListingId: string, newMonth: Date, newView: CalendarView) => {
       if (typeof window === "undefined") return;
       const params = new URLSearchParams();
       if (newListingId) params.set("listingId", newListingId);
@@ -2706,6 +3669,7 @@ export function HostCalendarWorkspace({
       if (newView !== "month") params.set("view", newView);
 
       const newUrl = `${pathname}?${params.toString()}`;
+      if (`${window.location.pathname}${window.location.search}` === newUrl) return;
       window.history.replaceState({ path: newUrl }, "", newUrl);
     },
     [pathname],
@@ -2727,8 +3691,11 @@ export function HostCalendarWorkspace({
       const parsedM = parseMonthKey(reqMonth);
       if (parsedM) setMonth(parsedM);
       const reqView = params.get("view");
-      if (reqView === "year" || reqView === "month") setView(reqView);
+      if (reqView === "list" || reqView === "year" || reqView === "month") setView(reqView);
       setSelection({ start: null, end: null, isDragging: false });
+      setMobileSelectionMode("idle");
+      setMobileSettingsOpen(false);
+      setMobileCalendarSettingsOpen(false);
       setPreviewPrice(null);
     }
     window.addEventListener("popstate", handlePopState);
@@ -2741,6 +3708,9 @@ export function HostCalendarWorkspace({
       setSelectedId(id);
       if (id === "all") setSelectedPropertyIds(listings.map((listing) => listing.id));
       setSelection({ start: null, end: null, isDragging: false });
+      setMobileSelectionMode("idle");
+      setMobileSettingsOpen(false);
+      setMobileCalendarSettingsOpen(false);
       setPreviewPrice(null);
       setSelectedBooking(null);
       setAllListingsDayBookings(null);
@@ -2770,6 +3740,9 @@ export function HostCalendarWorkspace({
       setMonth(newMonth);
       setCalendarNavigationKey((key) => key + 1);
       setSelection({ start: null, end: null, isDragging: false });
+      setMobileSelectionMode("idle");
+      setMobileSettingsOpen(false);
+      setMobileCalendarSettingsOpen(false);
       setPreviewPrice(null);
       syncUrl(selectedId, newMonth, view);
     },
@@ -2778,7 +3751,7 @@ export function HostCalendarWorkspace({
 
   // Handle view switch
   const handleSelectView = useCallback(
-    (newView: "month" | "year") => {
+    (newView: CalendarView) => {
       setView(newView);
       setShowViewDropdown(false);
       syncUrl(selectedId, month, newView);
@@ -2811,6 +3784,8 @@ export function HostCalendarWorkspace({
   // Month navigation: Prev, Next, Today
   const handlePrev = useCallback(() => {
     setSelection({ start: null, end: null, isDragging: false });
+    setMobileSelectionMode("idle");
+    setMobileSettingsOpen(false);
     setPreviewPrice(null);
     setCalendarNavigationKey((key) => key + 1);
     if (view === "year") {
@@ -2831,6 +3806,8 @@ export function HostCalendarWorkspace({
 
   const handleNext = useCallback(() => {
     setSelection({ start: null, end: null, isDragging: false });
+    setMobileSelectionMode("idle");
+    setMobileSettingsOpen(false);
     setPreviewPrice(null);
     setCalendarNavigationKey((key) => key + 1);
     if (view === "year") {
@@ -2846,6 +3823,8 @@ export function HostCalendarWorkspace({
 
   const handleToday = useCallback(() => {
     setSelection({ start: null, end: null, isDragging: false });
+    setMobileSelectionMode("idle");
+    setMobileSettingsOpen(false);
     setPreviewPrice(null);
     setCalendarNavigationKey((key) => key + 1);
     const now = new Date();
@@ -2908,6 +3887,26 @@ export function HostCalendarWorkspace({
     () => getNormalizedRange(selection),
     [selection],
   );
+
+  // The compact (<lg) workspace has two deliberate selection experiences:
+  // a single-date sheet by default, and an explicit multi-date toolbar.
+  const openMobileSettings = () => {
+    if (normalizedSelectedRange) {
+      setMobileSelectionMode(
+        normalizedSelectedRange.start === normalizedSelectedRange.end
+          ? "single-date"
+          : "multi-select",
+      );
+      setMobileSettingsOpen(true);
+      return;
+    }
+    setMobileSettingsOpen(true);
+  };
+
+  const openMobileCalendarSettings = () => {
+    setMobileSettingsOpen(false);
+    setMobileCalendarSettingsOpen(true);
+  };
 
   const persistedCustomPricesMap = useMemo(() => {
     if (!selectedListing) return new Map<string, number>();
@@ -2972,8 +3971,44 @@ export function HostCalendarWorkspace({
         // If clicking on an active reservation, open reservation modal
         // and clear any previous editable-range treatment behind it.
         setSelection({ start: null, end: null, isDragging: false });
+        setMobileSelectionMode("idle");
+        setMobileSettingsOpen(false);
         setPreviewPrice(null);
         setSelectedBooking(booking);
+        return;
+      }
+
+      const isCompactCalendar = window.matchMedia("(max-width: 1023px)").matches;
+
+      if (dragSelectionChangedRef.current) {
+        dragSelectionChangedRef.current = false;
+        setFocusedDateKey(key);
+        if (isCompactCalendar) {
+          // A drag is an intentional range gesture, so use the bulk toolbar
+          // rather than opening the single-date sheet.
+          setMobileSelectionMode("multi-select");
+          setMobileSettingsOpen(false);
+        }
+        return;
+      }
+
+      if (isCompactCalendar) {
+        if (mobileSelectionMode === "multi-select") {
+          setSelection((prev) => ({
+            start: prev.start || key,
+            end: key,
+            isDragging: false,
+          }));
+          setFocusedDateKey(key);
+          return;
+        }
+
+        // A normal compact-screen tap always opens the date-management sheet.
+        // It does not infer bulk-selection mode from a one-day range.
+        setSelection({ start: key, end: key, isDragging: false });
+        setFocusedDateKey(key);
+        setMobileSelectionMode("single-date");
+        setMobileSettingsOpen(true);
         return;
       }
 
@@ -2991,7 +4026,7 @@ export function HostCalendarWorkspace({
       });
       setFocusedDateKey(key);
     },
-    [isAllListings],
+    [isAllListings, mobileSelectionMode, selection.start, selection.end],
   );
 
   const handleDayPointerDown = useCallback(
@@ -3001,19 +4036,24 @@ export function HostCalendarWorkspace({
       if (dayBookings.length > 0) return; // Reservations don't initiate drag selection
 
       setNotice("");
+      const rangeAnchor = selection.start && selection.end === null
+        ? selection.start
+        : key;
+      dragSelectionChangedRef.current = rangeAnchor !== key;
       setSelection({
-        start: key,
+        start: rangeAnchor,
         end: key,
         isDragging: true,
       });
       setFocusedDateKey(key);
     },
-    [isAllListings, bookingsByDate],
+    [isAllListings, bookingsByDate, selection.start, selection.end],
   );
 
   const handleDayPointerEnter = useCallback(
     (key: string) => {
       if (!selection.isDragging || !selection.start) return;
+      if (key !== selection.start) dragSelectionChangedRef.current = true;
       setSelection((prev) => ({
         ...prev,
         end: key,
@@ -3051,8 +4091,8 @@ export function HostCalendarWorkspace({
   );
 
   // Save listing changes with stale-state protection
-  async function save(values: Record<string, unknown>) {
-    if (!selectedListing || saving) return;
+  async function save(values: Record<string, unknown>): Promise<boolean> {
+    if (!selectedListing || saving) return false;
     const targetListingId = selectedListing.id;
     setSaving(true);
     setNotice("");
@@ -3064,11 +4104,14 @@ export function HostCalendarWorkspace({
           [targetListingId]: result.data,
         }));
         setNotice(t("host_calendar_notice_saved", "Changes saved."));
+        return true;
       } else {
         setNotice(result.error || t("host_calendar_notice_could_not_save", "Could not save."));
+        return false;
       }
     } catch {
       setNotice(t("host_calendar_notice_save_err", "Could not save your changes. Please try again."));
+      return false;
     } finally {
       setSaving(false);
     }
@@ -3303,43 +4346,59 @@ export function HostCalendarWorkspace({
   // ───────────────────────────────────────────────────────────────────────────
   return (
     <>
-      <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 pb-28 pt-6 sm:px-8 sm:pt-8">
-        {mobileCalendarOpen && selectedListing ? (
+      <main className={`mx-auto w-full max-w-[1800px] flex-1 px-3 pt-4 sm:px-8 sm:pt-8 xl:px-10 ${normalizedSelectedRange && selectedDatesStats && !mobileSettingsOpen ? "pb-[calc(120px+env(safe-area-inset-bottom))] md:pb-28" : "pb-0 md:pb-28"}`}>
+        {mobileCalendarOpen && selectedListing && view !== "year" ? (
           <section className="sm:hidden">
-            <h1 className="mb-7">
-              {t("host_calendar_title", "Calendar")}
-            </h1>
-
-            <div className="mb-8 flex items-center gap-3">
+            <div className="mb-5 flex min-w-0 items-center gap-2">
               <button
                 type="button"
-                onClick={() => setMobileCalendarOpen(false)}
-                aria-label="Back to calendars"
-                className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] text-[#555555] transition-colors bg-[#F3F4F5] hover:bg-[#f7f7f7] dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                onClick={() => setMobilePropertySelectorOpen(true)}
+                aria-label={`${t("host_calendar_change_property_aria", "Change selected property")}: ${selectedListing.title || "Property"}`}
+                className="flex min-w-0 flex-1 items-center justify-center gap-2 text-center"
               >
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="m15 18-6-6 6-6" />
-                </svg>
+                <PropertyPhoto listing={selectedListing} className="size-8 shrink-0 rounded-full object-cover" />
+                <span className="min-w-0">
+                  <span className="flex items-center justify-center gap-1">
+                    <span className="truncate text-[15px] font-semibold leading-5 text-[#1F1F1F] dark:text-zinc-100">{selectedListing.title || "Property name"}</span>
+                    <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                  </span>
+                  <span className="block truncate text-xs leading-4 text-[#727272] dark:text-zinc-400">{[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country}</span>
+                </span>
               </button>
-              <p className="truncate text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
-                {selectedListing.title || "Property name"}{[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country ? `, ${[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country}` : ""}
-              </p>
+              <MobileViewSelector view={view} onSelectView={handleSelectView} />
+              <button type="button" onClick={openMobileCalendarSettings} aria-label={t("host_calendar_settings", "Calendar settings")} className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f3f3f3] text-[#1F1F1F] transition-colors hover:bg-[#e8e8e8] dark:bg-zinc-800 dark:text-zinc-100">
+                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.28 2.28-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56v.09h-3.22v-.09A1.7 1.7 0 0 0 10.3 18.8a1.7 1.7 0 0 0-1.88.34l-.06.06-2.28-2.28.06-.06A1.7 1.7 0 0 0 6.48 15a1.7 1.7 0 0 0-1.56-1.03h-.09v-3.22h.09A1.7 1.7 0 0 0 6.48 9.72a1.7 1.7 0 0 0-.34-1.88l-.06-.06L8.36 5.5l.06.06a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1.03-1.56v-.09h3.22v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.28 2.28-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.56 1.03h.09v3.22h-.09A1.7 1.7 0 0 0 19.4 15Z" /></svg>
+              </button>
             </div>
 
-            <div className="flex items-center justify-between border-b border-[#d5d5d5] pb-3 dark:border-zinc-700">
-              <h2 className="text-base font-medium text-[#272727] dark:text-zinc-100">
-                {monthName(month, language)}
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-b border-[#d5d5d5] pb-3 dark:border-zinc-700">
+              <h2 className="col-start-2 whitespace-nowrap text-center text-[18px] font-semibold leading-6 tracking-[-0.02em] text-[#272727] dark:text-zinc-100">
+                {`${monthName(month, language)} ${month.getFullYear()}`}
               </h2>
-              <div className="flex items-center sm:gap-3 gap-2">
-                <button type="button" onClick={handlePrev} aria-label={t("host_calendar_prev_month", "Previous month")} className="flex sm:size-9 size-7 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
+              <div className="col-start-3 flex items-center justify-end gap-1.5">
+                <button type="button" onClick={handlePrev} aria-label={t("host_calendar_prev_month", "Previous month")} className="flex size-11 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] max-[340px]:size-[38px] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
                   <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
                 </button>
-                <button type="button" onClick={handleNext} aria-label={t("host_calendar_next_month", "Next month")} className="flex sm:size-9 size-7 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                <button type="button" onClick={handleNext} aria-label={t("host_calendar_next_month", "Next month")} className="flex size-11 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] max-[340px]:size-[38px] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
                   <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
                 </button>
               </div>
             </div>
 
+            <div className="flex items-center justify-center gap-4 py-2.5 text-[10px] text-[#727272] dark:text-zinc-400" aria-label="Calendar status key">
+              <span><span className="mr-1 font-medium text-rose-700">B</span>Booked</span>
+              <span><span className="mr-1 font-medium text-zinc-600">×</span>{t("host_cal_blocked_label", "Blocked")}</span>
+            </div>
+
+            {view === "list" ? (
+              <MobileListCalendar
+                month={month}
+                listing={selectedListing}
+                bookingsByDate={bookingsByDate}
+                blockedDatesSet={blockedDatesSet}
+                onDayClick={handleDayClick}
+              />
+            ) : (
             <MonthGrid
               month={month}
               listing={selectedListing}
@@ -3357,21 +4416,45 @@ export function HostCalendarWorkspace({
               onDayPointerEnter={handleDayPointerEnter}
               onKeyDown={handleKeyDown}
             />
+            )}
           </section >
         ) : view === "year" && selectedListing ? (
-          <MobileYearCalendar
+          <YearDotCalendar
             startMonth={month}
             listing={selectedListing}
             bookingsByDate={bookingsByDate}
             blockedDatesSet={blockedDatesSet}
-            onBack={() => handleSelectView("month")}
-            onOpenSettings={() => setMobileSettingsOpen(true)}
+            customPricesMap={customPricesMap}
+            selection={selection}
+            onDayClick={handleDayClick}
             onOpenMonth={(targetMonth) => {
               handleSelectMonth(targetMonth);
+              handleSelectView("month");
               setMobileCalendarOpen(true);
             }}
-            view={view}
-            onSelectView={handleSelectView}
+            onReferenceMonth={handleSelectMonth}
+            onSelectMonthRange={(targetMonth) => {
+              const start = dateKey(new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1));
+              const end = dateKey(new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0));
+              if (normalizedSelectedRange?.start === start && normalizedSelectedRange.end === end) {
+                setSelection({ start: null, end: null, isDragging: false });
+                setMobileSelectionMode("idle");
+                return;
+              }
+              setSelection({ start, end, isDragging: false });
+              setMobileSelectionMode("year-month");
+              setMobileSettingsOpen(false);
+              setPreviewPrice(null);
+            }}
+            mobileHeader={{
+              onOpenPropertySelector: () => setMobilePropertySelectorOpen(true),
+              onOpenSettings: openMobileCalendarSettings,
+              view,
+              onSelectView: (nextView) => {
+                handleSelectView(nextView);
+                if (nextView !== "year") setMobileCalendarOpen(true);
+              },
+            }}
           />
         ) : (
           <MobileCalendarIndex
@@ -3380,7 +4463,10 @@ export function HostCalendarWorkspace({
             onSelect={handleSelectProperty}
             onOpenCalendar={() => setMobileCalendarOpen(true)}
             view={view}
-            onSelectView={handleSelectView}
+            onSelectView={(nextView) => {
+              handleSelectView(nextView);
+              if (nextView === "list" && selectedListing) setMobileCalendarOpen(true);
+            }}
           />
         )
         }
@@ -3393,7 +4479,7 @@ export function HostCalendarWorkspace({
             </h1>
             <button
               type="button"
-              onClick={() => setMobileSettingsOpen(true)}
+              onClick={openMobileSettings}
               className="rounded-full bg-[#1F1F1F] dark:bg-[#F3F4F5] px-3.5 py-1.5 text-xs font-medium text-white dark:text-zinc-950"
             >
               {normalizedSelectedRange
@@ -3665,7 +4751,7 @@ export function HostCalendarWorkspace({
             {/* Mobile Settings Toggle (tablet/mobile) */}
             <button
               type="button"
-              onClick={() => setMobileSettingsOpen(true)}
+              onClick={openMobileSettings}
               className="hidden sm:block lg:hidden rounded-full bg-[#1F1F1F] dark:bg-[#F3F4F5] px-4 py-2 text-sm font-medium text-white dark:text-[#1F1F1F] cursor-pointer"
             >
               {normalizedSelectedRange
@@ -3676,7 +4762,7 @@ export function HostCalendarWorkspace({
         </div>
 
         {/* 3-Column Layout: Left Rail | Center Calendar Matrix | Right Settings */}
-        <div className={`mt-4 hidden items-start gap-6 sm:flex ${isAllListings ? "lg:h-[calc(100dvh-226px)] lg:min-h-[420px]" : "lg:h-[970px]"}`}>
+        <div className={`mt-4 hidden items-start gap-4 xl:gap-6 sm:flex ${isAllListings ? "lg:h-[calc(100dvh-226px)] lg:min-h-[420px]" : "lg:h-[970px]"}`}>
           {/* 1. Left Rail: Property Switcher (Desktop & Tablet) */}
           <aside
             aria-label="Property selection"
@@ -3783,7 +4869,7 @@ export function HostCalendarWorkspace({
                   syncUrl(listingId, month, view);
                 }}
               />
-            ) : view === "month" ? (
+            ) : view !== "year" ? (
               <ContinuousMonthCalendar
                 activeMonth={month}
                 navigationKey={calendarNavigationKey}
@@ -3804,48 +4890,27 @@ export function HostCalendarWorkspace({
                 onKeyDown={handleKeyDown}
               />
             ) : (
-              /* 12+ Months Year View with Lazy Loading */
-              <div className="grid grid-cols-1 min-[1366px]:grid-cols-2 gap-x-8 xl:gap-y-6 gap-y-6 mt-6">
-                {Array.from({ length: 12 }, (_, i) => {
-                  const d = new Date(
-                    month.getFullYear(),
-                    month.getMonth() + i,
-                    1,
-                  );
-                  return (
-                    <Fragment key={d.toISOString()}>
-                      {i > 0 && d.getMonth() === 0 && (
-                        <h2 className="col-span-full dark:border-zinc-800 text-xl sm:text-2xl font-medium text-[#1f1f1f] dark:text-zinc-100">
-                          {d.getFullYear()}
-                        </h2>
-                      )}
-                      <LazyMonthCard
-                        month={d}
-                        listing={selectedListing}
-                        bookingsByDate={bookingsByDate}
-                        bookingRanges={bookingRanges}
-                        blockedDatesSet={blockedDatesSet}
-                        customPricesMap={customPricesMap}
-                        selection={selection}
-                        isAllListings={isAllListings}
-                        listingsCount={listings.length}
-                        onDayClick={handleDayClick}
-                        onSelectMonth={(targetMonth) => {
-                          handleSelectMonth(targetMonth);
-                          handleSelectView("month");
-                        }}
-                      />
-                    </Fragment>
-                  );
-                })}
-              </div>
+              <YearDotCalendar
+                startMonth={month}
+                listing={selectedListing}
+                bookingsByDate={bookingsByDate}
+                blockedDatesSet={blockedDatesSet}
+                customPricesMap={customPricesMap}
+                selection={selection}
+                onDayClick={handleDayClick}
+                onOpenMonth={(targetMonth) => {
+                  handleSelectMonth(targetMonth);
+                  handleSelectView("month");
+                }}
+                onReferenceMonth={handleSelectMonth}
+              />
             )}
           </div>
 
           {/* 3. Right Settings / Contextual Management Panel (Desktop Sidebar) */}
           <aside
             aria-label={t("host_calendar_settings_title", "Calendar Settings")}
-            className={`hidden h-full shrink-0 overflow-y-auto border-l border-l-[#eeeeee] font-['Poppins'] lg:block calendar-panel-scrollbar dark:border-zinc-800 dark:border-l-zinc-800 ${isAllListings ? "w-[250px] px-4 py-4 xl:w-[270px]" : "w-[300px] px-5 py-5 xl:w-[338px]"}`}
+            className={`hidden h-full shrink-0 overflow-y-auto border-l border-l-[#eeeeee] bg-[#fcfcfd]/70 font-['Poppins'] calendar-panel-scrollbar dark:border-zinc-800 dark:border-l-zinc-800 dark:bg-zinc-950/40 ${view === "year" && !isAllListings ? "2xl:block" : "lg:block"} ${isAllListings ? "w-[270px] px-5 py-5 xl:w-[300px]" : normalizedSelectedRange ? "w-[380px] px-6 py-6 xl:w-[440px] 2xl:w-[470px]" : "w-[330px] px-6 py-6 xl:w-[370px]"}`}
           >
             {isAllListings ? (
               <AllListingsOverviewPanel
@@ -3855,23 +4920,26 @@ export function HostCalendarWorkspace({
               />
             ) : selectedListing && normalizedSelectedRange && selectedDatesStats ? (
               /* Phase 7 & 8 Contextual Management Panel (When dates are selected) */
-              <ContextualManagementPanel
-                key={`${selectedListing.id}-${normalizedSelectedRange.start}-${normalizedSelectedRange.end}`}
-                listing={selectedListing}
-                range={normalizedSelectedRange}
-                stats={selectedDatesStats}
-                sourceCurrency={sourceCurrency}
-                saving={saving}
-                notice={notice}
-                onSave={save}
-                onBulkAvailability={handleBulkAvailability}
-                bookings={bookings}
-                onClear={() => {
-                  setSelection({ start: null, end: null, isDragging: false });
-                  setPreviewPrice(null);
-                }}
-                onPreviewPrice={setPreviewPrice}
-              />
+              <div className="animate-in fade-in slide-in-from-right-2 duration-200 motion-reduce:animate-none">
+                <CalendarSelectionManagementPanel
+                  key={`${selectedListing.id}-${normalizedSelectedRange.start}-${normalizedSelectedRange.end}`}
+                  selectedDayBookings={bookingsByDate.get(normalizedSelectedRange.start) || []}
+                  listing={selectedListing}
+                  range={normalizedSelectedRange}
+                  stats={selectedDatesStats}
+                  sourceCurrency={sourceCurrency}
+                  saving={saving}
+                  notice={notice}
+                  onSave={save}
+                  onBulkAvailability={handleBulkAvailability}
+                  bookings={bookings}
+                  onClear={() => {
+                    setSelection({ start: null, end: null, isDragging: false });
+                    setPreviewPrice(null);
+                  }}
+                  onPreviewPrice={setPreviewPrice}
+                />
+              </div>
             ) : selectedListing ? (
               /* The compact overview opens the unchanged full editors on click. */
               <CalendarSettingsPanel
@@ -3895,10 +4963,19 @@ export function HostCalendarWorkspace({
                 isAllListings
                   ? t("host_calendar_portfolio_settings", "Portfolio Settings")
                   : normalizedSelectedRange
-                    ? t("host_calendar_manage_selected_dates", "Manage Selected Dates")
+                    ? normalizedSelectedRange.start === normalizedSelectedRange.end
+                      ? formatBookingDate(normalizedSelectedRange.start, { locale: language || "en" })
+                      : t("host_calendar_manage_selected_dates", "Manage Selected Dates")
                     : t("host_calendar_price_and_availability", "Price & Availability")
               }
-              onClose={() => setMobileSettingsOpen(false)}
+              onClose={() => {
+                setMobileSettingsOpen(false);
+                setMobileSelectionMode("idle");
+                setSelection({ start: null, end: null, isDragging: false });
+                setPreviewPrice(null);
+              }}
+              variant={normalizedSelectedRange ? "calendar-management" : "default"}
+              dark={Boolean(normalizedSelectedRange)}
               maxWidth="max-w-md"
             >
               {isAllListings ? (
@@ -3908,8 +4985,9 @@ export function HostCalendarWorkspace({
                   onSelectListing={handleSelectProperty}
                 />
               ) : selectedListing && normalizedSelectedRange && selectedDatesStats ? (
-                <ContextualManagementPanel
+                <CalendarSelectionManagementPanel
                   key={`mobile-${selectedListing.id}-${normalizedSelectedRange.start}-${normalizedSelectedRange.end}`}
+                  selectedDayBookings={bookingsByDate.get(normalizedSelectedRange.start) || []}
                   listing={selectedListing}
                   range={normalizedSelectedRange}
                   stats={selectedDatesStats}
@@ -3923,6 +5001,13 @@ export function HostCalendarWorkspace({
                     setSelection({ start: null, end: null, isDragging: false });
                     setPreviewPrice(null);
                     setMobileSettingsOpen(false);
+                    setMobileSelectionMode("idle");
+                  }}
+                  onContinueSelecting={() => {
+                    setMobileSettingsOpen(false);
+                    setMobileSelectionMode("multi-select");
+                    setSelection({ start: normalizedSelectedRange.start, end: null, isDragging: false });
+                    setPreviewPrice(null);
                   }}
                   onPreviewPrice={setPreviewPrice}
                 />
@@ -3939,12 +5024,47 @@ export function HostCalendarWorkspace({
           )
         }
 
+        {mobileCalendarSettingsOpen && selectedListing && (
+          <ModalOverlay
+            className="fixed inset-0 z-[110] overflow-hidden bg-white animate-in fade-in duration-200 dark:bg-zinc-950"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setMobileCalendarSettingsOpen(false);
+            }}
+          >
+            <MobileCalendarSettings
+              key={selectedListing.id}
+              listing={selectedListing}
+              saving={saving}
+              notice={notice}
+              onSave={save}
+              onClose={() => setMobileCalendarSettingsOpen(false)}
+            />
+          </ModalOverlay>
+        )}
+
+        {view === "year" && mobileSelectionMode === "year-month" && normalizedSelectedRange && selectedDatesStats && selectedListing && !mobileSettingsOpen && (
+          <MobileYearMonthEditor
+            range={normalizedSelectedRange}
+            stats={selectedDatesStats}
+            sourceCurrency={sourceCurrency}
+            saving={saving}
+            notice={notice}
+            onClear={() => {
+              setSelection({ start: null, end: null, isDragging: false });
+              setPreviewPrice(null);
+              setMobileSelectionMode("idle");
+            }}
+            onBulkAvailability={(action) => { void handleBulkAvailability(action, selectedDatesStats.editableKeys); }}
+            onOpenEditor={() => setMobileSettingsOpen(true)}
+          />
+        )}
+
         {/* Phase 19: Mobile Sticky Selection Floating Bar */}
         {
-          normalizedSelectedRange && selectedDatesStats && !mobileSettingsOpen && (
+          normalizedSelectedRange && selectedDatesStats && mobileSelectionMode === "multi-select" && !mobileSettingsOpen && (
             <aside
               aria-label={t("host_calendar_selection_summary_aria", "Selection summary bar")}
-              className="fixed inset-x-0 bottom-0 z-40 flex flex-col gap-3 border-t border-white bg-[#F3F4F5] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0px_-2px_12px_0px_#0000001F] animate-in slide-in-from-bottom duration-200 dark:border-white/20 dark:bg-zinc-900 sm:inset-x-4 sm:bottom-4 sm:rounded-[12px] sm:border sm:p-3 md:flex-row md:items-center md:justify-between lg:hidden"
+                className="fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-50 flex flex-col gap-3 border-t border-white bg-[#F3F4F5] p-3 shadow-[0px_-2px_12px_0px_#0000001F] animate-in slide-in-from-bottom duration-200 dark:border-white/20 dark:bg-zinc-900 md:inset-x-4 md:bottom-4 md:rounded-[12px] md:border md:p-3 md:flex-row md:items-center md:justify-between lg:hidden"
             >
               <div className="min-w-0 rounded-[12px] border border-white bg-white/70 px-3 py-2.5 dark:border-white/20 dark:bg-zinc-800/70 md:flex-1">
                 <p className="truncate text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
@@ -3962,6 +5082,7 @@ export function HostCalendarWorkspace({
                   onClick={() => {
                     setSelection({ start: null, end: null, isDragging: false });
                     setPreviewPrice(null);
+                    setMobileSelectionMode("idle");
                   }}
                   className="min-h-10 rounded-full border border-white bg-white px-4 py-2 text-sm font-medium text-[#1F1F1F] shadow-[0px_2px_4px_0px_#00000040] transition-colors hover:bg-[#DDDDDE] dark:border-white/20 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 cursor-pointer"
                 >
@@ -3969,10 +5090,14 @@ export function HostCalendarWorkspace({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setMobileSettingsOpen(true)}
+                  onClick={() => {
+                    // Explicit multi-select completion opens the existing bulk
+                    // management sheet; a normal single tap never reaches here.
+                    setMobileSettingsOpen(true);
+                  }}
                   className="min-h-10 rounded-full border border-transparent bg-[#FCDF9C] px-4 py-2 text-sm font-medium text-[#1F1F1F] shadow-[0px_2px_4px_0px_#00000040] transition-colors hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white cursor-pointer"
                 >
-                  {t("host_calendar_edit_dates", "Edit dates")}
+                  {t("host_calendar_manage_selected_dates", "Manage selection")}
                 </button>
               </div>
             </aside >

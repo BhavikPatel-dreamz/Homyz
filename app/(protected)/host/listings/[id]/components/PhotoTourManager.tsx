@@ -45,6 +45,7 @@ export interface RoomItem {
 }
 
 export interface PhotoTourManagerProps {
+  listingId: string;
   photos: string[];
   photoRoomAssignments: PhotoRoomAssignment[];
   onChange: (photos: string[]) => void;
@@ -127,6 +128,7 @@ export type ActiveModalState =
     };
 
 export function PhotoTourManager({
+  listingId,
   photos = [],
   photoRoomAssignments = [],
   onChange,
@@ -683,6 +685,8 @@ export function PhotoTourManager({
     uploadForRoomTarget.current = null;
 
     const uploadedUrls: string[] = [];
+    let latestPhotos = photos;
+    let latestAssignments = photoRoomAssignments;
 
     for (let i = 0; i < validFiles.length; i++) {
       const file = validFiles[i];
@@ -690,6 +694,7 @@ export function PhotoTourManager({
       try {
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("listingId", listingId);
         const res = await fetch("/api/v1/upload/listing-photo", {
           method: "POST",
           body: formData,
@@ -697,6 +702,10 @@ export function PhotoTourManager({
         const data = await res.json().catch(() => null);
         if (res.ok && data?.url) {
           uploadedUrls.push(String(data.url));
+          if (Array.isArray(data.photos)) latestPhotos = data.photos.map(String);
+          if (Array.isArray(data.photoRoomAssignments)) {
+            latestAssignments = data.photoRoomAssignments as PhotoRoomAssignment[];
+          }
         } else {
           console.error("Upload error:", data?.error);
         }
@@ -713,14 +722,14 @@ export function PhotoTourManager({
       return;
     }
 
-    const nextPhotos = [...photos, ...uploadedUrls];
-    onChange(nextPhotos);
+    onChange(latestPhotos);
+    onChangeRoomAssignments(latestAssignments);
 
     if (targetRoom && targetRoom !== "UNASSIGNED") {
       const room = consolidatedRooms.find((r) => r.id === targetRoom);
       if (room) {
         const newAssignments = [
-          ...photoRoomAssignments,
+          ...latestAssignments.filter((assignment) => !uploadedUrls.includes(assignment.url)),
           ...uploadedUrls.map((url) => ({
             url,
             roomType: resolvePhotoRoomType(room.type) || "OTHER_SPACE",
@@ -729,12 +738,10 @@ export function PhotoTourManager({
           })),
         ];
         onChangeRoomAssignments(newAssignments);
-        onSave({ photos: nextPhotos, photoRoomAssignments: newAssignments });
-      } else {
-        onSave({ photos: nextPhotos });
+        // Upload persistence is complete. This scoped follow-up only adds the
+        // room-instance metadata required by the photo tour.
+        onSave({ photoRoomAssignments: newAssignments });
       }
-    } else {
-      onSave({ photos: nextPhotos });
     }
 
     showToast(`Added ${uploadedUrls.length} photo${uploadedUrls.length > 1 ? "s" : ""}`);

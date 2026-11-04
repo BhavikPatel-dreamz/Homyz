@@ -98,8 +98,8 @@ runTest("Booking ranges and check-in/check-out semantics match the system archit
 
   // Verify reservation bar calculation logic in workspace code
   assert.ok(
-    calendarWorkspaceCode.includes("isBookingStart") &&
-      calendarWorkspaceCode.includes("isBookingEndNight") &&
+    calendarWorkspaceCode.includes("getWeekBookingSegments") &&
+      calendarWorkspaceCode.includes("bookingSegmentsByWeek") &&
       calendarWorkspaceCode.includes("bookingRanges"),
     "Host calendar must compute continuous reservation bars with start/middle/end styling"
   );
@@ -181,6 +181,132 @@ runTest("High-performance O(1) indexed lookups are used across cells with Map/Se
   );
 });
 
+runTest("Mobile calendar keeps seven columns while showing compact effective prices and status markers", () => {
+  assert.ok(calendarWorkspaceCode.includes("grid min-w-0 grid-cols-7 gap-1 sm:gap-2"));
+  assert.ok(calendarWorkspaceCode.includes("formatCompactPrice(promo.promotionalPrice)"));
+  assert.ok(!calendarWorkspaceCode.includes("{displayCurrency}</span>"), "Mobile month navigation must not repeat the currency code beside the month title");
+  assert.ok(calendarWorkspaceCode.includes('title={t("host_cal_blocked_label", "Blocked")}>×</span>'));
+  assert.ok(calendarWorkspaceCode.includes('title={t("host_calendar_status_booked", "Booked")}>B</span>'));
+  assert.ok(calendarWorkspaceCode.includes("mobile:${week.key}:${segment.booking.id}"));
+  assert.ok(calendarWorkspaceCode.includes("repeat(${bookingLaneCount}, 18px)"));
+  assert.ok(calendarWorkspaceCode.includes("max-lg:pt-[calc(var(--calendar-booking-lanes)*18px)]"));
+  assert.ok(calendarWorkspaceCode.includes("inset-x-0 top-[32px] z-20"));
+});
+
+runTest("Mobile calendar header selector and fixed navigation insets remain usable", () => {
+  const hostShell = fs.readFileSync(path.resolve("./components/host/host-header.tsx"), "utf-8");
+  const calendarSkeleton = fs.readFileSync(path.resolve("./components/host/host-calendar-skeleton.tsx"), "utf-8");
+
+  assert.ok(calendarWorkspaceCode.includes("setMobilePropertySelectorOpen(true)"));
+  assert.ok(calendarWorkspaceCode.includes("bottom-[calc(72px+env(safe-area-inset-bottom))]"));
+  assert.ok(hostShell.includes("pb-[calc(72px+env(safe-area-inset-bottom))]"));
+  assert.ok(calendarSkeleton.includes("max-sm:min-h-[72px]"));
+  assert.ok(calendarSkeleton.includes("max-sm:p-1"));
+});
+
+runTest("Year view uses an interactive, data-backed dot grid with progressive year loading", () => {
+  assert.ok(
+    calendarWorkspaceCode.includes("function YearDotCalendar") &&
+      calendarWorkspaceCode.includes("grid-cols-7 place-items-center") &&
+      calendarWorkspaceCode.includes("Array.from({ length: 42 }") &&
+      calendarWorkspaceCode.includes("blockedDatesSet.has(key)") &&
+      calendarWorkspaceCode.includes("bookingsByDate.get(key)?.[0]"),
+    "Year view must render real weekday-aligned date dots from the shared calendar indexes",
+  );
+  assert.ok(
+    calendarWorkspaceCode.includes("extend(\"before\")") &&
+      calendarWorkspaceCode.includes("extend(\"after\")") &&
+      calendarWorkspaceCode.includes("prependHeightRef") &&
+      calendarWorkspaceCode.includes("scrollHeight - previousHeight"),
+    "Year view must progressively extend in both directions without shifting the user's scroll position",
+  );
+  assert.ok(
+    calendarWorkspaceCode.includes("onDayClick(key, booking)") &&
+      calendarWorkspaceCode.includes("onOpenMonth(calendarMonth)") &&
+      calendarWorkspaceCode.includes("onReferenceMonth"),
+    "Year dots, month labels, and Today control must reuse existing calendar navigation and detail flows",
+  );
+  assert.ok(
+    calendarWorkspaceCode.includes("const promotionDateKeys = useMemo") &&
+      calendarWorkspaceCode.includes("promotionDateKeys.has(key)") &&
+      calendarWorkspaceCode.includes("MAX_YEAR_VIEW_MONTHS = 48") &&
+      calendarWorkspaceCode.includes("requestAnimationFrame(() =>"),
+    "Year view must cache per-month pricing, bound its retained DOM window, and throttle scroll work",
+  );
+});
+
+runTest("Year view uses detailed desktop months and in-place mobile month editing", () => {
+  assert.ok(
+    calendarWorkspaceCode.includes("function DesktopYearMonth") &&
+      calendarWorkspaceCode.includes("grid-cols-7 border-l border-t") &&
+      calendarWorkspaceCode.includes("resolveCalendarMonthPricing") &&
+      calendarWorkspaceCode.includes("lg:grid-cols-3"),
+    "Desktop Year view must render real date-and-price month grids in three columns",
+  );
+  assert.ok(
+    calendarWorkspaceCode.includes("onSelectMonthRange") &&
+      calendarWorkspaceCode.includes('setMobileSelectionMode("year-month")') &&
+      calendarWorkspaceCode.includes("function MobileYearMonthEditor") &&
+      calendarWorkspaceCode.includes("onBulkAvailability") &&
+      calendarWorkspaceCode.includes("isSelectedMonth"),
+    "Mobile Year view must select a whole month and use the existing bulk availability flow without leaving Year view",
+  );
+});
+
+runTest("Mobile calendar settings use summary cards and isolated editors without replacing the listing save path", () => {
+  const calendarSettingsCode = fs.readFileSync(path.resolve("./components/host/calendar-settings-panel.tsx"), "utf-8");
+  assert.ok(
+    calendarSettingsCode.includes("function SettingsSummaryCard") &&
+      calendarSettingsCode.includes("type MobileSettingsEditor") &&
+      calendarSettingsCode.includes("setEditor(nextEditor)"),
+    "Mobile settings must show compact summaries and defer fields to an explicit editor",
+  );
+  assert.ok(
+    calendarSettingsCode.includes("await onSave(values)") &&
+      calendarSettingsCode.includes("smartPricing: next") &&
+      calendarSettingsCode.includes("longTermCancellationPolicy"),
+    "Every supported setting must retain its existing persisted update flow",
+  );
+  assert.ok(
+    calendarSettingsCode.includes("scrollIntoView({ block: \"nearest\", inline: \"center\", behavior: \"smooth\" })") &&
+      calendarSettingsCode.includes("touch-pan-y overscroll-contain overflow-x-hidden overflow-y-auto") &&
+      calendarSettingsCode.includes("document.body.style.overflow = \"hidden\""),
+    "Settings tabs and content must remain contained on narrow mobile viewports",
+  );
+  assert.ok(
+    calendarSettingsCode.includes('"new-listing"') &&
+      calendarSettingsCode.includes('"custom-promotion"') &&
+      calendarSettingsCode.includes('"guest-capacity"') &&
+      calendarSettingsCode.includes("allowSameDayRequests") &&
+      calendarSettingsCode.includes("includedGuests"),
+    "Mobile settings must expose desktop promotions, guest capacity, fee thresholds, and same-day availability controls",
+  );
+});
+
+runTest("Selected dates use date-specific controls while ranges retain the bulk editor", () => {
+  assert.ok(calendarWorkspaceCode.includes("function SingleDateManagementPanel"));
+  assert.ok(calendarWorkspaceCode.includes("function CalendarSelectionManagementPanel"));
+  assert.ok(calendarWorkspaceCode.includes("props.range.start !== props.range.end"));
+  assert.ok(calendarWorkspaceCode.includes('customCancellationPolicies: { ...customCancellationPolicies, [selectedDateKey]: policyInput }'));
+  assert.ok(calendarWorkspaceCode.includes('customMinNights: { ...customMinNights, [selectedDateKey]: value }'));
+  assert.ok(calendarWorkspaceCode.includes('variant={normalizedSelectedRange ? "calendar-management" : "default"}'));
+  assert.ok(calendarWorkspaceCode.includes("dragSelectionChangedRef.current"));
+  assert.ok(calendarWorkspaceCode.includes("onContinueSelecting"));
+  assert.ok(calendarWorkspaceCode.includes('if (saved === true) setView("details")'));
+  assert.ok(calendarWorkspaceCode.includes('if (saved === true) setView("custom")'));
+  assert.ok(calendarWorkspaceCode.includes("minimumNightsOverride ?? minimumNightsDefault"));
+  assert.ok(calendarWorkspaceCode.includes("cancellationPolicyLabel(selectedPolicy, t)"));
+  assert.ok(calendarWorkspaceCode.includes('setMobileSettingsOpen(true)'));
+});
+
+runTest("Range cancellation policy changes are confirmed and exclude protected dates", () => {
+  assert.ok(calendarWorkspaceCode.includes('window.confirm(t("host_calendar_confirm_policy_bulk"'));
+  assert.ok(calendarWorkspaceCode.includes("for (const key of stats.editableKeys)"));
+  assert.ok(calendarWorkspaceCode.includes("customCancellationPolicies: nextOverrides"));
+  assert.ok(calendarWorkspaceCode.includes('host_calendar_policy_dates_skipped'));
+  assert.ok(calendarWorkspaceCode.includes("selectedDayBookings={bookingsByDate.get(normalizedSelectedRange.start) || []}"));
+});
+
 console.log("\n==================================================================");
 console.log(`   PHASE 4 & 5 VERIFICATION: ${passed}/${total} TESTS PASSED`);
 console.log("==================================================================\n");
@@ -188,4 +314,3 @@ console.log("==================================================================\
 if (passed !== total) {
   process.exitCode = 1;
 }
-

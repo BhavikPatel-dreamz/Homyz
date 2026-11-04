@@ -27,6 +27,17 @@ test("host listing editor keeps navigation on the desktop left and forms on the 
   assert.doesNotMatch(sidebar, /useScrollbarDrag/);
 });
 
+test("mobile listing card entry opens the existing editor section menu before a form", () => {
+  const listings = read("components/host/host-listings-workspace.tsx");
+  const routeWorkspace = read("app/(protected)/host/listings/[id]/listing-editor-route-workspace.tsx");
+  const editor = read("app/(protected)/host/listings/[id]/host-listing-editor-client.tsx");
+
+  assert.match(listings, /href=\{`\/host\/listings\/\$\{item\.id\}`\}/);
+  assert.match(routeWorkspace, /activeRouteSegment \? slugToSection\(activeRouteSegment\) : undefined/);
+  assert.match(editor, /presentation === "host" && !initialSection && window\.matchMedia\("\(max-width: 767px\)"\)\.matches/);
+  assert.match(editor, /mobileOpen=\{isMobileSidebarOpen\}/);
+});
+
 test("only the Today host workspace mounts the shared footer", () => {
   const today = read("app/(protected)/host/today/page.tsx");
   assert.match(today, /<Footer\s*\/>/);

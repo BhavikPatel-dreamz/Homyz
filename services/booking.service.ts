@@ -29,6 +29,7 @@ import { calculateRefundEligibility } from "@/lib/refund/policy-engine";
 import type { CalculatedTaxItem, HostPayoutBreakdown, ListingTaxDTO } from "@/lib/tax/types";
 import { getHostServiceFeePercentage } from "@/services/app-settings.service";
 import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
+import { getCancellationPolicyForStay } from "@/lib/booking/date-cancellation-policy";
 import {
   calculateBookingPrice,
   calculateSpecialOffer,
@@ -316,9 +317,7 @@ export async function getBookingQuote(opts: {
   }
 
   const cancellationPolicyType = nights >= 28 ? "LONG_TERM" : "SHORT_TERM";
-  const cancellationPolicy = cancellationPolicyType === "LONG_TERM"
-    ? listing.longTermCancellationPolicy || "FIRM"
-    : listing.cancellationPolicy || "FLEXIBLE";
+  const cancellationPolicy = getCancellationPolicyForStay(listing, opts.checkIn, nights);
   const rawNonRefundable = listing.discounts && typeof listing.discounts === "object"
     ? (listing.discounts as Record<string, unknown>).non_refundable
     : null;

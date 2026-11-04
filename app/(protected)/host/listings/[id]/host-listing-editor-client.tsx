@@ -213,6 +213,13 @@ export function HostListingEditorClient({
   );
   // Mobile navigation drawer state; starts closed so desktop renders the static sidebar immediately
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (presentation === "host" && !initialSection && window.matchMedia("(max-width: 767px)").matches) {
+      setIsMobileSidebarOpen(true);
+    }
+  }, [initialSection, presentation]);
+
   const activeSectionRef = useRef(activeSection);
   const editorContentScrollRef = useRef<HTMLElement>(null);
   const requestSectionNavigationRef = useRef<(section: SectionKey, fromHistory?: boolean) => void>(() => {});
@@ -1020,11 +1027,10 @@ export function HostListingEditorClient({
         allowSameDayRequests,
       };
     } else if (sectionToSave === "photos") {
-      payload = {
-        photos: editPhotos,
-        photoRoomAssignments: editPhotoRoomAssignments,
-        rooms,
-      };
+      // Photo Tour operations always pass their exact changed field(s) as an
+      // override. Never submit the entire photo/room snapshot here: React
+      // state can be stale while an upload or another section save is pending.
+      payload = {};
     } else if (sectionToSave === "amenities" || sectionToSave === "add-amenities") {
       payload = { amenities: normalizeAmenities(editAmenities) };
     } else if (sectionToSave === "location") {
@@ -1656,6 +1662,7 @@ export function HostListingEditorClient({
 
             {activeSection === "photos" && (
               <PhotoTourManager
+                listingId={listing.id}
                 photos={editPhotos}
                 photoRoomAssignments={editPhotoRoomAssignments}
                 onChange={handlePhotoTourChange}

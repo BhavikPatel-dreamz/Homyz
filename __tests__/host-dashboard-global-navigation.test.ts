@@ -9,6 +9,7 @@ console.log("==================================================================\
 const appHeaderPath = path.resolve("./components/dashboard/app-header.tsx");
 const hostHeaderPath = path.resolve("./components/host/host-header.tsx");
 const hostSubNavPath = path.resolve("./components/host/host-sub-nav.tsx");
+const hostMobileNavCssPath = path.resolve("./components/host/host-mobile-nav.module.css");
 const hostLayoutPath = path.resolve("./app/(protected)/host/layout.tsx");
 
 const hostTodayPagePath = path.resolve("./app/(protected)/host/today/page.tsx");
@@ -23,6 +24,7 @@ const hostMessagesWorkspacePath = path.resolve("./components/host/messages/host-
 const appHeaderCode = fs.readFileSync(appHeaderPath, "utf-8");
 const hostHeaderCode = fs.readFileSync(hostHeaderPath, "utf-8");
 const hostSubNavCode = fs.readFileSync(hostSubNavPath, "utf-8");
+const hostMobileNavCssCode = fs.readFileSync(hostMobileNavCssPath, "utf-8");
 const hostLayoutCode = fs.readFileSync(hostLayoutPath, "utf-8");
 const hostTodayPageCode = fs.readFileSync(hostTodayPagePath, "utf-8");
 const hostCalendarPageCode = fs.readFileSync(hostCalendarPagePath, "utf-8");
@@ -82,18 +84,30 @@ runTest("Host layout keeps one shared header mounted across route changes", () =
   );
 });
 
-runTest("Shared Host header keeps a stable height and exposes primary navigation on mobile", () => {
+runTest("Host mobile navigation replaces the global header and persists in the shared layout", () => {
   assert.ok(
-    appHeaderCode.includes("h-20 w-full items-center justify-between border-b-0 py-0 md:h-[88px] lg:h-[96px]"),
-    "Host header height must remain fixed at each responsive breakpoint"
+    appHeaderCode.includes('className="hidden header sticky top-0'),
+    "The global Host header must be hidden below the tablet breakpoint"
   );
   assert.ok(
-    appHeaderCode.includes('className="grid h-11 grid-cols-4 border-t border-zinc-100 md:hidden"'),
-    "Mobile Host navigation must keep four routes aligned in a fixed-height row"
+    hostHeaderCode.includes("<HostSubNav showDesktopNav={false} />"),
+    "The persistent Host layout must mount the mobile navigation once"
   );
   assert.ok(
-    appHeaderCode.includes("aria-current={tab.isActive ? \"page\" : undefined}"),
-    "Mobile navigation must expose the active route accessibly"
+    hostHeaderCode.includes("pb-[calc(72px+env(safe-area-inset-bottom))] md:pb-0"),
+    "The shared Host layout must reserve space for the fixed mobile bar"
+  );
+  assert.ok(
+    hostMobileNavCssCode.includes("grid-template-columns: repeat(5, minmax(0, 1fr))"),
+    "Mobile navigation must distribute five tabs evenly"
+  );
+  assert.ok(
+    hostMobileNavCssCode.includes("height: calc(72px + env(safe-area-inset-bottom))"),
+    "Mobile navigation must account for the device safe area"
+  );
+  assert.ok(
+    hostMobileNavCssCode.includes("@media (min-width: 768px)"),
+    "The existing tablet and desktop header must remain visible from 768px"
   );
 });
 
@@ -103,8 +117,12 @@ runTest("Messages workspace avoids a duplicate inbox title below the main Host n
     "Messages inbox must not repeat the active primary navigation label as a header"
   );
   assert.ok(
-    hostMessagesWorkspaceCode.includes("h-[calc(100dvh-124px)]"),
-    "Mobile messages panel height must account for the shared two-row Host header"
+    hostMessagesWorkspaceCode.includes("h-[calc(100dvh-84px-env(safe-area-inset-bottom))]"),
+    "Mobile messages panel height must stop above the fixed Host bottom navigation"
+  );
+  assert.ok(
+    hostMessagesWorkspaceCode.includes("md:h-[calc(100dvh-108px)]"),
+    "Tablet messages panel height must retain the existing header spacing"
   );
 });
 
@@ -259,18 +277,22 @@ runTest("HostSubNav Menu button dispatches homyz:toggle-menu to open header menu
   );
 });
 
-runTest("HostSubNav mobile bottom notch gracefully positions when tab is active or inactive", () => {
+runTest("HostSubNav exposes five touch-friendly tabs and opens the existing menu", () => {
   assert.ok(
-    hostSubNavCode.includes('const activeTabIndex = tabs.findIndex((tab) => tab.id === activeTab);'),
-    "HostSubNav must find activeTabIndex"
+    hostSubNavCode.includes('aria-label="Mobile host navigation"'),
+    "HostSubNav must expose a named navigation landmark"
   );
   assert.ok(
-    hostSubNavCode.includes('const hasActiveTab = activeTabIndex !== -1;'),
-    "HostSubNav must check if an active tab exists"
+    hostSubNavCode.includes('aria-current={selected ? "page" : undefined}'),
+    "Route links must expose the selected page accessibly"
   );
   assert.ok(
-    hostSubNavCode.includes('notchX = hasActiveTab ? (activeTabIndex + 0.5) * (390 / tabs.length) : -100;'),
-    "HostSubNav notch must not highlight tab 0 when no tab matches and scale concentric with tabs"
+    hostSubNavCode.includes("aria-expanded={menuOpen}"),
+    "Menu tab must expose its open state"
+  );
+  assert.ok(
+    hostSubNavCode.includes('window.dispatchEvent(new CustomEvent("homyz:toggle-menu"))'),
+    "Menu tab must open the existing Host drawer"
   );
 });
 

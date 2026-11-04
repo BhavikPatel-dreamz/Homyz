@@ -16,20 +16,20 @@ function CalendarWeekSkeleton({ week }: { week: number }) {
 
   return (
     <div className="relative">
-      <div className="grid min-w-0 grid-cols-7 gap-1.5 sm:gap-2">
+      <div className="grid min-w-0 grid-cols-7 gap-1 sm:gap-2">
         {Array.from({ length: 7 }, (_, day) => (
           <div
             key={`${week}-${day}`}
-            className="min-h-[76px] overflow-hidden rounded-[14px] border border-[#ececef] bg-white p-2 sm:min-h-[102px] sm:p-2.5 lg:min-h-[140px] lg:p-3 dark:border-zinc-800 dark:bg-zinc-900"
+            className="min-h-[76px] max-sm:min-h-[72px] overflow-hidden rounded-[14px] border border-[#ececef] bg-white p-2 max-sm:p-1 sm:min-h-[102px] sm:p-2.5 lg:min-h-[140px] lg:p-3 dark:border-zinc-800 dark:bg-zinc-900"
           >
             <span className={`block size-3 rounded-full ${shimmer}`} />
-            <span className={`mt-3 block h-3 w-16 rounded ${shimmer}`} />
+            <span className={`mt-3 block h-3 w-4 rounded sm:w-16 ${shimmer}`} />
           </div>
         ))}
       </div>
       {bookingBar ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-3 grid grid-cols-7 gap-1.5 sm:gap-2">
-          <span className={`h-8 rounded-full ${bookingBar} ${shimmer}`} />
+          <span className={`hidden h-8 rounded-full lg:block ${bookingBar} ${shimmer}`} />
         </div>
       ) : null}
     </div>
@@ -76,7 +76,7 @@ export function HostCalendarSkeleton() {
       <main
         aria-busy="true"
         aria-label={t("host_calendar_loading_aria", "Loading calendar")}
-        className="mx-auto w-full max-w-[1600px] flex-1 px-4 pb-28 pt-6 sm:px-8 sm:pt-8 lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden lg:pb-6"
+        className="mx-auto w-full max-w-[1600px] flex-1 px-4 pb-0 pt-6 sm:px-8 sm:pt-8 lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden lg:pb-6"
       >
         <div className="relative sticky top-0 z-30 hidden shrink-0 items-center justify-between border-b border-[#d8d8d8] bg-white/95 pb-5 pt-2 backdrop-blur after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[#d8d8d8] sm:flex sm:pl-[120px] sm:after:left-[129px] dark:bg-zinc-950/95 dark:after:bg-zinc-700">
           <div className="flex items-center gap-3">
@@ -92,11 +92,25 @@ export function HostCalendarSkeleton() {
         </div>
 
         <section className="sm:hidden">
-          <div className="mb-5 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between">
             <span className={`h-7 w-40 rounded ${shimmer}`} />
-            <span className={`h-9 w-20 rounded-full ${shimmer}`} />
           </div>
-          <div className="mb-3 grid grid-cols-7 gap-1">
+          <div className="mb-5 flex items-center gap-3">
+            <span className={`size-11 shrink-0 rounded-full ${shimmer}`} />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <span className={`block h-4 w-3/4 rounded ${shimmer}`} />
+              <span className={`block h-3 w-1/2 rounded ${shimmer}`} />
+            </div>
+          </div>
+          <div className="mb-2 flex items-center justify-between border-b border-zinc-200 pb-2">
+            <span className={`h-5 w-24 rounded ${shimmer}`} />
+            <div className="flex items-center gap-2">
+              <span className={`h-3 w-8 rounded ${shimmer}`} />
+              <span className={`size-11 rounded-full ${shimmer}`} />
+              <span className={`size-11 rounded-full ${shimmer}`} />
+            </div>
+          </div>
+          <div className="mb-2 grid grid-cols-7 gap-1">
             {Array.from({ length: 7 }, (_, index) => <span key={index} className={`mx-auto h-2 w-6 rounded ${shimmer}`} />)}
           </div>
           <div className="space-y-1.5">

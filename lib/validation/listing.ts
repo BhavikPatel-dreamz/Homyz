@@ -103,6 +103,14 @@ export const discountsSchema = z.preprocess(
     return Object.fromEntries(value.map((discount) => [String(discount), true]));
   },
   z.object({
+    customMinNights: z.record(
+      z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      z.number().int().min(1).max(365),
+    ).optional(),
+    customCancellationPolicies: z.record(
+      z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      z.enum(["FLEXIBLE", "MODERATE", "FIRM"]),
+    ).optional(),
     weekly: z.union([z.boolean(), percentageDiscountSchema]).optional(),
     monthly: z.union([z.boolean(), percentageDiscountSchema]).optional(),
     last_minute: z.union([z.boolean(), percentageDiscountSchema]).optional(),
@@ -359,10 +367,21 @@ export const createListingSchema = z
   });
 export type CreateListingInput = z.infer<typeof createListingSchema>;
 
-// Optional wrappers bypass defaults for omitted update fields and preserve the
-// concrete field types for callers that consume parsed updates.
+type ListingFieldShape = typeof listingFields;
+type WithoutDefault<T extends z.ZodType> = T extends z.ZodDefault<infer Inner> ? Inner : T;
+
+// `partial()` alone does not prevent a nested Zod default from being applied.
+// Unwrap defaults before making fields optional so PATCH requests preserve every
+// field that the caller did not explicitly include.
+const updateListingFields = Object.fromEntries(
+  Object.entries(listingFields).map(([key, field]) => [
+    key,
+    field instanceof z.ZodDefault ? field.unwrap() : field,
+  ]),
+) as { [Key in keyof ListingFieldShape]: WithoutDefault<ListingFieldShape[Key]> };
+
 export const updateListingSchema = z
-  .object(listingFields)
+  .object(updateListingFields)
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
     message: "No fields to update",

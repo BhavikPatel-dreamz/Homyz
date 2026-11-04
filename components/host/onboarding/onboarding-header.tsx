@@ -22,10 +22,10 @@ export function OnboardingHeader({ onSaveAndExit, isSaving = false, disabled = f
         src={branding.hostHeaderLogoUrl}
         fallbackSrc="/images/brand/homyz-logo-dark-v1.svg"
         alt="Homyz"
-        width={100}
-        height={36}
+        width={133}
+        height={48}
         priority
-        className="h-9 w-auto"
+        className="h-11 w-auto sm:h-12"
       />
 
       <div className="flex items-center gap-2 sm:gap-3">

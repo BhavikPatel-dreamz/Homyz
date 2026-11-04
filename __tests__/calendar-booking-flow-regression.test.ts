@@ -8,6 +8,11 @@ import {
 } from "../lib/booking/availability";
 import { toPropertyCardPricingViewModel } from "../lib/booking/property-card-pricing";
 import { calculateBookingPrice } from "../services/pricing.service";
+import {
+  getCancellationPolicyForCheckIn,
+  getCancellationPolicyForStay,
+} from "../lib/booking/date-cancellation-policy";
+import { discountsSchema } from "../lib/validation/listing";
 
 const calendarPricing = {
   id: "listing-calendar-regression",
@@ -122,6 +127,45 @@ describe("calendar-driven guest booking regression coverage", () => {
       now,
       unavailableRanges: [{ start: "2026-10-14", end: "2026-10-17" }],
     }), "BOOKING_OVERLAP");
+  });
+
+  it("scopes approved cancellation overrides to the matching check-in date", () => {
+    const listing = {
+      cancellationPolicy: "FLEXIBLE",
+      discounts: {
+        customCancellationPolicies: {
+          "2026-10-13": "FIRM",
+          "2026-10-14": "NOT_SUPPORTED",
+        },
+      },
+    };
+
+    assert.equal(getCancellationPolicyForCheckIn(listing, "2026-10-13"), "FIRM");
+    assert.equal(getCancellationPolicyForCheckIn(listing, "2026-10-14"), "FLEXIBLE");
+    assert.equal(getCancellationPolicyForCheckIn(listing, "2026-10-15"), "FLEXIBLE");
+  });
+
+  it("uses date-scoped cancellation policy for short stays and listing policy for long stays", () => {
+    const listing = {
+      cancellationPolicy: "FLEXIBLE",
+      longTermCancellationPolicy: "STRICT",
+      discounts: { customCancellationPolicies: { "2026-10-13": "FIRM" } },
+    };
+
+    assert.equal(getCancellationPolicyForStay(listing, "2026-10-13", 27), "FIRM");
+    assert.equal(getCancellationPolicyForStay(listing, "2026-10-13", 28), "STRICT");
+  });
+
+  it("validates date-scoped cancellation overrides against supported refund policies", () => {
+    assert.equal(discountsSchema.safeParse({
+      customCancellationPolicies: { "2026-10-13": "FIRM" },
+    }).success, true);
+    assert.equal(discountsSchema.safeParse({
+      customCancellationPolicies: { "2026-10-13": "LIMITED" },
+    }).success, false);
+    assert.equal(discountsSchema.safeParse({
+      customMinNights: { "2026-10-13": 0 },
+    }).success, false);
   });
 
   it("enforces advance notice and the host's same-day switch and cutoff", () => {

@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Container } from "../ui";
 import Image from "next/image";
 import styles from "./host-mobile-nav.module.css";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { useUnreadNotificationCount } from "@/lib/notifications/unread-count-store";
 
 export interface HostSubNavProps {
   activeTab?: "today" | "calendar" | "listing" | "messages" | "resolution";
@@ -22,11 +24,10 @@ export function TodayNavIcon({ className = "" }: { className?: string }) {
   return (
     <Image
       src="/images/icons/today-icon.svg"
-      alt="Today Icon"
+      alt=""
       width={24}
       height={19}
       className={className}
-      style={{ width: "auto", height: "auto" }}
       priority
     />
   );
@@ -40,7 +41,6 @@ export function CalendarNavIcon({ className = "" }: { className?: string }) {
       width={24}
       height={19}
       className={className}
-      style={{ width: "auto", height: "auto" }}
       priority
     />
   );
@@ -54,7 +54,6 @@ export function ListingNavIcon({ className = "" }: { className?: string }) {
       width={24}
       height={24}
       className={className}
-      style={{ width: "auto", height: "auto" }}
       priority
     />
   );
@@ -68,7 +67,6 @@ export function MessagesNavIcon({ className = "" }: { className?: string }) {
       width={24}
       height={24}
       className={className}
-      style={{ width: "auto", height: "auto" }}
       priority
     />
   );
@@ -124,6 +122,70 @@ export function HostSubNav({
 }: HostSubNavProps) {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const unreadNotificationCount = useUnreadNotificationCount();
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleMenuState = (event: Event) => {
+      setMenuOpen(Boolean((event as CustomEvent<{ open?: boolean }>).detail?.open));
+    };
+    window.addEventListener("homyz:host-menu-state", handleMenuState);
+    return () => window.removeEventListener("homyz:host-menu-state", handleMenuState);
+  }, []);
+
+  useEffect(() => {
+    const mobileViewport = window.matchMedia("(max-width: 767px)");
+    let activeController: AbortController | null = null;
+    let isMounted = true;
+
+    const loadUnreadMessages = async () => {
+      if (!mobileViewport.matches || document.visibilityState !== "visible") return;
+      activeController?.abort();
+      activeController = new AbortController();
+      try {
+        const response = await fetch(
+          "/api/v1/messages/conversations?role=host&take=1",
+          { cache: "no-store", signal: activeController.signal },
+        );
+        const payload = await response.json();
+        if (isMounted && response.ok && payload?.success && typeof payload.data?.unreadTotal === "number") {
+          setUnreadMessageCount(payload.data.unreadTotal);
+        }
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          console.error("Unable to refresh unread host messages:", error);
+        }
+      }
+    };
+
+    const refreshForViewport = () => {
+      if (mobileViewport.matches) void loadUnreadMessages();
+      else activeController?.abort();
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") void loadUnreadMessages();
+    };
+    const handleMessagesUpdated = (event: Event) => {
+      const unreadTotal = (event as CustomEvent<{ unreadTotal?: number }>).detail?.unreadTotal;
+      if (typeof unreadTotal === "number") setUnreadMessageCount(unreadTotal);
+      else void loadUnreadMessages();
+    };
+    const interval = window.setInterval(() => void loadUnreadMessages(), 30_000);
+
+    refreshForViewport();
+    mobileViewport.addEventListener("change", refreshForViewport);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("homyz:messages-updated", handleMessagesUpdated);
+    return () => {
+      isMounted = false;
+      activeController?.abort();
+      window.clearInterval(interval);
+      mobileViewport.removeEventListener("change", refreshForViewport);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("homyz:messages-updated", handleMessagesUpdated);
+    };
+  }, []);
 
   let activeTab = explicitActiveTab;
   if (!activeTab && pathname) {
@@ -155,40 +217,31 @@ export function HostSubNav({
       id: "today",
       label: t("host_nav_today"),
       href: "/host/today",
-      icon: <TodayNavIcon />,
+      icon: <TodayNavIcon className="size-6" />,
       minWidthClass: "w-[92px] shrink-0",
     },
     {
       id: "calendar",
       label: t("host_nav_calendar"),
       href: "/host/calendar",
-      icon: <CalendarNavIcon />,
+      icon: <CalendarNavIcon className="size-6" />,
       minWidthClass: "w-[110px] shrink-0",
     },
     {
       id: "listing",
       label: t("host_nav_listing"),
       href: listingHref,
-      icon: <ListingNavIcon />,
+      icon: <ListingNavIcon className="size-6" />,
       minWidthClass: "w-[98px] shrink-0",
     },
     {
       id: "messages",
       label: t("host_nav_messages"),
       href: "/host/messages",
-      icon: <MessagesNavIcon />,
+      icon: <MessagesNavIcon className="size-6" />,
       minWidthClass: "w-[118px] shrink-0",
     },
   ];
-
-  const activeTabIndex = tabs.findIndex((tab) => tab.id === activeTab);
-  const hasActiveTab = activeTabIndex !== -1;
-  const notchX = hasActiveTab ? (activeTabIndex + 0.5) * (390 / tabs.length) : -100;
-  const startX = Math.max(0, notchX - 34);
-  const endX = Math.min(390, notchX + 34);
-  const backgroundPath = hasActiveTab
-    ? `M0 0H${startX}C${notchX - 26} 0 ${notchX - 26} 30 ${notchX} 30C${notchX + 26} 30 ${notchX + 26} 0 ${endX} 0H390V84H0Z`
-    : "M0 0H390V84H0Z";
 
   return (
     <>
@@ -196,11 +249,9 @@ export function HostSubNav({
       {showMobileNav && (
         <nav
           aria-label="Mobile host navigation"
+          data-host-mobile-nav=""
           className={styles.nav}
         >
-          <svg className={styles.background} viewBox="0 0 390 84" preserveAspectRatio="none" aria-hidden="true">
-            <path d={backgroundPath} fill="#FCDF9C" />
-          </svg>
           <div className={styles.tabs}>
           {tabs.map((tab) => {
             const selected = activeTab === tab.id;
@@ -208,23 +259,45 @@ export function HostSubNav({
               <Link
                 key={tab.id}
                 href={tab.href}
-                aria-label={tab.label}
+                onClick={() => {
+                  if (menuOpen) window.dispatchEvent(new CustomEvent("homyz:toggle-menu"));
+                }}
+                aria-label={tab.id === "messages" && unreadMessageCount > 0 ? `${tab.label}, ${unreadMessageCount} unread conversations` : tab.label}
                 aria-current={selected ? "page" : undefined}
                 className={`${styles.tab} ${selected ? styles.active : ""}`}
               >
-                <span
-                  className={styles.iconCircle}
-                >
+                <span className={styles.icon}>
                   {tab.icon}
+                  {tab.id === "messages" && unreadMessageCount > 0 && (
+                    <span className={styles.badge} aria-hidden="true">
+                      {unreadMessageCount > 99 ? "99+" : unreadMessageCount}
+                    </span>
+                  )}
                 </span>
-                <span
-                  className={styles.label}
-                >
+                <span className={styles.label}>
                   {"shortLabel" in tab && typeof tab.shortLabel === "string" ? tab.shortLabel : tab.label}
                 </span>
               </Link>
             );
           })}
+          <button
+            type="button"
+            onClick={handleMenuClick}
+            aria-label={unreadNotificationCount && unreadNotificationCount > 0 ? `Menu, ${unreadNotificationCount} unread notifications` : "Menu"}
+            aria-expanded={menuOpen}
+            aria-controls="host-navigation-drawer"
+            className={`${styles.tab} ${menuOpen ? styles.active : ""}`}
+          >
+            <span className={styles.icon}>
+              <MenuNavIcon className="size-6" />
+              {unreadNotificationCount !== null && unreadNotificationCount > 0 && (
+                <span className={styles.badge} aria-hidden="true">
+                  {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                </span>
+              )}
+            </span>
+            <span className={styles.label}>{t("host_nav_menu") || "Menu"}</span>
+          </button>
           </div>
         </nav>
       )}

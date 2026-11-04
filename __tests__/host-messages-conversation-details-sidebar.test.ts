@@ -41,7 +41,8 @@ describe("Host Messages conversation details sidebar", () => {
     assert.ok(workspace.includes("mt-1 flex justify-end"), "The reservation badge must sit on its own row below the property name");
     assert.ok(workspace.includes("getReservationContextLabel(selectedConversation.reservationContext)} details`}"), "The reservation action must have a descriptive accessible label");
     assert.ok(workspace.includes("focus-visible:outline-2") && workspace.includes("hover:bg-emerald-100"), "The reservation action must have visible focus and status-aware hover styling");
-    assert.ok(workspace.includes("h-[calc(100dvh-108px)]"), "Conversation list and chat must share the mobile viewport height");
+    assert.ok(workspace.includes("h-[calc(100dvh-84px-env(safe-area-inset-bottom))]"), "Conversation list and chat must clear the fixed mobile Host navigation");
+    assert.ok(workspace.includes("md:h-[calc(100dvh-108px)]"), "Conversation list and chat must retain the tablet Host header viewport height");
     assert.ok(workspace.includes("env(safe-area-inset-bottom)"), "The composer must clear mobile safe-area insets");
     assert.ok(styles.includes("messages-reservation-sheet-in 280ms"), "The reservation sheet must animate smoothly");
   });

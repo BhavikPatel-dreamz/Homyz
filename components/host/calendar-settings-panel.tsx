@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import Image from "next/image";
 import { BackButton } from "@/components/ui/back-button";
 import type { ListingDTO } from "@/services/mappers";
 import { convertCurrency, resolvePropertyCurrency } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { dateScopedCancellationPolicyOptions } from "@/lib/booking/date-cancellation-policy";
 
 type DiscountDetails = {
   enabled?: boolean;
@@ -14,6 +15,8 @@ type DiscountDetails = {
   discountPercentage?: number;
   daysInAdvance?: number;
   daysBefore?: number;
+  startDate?: string | null;
+  endDate?: string | null;
 };
 
 function asDiscountDetails(value: unknown): DiscountDetails | undefined {
@@ -78,6 +81,392 @@ function ExpandControl({
   );
 }
 
+type MobileSettingsTab = "pricing" | "discounts" | "availability" | "cancellations";
+type MobileSettingsEditor =
+  | "base-price"
+  | "weekend-price"
+  | "fees"
+  | "weekly"
+  | "monthly"
+  | "early-bird"
+  | "last-minute"
+  | "new-listing"
+  | "custom-promotion"
+  | "min-nights"
+  | "max-nights"
+  | "guest-capacity"
+  | "advance-notice"
+  | "same-day-cutoff"
+  | "short-policy"
+  | "long-policy";
+
+type MobileDiscountKey = "weekly" | "monthly" | "early_bird" | "last_minute" | "new_listing" | "custom_promotion";
+
+function SettingsSummaryCard({
+  label,
+  description,
+  value,
+  onClick,
+  children,
+}: {
+  label: string;
+  description?: string;
+  value?: ReactNode;
+  onClick?: () => void;
+  children?: ReactNode;
+}) {
+  const content = (
+    <>
+      <div className="min-w-0 flex-1">
+        <p className="text-[15px] font-medium leading-5 text-[#222222] dark:text-zinc-100">{label}</p>
+        {description && <p className="mt-1 text-sm leading-5 text-[#717171] dark:text-zinc-400">{description}</p>}
+        {value !== undefined && <div className="mt-3 text-[24px] font-semibold leading-7 tracking-[-0.02em] text-[#222222] dark:text-zinc-100">{value}</div>}
+      </div>
+      {children}
+      {onClick && <svg className="mt-1 size-5 shrink-0 text-[#222222] dark:text-zinc-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>}
+    </>
+  );
+
+  return onClick ? (
+    <button type="button" onClick={onClick} className="flex w-full items-start gap-3 rounded-[18px] border border-[#dddddd] bg-white px-[18px] py-[20px] text-left transition-[border-color,transform,background-color] hover:border-[#b8b8b8] active:scale-[0.99] dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600">
+      {content}
+    </button>
+  ) : <div className="flex w-full items-start gap-3 rounded-[18px] border border-[#dddddd] bg-white px-[18px] py-[20px] dark:border-zinc-700 dark:bg-zinc-900">{content}</div>;
+}
+
+function SettingsSwitch({ checked, disabled, onChange, label }: { checked: boolean; disabled?: boolean; onChange: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      disabled={disabled}
+      onClick={onChange}
+      className={`relative mt-0.5 flex h-8 w-14 shrink-0 items-center rounded-full border p-0.5 transition-[background-color,border-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#222222] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 dark:focus-visible:ring-white dark:focus-visible:ring-offset-zinc-950 ${checked ? "border-[#222222] bg-[#222222] dark:border-white dark:bg-white" : "border-[#b8b8b8] bg-[#b8b8b8] dark:border-zinc-600 dark:bg-zinc-700"}`}
+    >
+      <span className={`size-6 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.28)] transition-transform duration-200 ease-out dark:bg-zinc-950 ${checked ? "translate-x-6" : "translate-x-0"}`} />
+    </button>
+  );
+}
+
+function SettingsToggleCard({
+  label,
+  description,
+  value,
+  checked,
+  disabled,
+  onOpen,
+  onToggle,
+}: {
+  label: string;
+  description: string;
+  value: ReactNode;
+  checked: boolean;
+  disabled?: boolean;
+  onOpen: () => void;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-[18px] border border-[#dddddd] bg-white px-[18px] py-[20px] dark:border-zinc-700 dark:bg-zinc-900">
+      <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left transition-opacity hover:opacity-75">
+        <p className="text-[15px] font-medium leading-5 text-[#222222] dark:text-zinc-100">{label}</p>
+        <p className="mt-1 text-sm leading-5 text-[#717171] dark:text-zinc-400">{description}</p>
+        <p className="mt-3 text-[24px] font-semibold leading-7 tracking-[-0.02em] text-[#222222] dark:text-zinc-100">{value}</p>
+      </button>
+      <SettingsSwitch label={label} checked={checked} disabled={disabled} onChange={onToggle} />
+    </div>
+  );
+}
+
+/** A focused listing-level editor for the compact calendar workspace. */
+export function MobileCalendarSettings({
+  listing,
+  saving,
+  notice,
+  onSave,
+  onClose,
+}: {
+  listing: ListingDTO;
+  saving: boolean;
+  notice: string;
+  onSave: (values: Record<string, unknown>) => Promise<unknown>;
+  onClose: () => void;
+}) {
+  const { t } = useLanguage();
+  const [tab, setTab] = useState<MobileSettingsTab>("pricing");
+  const [editor, setEditor] = useState<MobileSettingsEditor | null>(null);
+  const [message, setMessage] = useState("");
+  const [smartPricing, setSmartPricing] = useState(Boolean(listing.smartPricing));
+  const [allowSameDayRequests, setAllowSameDayRequests] = useState(listing.allowSameDayRequests !== false);
+  const tabRefs = useRef<Record<MobileSettingsTab, HTMLButtonElement | null>>({
+    pricing: null,
+    discounts: null,
+    availability: null,
+    cancellations: null,
+  });
+  const currency = resolvePropertyCurrency(listing);
+  const discounts = listing.discounts && typeof listing.discounts === "object"
+    ? listing.discounts as Record<string, unknown>
+    : {};
+  const percentage = (value: unknown, fallback = 0) => {
+    const details = asDiscountDetails(value);
+    const raw = details?.percentage ?? details?.discountPercentage ?? value;
+    if (typeof raw === "number" || typeof raw === "string") return Number(raw) || 0;
+    return value === true || details ? fallback : 0;
+  };
+  const basePrice = (listing.weekdayBasePrice ?? listing.price ?? 0) / 100;
+  const weekendPrice = listing.weekendPrice == null ? null : listing.weekendPrice / 100;
+  const cleaningFee = (listing.cleaningFee ?? 0) / 100;
+  const extraGuestFee = Number((listing as Record<string, unknown>).extraGuestFee ?? 0) / 100;
+  const getDiscount = (entry: unknown, fallback = 0) => {
+    const details = asDiscountDetails(entry);
+    const value = percentage(entry, fallback);
+    return {
+      details,
+      value,
+      enabled: details?.enabled !== false && value > 0,
+    };
+  };
+  const weeklyConfig = getDiscount(discounts.weekly, 10);
+  const monthlyConfig = getDiscount(discounts.monthly, 25);
+  const earlyBirdConfig = getDiscount(discounts.early_bird ?? discounts.earlyBird, 10);
+  const lastMinuteConfig = getDiscount(discounts.last_minute ?? discounts.lastMinute, 15);
+  const newListingEntry = discounts.new_listing ?? discounts.newListing;
+  const newListingConfig = getDiscount(newListingEntry, 20);
+  const customPromotionConfig = getDiscount(discounts.custom_promotion, 15);
+  const weekly = weeklyConfig.value;
+  const monthly = monthlyConfig.value;
+  const earlyBird = earlyBirdConfig.value;
+  const lastMinute = lastMinuteConfig.value;
+  const newListing = newListingConfig.value;
+  const customPromotion = customPromotionConfig.value;
+  const formatAmount = (amount: number) => `${currency} ${new Intl.NumberFormat("en", { maximumFractionDigits: 2 }).format(amount)}`;
+  const policyLabel = (policy: string | null | undefined) => (policy || "FLEXIBLE").replaceAll("_", " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const weekendAdjustment = weekendPrice !== null && basePrice > 0 ? Math.round(((weekendPrice - basePrice) / basePrice) * 100) : null;
+
+  const save = async (values: Record<string, unknown>, closeEditor = true) => {
+    setMessage("");
+    const result = await onSave(values);
+    if (result === true) {
+      setMessage(t("host_calendar_notice_saved", "Changes saved."));
+      if (closeEditor) setEditor(null);
+      return true;
+    }
+    setMessage(t("host_calendar_notice_could_not_save", "Could not save. Please try again."));
+    return false;
+  };
+
+  useEffect(() => {
+    if (!editor) return;
+    const previousOverflow = document.body.style.overflow;
+    const previousTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.touchAction = previousTouchAction;
+    };
+  }, [editor]);
+  const fieldClass = "mt-2 h-12 w-full rounded-xl border border-[#bdbdbd] bg-white px-3.5 text-base font-medium text-[#1F1F1F] outline-none transition-colors focus:border-[#222222] focus:ring-1 focus:ring-[#222222] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100";
+  const tabs: Array<{ id: MobileSettingsTab; label: string }> = [
+    { id: "pricing", label: t("host_calendar_price_settings", "Pricing") },
+    { id: "discounts", label: t("host_calendar_stay_discounts_heading", "Discounts") },
+    { id: "availability", label: t("host_calendar_avail_settings", "Availability") },
+    { id: "cancellations", label: t("host_calendar_cancellation_policy", "Cancellations") },
+  ];
+
+  const openEditor = (nextEditor: MobileSettingsEditor) => {
+    setMessage("");
+    setEditor(nextEditor);
+  };
+  const discountEntry = (key: MobileDiscountKey) => key === "new_listing" ? newListingEntry : discounts[key];
+  const discountValues = (
+    key: MobileDiscountKey,
+    value: number,
+    enabled = value > 0,
+    extra: Record<string, unknown> = {},
+  ) => ({
+    discounts: {
+      ...discounts,
+      [key]: {
+        ...asDiscountDetails(discountEntry(key)),
+        ...extra,
+        enabled,
+        percentage: value,
+      },
+    },
+  });
+  const toggleDiscount = (key: MobileDiscountKey, enabled: boolean, editorForValue: MobileSettingsEditor) => {
+    const current = getDiscount(discountEntry(key), key === "weekly" ? 10 : key === "monthly" ? 25 : key === "last_minute" ? 15 : key === "new_listing" ? 20 : key === "early_bird" ? 10 : 15);
+    if (enabled && current.value <= 0) {
+      setMessage(t("host_calendar_discount_amount_required", "Set a discount amount before enabling it."));
+      openEditor(editorForValue);
+      return;
+    }
+    void save(discountValues(key, current.value, enabled), false);
+  };
+  const handleEditorSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const number = (name: string) => Number(data.get(name));
+    if (editor === "base-price") {
+      const value = number("price");
+      if (!Number.isFinite(value) || value <= 0) return setMessage(t("host_calendar_err_valid_price", "Enter a valid price greater than 0."));
+      await save({ price: Math.round(value * 100), weekdayBasePrice: Math.round(value * 100) });
+    } else if (editor === "weekend-price") {
+      const raw = String(data.get("weekendPrice") ?? "");
+      const value = raw === "" ? null : Number(raw);
+      if (value !== null && (!Number.isFinite(value) || value < 0)) return setMessage(t("host_calendar_err_valid_price", "Enter a valid price."));
+      await save({ weekendPrice: value === null ? null : Math.round(value * 100) });
+    } else if (editor === "fees") {
+      const nextCleaningFee = number("cleaningFee");
+      const nextExtraGuestFee = number("extraGuestFee");
+      const includedGuests = number("includedGuests");
+      if (![nextCleaningFee, nextExtraGuestFee].every((value) => Number.isFinite(value) && value >= 0) || !Number.isInteger(includedGuests) || includedGuests < 1 || includedGuests > (listing.guests ?? 1)) return setMessage(t("host_calendar_included_guests_invalid", "Included guests must be between 1 and the maximum guest capacity."));
+      await save({
+        cleaningFee: Math.round(nextCleaningFee * 100),
+        extraGuestFee: Math.round(nextExtraGuestFee * 100),
+        discounts: {
+          ...discounts,
+          includedGuests,
+          baseGuests: includedGuests,
+        },
+      });
+    } else if (["weekly", "monthly", "early-bird", "last-minute", "new-listing", "custom-promotion"].includes(editor || "")) {
+      const value = number("percentage");
+      if (!Number.isFinite(value) || value < 0 || value > 100) return setMessage(t("host_calendar_err_price_discount_range", "Enter a discount percentage between 0 and 100%."));
+      const key: MobileDiscountKey = editor === "early-bird" ? "early_bird" : editor === "last-minute" ? "last_minute" : editor === "new-listing" ? "new_listing" : editor === "custom-promotion" ? "custom_promotion" : editor as "weekly" | "monthly";
+      const days = Number(data.get("bookingWindow"));
+      if ((key === "early_bird" || key === "last_minute") && (!Number.isInteger(days) || days < 0 || days > 365)) return setMessage(t("host_calendar_discount_window_invalid", "Enter a booking window between 0 and 365 days."));
+      const startDate = String(data.get("startDate") ?? "");
+      const endDate = String(data.get("endDate") ?? "");
+      if (key === "custom_promotion" && startDate && endDate && startDate > endDate) return setMessage(t("host_calendar_promo_dates_invalid", "The promotion end date must be on or after the start date."));
+      await save(discountValues(key, value, value > 0, key === "early_bird" ? { daysInAdvance: days } : key === "last_minute" ? { daysBefore: days } : key === "custom_promotion" ? { startDate: startDate || null, endDate: endDate || null } : {}));
+    } else if (editor === "min-nights") {
+      const value = number("minNights");
+      if (!Number.isInteger(value) || value < 1 || value > (listing.maxNights ?? 365)) return setMessage(t("host_calendar_max_stay_err_gte_min", "Minimum stay must be at least 1 and cannot exceed maximum stay."));
+      await save({ minNights: value });
+    } else if (editor === "max-nights") {
+      const value = number("maxNights");
+      if (!Number.isInteger(value) || value < (listing.minNights ?? 1) || value > 365) return setMessage(t("host_calendar_max_stay_err_gte_min", "Maximum stay must be greater than or equal to minimum stay."));
+      await save({ maxNights: value });
+    } else if (editor === "guest-capacity") {
+      const value = number("guests");
+      const includedGuests = Number(discounts.includedGuests ?? discounts.baseGuests ?? 1);
+      if (!Number.isInteger(value) || value < 1 || value > 50 || value < includedGuests) return setMessage(t("host_calendar_max_guests_err_at_least_1", "Maximum guest capacity must be at least the included guest count."));
+      await save({ guests: value });
+    } else if (editor === "advance-notice") {
+      await save({ advanceNotice: String(data.get("advanceNotice")) });
+    } else if (editor === "same-day-cutoff") {
+      await save({ sameDayCutoff: String(data.get("sameDayCutoff")) });
+    } else if (editor === "short-policy") {
+      await save({ cancellationPolicy: String(data.get("cancellationPolicy")) });
+    } else if (editor === "long-policy") {
+      await save({ longTermCancellationPolicy: String(data.get("longTermCancellationPolicy")) });
+    }
+  };
+
+  const editorTitle: Record<MobileSettingsEditor, string> = {
+    "base-price": t("host_calendar_weekday_base_rate", "Per night"),
+    "weekend-price": t("host_calendar_custom_weekend_price", "Weekend price"),
+    fees: t("host_calendar_additional_charges_heading", "Fees"),
+    weekly: t("host_calendar_weekly_discount_label", "Weekly"),
+    monthly: t("host_calendar_monthly_discount_label", "Monthly"),
+    "early-bird": t("host_calendar_early_bird_discount", "Early-bird"),
+    "last-minute": t("host_calendar_last_minute_discount", "Last-minute"),
+    "new-listing": t("host_calendar_new_listing_promo", "New listing promotion"),
+    "custom-promotion": t("host_calendar_custom_promo", "Custom promotion"),
+    "min-nights": t("host_calendar_minimum_nights", "Minimum nights"),
+    "max-nights": t("host_calendar_max_stay_label", "Maximum nights"),
+    "guest-capacity": t("host_calendar_max_guest_label", "Maximum guest capacity"),
+    "advance-notice": t("host_calendar_advance_notice_label", "Advance notice"),
+    "same-day-cutoff": t("host_calendar_same_day_cutoff_label", "Same-day advance notice"),
+    "short-policy": t("host_calendar_cancellation_policy", "Short-term stays"),
+    "long-policy": t("host_calendar_long_term_policy", "Long-term stays"),
+  };
+
+  return (
+    <section className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-white text-[#1F1F1F] dark:bg-zinc-950 dark:text-zinc-100">
+      <header className="flex items-center justify-between px-5 pb-2 pt-[max(1rem,env(safe-area-inset-top))]">
+        <button type="button" onClick={onClose} aria-label={t("host_close", "Close settings")} className="flex size-10 items-center justify-center rounded-full bg-[#f3f3f3] text-xl transition-colors hover:bg-[#e8e8e8] dark:bg-zinc-800">
+          ×
+        </button>
+        <span className="rounded-full border border-[#dedede] px-3 py-1.5 text-xs font-medium dark:border-zinc-700">{currency}</span>
+      </header>
+      <div className="px-5 pb-4">
+        <h1 className="text-[26px] font-semibold tracking-[-0.03em]">{t("host_calendar_settings", "Settings")}</h1>
+        <div className="-mx-5 mt-3 flex max-w-none gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {tabs.map((item) => (
+            <button key={item.id} ref={(node) => { tabRefs.current[item.id] = node; }} type="button" onClick={() => { setTab(item.id); setMessage(""); requestAnimationFrame(() => tabRefs.current[item.id]?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" })); }} aria-pressed={tab === item.id} className={`shrink-0 rounded-full px-4 py-2.5 text-[13px] font-medium transition-colors ${tab === item.id ? "bg-[#1F1F1F] text-white dark:bg-white dark:text-zinc-950" : "bg-[#f5f5f5] text-[#1F1F1F] hover:bg-[#ececec] dark:bg-zinc-900 dark:text-zinc-200"}`}>
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="min-h-0 flex-1 touch-pan-y overscroll-contain overflow-x-hidden overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+        {tab === "pricing" && (
+          <div className="space-y-4">
+            <SettingsSummaryCard label={t("host_calendar_weekday_base_rate", "Per night")} value={formatAmount(basePrice)} onClick={() => openEditor("base-price")} />
+            <SettingsSummaryCard label={t("host_calendar_custom_weekend_price", "Weekend adjustment")} value={weekendAdjustment === null ? t("host_calendar_weekend_not_configured", "Not configured") : `${weekendAdjustment > 0 ? "+" : ""}${weekendAdjustment}%`} description={weekendPrice === null ? t("host_calendar_weekend_placeholder", "Uses the base rate") : formatAmount(weekendPrice)} onClick={() => openEditor("weekend-price")} />
+            <SettingsSummaryCard label={t("host_calendar_smart_pricing", "Smart Pricing")} description={t("host_calendar_smart_pricing_description", "Your prices will be automatically adjusted based on guest demand.")}><SettingsSwitch label={t("host_calendar_smart_pricing", "Smart Pricing")} checked={smartPricing} disabled={saving} onChange={() => { const next = !smartPricing; void save({ smartPricing: next }, false).then((saved) => { if (saved) setSmartPricing(next); }); }} /></SettingsSummaryCard>
+            <SettingsSummaryCard label={t("host_calendar_additional_charges_heading", "Fees")} description={[cleaningFee > 0 && t("host_calendar_cleaning_fee_label", "Cleaning fee"), extraGuestFee > 0 && t("host_calendar_extra_guest_fee_label", "Extra guest fee")].filter(Boolean).join(", ") || t("host_calendar_no_fees", "No additional fees")} onClick={() => openEditor("fees")} />
+          </div>
+        )}
+        {tab === "discounts" && (
+          <div className="space-y-4">
+            <SettingsToggleCard label={t("host_calendar_weekly_discount_label", "Weekly")} description={t("host_calendar_weekly_discount_sub", "For 7 nights or more")} value={weeklyConfig.enabled ? `${weekly}%` : t("host_calendar_off", "Off")} checked={weeklyConfig.enabled} disabled={saving} onOpen={() => openEditor("weekly")} onToggle={() => toggleDiscount("weekly", !weeklyConfig.enabled, "weekly")} />
+            <SettingsToggleCard label={t("host_calendar_monthly_discount_label", "Monthly")} description={t("host_calendar_monthly_discount_sub", "For 28 nights or more")} value={monthlyConfig.enabled ? `${monthly}%` : t("host_calendar_off", "Off")} checked={monthlyConfig.enabled} disabled={saving} onOpen={() => openEditor("monthly")} onToggle={() => toggleDiscount("monthly", !monthlyConfig.enabled, "monthly")} />
+            <SettingsToggleCard label={t("host_calendar_early_bird_discount", "Early-bird")} description={t("host_calendar_early_bird_sub", { days: earlyBirdConfig.details?.daysInAdvance ?? 30 }, `For bookings made at least ${earlyBirdConfig.details?.daysInAdvance ?? 30} days in advance`)} value={earlyBirdConfig.enabled ? `${earlyBird}%` : t("host_calendar_off", "Off")} checked={earlyBirdConfig.enabled} disabled={saving} onOpen={() => openEditor("early-bird")} onToggle={() => toggleDiscount("early_bird", !earlyBirdConfig.enabled, "early-bird")} />
+            <SettingsToggleCard label={t("host_calendar_last_minute_discount", "Last-minute")} description={t("host_calendar_last_minute_sub", { days: lastMinuteConfig.details?.daysBefore ?? 2 }, `For stays booked within ${lastMinuteConfig.details?.daysBefore ?? 2} days before arrival`)} value={lastMinuteConfig.enabled ? `${lastMinute}%` : t("host_calendar_off", "Off")} checked={lastMinuteConfig.enabled} disabled={saving} onOpen={() => openEditor("last-minute")} onToggle={() => toggleDiscount("last_minute", !lastMinuteConfig.enabled, "last-minute")} />
+            <SettingsToggleCard label={t("host_calendar_new_listing_promo", "New listing promotion")} description={t("host_calendar_new_listing_sub", { pct: newListing || 0 }, `${newListing || 0}% promotion for the first eligible bookings`)} value={newListingConfig.enabled ? `${newListing}%` : t("host_calendar_off", "Off")} checked={newListingConfig.enabled} disabled={saving} onOpen={() => openEditor("new-listing")} onToggle={() => toggleDiscount("new_listing", !newListingConfig.enabled, "new-listing")} />
+            <SettingsToggleCard label={t("host_calendar_custom_promo", "Custom promotion")} description={customPromotionConfig.details?.startDate || customPromotionConfig.details?.endDate ? `${customPromotionConfig.details?.startDate || t("host_calendar_any_date", "Any date")} – ${customPromotionConfig.details?.endDate || t("host_calendar_any_date", "Any date")}` : t("host_calendar_custom_promo_helper", "Property-wide promotional discount applied to eligible stays.")} value={customPromotionConfig.enabled ? `${customPromotion}%` : t("host_calendar_off", "Off")} checked={customPromotionConfig.enabled} disabled={saving} onOpen={() => openEditor("custom-promotion")} onToggle={() => toggleDiscount("custom_promotion", !customPromotionConfig.enabled, "custom-promotion")} />
+          </div>
+        )}
+        {tab === "availability" && (
+          <div className="space-y-4">
+            <SettingsSummaryCard label={t("host_calendar_minimum_nights", "Minimum nights")} value={listing.minNights ?? 1} onClick={() => openEditor("min-nights")} />
+            <SettingsSummaryCard label={t("host_calendar_max_stay_label", "Maximum nights")} value={listing.maxNights ?? 365} onClick={() => openEditor("max-nights")} />
+            <SettingsSummaryCard label={t("host_calendar_max_guest_label", "Maximum guest capacity")} value={listing.guests ?? 1} onClick={() => openEditor("guest-capacity")} />
+            <SettingsSummaryCard label={t("host_calendar_advance_notice_label", "Advance notice")} value={listing.advanceNotice || t("host_notice_same_day", "Same day")} onClick={() => openEditor("advance-notice")} />
+            <SettingsSummaryCard label={t("host_calendar_same_day_cutoff_label", "Same-day booking cutoff")} description={allowSameDayRequests ? undefined : t("host_calendar_same_day_disabled", "Same-day requests are currently disabled")} value={listing.sameDayCutoff || "12:00 AM"} onClick={() => openEditor("same-day-cutoff")} />
+            <SettingsSummaryCard label={t("host_calendar_allow_same_day_title", "Allow same-day booking requests")} description={t("host_calendar_allow_same_day_subtitle", "Let guests book on the day of arrival before the cutoff time.")}><SettingsSwitch label={t("host_calendar_allow_same_day_title", "Allow same-day booking requests")} checked={allowSameDayRequests} disabled={saving} onChange={() => { const next = !allowSameDayRequests; void save({ allowSameDayRequests: next }, false).then((saved) => { if (saved) setAllowSameDayRequests(next); }); }} /></SettingsSummaryCard>
+          </div>
+        )}
+        {tab === "cancellations" && (
+          <div className="space-y-4">
+            <SettingsSummaryCard label={t("host_calendar_short_term_stays", "Short-term stays")} description={t("host_calendar_short_term_description", "For less than 28 nights")} value={policyLabel(listing.cancellationPolicy)} onClick={() => openEditor("short-policy")} />
+            <SettingsSummaryCard label={t("host_calendar_long_term_stays", "Long-term stays")} description={t("host_calendar_long_term_description", "For 28 nights or more")} value={policyLabel(listing.longTermCancellationPolicy)} onClick={() => openEditor("long-policy")} />
+            <p className="px-3 pt-3 text-center text-sm leading-5 text-[#717171] dark:text-zinc-400">{t("host_calendar_policy_checkin_scope", "Changes apply to new reservations. Existing bookings keep their saved terms.")}</p>
+          </div>
+        )}
+        {(message || notice) && <p role={message ? "status" : "alert"} className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">{message || notice}</p>}
+      </div>
+      {editor && <div className="fixed inset-0 z-[120] flex touch-pan-y items-end bg-black/40 p-0 sm:items-center sm:justify-center sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !saving) setEditor(null); }}>
+        <section role="dialog" aria-modal="true" aria-labelledby="calendar-setting-editor-title" className="flex max-h-[calc(100dvh-1rem)] w-full min-h-0 flex-col overflow-y-auto overscroll-contain rounded-t-[24px] bg-white px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-3 shadow-2xl animate-in slide-in-from-bottom duration-200 dark:bg-zinc-950 sm:max-w-md sm:rounded-[24px] sm:animate-in sm:zoom-in-95">
+          <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[#dddddd] dark:bg-zinc-700" />
+          <div className="mb-5 flex items-center justify-between gap-3"><h2 id="calendar-setting-editor-title" className="text-xl font-semibold tracking-[-0.02em]">{editorTitle[editor]}</h2><button type="button" onClick={() => setEditor(null)} disabled={saving} aria-label={t("host_close", "Close")} className="flex size-9 items-center justify-center rounded-full bg-[#f3f3f3] text-xl dark:bg-zinc-800">×</button></div>
+          <form onSubmit={handleEditorSubmit} className="space-y-5">
+            {editor === "base-price" && <label className="block text-sm font-medium">{t("host_calendar_weekday_base_rate", "Per night")}<input autoFocus name="price" defaultValue={basePrice} type="number" min="0.01" step="0.01" inputMode="decimal" className={fieldClass} /><span className="mt-2 block text-sm font-normal text-[#717171]">{currency} · {t("host_calendar_per_night", "per night")}</span></label>}
+            {editor === "weekend-price" && <label className="block text-sm font-medium">{t("host_calendar_custom_weekend_price", "Weekend price")}<input autoFocus name="weekendPrice" defaultValue={weekendPrice ?? ""} placeholder={t("host_calendar_weekend_placeholder", "Use base rate")} type="number" min="0" step="0.01" inputMode="decimal" className={fieldClass} /><span className="mt-2 block text-sm font-normal text-[#717171]">{t("host_calendar_weekend_helper", "Leave empty to use the base rate.")}</span></label>}
+            {editor === "fees" && <><label className="block text-sm font-medium">{t("host_calendar_cleaning_fee_label", "Cleaning fee")}<input autoFocus name="cleaningFee" defaultValue={cleaningFee} type="number" min="0" step="0.01" inputMode="decimal" className={fieldClass} /><span className="mt-1 block text-xs font-normal text-[#717171]">{t("host_calendar_per_stay", "Per stay")}</span></label><label className="block text-sm font-medium">{t("host_calendar_extra_guest_fee_label", "Extra guest fee")}<input name="extraGuestFee" defaultValue={extraGuestFee} type="number" min="0" step="0.01" inputMode="decimal" className={fieldClass} /><span className="mt-1 block text-xs font-normal text-[#717171]">{t("host_calendar_per_guest_per_night", "Per guest, per night")}</span></label><label className="block text-sm font-medium">{t("host_calendar_included_guests_label", "Included guests")}<input name="includedGuests" defaultValue={Number(discounts.includedGuests ?? discounts.baseGuests ?? 1)} type="number" min="1" max={listing.guests ?? 1} step="1" inputMode="numeric" className={fieldClass} /><span className="mt-1 block text-xs font-normal text-[#717171]">{t("host_calendar_included_guests_helper", { max: listing.guests ?? 1 }, `Included before the extra guest fee applies (maximum ${listing.guests ?? 1}).`)}</span></label></>}
+            {["weekly", "monthly", "early-bird", "last-minute", "new-listing", "custom-promotion"].includes(editor) && <><label className="block text-sm font-medium">{t("host_calendar_discount_percentage", "Discount percentage")}<div className="relative"><input autoFocus name="percentage" defaultValue={editor === "weekly" ? weekly : editor === "monthly" ? monthly : editor === "early-bird" ? earlyBird : editor === "last-minute" ? lastMinute : editor === "new-listing" ? newListing : customPromotion} type="number" min="0" max="100" step="1" inputMode="numeric" className={`${fieldClass} pr-10`} /><span className="absolute bottom-3 right-3.5 text-sm text-[#717171]">%</span></div></label>{editor === "early-bird" && <label className="block text-sm font-medium">{t("host_calendar_advance_booking_days", "Days in advance")}<input name="bookingWindow" defaultValue={earlyBirdConfig.details?.daysInAdvance ?? 30} type="number" min="0" max="365" step="1" inputMode="numeric" className={fieldClass} /></label>}{editor === "last-minute" && <label className="block text-sm font-medium">{t("host_calendar_last_minute_window", "Days before arrival")}<input name="bookingWindow" defaultValue={lastMinuteConfig.details?.daysBefore ?? 2} type="number" min="0" max="365" step="1" inputMode="numeric" className={fieldClass} /></label>}{editor === "custom-promotion" && <><label className="block text-sm font-medium">{t("host_calendar_promotion_start", "Promotion start date")}<input name="startDate" defaultValue={customPromotionConfig.details?.startDate || ""} type="date" className={fieldClass} /></label><label className="block text-sm font-medium">{t("host_calendar_promotion_end", "Promotion end date")}<input name="endDate" defaultValue={customPromotionConfig.details?.endDate || ""} type="date" className={fieldClass} /></label></>}</>}
+            {editor === "min-nights" && <label className="block text-sm font-medium">{t("host_calendar_minimum_nights", "Minimum nights")}<input autoFocus name="minNights" defaultValue={listing.minNights ?? 1} type="number" min="1" max={listing.maxNights ?? 365} step="1" inputMode="numeric" className={fieldClass} /></label>}
+            {editor === "max-nights" && <label className="block text-sm font-medium">{t("host_calendar_max_stay_label", "Maximum nights")}<input autoFocus name="maxNights" defaultValue={listing.maxNights ?? 365} type="number" min={listing.minNights ?? 1} max="365" step="1" inputMode="numeric" className={fieldClass} /></label>}
+            {editor === "guest-capacity" && <label className="block text-sm font-medium">{t("host_calendar_max_guest_label", "Maximum guest capacity")}<input autoFocus name="guests" defaultValue={listing.guests ?? 1} type="number" min={Number(discounts.includedGuests ?? discounts.baseGuests ?? 1)} max="50" step="1" inputMode="numeric" className={fieldClass} /><span className="mt-2 block text-sm font-normal text-[#717171]">{t("host_calendar_max_guest_helper", "This must not be less than the number of included guests.")}</span></label>}
+            {editor === "advance-notice" && <label className="block text-sm font-medium">{t("host_calendar_advance_notice_label", "Advance notice")}<select name="advanceNotice" defaultValue={listing.advanceNotice || "Same day"} className={fieldClass}><option value="Same day">{t("host_notice_same_day", "Same day")}</option><option value="At least 1 day">{t("host_notice_at_least_1_day", "At least 1 day")}</option><option value="At least 2 days">{t("host_notice_at_least_2_days", "At least 2 days")}</option><option value="At least 3 days">{t("host_notice_at_least_3_days", "At least 3 days")}</option><option value="At least 7 days">{t("host_notice_at_least_7_days", "At least 7 days")}</option></select></label>}
+            {editor === "same-day-cutoff" && <label className="block text-sm font-medium">{t("host_calendar_same_day_cutoff_label", "Same-day advance notice")}<select name="sameDayCutoff" defaultValue={listing.sameDayCutoff || "12:00 AM"} className={fieldClass}><option value="12:00 AM">12:00 AM</option><option value="6:00 AM">6:00 AM</option><option value="12:00 PM">12:00 PM</option><option value="3:00 PM">3:00 PM</option><option value="6:00 PM">6:00 PM</option><option value="9:00 PM">9:00 PM</option></select></label>}
+            {editor === "short-policy" && <label className="block text-sm font-medium">{t("host_calendar_cancellation_policy", "Cancellation policy")}<select name="cancellationPolicy" defaultValue={listing.cancellationPolicy || "FLEXIBLE"} className={fieldClass}>{dateScopedCancellationPolicyOptions.map((option) => <option key={option.policyId} value={option.policyId}>{option.policyName.replace(/ Policy$/, "")}</option>)}</select></label>}
+            {editor === "long-policy" && <label className="block text-sm font-medium">{t("host_calendar_long_term_policy", "Long-term cancellation policy")}<select name="longTermCancellationPolicy" defaultValue={listing.longTermCancellationPolicy || "FIRM"} className={fieldClass}><option value="FIRM">{t("host_calendar_policy_firm", "Firm")}</option><option value="STRICT">{t("host_calendar_policy_strict", "Strict")}</option></select></label>}
+            {message && <p role="alert" className="rounded-xl bg-rose-50 p-3 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-300">{message}</p>}
+            <div className="flex gap-3 pt-1"><button type="button" onClick={() => setEditor(null)} disabled={saving} className="min-h-12 flex-1 rounded-xl border border-[#222222] text-sm font-medium disabled:opacity-50">{t("host_calendar_cancel", "Cancel")}</button><button type="submit" disabled={saving} className="min-h-12 flex-1 rounded-xl bg-[#222222] text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-zinc-950">{saving ? t("host_calendar_saving", "Saving…") : t("host_calendar_save", "Save")}</button></div>
+          </form>
+        </section>
+      </div>}
+    </section>
+  );
+}
+
 export function CalendarSettingsPanel({
   listing,
   saving,
@@ -87,7 +476,7 @@ export function CalendarSettingsPanel({
   listing: ListingDTO;
   saving: boolean;
   notice: string;
-  onSave: (values: Record<string, unknown>) => Promise<void>;
+  onSave: (values: Record<string, unknown>) => Promise<unknown>;
 }) {
   const { currency: displayCurrency, formatMajor } = useCurrency();
   const { t } = useLanguage();
@@ -200,11 +589,11 @@ export function CalendarSettingsPanel({
           setEnabled(!enabled);
           setDirty(true);
         }}
-        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${enabled ? "bg-[#DF4557]" : "bg-zinc-300 dark:bg-zinc-600"
+        className={`relative flex h-8 w-14 shrink-0 items-center rounded-full border p-0.5 transition-[background-color,border-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#222222] focus-visible:ring-offset-2 dark:focus-visible:ring-white dark:focus-visible:ring-offset-zinc-950 cursor-pointer ${enabled ? "border-[#222222] bg-[#222222] dark:border-white dark:bg-white" : "border-[#b8b8b8] bg-[#b8b8b8] dark:border-zinc-600 dark:bg-zinc-700"
           }`}
       >
         <span
-          className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${enabled ? "translate-x-5" : "translate-x-0"
+          className={`size-6 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.28)] transition-transform duration-200 ease-out dark:bg-zinc-950 ${enabled ? "translate-x-6" : "translate-x-0"
             }`}
         />
       </button>
@@ -416,7 +805,7 @@ export function CalendarSettingsPanel({
                   {listing.minNights ?? 1}–{listing.maxNights ?? 365} {t("host_dash_nights", "nights")}
                 </div>
                 <div>
-                  {(listing as any).advanceNotice || t("host_notice_same_day", "Same day")} {t("host_calendar_advance_notice", "advance notice")}
+                  {listing.advanceNotice || t("host_notice_same_day", "Same day")} {t("host_calendar_advance_notice", "advance notice")}
                 </div>
               </div>
             </div>
@@ -617,7 +1006,7 @@ export function CalendarSettingsPanel({
               </p>
             </div>
 
-              <label className="flex items-center justify-between gap-3 rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer">
+              <div className="flex items-center justify-between gap-3 rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/80 transition-colors">
               <div className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200">
                   {t("host_calendar_allow_same_day_title", "Allow same-day booking requests")}
@@ -626,13 +1015,16 @@ export function CalendarSettingsPanel({
                   {t("host_calendar_allow_same_day_subtitle", "Let guests book on the day of arrival before the cutoff time.")}
                 </span>
               </div>
-              <input
-                type="checkbox"
-                name="allowSameDayRequests"
-                defaultChecked={listing.allowSameDayRequests !== false}
-                className="size-5 rounded border-zinc-300 text-amber-500 focus:ring-amber-400 cursor-pointer accent-[#1f1f1f]"
-              />
-            </label>
+              <label className="relative shrink-0 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="allowSameDayRequests"
+                  defaultChecked={listing.allowSameDayRequests !== false}
+                  className="peer sr-only"
+                />
+                <span aria-hidden="true" className="relative flex h-8 w-14 items-center rounded-full border border-[#b8b8b8] bg-[#b8b8b8] p-0.5 transition-[background-color,border-color,box-shadow] peer-checked:border-[#222222] peer-checked:bg-[#222222] peer-focus-visible:ring-2 peer-focus-visible:ring-[#222222] peer-focus-visible:ring-offset-2 dark:border-zinc-600 dark:bg-zinc-700 dark:peer-checked:border-white dark:peer-checked:bg-white dark:peer-focus-visible:ring-white dark:peer-focus-visible:ring-offset-zinc-900 after:size-6 after:rounded-full after:bg-white after:shadow-[0_1px_3px_rgba(0,0,0,0.28)] after:transition-transform after:duration-200 after:ease-out peer-checked:after:translate-x-6 dark:after:bg-zinc-950" />
+              </label>
+            </div>
           </div>
           </section>
 
@@ -1045,7 +1437,7 @@ export function CalendarSettingsPanel({
             {renderInputField({
               name: "extraGuestFee",
               label: t("host_calendar_extra_guest_fee_label", "Extra guest fee"),
-              defaultValue: toDisplayMajor(((listing as any).extraGuestFee || 0) / 100),
+              defaultValue: toDisplayMajor((listing.extraGuestFee || 0) / 100),
               prefix: displayCurrency,
               suffix: t("host_calendar_per_guest_per_night", "/ guest / night"),
               min: 0,

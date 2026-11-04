@@ -204,10 +204,10 @@ export function UnifiedGuestHeader({ showBottomBorder }: UnifiedGuestHeaderProps
           isSearchExpanded
             ? "h-[160px] shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
             : isListingsPage
-            ? "h-[72px] sm:h-20"
+            ? "h-[72px] sm:h-20 lg:h-[96px]"
             : usesCompactHomeHeader
-            ? "min-h-[78px] pt-[env(safe-area-inset-top)] lg:h-20 lg:min-h-0 lg:pt-0"
-            : "min-h-[96px]"
+            ? "min-h-[78px] pt-[env(safe-area-inset-top)] lg:h-[96px] lg:min-h-0 lg:pt-0"
+            : "min-h-[80px]"
         }`}
       >
         {usesCompactHomeHeader && (
@@ -296,8 +296,8 @@ export function UnifiedGuestHeader({ showBottomBorder }: UnifiedGuestHeaderProps
             isListingsPage || usesCompactHomeHeader ? "hidden lg:flex" : "flex"
           } ${
             isListingsPage || usesCompactHomeHeader
-              ? "h-20"
-              : "min-h-[96px] py-0 md:min-h-0 md:py-4 lg:py-5"
+              ? "h-[88px] lg:h-[96px]"
+              : "h-[80px] md:h-[88px] md:min-h-0 md:py-0 lg:h-[96px]"
           } ${showBottomBorder || isListingsPage ? "md:border-b md:border-[#727272]/20" : ""}`}
         >
           {/* ── Left: Homyz Brand Logo ── */}
@@ -308,14 +308,25 @@ export function UnifiedGuestHeader({ showBottomBorder }: UnifiedGuestHeaderProps
               aria-label="Homyz home"
             >
               <BrandLogo
-                src={branding.guestHeaderLogoUrl}
-                fallbackSrc="/images/brand/homyz-logo-dark-v1.svg"
-                alt="Homyz"
-                width={140}
-                height={40}
-                className="h-auto w-[125px] md:w-[135px] lg:w-[145px]"
+                src={branding.mobileLogoUrl}
+                fallbackSrc="/images/brand/homyz-mobile-logo-dark-v1.svg"
+                alt=""
+                width={199}
+                height={72}
+                className="h-[32px] w-[37px] max-w-none md:hidden"
                 priority
               />
+              <span className="relative hidden aspect-[199/72] w-[125px] md:block md:w-[135px] lg:w-[145px]">
+                <BrandLogo
+                  src={branding.guestHeaderLogoUrl}
+                  fallbackSrc="/images/brand/homyz-logo-dark-v1.svg"
+                  alt="Homyz"
+                  width={199}
+                  height={72}
+                  className="h-full w-full object-contain"
+                  priority
+                />
+              </span>
             </Link>
           </div>
 
@@ -405,9 +416,9 @@ export function UnifiedGuestHeader({ showBottomBorder }: UnifiedGuestHeaderProps
               aria-label="User menu"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((prev) => !prev)}
-              className="relative size-9 rounded-full bg-zinc-100 hover:bg-zinc-200/90 flex items-center justify-center text-zinc-700 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+              className="relative size-10 rounded-full bg-zinc-100 hover:bg-zinc-200/90 flex items-center justify-center text-zinc-700 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="size-4 text-zinc-700">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="size-[18px] text-zinc-700">
                 <line x1="3" y1="12" x2="21" y2="12" />
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <line x1="3" y1="18" x2="21" y2="18" />

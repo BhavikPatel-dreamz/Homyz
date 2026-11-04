@@ -284,9 +284,53 @@ export function DrawerNavigation({
   const isCoHostActive = currentPath.startsWith("/host/co-host");
   const isReferActive = currentPath.startsWith("/host/refer");
   const isAdminActive = currentPath.startsWith("/admin");
+  const isTodayActive = currentPath === "/host/today" || currentPath.startsWith("/host/today/");
+  const isCalendarActive = currentPath === "/host/calendar" || currentPath.startsWith("/host/calendar/");
+  const isListingsActive = currentPath === "/host/listings" || currentPath.startsWith("/host/listings/");
+  const isMessagesActive = currentPath === "/host/messages" || currentPath.startsWith("/host/messages/");
 
   return (
     <nav className="space-y-1 py-1" aria-label="Host navigation items">
+      <button type="button" onClick={() => onNavigate("/host/today")} className={drawerNavigationItemClass(isTodayActive)}>
+        <div className={drawerNavigationContentClass}>
+          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 2" />
+          </svg>
+          <span className="min-w-0">Today</span>
+        </div>
+      </button>
+
+      <button type="button" onClick={() => onNavigate("/host/calendar")} className={drawerNavigationItemClass(isCalendarActive)}>
+        <div className={drawerNavigationContentClass}>
+          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="2" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16 3v4M8 3v4M3 10h18" />
+          </svg>
+          <span className="min-w-0">Calendar</span>
+        </div>
+      </button>
+
+      <button type="button" onClick={() => onNavigate("/host/listings")} className={drawerNavigationItemClass(isListingsActive)}>
+        <div className={drawerNavigationContentClass}>
+          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />
+          </svg>
+          <span className="min-w-0">Listings</span>
+        </div>
+      </button>
+
+      <button type="button" onClick={() => onNavigate("/host/messages")} className={drawerNavigationItemClass(isMessagesActive)}>
+        <div className={drawerNavigationContentClass}>
+          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-5.5a7.5 7.5 0 1 1 17-4z" />
+          </svg>
+          <span className="min-w-0">Messages</span>
+        </div>
+      </button>
+
+      <div className="my-2 border-t border-zinc-100 dark:border-zinc-800/80" />
+
       {/* 1. Dashboard */}
       <button
         type="button"
@@ -466,6 +510,19 @@ export function DrawerNavigation({
         </div>
       </button>
 
+      <button
+        type="button"
+        onClick={() => onNavigate("/")}
+        className={drawerNavigationItemClass(false)}
+      >
+        <div className={drawerNavigationContentClass}>
+          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16 3l4 4-4 4M20 7H9a5 5 0 0 0-5 5v1m4 8-4-4 4-4m-4 4h11a5 5 0 0 0 5-5v-1" />
+          </svg>
+          <span className="min-w-0">Switch to Travelling</span>
+        </div>
+      </button>
+
       {/* 12. Admin (Only if Admin Role) */}
       {isAdmin && (
         <button
@@ -540,6 +597,9 @@ export function HostNavigationDrawer({
   const pathname = usePathname();
   const drawerRef = useRef<HTMLElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     setMounted(true);
@@ -561,7 +621,7 @@ export function HostNavigationDrawer({
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
         setIsRendered(false);
-      }, 320); // 320ms matches the CSS transition duration
+      }, 300);
     }
   }, [isOpen]);
 
@@ -572,17 +632,53 @@ export function HostNavigationDrawer({
     return () => unlock();
   }, [isOpen]);
 
-  // Handle Escape key
+  // Keep keyboard focus inside the modal drawer and return it to its trigger.
   useEffect(() => {
     if (!isOpen) return;
+    previousFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+
+    const focusFrame = window.requestAnimationFrame(() => {
+      const firstFocusable = drawerRef.current?.querySelector<HTMLElement>(
+        'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      (firstFocusable ?? drawerRef.current)?.focus();
+    });
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        onCloseRef.current();
+        return;
+      }
+      if (e.key !== "Tab" || !drawerRef.current) return;
+
+      const focusableElements = Array.from(
+        drawerRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.offsetParent !== null);
+      const firstFocusable = focusableElements[0];
+      const lastFocusable = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey && (document.activeElement === firstFocusable || !drawerRef.current.contains(document.activeElement))) {
+        e.preventDefault();
+        lastFocusable?.focus();
+      } else if (!e.shiftKey && (document.activeElement === lastFocusable || !drawerRef.current.contains(document.activeElement))) {
+        e.preventDefault();
+        firstFocusable?.focus();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      window.removeEventListener("keydown", handleKeyDown);
+      const previousFocus = previousFocusRef.current;
+      if (previousFocus?.isConnected) {
+        window.requestAnimationFrame(() => previousFocus.focus());
+      }
+    };
+  }, [isOpen]);
 
   const handleNavigate = useCallback(
     (href: string) => {
@@ -618,27 +714,23 @@ export function HostNavigationDrawer({
       <div
         onClick={onClose}
         aria-hidden="true"
-        className={`fixed inset-0 z-[9998] bg-black/35 backdrop-blur-[1px] cursor-pointer transition-opacity duration-320 ease-out ${
+        className={`fixed inset-0 z-[9998] bg-black/35 backdrop-blur-[1px] cursor-pointer transition-opacity duration-300 ease-out motion-reduce:transition-none ${
           isVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
-        style={{
-          transition: "opacity 320ms ease-out",
-        }}
       />
 
       {/* ── Sliding Navigation Drawer ── */}
       <aside
         ref={drawerRef}
+        id="host-navigation-drawer"
         role="dialog"
         aria-modal="true"
         aria-labelledby="host-drawer-heading"
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className={`fixed top-0 right-0 bottom-0 z-[9999] flex flex-col w-full sm:w-[400px] max-w-full h-[100dvh] bg-white dark:bg-zinc-900 rounded-l-3xl shadow-[-12px_0_35px_rgba(0,0,0,0.12)] border-l border-zinc-200/80 dark:border-zinc-800 overscroll-contain overflow-hidden ${
+        className={`fixed top-0 right-0 bottom-0 z-[9999] flex flex-col w-full md:w-[400px] max-w-full h-[100dvh] bg-white dark:bg-zinc-900 rounded-none md:rounded-l-3xl shadow-[-12px_0_35px_rgba(0,0,0,0.12)] border-l border-zinc-200/80 dark:border-zinc-800 overscroll-contain overflow-hidden transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
           isVisible ? "translate-x-0" : "translate-x-full"
         }`}
-        style={{
-          transition: "transform 320ms cubic-bezier(0.22, 1, 0.36, 1)",
-        }}
       >
         {/* Top Header with Close (X) Button */}
         <DrawerHeader

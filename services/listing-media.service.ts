@@ -134,30 +134,36 @@ export class ListingMediaService {
       contentType: file.type || "image/jpeg",
     });
 
-    // If listingId is provided, atomically persist to listing.photos and update assignments
+    let persistedPhotos: string[] | undefined;
+    let persistedAssignments: PhotoRoomAssignment[] | undefined;
+
+    // If listingId is provided, persist the gallery change here rather than
+    // relying on a later, stale client-side listing snapshot. `push` makes
+    // simultaneous photo uploads append safely instead of replacing the array.
     if (listing && listingId) {
-      const nextPhotos = [...listing.photos, saved.url];
-      let nextAssignments: PhotoRoomAssignment[] = Array.isArray(
-        listing.photoRoomAssignments,
-      )
-        ? (listing.photoRoomAssignments as unknown as PhotoRoomAssignment[])
-        : [];
-
-      if (autoAssignRoom) {
-        nextAssignments = [
-          ...nextAssignments,
-          { url: saved.url, roomType: autoAssignRoom },
-        ];
-      }
-
       try {
-        await prisma.listing.update({
+        const updated = await prisma.listing.update({
           where: { id: listingId },
-          data: {
-            photos: nextPhotos,
-            photoRoomAssignments: JSON.parse(JSON.stringify(nextAssignments)),
+          data: autoAssignRoom
+            ? {
+                photos: { push: saved.url },
+                photoRoomAssignments: JSON.parse(JSON.stringify([
+                  ...(Array.isArray(listing.photoRoomAssignments)
+                    ? listing.photoRoomAssignments as unknown as PhotoRoomAssignment[]
+                    : []),
+                  { url: saved.url, roomType: autoAssignRoom },
+                ])),
+              }
+            : { photos: { push: saved.url } },
+          select: {
+            photos: true,
+            photoRoomAssignments: true,
           },
         });
+        persistedPhotos = updated.photos;
+        persistedAssignments = Array.isArray(updated.photoRoomAssignments)
+          ? updated.photoRoomAssignments as unknown as PhotoRoomAssignment[]
+          : [];
       } catch (error) {
         await deleteManagedMediaUrl(saved.url).catch(() => {});
         throw error;
@@ -182,6 +188,8 @@ export class ListingMediaService {
       fileName: saved.fileName,
       listingId: listingId ?? null,
       isCover: listing ? listing.photos.length === 0 : false,
+      photos: persistedPhotos,
+      photoRoomAssignments: persistedAssignments,
     };
   }
 

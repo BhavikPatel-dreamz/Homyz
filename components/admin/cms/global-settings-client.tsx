@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions/permissions";
 import type { GlobalSettingsPayload } from "@/lib/cms/content-types";
+import { toast } from "@/components/ui/toast";
 import { BrandingMediaControl } from "./branding-media-control";
 
 const DEFAULT_GLOBAL_LOGO = "/images/brand/homyz-logo-dark-v1.svg";
@@ -32,7 +33,6 @@ export function GlobalSettingsClient() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -55,7 +55,6 @@ export function GlobalSettingsClient() {
     if (!settings) return;
     setSaving(true);
     setError(null);
-    setSuccess(null);
 
     try {
       const res = await fetch("/api/v1/admin/cms/settings", {
@@ -71,7 +70,7 @@ export function GlobalSettingsClient() {
 
       const updated = await res.json();
       setSettings(updated.data || updated);
-      setSuccess("Global website settings updated successfully!");
+      toast.success("Global website settings updated successfully!");
       router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to save settings");
@@ -144,12 +143,6 @@ export function GlobalSettingsClient() {
       {error && (
         <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-medium">
           {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-medium">
-          {success}
         </div>
       )}
 

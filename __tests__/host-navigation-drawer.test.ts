@@ -86,6 +86,10 @@ describe("Host Navigation Drawer — Airbnb Inspired Redesign & Verification", (
   test("DrawerNavigation includes all required host routes and outline icons", () => {
     const content = fs.readFileSync(drawerFilePath, "utf8");
     const requiredRoutes = [
+      "/host/today",
+      "/host/calendar",
+      "/host/listings",
+      "/host/messages",
       "/host/dashboard",
       "/host/earnings",
       "/host/insights",
@@ -104,6 +108,7 @@ describe("Host Navigation Drawer — Airbnb Inspired Redesign & Verification", (
     }
 
     assert.ok(content.includes("onOpenLanguagesCurrency"), "Must include Languages & currency handler");
+    assert.ok(content.includes("Switch to Travelling"), "Must include the host-to-traveler mode switch");
   });
 
   test("Host navigation rows use readable responsive typography and consistent spacing", () => {
@@ -129,8 +134,8 @@ describe("Host Navigation Drawer — Airbnb Inspired Redesign & Verification", (
     assert.ok(content.includes("translate-x-0"), "Must support translate-x-0 when open");
     // Transition easing & duration
     assert.ok(
-      content.includes("cubic-bezier(0.22, 1, 0.36, 1)"),
-      "Must use smooth 320ms cubic-bezier transition"
+      content.includes("cubic-bezier(0.22,1,0.36,1)"),
+      "Must use smooth 300ms cubic-bezier transition"
     );
     // Dark translucent backdrop overlay
     assert.ok(content.includes("bg-black/35"), "Must have dark translucent overlay");
@@ -138,6 +143,9 @@ describe("Host Navigation Drawer — Airbnb Inspired Redesign & Verification", (
     assert.ok(content.includes("rounded-l-3xl"), "Must have rounded-l-3xl drawer styling");
     // Body scroll lock
     assert.ok(content.includes("lockBodyScroll"), "Must lock body scroll while open");
+    assert.ok(content.includes("previousFocusRef"), "Must restore focus when the menu closes");
+    assert.ok(content.includes("focusableElements"), "Must trap keyboard focus inside the menu");
+    assert.ok(content.includes("motion-reduce:transition-none"), "Must respect reduced-motion preferences");
     // Portal to body
     assert.ok(content.includes("createPortal"), "Must portal drawer to document.body");
   });

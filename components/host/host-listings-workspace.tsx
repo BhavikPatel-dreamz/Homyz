@@ -891,7 +891,7 @@ export function HostListingsWorkspace({
                 ) : listings.length === 0 ? (
                   <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
                 ) : (
-                  <div className="host-listing-workspace grid min-w-0 grid-cols-[repeat(auto-fill,minmax(min(100%,260px),min(100%,298px)))] gap-x-5 gap-y-6 sm:gap-y-8">
+                  <div className="host-listing-workspace grid min-w-0 grid-cols-[repeat(auto-fill,minmax(min(100%,260px),min(100%,298px)))] gap-x-5 gap-y-6 max-sm:justify-center sm:gap-y-8">
                     {listings.map((item) => {
                       const photos = Array.isArray(item.photos) ? item.photos : [];
                       const coverPhoto = photos[0] || null;

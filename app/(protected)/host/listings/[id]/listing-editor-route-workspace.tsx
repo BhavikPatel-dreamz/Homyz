@@ -22,7 +22,7 @@ export function ListingEditorRouteWorkspace({
   return (
     <HostListingEditorClient
       listing={listing}
-      initialSection={slugToSection(activeRouteSegment)}
+      initialSection={activeRouteSegment ? slugToSection(activeRouteSegment) : undefined}
       initialGuidebooks={initialGuidebooks}
     />
   );

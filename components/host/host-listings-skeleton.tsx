@@ -8,7 +8,7 @@ export function HostListingCardsSkeleton({
   cardCount?: number;
 }) {
   return (
-    <div className="host-listing-workspace grid min-w-0 grid-cols-[repeat(auto-fill,minmax(min(100%,260px),min(100%,298px)))] gap-x-5 gap-y-6 sm:gap-y-8">
+    <div className="host-listing-workspace grid min-w-0 grid-cols-[repeat(auto-fill,minmax(min(100%,260px),min(100%,298px)))] gap-x-5 gap-y-6 max-sm:justify-center sm:gap-y-8">
       {Array.from({ length: cardCount }).map((_, i) => (
         <div key={i} className="group relative w-full min-w-0 max-w-full text-left sm:max-w-[298px]">
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] border border-zinc-200/80 bg-zinc-100 skeleton-shimmer">

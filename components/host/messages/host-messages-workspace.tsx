@@ -549,6 +549,11 @@ export function HostMessagesWorkspace({
       const json = await res.json();
       if (requestId !== conversationRequestIdRef.current) return;
       if (json.success && Array.isArray(json.data.conversations)) {
+        if (typeof json.data.unreadTotal === "number") {
+          window.dispatchEvent(
+            new CustomEvent("homyz:messages-updated", { detail: { unreadTotal: json.data.unreadTotal } }),
+          );
+        }
         const incomingConvs: ConversationDTO[] = json.data.conversations;
         setConversationTotal(typeof json.data.total === "number" ? json.data.total : incomingConvs.length);
         incomingConvs.forEach((conversation) => {
@@ -687,6 +692,7 @@ export function HostMessagesWorkspace({
         ?? conversationsRef.current.find((candidate) => candidate.id === convId);
       if (!options.background && !isOlderPage && conversation?.unreadCount) {
         await fetch(`/api/v1/messages/conversations/${convId}/read`, { method: "POST" });
+        window.dispatchEvent(new Event("homyz:messages-updated"));
         setConversations((prev) => {
           const target = prev.find((c) => c.id === convId);
           if (!target || target.unreadCount === 0) return prev;
@@ -1245,7 +1251,7 @@ export function HostMessagesWorkspace({
         {/* ========================================================================= */}
         {/* COLUMN 1: CONVERSATIONS LIST                                              */}
         {/* ========================================================================= */}
-        <div className={`flex h-[calc(100dvh-108px)] min-h-0 min-w-0 flex-col overflow-hidden bg-white lg:h-auto lg:border-r lg:border-zinc-300 ${mobileView === "thread" ? "hidden lg:flex" : "flex"}`}>
+        <div className={`flex h-[calc(100dvh-84px-env(safe-area-inset-bottom))] min-h-0 min-w-0 flex-col overflow-hidden bg-white md:h-[calc(100dvh-108px)] lg:h-auto lg:border-r lg:border-zinc-300 ${mobileView === "thread" ? "hidden lg:flex" : "flex"}`}>
           {/* Header & Tabs */}
           <div className="shrink-0 border-b border-zinc-200 px-4 py-4 lg:px-5 lg:py-5">
             {/* Filter Pills / Search */}
@@ -1453,7 +1459,7 @@ export function HostMessagesWorkspace({
         {/* ========================================================================= */}
         {/* COLUMN 2: ACTIVE CHAT THREAD                                              */}
         {/* ========================================================================= */}
-        <div className={`flex h-[calc(100dvh-108px)] min-h-0 min-w-0 flex-col overflow-hidden bg-white lg:h-auto lg:border-r lg:border-zinc-200 ${mobileView === "list" ? "hidden lg:flex" : "flex"}`}>
+        <div className={`flex h-[calc(100dvh-84px-env(safe-area-inset-bottom))] min-h-0 min-w-0 flex-col overflow-hidden bg-white md:h-[calc(100dvh-108px)] lg:h-auto lg:border-r lg:border-zinc-200 ${mobileView === "list" ? "hidden lg:flex" : "flex"}`}>
           {selectedConversation ? (
             <>
               {/* Thread Top Bar */}
