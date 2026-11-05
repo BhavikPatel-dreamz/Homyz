@@ -120,7 +120,7 @@ function SettingsSummaryCard({
       <div className="min-w-0 flex-1">
         <p className="text-[15px] font-medium leading-5 text-[#222222] dark:text-zinc-100">{label}</p>
         {description && <p className="mt-1 text-sm leading-5 text-[#717171] dark:text-zinc-400">{description}</p>}
-        {value !== undefined && <div className="mt-3 text-[24px] font-semibold leading-7 tracking-[-0.02em] text-[#222222] dark:text-zinc-100">{value}</div>}
+        {value !== undefined && <div className="mt-3 text-[24px] font-medium leading-7 tracking-[-0.02em] text-[#222222] dark:text-zinc-100">{value}</div>}
       </div>
       {children}
       {onClick && <svg className="mt-1 size-5 shrink-0 text-[#222222] dark:text-zinc-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>}
@@ -172,7 +172,7 @@ function SettingsToggleCard({
       <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left transition-opacity hover:opacity-75">
         <p className="text-[15px] font-medium leading-5 text-[#222222] dark:text-zinc-100">{label}</p>
         <p className="mt-1 text-sm leading-5 text-[#717171] dark:text-zinc-400">{description}</p>
-        <p className="mt-3 text-[24px] font-semibold leading-7 tracking-[-0.02em] text-[#222222] dark:text-zinc-100">{value}</p>
+        <p className="mt-3 text-[24px] font-medium leading-7 tracking-[-0.02em] text-[#222222] dark:text-zinc-100">{value}</p>
       </button>
       <SettingsSwitch label={label} checked={checked} disabled={disabled} onChange={onToggle} />
     </div>
@@ -395,7 +395,7 @@ export function MobileCalendarSettings({
         <span className="rounded-full border border-[#dedede] px-3 py-1.5 text-xs font-medium dark:border-zinc-700">{currency}</span>
       </header>
       <div className="px-5 pb-4">
-        <h1 className="text-[26px] font-semibold tracking-[-0.03em]">{t("host_calendar_settings", "Settings")}</h1>
+        <h1 className="text-2xl sm:text-[28px] font-medium tracking-tight text-[#222222] dark:text-zinc-100">{t("host_calendar_settings", "Settings")}</h1>
         <div className="-mx-5 mt-3 flex max-w-none gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {tabs.map((item) => (
             <button key={item.id} ref={(node) => { tabRefs.current[item.id] = node; }} type="button" onClick={() => { setTab(item.id); setMessage(""); requestAnimationFrame(() => tabRefs.current[item.id]?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" })); }} aria-pressed={tab === item.id} className={`shrink-0 rounded-full px-4 py-2.5 text-[13px] font-medium transition-colors ${tab === item.id ? "bg-[#1F1F1F] text-white dark:bg-white dark:text-zinc-950" : "bg-[#f5f5f5] text-[#1F1F1F] hover:bg-[#ececec] dark:bg-zinc-900 dark:text-zinc-200"}`}>
@@ -445,7 +445,7 @@ export function MobileCalendarSettings({
       {editor && <div className="fixed inset-0 z-[120] flex touch-pan-y items-end bg-black/40 p-0 sm:items-center sm:justify-center sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !saving) setEditor(null); }}>
         <section role="dialog" aria-modal="true" aria-labelledby="calendar-setting-editor-title" className="flex max-h-[calc(100dvh-1rem)] w-full min-h-0 flex-col overflow-y-auto overscroll-contain rounded-t-[24px] bg-white px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-3 shadow-2xl animate-in slide-in-from-bottom duration-200 dark:bg-zinc-950 sm:max-w-md sm:rounded-[24px] sm:animate-in sm:zoom-in-95">
           <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[#dddddd] dark:bg-zinc-700" />
-          <div className="mb-5 flex items-center justify-between gap-3"><h2 id="calendar-setting-editor-title" className="text-xl font-semibold tracking-[-0.02em]">{editorTitle[editor]}</h2><button type="button" onClick={() => setEditor(null)} disabled={saving} aria-label={t("host_close", "Close")} className="flex size-9 items-center justify-center rounded-full bg-[#f3f3f3] text-xl dark:bg-zinc-800">×</button></div>
+          <div className="mb-5 flex items-center justify-between gap-3"><h2 id="calendar-setting-editor-title" className="text-lg sm:text-xl font-medium tracking-tight text-[#222222] dark:text-zinc-100">{editorTitle[editor]}</h2><button type="button" onClick={() => setEditor(null)} disabled={saving} aria-label={t("host_close", "Close")} className="flex size-9 items-center justify-center rounded-full bg-[#f3f3f3] text-xl dark:bg-zinc-800">×</button></div>
           <form onSubmit={handleEditorSubmit} className="space-y-5">
             {editor === "base-price" && <label className="block text-sm font-medium">{t("host_calendar_weekday_base_rate", "Per night")}<input autoFocus name="price" defaultValue={basePrice} type="number" min="0.01" step="0.01" inputMode="decimal" className={fieldClass} /><span className="mt-2 block text-sm font-normal text-[#717171]">{currency} · {t("host_calendar_per_night", "per night")}</span></label>}
             {editor === "weekend-price" && <label className="block text-sm font-medium">{t("host_calendar_custom_weekend_price", "Weekend price")}<input autoFocus name="weekendPrice" defaultValue={weekendPrice ?? ""} placeholder={t("host_calendar_weekend_placeholder", "Use base rate")} type="number" min="0" step="0.01" inputMode="decimal" className={fieldClass} /><span className="mt-2 block text-sm font-normal text-[#717171]">{t("host_calendar_weekend_helper", "Leave empty to use the base rate.")}</span></label>}

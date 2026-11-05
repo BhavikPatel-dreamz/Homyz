@@ -63,7 +63,11 @@ export function StepCategory({
               descriptionClassName="sm:mt-5 mt-3 max-w-122.75"
             />
 
-            <div data-aos="fade-up" data-aos-delay="200" className="flex flex-wrap min-[425px]:justify-start justify-between sm:gap-3 gap-2 max-w-4xl sm:mt-12 mt-6">
+            <div
+              data-aos="fade-up"
+              data-aos-delay="200"
+              className="mt-6 grid w-full max-w-4xl grid-cols-2 gap-2.5 sm:mt-12 sm:gap-3 min-[480px]:grid-cols-3"
+            >
               {categories.map((cat) => {
                 const isSelected = selectedCategory === cat.id;
                 return (
@@ -71,17 +75,15 @@ export function StepCategory({
                     key={cat.id}
                     type="button"
                     onClick={() => onSelectCategory(cat.id)}
-                    className={`flex items-center min-[425px]:w-auto w-[calc(50%_-_4px)] gap-2 sm:px-5 p-3 sm:py-3.5 rounded-lg border min-[425px]:text-center text-left sm:text-base text-sm sm:font-medium font-normal transition-all cursor-pointer select-none border-[#727272] ${isSelected
-                      ? " bg-[#E9EBFF] text-[#1F1F1F]"
-                      : "bg-white text-[#1F1F1F] hover:bg-[#E9EBFF]"
+                    className={`flex min-h-[64px] items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-sm font-normal transition-all duration-150 ease-out select-none sm:px-5 sm:py-3.5 sm:text-base sm:font-medium ${isSelected
+                      ? "border-[#1F1F1F] bg-[#E9EBFF] text-[#1F1F1F]"
+                      : "border-[#727272] bg-white text-[#1F1F1F] hover:bg-[#E9EBFF]"
                       }`}
                   >
-                    <div
-                      className="w-8 h-8 rounded-full border border-[#727272] flex items-center justify-center shrink-0 transition-colors "
-                    >
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#727272] transition-colors">
                       {cat.icon}
                     </div>
-                    <span>{getCategoryLabel(cat.id, cat.label)}</span>
+                    <span className="leading-tight">{getCategoryLabel(cat.id, cat.label)}</span>
                   </button>
                 );
               })}

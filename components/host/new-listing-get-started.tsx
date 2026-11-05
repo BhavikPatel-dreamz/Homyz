@@ -611,14 +611,14 @@ export function NewListingGetStarted({
 
   // Unlike Next, saving and exiting intentionally allows incomplete drafts.
   // This lets a host leave the wizard at any point and resume later.
-  const handleSaveAndExit = async () => {
+  const handleSaveAndExit = async (redirectPath: string = "/host/listings") => {
     if (isSavingStep || isSavingAndExiting) return;
 
     const activeDraftId = draftIdRef.current || draftId;
     // Before a category is picked the wizard has no meaningful draft data to
     // persist, so leave without creating an empty listing.
     if (!activeDraftId && !selectedCategory) {
-      router.push("/host/listings");
+      router.push(redirectPath);
       return;
     }
 
@@ -658,7 +658,7 @@ export function NewListingGetStarted({
       }
 
       toast.success(t("wizard_toast_draft_saved", "Draft listing saved successfully!"));
-      router.push("/host/listings");
+      router.push(redirectPath);
     } catch (error: unknown) {
       const message = error instanceof Error
         ? error.message
@@ -1021,6 +1021,7 @@ export function NewListingGetStarted({
     <div className="flex min-h-screen flex-col bg-white pb-[calc(5.5rem+env(safe-area-inset-bottom))] [&>main]:!pt-0">
       <OnboardingHeader
         onSaveAndExit={handleSaveAndExit}
+        onLogoClick={() => handleSaveAndExit("/host/today")}
         isSaving={isSavingAndExiting}
         disabled={isSavingStep || isPublishing}
       />

@@ -17,6 +17,12 @@
   --text-button: 0.875rem;
   --text-input: 1rem;
   --text-label: 0.875rem;
+  --text-nav: 0.9375rem;
+  --text-tab: 0.875rem;
+  --text-badge: 0.75rem;
+  --text-helper: 0.8125rem;
+  --text-value-mob: 1.125rem;
+  --text-value-desk: 1.25rem;
 
   /* Shared button dimensions. These are opt-in through .app-btn variants;
      native controls and compact/icon buttons retain their own sizing. */
@@ -418,6 +424,41 @@ body {
     line-height: 1.4;
   }
 
+  .app-nav-item {
+    font-family: var(--font-poppins), 'Poppins', sans-serif;
+    font-size: var(--text-nav);
+    font-weight: var(--app-weight-medium);
+    line-height: 1.25rem;
+  }
+
+  .app-tab {
+    font-size: var(--text-tab);
+    font-weight: var(--app-weight-medium);
+    line-height: 1.25rem;
+    white-space: nowrap;
+  }
+
+  .app-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--text-badge);
+    font-weight: var(--app-weight-medium);
+    line-height: 1;
+  }
+
+  .app-helper {
+    font-size: var(--text-helper);
+    font-weight: var(--app-weight-normal);
+    line-height: 1.4;
+  }
+
+  .app-value {
+    font-size: var(--text-value-mob);
+    font-weight: var(--app-weight-medium);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+
   .app-btn {
     align-items: center;
     display: inline-flex;
@@ -459,10 +500,18 @@ body {
     .app-title-section {
       font-size: var(--title-section-desk);
     }
+
+    .app-value {
+      font-size: var(--text-value-desk);
+    }
   }
 }
 
 @layer base {
+  b, strong {
+    font-weight: var(--app-weight-medium);
+  }
+
   h1 {
     font-family: var(--font-poppins), sans-serif;
     font-size: var(--title-page-mob);
@@ -493,14 +542,13 @@ body {
     }
   }
 
-  h3 {
+  h3, h4 {
     font-family: var(--font-poppins), sans-serif;
     font-size: var(--title-card);
     font-weight: var(--app-weight-medium);
     line-height: 1.4;
     color: #1f1f1f;
   }
-
 }
 
 .input {

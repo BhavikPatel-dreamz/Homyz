@@ -28,7 +28,7 @@ export function OnboardingStepLayout({
   return (
     <main className={mainClassName}>
       <Container>
-        <div className={wrapperClassName}>
+        <div className={`${wrapperClassName} pb-[6rem] sm:pb-0`}>
           {showMobileClose && <OnboardingMobileCloseButton disabled={isLoading} />}
           {children}
         </div>

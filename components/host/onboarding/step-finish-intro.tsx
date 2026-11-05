@@ -19,7 +19,7 @@ export function StepFinishIntro({ onBack, onNext, isLoading = false }: StepFinis
   return (
     <main className="min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
-        <div className="wrapper flex min-h-[calc(100dvh-4rem)] w-full flex-col animate-in fade-in duration-200 sm:min-h-[calc(100dvh-6rem)] sm:justify-between lg:min-h-[calc(100dvh-14.25rem)]">
+        <div className="wrapper flex min-h-[calc(100dvh-4rem)] w-full flex-col pb-[6rem] animate-in fade-in duration-200 sm:min-h-[calc(100dvh-6rem)] sm:justify-between sm:pb-0 lg:min-h-[calc(100dvh-14.25rem)]">
           <OnboardingMobileCloseButton disabled={isLoading} />
 
           <div className="step-intro-panel mx-auto grid w-full max-w-[820px] grid-cols-1 items-center gap-5 sm:my-auto lg:grid-cols-12 lg:gap-8">

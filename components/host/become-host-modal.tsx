@@ -182,7 +182,7 @@ export function BecomeHostModal({
   const isTypeSupported = selectedType === "HOME";
 
   return (
-    <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center sm:p-4 backdrop-blur-xs">
+    <ModalOverlay className="fixed inset-0 z-9999 flex items-end justify-center sm:items-center sm:p-4 backdrop-blur-xs">
       {/* Dark overlay backdrop */}
       <div
         className={`fixed inset-0 bg-black/60 backdrop-blur-xs ${
@@ -195,7 +195,7 @@ export function BecomeHostModal({
       {/* STEP 1: Welcome back, [Name] - Start a new listing */}
       {step === 1 && (
         <div
-          className={`relative z-10 w-full sm:max-w-lg sm:h-auto h-full sm:rounded-3xl bg-white py-6 px-6 sm:px-8 shadow-2xl border border-zinc-100 ${
+          className={`relative z-10 w-full max-h-[92dvh] overflow-y-auto rounded-t-[28px] bg-white px-6 py-6 shadow-2xl border border-zinc-100 sm:max-w-lg sm:h-auto sm:rounded-3xl sm:px-8 ${
             isClosing ? "modal-dialog-animate-out" : "modal-dialog-animate-in"
           }`}
         >
@@ -276,7 +276,7 @@ export function BecomeHostModal({
       {/* STEP 2: What would you like to host? */}
       {step === 2 && (
         <div
-          className={`relative z-10 w-full max-w-172.5 sm:h-auto h-full sm:rounded-3xl bg-white dark:bg-zinc-900 p-6 sm:p-8 shadow-2xl border border-zinc-100 dark:border-zinc-800 ${
+          className={`relative z-10 w-full max-h-[92dvh] overflow-y-auto rounded-t-[28px] bg-white p-6 shadow-2xl border border-zinc-100 dark:bg-zinc-900 dark:border-zinc-800 sm:max-w-172.5 sm:h-auto sm:rounded-3xl sm:p-8 ${
             isClosing ? "modal-dialog-animate-out" : "modal-dialog-animate-in"
           }`}
         >
@@ -431,7 +431,7 @@ export function BecomeHostModal({
           role="dialog"
           aria-modal="true"
           aria-labelledby="duplicate-listing-title"
-          className={`relative z-10 flex h-full w-full flex-col bg-white px-5 py-6 shadow-2xl sm:h-auto sm:max-h-[min(740px,calc(100dvh-2rem))] sm:max-w-5xl sm:rounded-3xl sm:px-7 sm:py-6 ${
+          className={`relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[28px] bg-white px-5 py-6 shadow-2xl sm:h-auto sm:max-h-[min(740px,calc(100dvh-2rem))] sm:max-w-5xl sm:rounded-3xl sm:px-7 sm:py-6 ${
             isClosing ? "modal-dialog-animate-out" : "modal-dialog-animate-in"
           }`}
         >
@@ -531,7 +531,7 @@ export function BecomeHostModal({
           role="dialog"
           aria-modal="true"
           aria-labelledby="duplicate-photo-title"
-          className={`relative z-10 flex h-full w-full flex-col bg-white px-5 py-6 shadow-2xl sm:h-auto sm:min-h-[520px] sm:max-w-5xl sm:rounded-3xl sm:px-7 sm:py-6 ${
+          className={`relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[28px] bg-white px-5 py-6 shadow-2xl sm:h-auto sm:min-h-[520px] sm:max-w-5xl sm:rounded-3xl sm:px-7 sm:py-6 ${
             isClosing ? "modal-dialog-animate-out" : "modal-dialog-animate-in"
           }`}
         >

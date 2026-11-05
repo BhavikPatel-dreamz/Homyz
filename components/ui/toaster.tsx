@@ -89,22 +89,22 @@ function ToastCard({ item }: { item: ToastItem }) {
 
   const iconMap = {
     success: (
-      <div className="size-6 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs border border-emerald-200/80 dark:border-emerald-800/80">
+      <div className="size-6 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-medium text-xs shrink-0 shadow-2xs border border-emerald-200/80 dark:border-emerald-800/80">
         ✓
       </div>
     ),
     error: (
-      <div className="size-6 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs border border-rose-200/80 dark:border-rose-800/80">
+      <div className="size-6 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center font-medium text-xs shrink-0 shadow-2xs border border-rose-200/80 dark:border-rose-800/80">
         ✕
       </div>
     ),
     warning: (
-      <div className="size-6 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs border border-amber-200/80 dark:border-amber-800/80">
+      <div className="size-6 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center font-medium text-xs shrink-0 shadow-2xs border border-amber-200/80 dark:border-amber-800/80">
         !
       </div>
     ),
     info: (
-      <div className="size-6 rounded-full bg-amber-100/90 dark:bg-amber-950/80 text-[#1F1F1F] dark:text-[#FCDF9C] flex items-center justify-center font-black text-xs shrink-0 shadow-2xs border border-amber-300/80 dark:border-amber-700/80">
+      <div className="size-6 rounded-full bg-amber-100/90 dark:bg-amber-950/80 text-[#1F1F1F] dark:text-[#FCDF9C] flex items-center justify-center font-medium text-xs shrink-0 shadow-2xs border border-amber-300/80 dark:border-amber-700/80">
         ⓘ
       </div>
     ),

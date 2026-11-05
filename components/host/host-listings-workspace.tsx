@@ -959,7 +959,7 @@ export function HostListingsWorkspace({
 
                           {/* Below Card Information */}
                           <div className="min-w-0 px-0 pt-3">
-                            <h3 className="line-clamp-2 text-sm font-medium leading-5 text-[#1f1f1f]">
+                            <h3 className="line-clamp-2 app-title-card text-[#1f1f1f]">
                               <Link
                                 href={`/host/listings/${item.id}`}
                                 className="after:absolute after:inset-0 after:rounded-[14px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"

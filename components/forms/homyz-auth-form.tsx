@@ -481,7 +481,7 @@ export function HomyzAuthForm({
                             <select
                               value={countryCode}
                               onChange={(e) => setCountryCode(e.target.value)}
-                              className="w-full h-full appearance-none rounded-[8px] border border-[#727272] bg-white px-4 pr-10 font-['Poppins'] font-normal text-sm sm:text-[16px] text-[#1F1F1F] outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer"
+                              className="w-full h-full appearance-none rounded-[8px] border border-[#727272] bg-white px-4 pr-10 font-['Poppins'] font-normal text-base sm:text-[16px] text-[#1F1F1F] outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer"
                             >
                               {COUNTRY_CODES.map((c, idx) => (
                                 <option key={`${c.iso2}-${c.code}-${idx}`} value={c.code}>
@@ -510,7 +510,7 @@ export function HomyzAuthForm({
                             placeholder={getCountryByCallingCode(countryCode)?.placeholder || "5XX XXX XXX"}
                             required
                             suppressHydrationWarning
-                            className="w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] font-normal text-sm sm:text-[16px] text-[#1F1F1F] placeholder:text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors"
+                            className="w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] font-normal text-base sm:text-[16px] text-[#1F1F1F] placeholder:text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors"
                           />
                         </div>
                       </div>

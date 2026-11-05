@@ -726,7 +726,7 @@ export function ListingCard({
         <div className="flex-1 flex flex-col justify-between px-3 py-2.5 text-left sm:px-3.5 sm:py-3.5">
           <div className="min-w-0 space-y-1 sm:space-y-1.5">
             {/* Row 1: Title */}
-            <h3 className="truncate text-sm sm:text-base font-medium leading-5 text-[#1F1F1F] transition-colors group-hover:text-amber-950">
+            <h3 className="truncate app-title-card text-[#1F1F1F] transition-colors group-hover:text-amber-950">
               {primaryHeading}
             </h3>
 
@@ -798,7 +798,7 @@ export function ListingCard({
         <div className="pt-6 pb-1 space-y-0.5 text-left">
           {/* Row 1: Title + Rating */}
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-sm sm:text-[15px] font-medium text-[#1F1F1F] truncate leading-snug group-hover:text-amber-950 transition-colors flex-1 min-w-0">
+            <h3 className="truncate app-title-card text-[#1F1F1F] leading-snug group-hover:text-amber-950 transition-colors flex-1 min-w-0">
               {primaryHeading}
             </h3>
 

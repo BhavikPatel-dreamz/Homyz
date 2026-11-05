@@ -24,17 +24,19 @@ describe("Saudi listing registration flow", () => {
     );
   });
 
-  it("accepts a leading-zero permit and validates Saudi national ID format", () => {
+  it("accepts a leading-zero permit and does not reject valid 10-digit national IDs by leading-digit rules", () => {
     const result = validateSaudiRegistrationDetails({
       accommodationType: "PRIVATE_SHORT_TERM_RENTAL",
       licenseNumber: "000-SA-123",
       nationalId: "1234567890",
     });
     assert.equal(result.licenseNumber, "000-SA-123");
-    assert.throws(() => validateSaudiRegistrationDetails({
+
+    const zeroLeadResult = validateSaudiRegistrationDetails({
       accommodationType: "PRIVATE_SHORT_TERM_RENTAL",
       licenseNumber: "000-SA-123",
       nationalId: "0123456789",
-    }));
+    });
+    assert.equal(zeroLeadResult.nationalId, "0123456789");
   });
 });

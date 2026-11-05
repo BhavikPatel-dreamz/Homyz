@@ -17,7 +17,7 @@ export function StepIntro({ onBack, onNext, isLoading = false }: StepIntroProps)
   return (
     <main className="step-intro min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
-        <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
+        <div className="wrapper flex-1 w-full flex flex-col pb-[6rem] sm:justify-between sm:pb-0 animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
           
           {/* Mobile-only close control shared by onboarding steps.  */}
           <OnboardingMobileCloseButton disabled={isLoading} />

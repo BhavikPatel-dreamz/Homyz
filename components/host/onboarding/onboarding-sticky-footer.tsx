@@ -44,7 +44,7 @@ export function OnboardingStickyFooter({
       <Container>
         <div className="flex min-h-[5.5rem] items-center justify-end py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           {progressLabel && <span className="sr-only">{progressLabel}</span>}
-          <div className="flex w-full items-center gap-3 sm:w-auto">
+          <div className="flex w-full max-w-[440px] items-center justify-center gap-3 sm:w-auto sm:max-w-none sm:justify-end">
             <OnboardingBackButton
               onClick={onBack}
               disabled={isLoading}

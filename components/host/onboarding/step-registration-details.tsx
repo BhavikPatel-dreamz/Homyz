@@ -75,8 +75,8 @@ export function StepRegistrationDetails({
     if (!/^[A-Z0-9][A-Z0-9-]{2,119}$/.test(permit)) {
       next.licenseNumber = "Enter a valid property permit number.";
     }
-    if (!/^[12]\d{9}$/.test(nationalId)) {
-      next.nationalId = "Enter a valid 10-digit national identification number.";
+    if (!nationalId || nationalId.length < 10) {
+      next.nationalId = "Enter your national identification number.";
     }
 
     setErrors(next);

@@ -651,7 +651,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   className={`mt-1.5 rounded-full px-3 py-1 text-sm font-medium  ${status === "completed"
                     ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300"
                     : status === "action_required"
-                      ? "bg-rose-500/20 text-rose-800 dark:text-rose-300 font-black"
+                      ? "bg-rose-500/20 text-rose-800 dark:text-rose-300 font-medium"
                       : status === "in_progress"
                         ? "bg-amber-500/20 text-amber-800 dark:text-amber-300"
                         : status === "failed"
@@ -679,7 +679,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
       {accountState === "ACTION_REQUIRED" && (
         <div className="rounded-3xl border border-rose-500/40 bg-rose-500/10 p-6 backdrop-blur-md">
           <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-500 text-white font-black">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-500 text-white font-medium">
               !
             </div>
             <div className="flex-1">

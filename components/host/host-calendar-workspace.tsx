@@ -382,7 +382,7 @@ function MobileYearCalendar({
       <div className="mb-6 flex min-w-0 items-center gap-2">
         <button type="button" onClick={onOpenPropertySelector} aria-label={t("host_calendar_change_property_aria", "Change selected property")} className="flex min-w-0 flex-1 items-center gap-2 text-left">
           {listing && <PropertyPhoto listing={listing} className="size-8 shrink-0 rounded-full object-cover" />}
-          <span className="min-w-0"><span className="flex items-center gap-1"><span className="truncate text-[15px] font-semibold leading-5 text-[#1F1F1F] dark:text-zinc-100">{propertyLabel}</span><svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span><span className="block truncate text-xs leading-4 text-[#727272] dark:text-zinc-400">{location || t("host_calendar_location", "Location")}</span></span>
+          <span className="min-w-0"><span className="flex items-center gap-1"><span className="truncate text-[15px] font-medium leading-5 text-[#1F1F1F] dark:text-zinc-100">{propertyLabel}</span><svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span><span className="block truncate text-xs leading-4 text-[#727272] dark:text-zinc-400">{location || t("host_calendar_location", "Location")}</span></span>
         </button>
         <MobileViewSelector view={view} onSelectView={onSelectView} />
         <button type="button" onClick={onOpenSettings} aria-label={t("host_calendar_settings", "Calendar settings")} className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f3f3f3] text-[#1F1F1F] transition-colors hover:bg-[#e8e8e8] dark:bg-zinc-800 dark:text-zinc-100">
@@ -711,7 +711,7 @@ function YearDotCalendar({
         <div className="sticky top-0 z-20 mb-3 flex min-w-0 items-center gap-2 bg-white pb-3 pt-1 dark:bg-zinc-950">
           <button type="button" onClick={mobileHeader.onOpenPropertySelector} aria-label={t("host_calendar_change_property_aria", "Change selected property")} className="flex min-w-0 flex-1 items-center gap-2 text-left">
             {listing && <PropertyPhoto listing={listing} className="size-8 shrink-0 rounded-full object-cover" />}
-            <span className="min-w-0"><span className="flex items-center gap-1"><span className="truncate text-[15px] font-semibold text-[#1F1F1F] dark:text-zinc-100">{propertyLabel}</span><svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span><span className="block truncate text-xs text-[#727272] dark:text-zinc-400">{location || t("host_calendar_location", "Location")}</span></span>
+            <span className="min-w-0"><span className="flex items-center gap-1"><span className="truncate text-[15px] font-medium text-[#1F1F1F] dark:text-zinc-100">{propertyLabel}</span><svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span><span className="block truncate text-xs text-[#727272] dark:text-zinc-400">{location || t("host_calendar_location", "Location")}</span></span>
           </button>
           <MobileViewSelector view={mobileHeader.view} onSelectView={mobileHeader.onSelectView} />
           <button type="button" onClick={mobileHeader.onOpenSettings} aria-label={t("host_calendar_settings", "Calendar settings")} className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f3f3f3] text-lg dark:bg-zinc-800" aria-hidden="false">⚙</button>
@@ -723,7 +723,7 @@ function YearDotCalendar({
             if (element) yearElementsRef.current.set(group.year, element);
             else yearElementsRef.current.delete(group.year);
           }} className="pt-1 first:pt-0">
-            <h2 className="sticky top-0 z-10 mb-7 bg-white/95 py-2 text-[22px] font-semibold tracking-[-0.03em] text-[#222222] backdrop-blur-sm dark:bg-zinc-950/95 dark:text-zinc-100">{group.year}</h2>
+            <h2 className="sticky top-0 z-10 mb-7 bg-white/95 py-2 text-lg sm:text-xl font-medium tracking-tight text-[#222222] backdrop-blur-sm dark:bg-zinc-950/95 dark:text-zinc-100">{group.year}</h2>
             <div className={mobileHeader ? "grid grid-cols-3 items-start gap-x-1 gap-y-8" : "grid grid-cols-2 items-start gap-x-7 gap-y-10 lg:grid-cols-3 xl:gap-x-9"}>
               {group.months.map((calendarMonth) => {
                 const year = calendarMonth.getFullYear();
@@ -822,7 +822,7 @@ function MobileListCalendar({
             onClick={() => onDayClick(key, booking)}
             className="flex w-full items-center gap-3 rounded-2xl border border-[#e5e5e5] bg-white px-4 py-3 text-left transition-colors hover:bg-[#fafafa] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
           >
-            <span className="flex size-11 shrink-0 flex-col items-center justify-center rounded-xl bg-[#f5f5f5] text-sm font-semibold dark:bg-zinc-800">
+            <span className="flex size-11 shrink-0 flex-col items-center justify-center rounded-xl bg-[#f5f5f5] text-sm font-medium dark:bg-zinc-800">
               <span>{date.getDate()}</span>
               <span className="text-[10px] font-normal text-[#727272]">{date.toLocaleDateString(language || "en", { weekday: "short" })}</span>
             </span>
@@ -831,7 +831,7 @@ function MobileListCalendar({
               <span className="mt-0.5 block truncate text-xs text-[#727272]">{booking ? booking.guestName : pricing.promotion?.applied ? `${pricing.promotion.percentage}% ${t("host_calendar_promo", "promotion")}` : pricing.rateSource === "WEEKEND" ? t("host_calendar_source_weekend", "Weekend rate") : t("host_calendar_source_base", "Base price")}</span>
             </span>
             <span className="text-right">
-              <span className="block text-sm font-semibold">{formatPrice(price, sourceCurrency, 2)}</span>
+              <span className="block text-sm font-medium">{formatPrice(price, sourceCurrency, 2)}</span>
               {pricing.promotion?.applied && <span className="block text-[11px] text-[#727272] line-through">{formatPrice(pricing.originalPrice, sourceCurrency, 2)}</span>}
             </span>
           </button>
@@ -1263,7 +1263,7 @@ function MonthGrid({
                         className={`pointer-events-auto flex h-[18px] min-w-0 items-center justify-center gap-1 overflow-hidden border px-1 text-center text-[8px] font-medium leading-none focus-visible:outline-2 focus-visible:outline-offset-1 ${bookingBarTone(segment.booking)} ${startsHere ? "rounded-l-full" : "rounded-l-sm border-l-0"} ${endsHere ? "rounded-r-full" : "rounded-r-sm border-r-0"}`}
                       >
                         {startsHere && (
-                          <span className="flex size-3 shrink-0 items-center justify-center rounded-full border border-white bg-white/90 text-[6px] font-semibold leading-none">
+                          <span className="flex size-3 shrink-0 items-center justify-center rounded-full border border-white bg-white/90 text-[6px] font-medium leading-none">
                             {guestInitials(segment.booking.guestName)}
                           </span>
                         )}
@@ -1846,7 +1846,7 @@ function MobileYearMonthEditor({
           <p className="mt-2 text-xs text-white/55">{stats.editableKeys.length > 0 ? t("host_calendar_editable_count", { count: stats.editableKeys.length }, `${stats.editableKeys.length} editable`) : t("host_calendar_no_editable_dates", "No editable dates")}</p>
           <div className="mt-auto grid grid-cols-2 gap-2"><button type="button" disabled={saving || stats.editableKeys.length === 0} onClick={() => onBulkAvailability("BLOCK")} className="rounded-full bg-white/10 py-2 text-xs font-medium disabled:opacity-40">{t("host_calendar_block", "Block")}</button><button type="button" disabled={saving || stats.editableKeys.length === 0} onClick={() => onBulkAvailability("UNBLOCK")} className="rounded-full bg-white py-2 text-xs font-medium text-[#151515] disabled:opacity-40">{t("host_calendar_open", "Open")}</button></div>
         </section>
-        <button type="button" onClick={onOpenEditor} className="min-h-[112px] rounded-[22px] bg-[#151515] p-4 text-left text-white transition-transform hover:scale-[1.01] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ff385c]"><span className="block text-sm text-white/65">{t("host_calendar_new_listing_price", "New listing price")}</span><span className="mt-4 block text-[20px] font-semibold leading-6">{priceText}</span>{stats.promoStats.enabled && <span className="mt-2 block text-xs text-white/60 line-through">{formatPrice(stats.promoStats.avgOriginalPrice, sourceCurrency, 0)}</span>}</button>
+        <button type="button" onClick={onOpenEditor} className="min-h-[112px] rounded-[22px] bg-[#151515] p-4 text-left text-white transition-transform hover:scale-[1.01] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ff385c]"><span className="block text-sm text-white/65">{t("host_calendar_new_listing_price", "New listing price")}</span><span className="mt-4 block text-[20px] font-medium leading-6">{priceText}</span>{stats.promoStats.enabled && <span className="mt-2 block text-xs text-white/60 line-through">{formatPrice(stats.promoStats.avgOriginalPrice, sourceCurrency, 0)}</span>}</button>
         <button type="button" onClick={onOpenEditor} className="flex min-h-[54px] items-center justify-between rounded-[18px] bg-[#151515] px-4 text-sm font-medium text-white"><span>{t("host_calendar_custom_settings", "Custom settings")}</span><span className="text-xl">+</span></button>
         {(notice || saving) && <p role={notice ? "status" : undefined} className="col-span-2 truncate text-center text-xs text-[#555555] dark:text-zinc-400">{saving ? t("host_calendar_saving", "Saving…") : notice}</p>}
       </aside>
@@ -4359,7 +4359,7 @@ export function HostCalendarWorkspace({
                 <PropertyPhoto listing={selectedListing} className="size-8 shrink-0 rounded-full object-cover" />
                 <span className="min-w-0">
                   <span className="flex items-center justify-center gap-1">
-                    <span className="truncate text-[15px] font-semibold leading-5 text-[#1F1F1F] dark:text-zinc-100">{selectedListing.title || "Property name"}</span>
+                    <span className="truncate text-[15px] font-medium leading-5 text-[#1F1F1F] dark:text-zinc-100">{selectedListing.title || "Property name"}</span>
                     <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
                   </span>
                   <span className="block truncate text-xs leading-4 text-[#727272] dark:text-zinc-400">{[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country}</span>
@@ -4372,7 +4372,7 @@ export function HostCalendarWorkspace({
             </div>
 
             <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-b border-[#d5d5d5] pb-3 dark:border-zinc-700">
-              <h2 className="col-start-2 whitespace-nowrap text-center text-[18px] font-semibold leading-6 tracking-[-0.02em] text-[#272727] dark:text-zinc-100">
+              <h2 className="col-start-2 whitespace-nowrap text-center text-[18px] font-medium leading-6 tracking-tight text-[#272727] dark:text-zinc-100">
                 {`${monthName(month, language)} ${month.getFullYear()}`}
               </h2>
               <div className="col-start-3 flex items-center justify-end gap-1.5">

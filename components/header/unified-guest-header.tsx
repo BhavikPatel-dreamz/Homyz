@@ -355,7 +355,7 @@ export function UnifiedGuestHeader({ showBottomBorder }: UnifiedGuestHeaderProps
             ) : isHost ? (
               <Link
                 href="/host/today"
-                className={`hidden sm:inline-flex shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-3.5 py-1.5 text-xs font-medium text-[#1F1F1F] hover:text-white transition-colors duration-200 ${primaryButtonInteractionClass}`}
+                className={`hidden sm:inline-flex shrink-0 whitespace-nowrap min-h-9 items-center justify-center rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-200 ${primaryButtonInteractionClass}`}
               >
                 {t("header_switch_hosting", "Switch to hosting")}
               </Link>
@@ -364,14 +364,14 @@ export function UnifiedGuestHeader({ showBottomBorder }: UnifiedGuestHeaderProps
                 type="button"
                 onClick={handleBecomeHost}
                 disabled={isConvertingRole}
-                className={`hidden sm:inline-flex shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-3.5 py-1.5 text-xs font-medium text-[#1F1F1F] hover:text-white transition-colors duration-200 cursor-pointer ${primaryButtonInteractionClass}`}
+                className={`hidden sm:inline-flex shrink-0 whitespace-nowrap min-h-9 items-center justify-center rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-200 cursor-pointer ${primaryButtonInteractionClass}`}
               >
                 {isConvertingRole ? t("host_loading", "Loading...") : t("header_become_a_host", "Become a host")}
               </button>
             ) : (
               <Link
                 href="/login?callbackUrl=/host/onboarding"
-                className={`hidden sm:inline-flex shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-3.5 py-1.5 text-xs font-medium text-[#1F1F1F] hover:text-white transition-colors duration-200 ${primaryButtonInteractionClass}`}
+                className={`hidden sm:inline-flex shrink-0 whitespace-nowrap min-h-9 items-center justify-center rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-200 ${primaryButtonInteractionClass}`}
               >
                 {t("header_become_a_host", "Become a host")}
               </Link>

@@ -24,7 +24,7 @@ export function OnboardingPrimaryButton({
       {...props}
       type="button"
       disabled={isLoading || disabled}
-      className={`app-btn app-btn--lg flex-1 rounded-full border border-transparent bg-[#FCDF9C] text-[#1F1F1F] hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 lg:flex-none ${className}`.trim()}
+      className={`app-btn app-btn--lg flex-1 basis-0 min-w-0 rounded-full border border-transparent bg-[#FCDF9C] text-[#1F1F1F] hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:min-w-[150px] ${className}`.trim()}
     >
       {isLoading ? (
         <>

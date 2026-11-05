@@ -13,6 +13,6 @@ export function validateSaudiRegistrationDetails(input: SaudiRegistrationDetails
   const nationalId = input.nationalId.replace(/[\s-]+/g, "");
   if (accommodationType !== PRIVATE_ACCOMMODATION_TYPE) throw new Error("Select a supported accommodation type.");
   if (!/^[A-Z0-9][A-Z0-9-]{2,119}$/.test(licenseNumber)) throw new Error("Enter a valid property permit number.");
-  if (!/^[12]\d{9}$/.test(nationalId)) throw new Error("Enter a valid 10-digit national identification number.");
+  if (!nationalId || nationalId.length < 10) throw new Error("Enter your national identification number.");
   return { accommodationType, licenseNumber, nationalId };
 }

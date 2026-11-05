@@ -230,7 +230,7 @@ function AdminEditorSidebar({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
               </svg>
             </span>
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+            <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
               {t("editor_listing_nav", "Listing navigation")}
             </p>
           </div>
@@ -245,7 +245,7 @@ function AdminEditorSidebar({
         {ADMIN_EDITOR_SECTIONS.map((section) => (
           <div key={section.group} className="space-y-0.5">
             <div className="flex items-center justify-between px-2.5 pt-1.5 pb-1">
-              <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--muted-foreground)] opacity-80">
+              <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--muted-foreground)] opacity-80">
                 {section.group}
               </span>
               <span className="text-[10px] font-medium text-[var(--muted-foreground)] opacity-50">
