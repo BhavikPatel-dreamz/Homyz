@@ -208,46 +208,75 @@ export function DrawerProfile({ user, onClick }: DrawerProfileProps) {
 // ─────────────────────────────────────────────────────────────────────────────
 export interface HostResourcesCardProps {
   onGetStarted: () => void;
+  onSwitchTraveling?: () => void;
 }
 
-export function HostResourcesCard({ onGetStarted }: HostResourcesCardProps) {
+export function HostResourcesCard({ onGetStarted, onSwitchTraveling }: HostResourcesCardProps) {
+  const handleSwitchTraveling = onSwitchTraveling ?? onGetStarted;
+
   return (
-    <div className="rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 bg-gradient-to-br from-zinc-50 to-zinc-100/60 dark:from-zinc-800/50 dark:to-zinc-800/20 p-4 space-y-3">
-      {/* Decorative Visual Illustration */}
-      <div className="flex items-center gap-2 justify-center py-1">
-        <div className="size-12 rounded-xl bg-amber-100/80 dark:bg-amber-950/60 border border-amber-200/60 dark:border-amber-800 flex items-center justify-center text-amber-900 dark:text-amber-200 -rotate-3 shadow-2xs">
-          <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
+    <div className="rounded-[22px] border border-[#E7E2DA] bg-[#F5F3EF] p-4 shadow-[0_10px_24px_rgba(0,0,0,0.04)]">
+      <div className="relative mx-auto mb-4 flex h-[116px] w-full max-w-[270px] items-center justify-center">
+        <div className="absolute left-2 top-5 h-[88px] w-[90px] overflow-hidden rounded-[18px] border border-white/80 shadow-[0_12px_24px_rgba(0,0,0,0.12)] -rotate-12 bg-zinc-200">
+          <Image
+            src="/images/listing/listing-img-01.png"
+            alt=""
+            fill
+            className="object-cover"
+            sizes="90px"
+            unoptimized
+          />
         </div>
-        <div className="size-14 rounded-xl bg-rose-100/80 dark:bg-rose-950/60 border border-rose-200/60 dark:border-rose-800 flex items-center justify-center text-rose-900 dark:text-rose-200 z-10 shadow-xs">
-          <svg className="size-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
+
+        <div className="relative z-10 h-[104px] w-[94px] overflow-hidden rounded-[18px] border border-white/80 shadow-[0_18px_28px_rgba(0,0,0,0.14)] bg-zinc-200">
+          <Image
+            src="/images/listing/listing-img-02.png"
+            alt=""
+            fill
+            className="object-cover"
+            sizes="94px"
+            unoptimized
+          />
         </div>
-        <div className="size-12 rounded-xl bg-emerald-100/80 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800 flex items-center justify-center text-emerald-900 dark:text-emerald-200 rotate-3 shadow-2xs">
-          <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-          </svg>
+
+        <div className="absolute right-2 top-5 h-[88px] w-[90px] overflow-hidden rounded-[18px] border border-white/80 shadow-[0_12px_24px_rgba(0,0,0,0.12)] rotate-12 bg-zinc-200">
+          <Image
+            src="/images/listing/listing-img-03.png"
+            alt=""
+            fill
+            className="object-cover"
+            sizes="90px"
+            unoptimized
+          />
         </div>
       </div>
 
-      <div className="text-center space-y-1">
-        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+      <div className="text-center">
+        <p className="text-[18px] font-medium leading-6 tracking-[-0.02em] text-zinc-900">
           New to hosting?
         </p>
-        <p className="text-xs font-normal text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-xs mx-auto">
-          Explore helpful resources, onboarding steps, and tips to welcome your first guests.
+        <p className="mx-auto mt-1 max-w-[245px] text-[14px] font-normal leading-5 text-zinc-600">
+          Discover helpful tips and best practices to welcome your first guests.
         </p>
       </div>
 
-      <div className="pt-1 flex justify-center">
+      <div className="mt-4 flex justify-center">
         <button
           type="button"
-          onClick={onGetStarted}
-          className="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2 text-xs font-medium text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition cursor-pointer shadow-2xs"
+          onClick={handleSwitchTraveling}
+          className="inline-flex h-[48px] items-center justify-center gap-2 rounded-full bg-[#1F1F1F] px-6 text-[14px] font-medium text-white shadow-[0_8px_18px_rgba(0,0,0,0.12)] transition hover:bg-[#2a2a2a] focus:outline-none focus:ring-2 focus:ring-zinc-300 cursor-pointer"
         >
-          Get started
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            className="size-4"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16 3l4 4-4 4M20 7H9a5 5 0 0 0-5 5v1m-4 8 4-4-4-4m4 4h11a5 5 0 0 0 5-5v-1" />
+          </svg>
+          <span>Switch to Travelling</span>
         </button>
       </div>
     </div>
@@ -291,7 +320,7 @@ export function DrawerNavigation({
 
   return (
     <nav className="space-y-1 py-1" aria-label="Host navigation items">
-      <button type="button" onClick={() => onNavigate("/host/today")} className={drawerNavigationItemClass(isTodayActive)}>
+      {/* <button type="button" onClick={() => onNavigate("/host/today")} className={drawerNavigationItemClass(isTodayActive)}>
         <div className={drawerNavigationContentClass}>
           <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
             <circle cx="12" cy="12" r="9" />
@@ -327,7 +356,7 @@ export function DrawerNavigation({
           </svg>
           <span className="min-w-0">Messages</span>
         </div>
-      </button>
+      </button> */}
 
       <div className="my-2 border-t border-zinc-100 dark:border-zinc-800/80" />
 
@@ -507,19 +536,6 @@ export function DrawerNavigation({
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
           </svg>
           <span className="min-w-0">Refer a host</span>
-        </div>
-      </button>
-
-      <button
-        type="button"
-        onClick={() => onNavigate("/")}
-        className={drawerNavigationItemClass(false)}
-      >
-        <div className={drawerNavigationContentClass}>
-          <svg className={drawerNavigationIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16 3l4 4-4 4M20 7H9a5 5 0 0 0-5 5v1m4 8-4-4 4-4m-4 4h11a5 5 0 0 0 5-5v-1" />
-          </svg>
-          <span className="min-w-0">Switch to Travelling</span>
         </div>
       </button>
 
@@ -750,6 +766,7 @@ export function HostNavigationDrawer({
           {/* Optional Host Resources Card (Airbnb Inspired) */}
           <HostResourcesCard
             onGetStarted={() => handleNavigate("/host/onboarding")}
+            onSwitchTraveling={() => handleNavigate("/")}
           />
 
           {/* Host Navigation Rows */}
