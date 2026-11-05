@@ -411,6 +411,35 @@ export function ListingCard({
       : undefined,
   );
   const isSearchGridCard = variant === "search-grid";
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const impressionTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (isSearchGridCard || impressionTrackedRef.current || typeof window === "undefined" || !("IntersectionObserver" in window)) {
+      return;
+    }
+    const el = cardRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !impressionTrackedRef.current) {
+            impressionTrackedRef.current = true;
+            trackListingEvent({
+              eventType: "property_card_view",
+              propertyId: listing.id,
+            });
+            observer.disconnect();
+          }
+        }
+      },
+      { threshold: 0.2 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [listing.id, isSearchGridCard]);
 
   // ── Favorite Action ─────────────────────────────────────────────────────────
   const toggleFavorite = useCallback(
@@ -467,6 +496,7 @@ export function ListingCard({
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <Link
+      ref={cardRef}
       href={targetHref}
       aria-label={listing.title || "View property"}
       onClick={() => {

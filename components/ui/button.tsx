@@ -13,7 +13,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const primaryButtonInteractionClass = "border border-transparent hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white";
-const baseClass = `box-border inline-flex items-center justify-center gap-2 rounded-full font-sans font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${primaryButtonInteractionClass}`;
+const baseClass = `app-btn box-border rounded-full font-sans disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${primaryButtonInteractionClass}`;
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: "bg-[#FCDF9C] text-[#1F1F1F] active:border-[#1F1F1F] active:bg-[#F3F4F5] dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white",
@@ -24,9 +24,9 @@ const variantClasses: Record<ButtonVariant, string> = {
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: "h-8.5 min-h-[34px] px-3.5 text-xs sm:text-sm",
-  md: "h-10.5 min-h-[42px] px-5 text-sm",
-  lg: "h-12 min-h-12 px-6 text-sm sm:text-base",
+  sm: "app-btn--sm",
+  md: "app-btn--md",
+  lg: "app-btn--lg",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(

@@ -33,7 +33,7 @@ export function OnboardingHeader({ onSaveAndExit, isSaving = false, disabled = f
           href="/help"
           target="_blank"
           rel="noreferrer"
-          className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-300 px-4 text-sm font-medium text-[#1F1F1F] transition-colors hover:border-[#1F1F1F] hover:bg-zinc-50 sm:px-5"
+          className="app-btn app-btn--md rounded-full border border-zinc-300 text-[#1F1F1F] hover:border-[#1F1F1F] hover:bg-zinc-50"
         >
           {t("host_header_questions", "Questions?")}
         </a>
@@ -41,7 +41,7 @@ export function OnboardingHeader({ onSaveAndExit, isSaving = false, disabled = f
           type="button"
           onClick={onSaveAndExit}
           disabled={disabled || isSaving}
-          className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-300 px-4 text-sm font-medium text-[#1F1F1F] transition-colors hover:border-[#1F1F1F] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 sm:px-5"
+          className="app-btn app-btn--md rounded-full border border-zinc-300 text-[#1F1F1F] hover:border-[#1F1F1F] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSaving && <LoadingIcon className="mr-2 size-4 animate-spin" />}
           {isSaving ? t("host_saving", "Saving…") : t("host_save_exit", "Save & exit")}

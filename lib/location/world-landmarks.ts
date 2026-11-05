@@ -643,7 +643,7 @@ export const WORLD_LANDMARKS: LandmarkRecord[] = [
   {
     id: "area_westminster",
     name: "Westminster",
-    aliases: ["westminster", "city of westminster", "westminster london"],
+    aliases: ["westminster", "westminster london"],
     city: "London",
     state: "England",
     country: "United Kingdom",

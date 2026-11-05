@@ -2084,7 +2084,7 @@ export function HostListingEditorClient({
         {/* ============================================================ */}
         {/* LEFT COLUMN: LISTING EDITOR NAVIGATION */}
         {/* ============================================================ */}
-        <div className={presentation === "admin" ? "order-first lg:order-1 lg:h-full lg:max-h-full" : "lg:order-1 lg:min-w-0 lg:h-full lg:overflow-hidden lg:bg-[rgba(241,241,241,0.5)]"}><EditorSidebar
+        <div className={presentation === "admin" ? "order-first lg:order-1 lg:h-full lg:min-h-0 lg:max-h-full" : "lg:order-1 lg:min-w-0 lg:h-full lg:min-h-0 lg:overflow-hidden lg:bg-[rgba(241,241,241,0.5)]"}><EditorSidebar
           presentation={presentation}
           routeBase={routeBase}
           editorTab={editorTab}

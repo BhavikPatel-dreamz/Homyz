@@ -1169,7 +1169,6 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
     <>
       {/* Mobile Hero Section (screens < md) */}
       <div className="w-full lg:hidden">
-        {/* Top Image Card */}
         <div className="relative aspect-[358/512] w-full overflow-hidden rounded-[28px] bg-[#e5e5e5] shadow-xs">
           <Image
             src={mobileHeroSrc}
@@ -1182,50 +1181,13 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             unoptimized
             onError={() => setMobileHeroSrc(BRANDING_FALLBACKS.homepageHeroMobile)}
           />
-        </div>
-
-        {/* Heading */}
-        <div className="mt-6">
-          <h1 className="text-[32px] leading-[1.12] text-[#1f1f1f]">
-            <span className="block font-light">{t("home_hero_title_line_one", "Book cozy stays")}</span>
-            <span className="block font-medium">{t("home_hero_title_line_two", "that feel like home")}</span>
-          </h1>
-        </div>
-
-        {/* Start your search bar */}
-        <div className="mt-5">
-          <button
-            id="homepage-mobile-search"
-            type="button"
-            disabled={isSearching}
-            onClick={() => {
-              setActiveStep("where");
-              setDesktopPanel(null);
-              setIsMobileSearchOpen(true);
-            }}
-            className="flex h-[56px] w-full items-center justify-between rounded-full bg-[#f3f4f6] pl-6 pr-2 shadow-xs transition-transform cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed text-lg font-medium"
-            aria-label={isSearching ? "Searching..." : "Start your search"}
-          >
-            <span className="text-base font-medium text-[#1f1f1f]">
-              {destination || t("home_search_where_placeholder")}
-            </span>
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] text-[#1f1f1f]">
-              {isSearching ? (
-                <svg className="h-4.5 w-4.5 animate-spin text-[#1F1F1F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                  <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-              ) : (
-                <Image
-                  src="/images/icons/search-icon.svg"
-                  alt=""
-                  width={20}
-                  height={20}
-                  className="h-5 w-5"
-                />
-              )}
-            </div>
-          </button>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/5" />
+          <div className="absolute inset-x-0 bottom-0 p-5">
+            <h1 className="text-[32px] leading-[1.12] text-white">
+              <span className="block font-light">{t("home_hero_title_line_one", "Book cozy stays")}</span>
+              <span className="block font-medium">{t("home_hero_title_line_two", "that feel like home")}</span>
+            </h1>
+          </div>
         </div>
       </div>
 

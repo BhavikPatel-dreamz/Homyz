@@ -24,14 +24,14 @@ export function OnboardingStepHeading({
 }: OnboardingStepHeadingProps) {
   return (
     <>
-      <h1 data-aos={titleAnimation} className={titleClassName}>
+      <h1 data-aos={titleAnimation} className={`app-title-page ${titleClassName ?? ""}`.trim()}>
         {title}
       </h1>
       {description && (
         <p
           data-aos={descriptionAnimation}
           data-aos-delay={String(descriptionDelay)}
-          className={descriptionClassName}
+          className={`app-desc ${descriptionClassName ?? ""}`.trim()}
         >
           {description}
         </p>

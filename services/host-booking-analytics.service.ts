@@ -121,7 +121,15 @@ export interface HostBookingAnalyticsData {
 }
 
 type ListingRecord = DashboardInventoryListing & { title: string; published: boolean; status: string; isPaused: boolean };
-type BookingRecord = DashboardInventoryBooking & { id: string; createdAt: Date; priceBreakdown: unknown; currency: string | null; totalPrice: number | null; cleaningFee: number | null };
+type BookingRecord = DashboardInventoryBooking & {
+  id: string;
+  createdAt: Date;
+  priceBreakdown: unknown;
+  currency: string | null;
+  totalPrice: number | null;
+  cleaningFee: number | null;
+  payments?: Array<{ status?: string | null; provider?: string | null }>;
+};
 
 function median(values: number[]) {
   if (!values.length) return null;
@@ -177,7 +185,21 @@ export const hostBookingAnalyticsService = {
           { createdAt: { gte: eventStart, lte: period.endDate } },
         ],
       },
-      select: { id: true, listingId: true, status: true, startDate: true, endDate: true, createdAt: true, priceBreakdown: true, currency: true, totalPrice: true, cleaningFee: true },
+      select: {
+        id: true,
+        listingId: true,
+        status: true,
+        startDate: true,
+        endDate: true,
+        createdAt: true,
+        priceBreakdown: true,
+        currency: true,
+        totalPrice: true,
+        cleaningFee: true,
+        payments: {
+          select: { status: true, provider: true },
+        },
+      },
       }) as Promise<BookingRecord[]>,
       prisma.booking.findMany({
         where: { listingId: { in: allListingIds }, status: BookingStatus.CANCELLED, createdAt: { gte: period.startDate, lte: period.endDate } },
@@ -190,7 +212,13 @@ export const hostBookingAnalyticsService = {
       }),
     ]) : [[], [], [] as Array<{ listingId: string | null; _avg: { rating: number | null } }>];
 
-    const activeListings = scopedListings.filter((listing) => listing.published && listing.status === "ACTIVE" && !listing.isPaused);
+    const listingsWithStays = new Set<string>();
+    for (const booking of bookings) {
+      listingsWithStays.add(booking.listingId);
+    }
+    const activeListings = scopedListings.filter(
+      (listing) => (listing.published && listing.status === "ACTIVE" && !listing.isPaused) || listingsWithStays.has(listing.id),
+    );
     const inventoryBookings = bookings as DashboardInventoryBooking[];
     const heatmap = calculateDashboardInventoryByDate({
       listings: activeListings,

@@ -81,17 +81,68 @@ export function extractStoredGuestTotal(booking: BookingFinancialRecord): number
  * their prior status-based behaviour; an explicit pending/failed/refunded
  * payment is never treated as earned money.
  */
-export function isStoredBookingPayoutEligible(booking: Pick<BookingFinancialRecord, "priceBreakdown">): boolean {
+export function isStoredBookingPayoutEligible(
+  booking: Pick<BookingFinancialRecord, "priceBreakdown"> & {
+    status?: string | null;
+    payments?: Array<{ status?: string | null; provider?: string | null }> | null;
+  }
+): boolean {
   const snapshot = asRecord(booking.priceBreakdown);
   const paymentStatus = typeof snapshot?.paymentStatus === "string"
     ? snapshot.paymentStatus.trim().toUpperCase()
     : null;
+  const paymentMode = typeof snapshot?.paymentMode === "string"
+    ? snapshot.paymentMode.trim().toUpperCase()
+    : null;
 
+  // Explicit failure or refund is never eligible
+  if (paymentStatus === "FAILED" || paymentStatus === "REFUNDED" || paymentStatus === "VOIDED") {
+    return false;
+  }
+
+  // Explicit successful capture / paid statuses
+  if (
+    paymentStatus === "PAID" ||
+    paymentStatus === "CAPTURED" ||
+    paymentStatus === "SETTLED" ||
+    paymentStatus === "PAYMENT_COMPLETED" ||
+    paymentStatus === "AUTHORIZED"
+  ) {
+    return true;
+  }
+
+  // If DB payment relations indicate captured/completed/authorized
+  if (booking.payments && booking.payments.length > 0) {
+    const hasPaidPayment = booking.payments.some((p) => {
+      const s = p.status?.trim().toUpperCase();
+      return s === "COMPLETED" || s === "PAID" || s === "CAPTURED" || s === "AUTHORIZED";
+    });
+    if (hasPaidPayment) return true;
+  }
+
+  // Under Homyz payment policy, deferred / mock payments on confirmed reservations are valid revenue
+  if (paymentMode === "DEFERRED" || paymentMode === "MOCK") {
+    return true;
+  }
+
+  // If payment provider on payments relation is DEFERRED
+  if (booking.payments && booking.payments.some((p) => p.provider?.toUpperCase() === "DEFERRED")) {
+    return true;
+  }
+
+  // Recognized host earnings lifecycle status
+  if (
+    snapshot?.hostEarnings &&
+    typeof snapshot.hostEarnings === "object" &&
+    (snapshot.hostEarnings as Record<string, any>).status === "EARNED"
+  ) {
+    return true;
+  }
+
+  // Legacy records without paymentStatus default to true (eligible)
   if (!paymentStatus) return true;
-  return paymentStatus === "PAID"
-    || paymentStatus === "CAPTURED"
-    || paymentStatus === "SETTLED"
-    || paymentStatus === "PAYMENT_COMPLETED";
+
+  return false;
 }
 
 /**

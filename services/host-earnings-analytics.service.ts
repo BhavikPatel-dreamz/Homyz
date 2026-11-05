@@ -5,7 +5,7 @@ import type { AuthUser } from "@/lib/auth/types";
 import { authorize } from "@/lib/permissions/authorize";
 import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
 import { prisma } from "@/lib/db/prisma";
-import { bookingDateKey, shiftBookingDateKey } from "@/lib/booking/booking-date";
+import { bookingDateKey, differenceInBookingNights, parseBookingDate, shiftBookingDateKey } from "@/lib/booking/booking-date";
 import { extractStoredGuestTotal, extractStoredHostPayout, isStoredBookingPayoutEligible } from "@/lib/booking/booking-financials";
 import { normalizeCurrencyCode } from "@/lib/currency";
 import {
@@ -143,6 +143,7 @@ type AnalyticsBooking = DashboardInventoryBooking & {
   currency: string | null;
   totalPrice: number | null;
   cleaningFee: number | null;
+  payments?: Array<{ status?: string | null; provider?: string | null }>;
 };
 
 function emptyTotals() {
@@ -203,11 +204,17 @@ export const hostEarningsAnalyticsService = {
     const lastDate = comparisonEndDate > reportingPeriod.endDate
       ? comparisonEndDate
       : reportingPeriod.endDate;
+    const startKey = reportingPeriod.startDateKey;
+    const endKeyEx = shiftBookingDateKey(reportingPeriod.endDateKey, 1);
+    const compStartKey = comparisonPeriod?.startDateKey ?? reportingPeriod.comparisonStartDateKey;
+    const compEndKeyEx = shiftBookingDateKey(comparisonPeriod?.endDateKey ?? reportingPeriod.comparisonEndDateKey, 1);
+
     const bookings = listingIds.length ? await prisma.booking.findMany({
       where: {
         listingId: { in: listingIds },
         status: BookingStatus.CONFIRMED,
-        endDate: { gte: firstDate, lte: lastDate },
+        startDate: { lt: lastDate },
+        endDate: { gt: firstDate },
       },
       select: {
         listingId: true,
@@ -219,9 +226,17 @@ export const hostEarningsAnalyticsService = {
         currency: true,
         totalPrice: true,
         cleaningFee: true,
+        payments: {
+          select: { status: true, provider: true },
+        },
       },
-      orderBy: { endDate: "asc" },
+      orderBy: { startDate: "asc" },
     }) : [];
+
+    const listingsWithStays = new Set<string>();
+    for (const booking of bookings) {
+      listingsWithStays.add(booking.listingId);
+    }
 
     const current = emptyTotals();
     const previous = emptyTotals();
@@ -230,7 +245,6 @@ export const hostEarningsAnalyticsService = {
     const trendMap = new Map<string, { accommodation: number; net: number; fees: number; bookings: number }>();
 
     for (const booking of bookings as AnalyticsBooking[]) {
-      if (booking.endDate > now) continue;
       const payout = extractStoredHostPayout(booking);
       if (!payout || !isStoredBookingPayoutEligible(booking)) {
         unavailableFinancialSnapshotCount++;
@@ -238,47 +252,94 @@ export const hostEarningsAnalyticsService = {
       }
       const currency = normalizeCurrencyCode(payout.currency ?? booking.currency ?? "SAR");
       if (selectedCurrency && currency !== selectedCurrency) continue;
-      const target = booking.endDate >= reportingPeriod.startDate && booking.endDate <= reportingPeriod.endDate
-        ? current
-        : booking.endDate >= comparisonStartDate && booking.endDate <= comparisonEndDate
-          ? previous
-          : null;
-      if (!target) continue;
-      const nights = Math.max(0, Math.round((booking.endDate.getTime() - booking.startDate.getTime()) / 86_400_000));
-      target.accommodation += payout.accommodationSubtotal;
-      target.net += payout.netHostPayout;
-      target.hostServiceFees += payout.hostServiceFee;
-      target.extraGuestFees += payout.extraGuestFee;
-      target.petFees += payout.petFee;
-      target.cleaningFees += payout.cleaningFee;
-      target.taxes += payout.taxesCollectedForHost;
-      const gross = extractStoredGuestTotal(booking);
-      if (gross !== null) {
-        target.gross += gross;
-        target.grossCount++;
+
+      const totalNights = differenceInBookingNights(booking.startDate, booking.endDate);
+      if (totalNights <= 0) continue;
+
+      let currentNights = 0;
+      let previousNights = 0;
+      const currentNightDateKeys: string[] = [];
+
+      for (let cursor = parseBookingDate(booking.startDate); bookingDateKey(cursor) < bookingDateKey(booking.endDate); cursor.setUTCDate(cursor.getUTCDate() + 1)) {
+        const k = bookingDateKey(cursor);
+        if (k >= startKey && k < endKeyEx) {
+          currentNights++;
+          currentNightDateKeys.push(k);
+        }
+        if (k >= compStartKey && k < compEndKeyEx) {
+          previousNights++;
+        }
       }
-      target.bookings++;
-      target.nights += nights;
-      if (target === current) {
+
+      const gross = extractStoredGuestTotal(booking);
+
+      if (currentNights > 0) {
+        const share = currentNights / totalNights;
+        const accommodation = Math.round(payout.accommodationSubtotal * share);
+        const net = Math.round(payout.netHostPayout * share);
+        const hostServiceFee = Math.round(payout.hostServiceFee * share);
+        const extraGuestFee = Math.round(payout.extraGuestFee * share);
+        const petFee = Math.round(payout.petFee * share);
+        const cleaningFee = Math.round(payout.cleaningFee * share);
+        const taxes = Math.round(payout.taxesCollectedForHost * share);
+
+        current.accommodation += accommodation;
+        current.net += net;
+        current.hostServiceFees += hostServiceFee;
+        current.extraGuestFees += extraGuestFee;
+        current.petFees += petFee;
+        current.cleaningFees += cleaningFee;
+        current.taxes += taxes;
+        current.bookings++;
+        current.nights += currentNights;
+
+        if (gross !== null) {
+          current.gross += Math.round(gross * share);
+          current.grossCount++;
+        }
+
         const property = propertyTotals.get(booking.listingId);
         if (property) {
-          property.accommodation += payout.accommodationSubtotal;
-          property.net += payout.netHostPayout;
+          property.accommodation += accommodation;
+          property.net += net;
           property.bookings++;
-          property.nights += nights;
+          property.nights += currentNights;
         }
-        const dateKey = bookingDateKey(booking.endDate);
-        const point = trendMap.get(dateKey) ?? { accommodation: 0, net: 0, fees: 0, bookings: 0 };
-        point.accommodation += payout.accommodationSubtotal;
-        point.net += payout.netHostPayout;
-        point.fees += payout.hostServiceFee;
-        point.bookings++;
-        trendMap.set(dateKey, point);
+
+        const dailyAccom = currentNightDateKeys.length > 0 ? Math.round(accommodation / currentNightDateKeys.length) : 0;
+        const dailyNet = currentNightDateKeys.length > 0 ? Math.round(net / currentNightDateKeys.length) : 0;
+        const dailyFee = currentNightDateKeys.length > 0 ? Math.round(hostServiceFee / currentNightDateKeys.length) : 0;
+        for (const dateKey of currentNightDateKeys) {
+          const point = trendMap.get(dateKey) ?? { accommodation: 0, net: 0, fees: 0, bookings: 0 };
+          point.accommodation += dailyAccom;
+          point.net += dailyNet;
+          point.fees += dailyFee;
+          point.bookings += 1;
+          trendMap.set(dateKey, point);
+        }
+      }
+
+      if (previousNights > 0) {
+        const share = previousNights / totalNights;
+        previous.accommodation += Math.round(payout.accommodationSubtotal * share);
+        previous.net += Math.round(payout.netHostPayout * share);
+        previous.hostServiceFees += Math.round(payout.hostServiceFee * share);
+        previous.extraGuestFees += Math.round(payout.extraGuestFee * share);
+        previous.petFees += Math.round(payout.petFee * share);
+        previous.cleaningFees += Math.round(payout.cleaningFee * share);
+        previous.taxes += Math.round(payout.taxesCollectedForHost * share);
+        previous.bookings++;
+        previous.nights += previousNights;
+
+        if (gross !== null) {
+          previous.gross += Math.round(gross * share);
+          previous.grossCount++;
+        }
       }
     }
 
     const inventoryListings: AnalyticsListing[] = scopedListings
-      .filter((listing) => listing.published && listing.status === "ACTIVE" && !listing.isPaused)
+      .filter((listing) => (listing.published && listing.status === "ACTIVE" && !listing.isPaused) || listingsWithStays.has(listing.id))
       .map((listing) => ({ id: listing.id, blockedDates: listing.blockedDates ?? [], title: listing.title }));
     const bookingInventory = bookings as DashboardInventoryBooking[];
     const inventory = calculateDashboardInventory({
@@ -296,12 +357,15 @@ export const hostEarningsAnalyticsService = {
 
     const properties = scopedListings.map((listing) => {
       const totals = propertyTotals.get(listing.id) ?? emptyTotals();
-      const listingInventory = calculateDashboardInventory({
-        listings: inventoryListings.filter((item) => item.id === listing.id),
-        bookings: bookingInventory,
-        startDateKey: reportingPeriod.startDateKey,
-        endDateKeyExclusive: shiftBookingDateKey(reportingPeriod.endDateKey, 1),
-      });
+      const isEligibleInv = inventoryListings.some((item) => item.id === listing.id);
+      const listingInventory = isEligibleInv
+        ? calculateDashboardInventory({
+            listings: [{ id: listing.id, blockedDates: listing.blockedDates ?? [] }],
+            bookings: bookingInventory,
+            startDateKey: reportingPeriod.startDateKey,
+            endDateKeyExclusive: shiftBookingDateKey(reportingPeriod.endDateKey, 1),
+          })
+        : { blockedNights: 0, bookedNights: 0, bookableNights: 0, availableNights: 0, ratePercentage: 0 };
       const location = listing.district && listing.city
         ? `${listing.district}, ${listing.city}`
         : listing.city || listing.country || null;
@@ -315,7 +379,7 @@ export const hostEarningsAnalyticsService = {
         bookableNights: listingInventory.bookableNights,
         bookedNights: listingInventory.bookedNights,
         occupancyRatePercentage: listingInventory.ratePercentage,
-        averageRealizedNightlyRateCents: moneyPer(totals.accommodation, totals.nights),
+        averageRealizedNightlyRateCents: moneyPer(totals.accommodation, listingInventory.bookedNights),
         coverPhotoUrl: listing.photos?.[0] || null,
         location,
       };
@@ -397,10 +461,10 @@ export const hostEarningsAnalyticsService = {
         cleaningFeesCents: current.cleaningFees,
         taxesCollectedForHostCents: current.taxes,
         qualifyingBookingsCount: current.bookings,
-        completedNightsCount: current.nights,
+        completedNightsCount: inventory.bookedNights,
         revenuePerBookingCents: moneyPer(current.accommodation, current.bookings),
         netPerBookingCents: moneyPer(current.net, current.bookings),
-        averageRealizedNightlyRateCents: moneyPer(current.accommodation, current.nights),
+        averageRealizedNightlyRateCents: moneyPer(current.accommodation, inventory.bookedNights),
         previousNetHostEarningsCents: previous.net,
         previousAccommodationRevenueCents: previous.accommodation,
         previousQualifyingBookingsCount: previous.bookings,

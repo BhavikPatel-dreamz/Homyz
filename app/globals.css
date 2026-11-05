@@ -4,6 +4,29 @@
 @variant dark (&:where(.dark, .dark *));
 
 :root {
+  /* Shared type scale. Keep these semantic tokens independent from any
+     workspace-specific aliases so they can be safely reused everywhere. */
+  --title-page-mob: 1.5rem;
+  --title-page-desk: 1.75rem;
+  --title-section-mob: 1.125rem;
+  --title-section-desk: 1.25rem;
+  --title-card: 1rem;
+  --text-body: 0.9375rem;
+  --text-desc: 0.875rem;
+  --text-micro: 0.75rem;
+  --text-button: 0.875rem;
+  --text-input: 1rem;
+  --text-label: 0.875rem;
+
+  /* Shared button dimensions. These are opt-in through .app-btn variants;
+     native controls and compact/icon buttons retain their own sizing. */
+  --btn-h-sm: 2.25rem;
+  --btn-h-md: 2.75rem;
+  --btn-h-lg: 3rem;
+
+  --app-weight-normal: 400;
+  --app-weight-medium: 500;
+
   --Neutral-colors-600: #727272;
   --background: #fafafb;
   --foreground: #111827;
@@ -134,32 +157,32 @@
 
 .admin-listing-editor main p {
   color: var(--muted-foreground);
-  font-size: 0.8125rem;
+  font-size: var(--text-desc);
   line-height: 1.5;
 }
 
 .admin-listing-editor main :is(label, legend) {
-  font-size: 0.8125rem !important;
-  font-weight: 500 !important;
+  font-size: var(--text-label) !important;
+  font-weight: var(--app-weight-medium) !important;
   letter-spacing: 0.01em;
 }
 
 .admin-listing-editor main h1 {
-  font-size: 1.75rem !important;
-  font-weight: 500 !important;
+  font-size: var(--title-page-mob) !important;
+  font-weight: var(--app-weight-medium) !important;
   letter-spacing: -0.025em;
 }
 
 .admin-listing-editor main h2 {
-  font-size: 1.25rem !important;
-  font-weight: 500 !important;
+  font-size: var(--title-section-mob) !important;
+  font-weight: var(--app-weight-medium) !important;
   letter-spacing: -0.02em;
 }
 
 .admin-listing-editor main h3,
 .admin-listing-editor main h4 {
-  font-size: 1rem !important;
-  font-weight: 500 !important;
+  font-size: var(--title-card) !important;
+  font-weight: var(--app-weight-medium) !important;
 }
 
 .admin-listing-editor main :is(.text-xl, .text-2xl, .text-3xl) {
@@ -188,8 +211,8 @@
   color: var(--admin-editor-ink) !important;
   border-radius: 0.75rem !important;
   box-shadow: none !important;
-  font-size: 0.8125rem !important;
-  min-height: 2.75rem !important;
+  font-size: var(--text-input) !important;
+  min-height: var(--btn-h-md) !important;
 }
 
 .admin-listing-editor main textarea {
@@ -212,8 +235,8 @@
 }
 
 .admin-listing-editor main button {
-  font-size: 0.875rem !important;
-  font-weight: 500 !important;
+  font-size: var(--text-button) !important;
+  font-weight: var(--app-weight-medium) !important;
 }
 
 .admin-listing-editor main button:not([class*="rounded-full"]) {
@@ -260,6 +283,16 @@
   .admin-listing-editor [class*="lg:fixed"] {
     background: var(--admin-editor-surface) !important;
     border-color: var(--admin-editor-border) !important;
+  }
+}
+
+@media (min-width: 640px) {
+  .admin-listing-editor main h1 {
+    font-size: var(--title-page-desk) !important;
+  }
+
+  .admin-listing-editor main h2 {
+    font-size: var(--title-section-desk) !important;
   }
 }
 
@@ -335,67 +368,139 @@ body {
   min-height: 100vh;
 }
 
+/* Semantic, opt-in primitives. They live in the components layer so a
+   deliberate Tailwind utility can still customize a special-purpose view. */
+@layer components {
+  .app-title-page {
+    font-family: var(--font-poppins), 'Poppins', sans-serif;
+    font-size: var(--title-page-mob);
+    font-weight: var(--app-weight-medium);
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+  }
+
+  .app-title-section {
+    font-family: var(--font-poppins), 'Poppins', sans-serif;
+    font-size: var(--title-section-mob);
+    font-weight: var(--app-weight-medium);
+    letter-spacing: -0.015em;
+    line-height: 1.3;
+  }
+
+  .app-title-card {
+    font-family: var(--font-poppins), 'Poppins', sans-serif;
+    font-size: var(--title-card);
+    font-weight: var(--app-weight-medium);
+    line-height: 1.4;
+  }
+
+  .app-body {
+    font-size: var(--text-body);
+    font-weight: var(--app-weight-normal);
+    line-height: 1.5;
+  }
+
+  .app-desc {
+    font-size: var(--text-desc);
+    font-weight: var(--app-weight-normal);
+    line-height: 1.5;
+  }
+
+  .app-micro {
+    font-size: var(--text-micro);
+    font-weight: var(--app-weight-normal);
+    line-height: 1.4;
+  }
+
+  .app-label {
+    font-size: var(--text-label);
+    font-weight: var(--app-weight-medium);
+    line-height: 1.4;
+  }
+
+  .app-btn {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.5rem;
+    justify-content: center;
+    font-size: var(--text-button);
+    font-weight: var(--app-weight-medium);
+    line-height: 1.25rem;
+    transition-duration: 150ms;
+    transition-property: background-color, border-color, box-shadow, color, opacity;
+  }
+
+  .app-btn:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .app-btn--sm {
+    min-height: var(--btn-h-sm);
+    padding-inline: 0.875rem;
+  }
+
+  .app-btn--md {
+    min-height: var(--btn-h-md);
+    padding-inline: 1.25rem;
+  }
+
+  .app-btn--lg {
+    min-height: var(--btn-h-lg);
+    padding-inline: 1.5rem;
+    font-size: var(--text-input);
+  }
+
+  @media (min-width: 640px) {
+    .app-title-page {
+      font-size: var(--title-page-desk);
+    }
+
+    .app-title-section {
+      font-size: var(--title-section-desk);
+    }
+  }
+}
+
 @layer base {
   h1 {
     font-family: var(--font-poppins), sans-serif;
-    font-size: 24px;
-    font-weight: 500;
-    line-height: 32px;
+    font-size: var(--title-page-mob);
+    font-weight: var(--app-weight-medium);
+    line-height: 1.2;
     color: #1f1f1f;
     letter-spacing: -0.015em;
   }
 
   @media (min-width: 640px) {
     h1 {
-      font-size: 28px;
-      line-height: 36px;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    h1 {
-      font-size: 30px;
-      line-height: 38px;
+      font-size: var(--title-page-desk);
     }
   }
 
   h2 {
     font-family: var(--font-poppins), sans-serif;
-    font-size: 18px;
-    font-weight: 500;
-    line-height: 26px;
+    font-size: var(--title-section-mob);
+    font-weight: var(--app-weight-medium);
+    line-height: 1.3;
     color: #1f1f1f;
     letter-spacing: -0.01em;
   }
 
   @media (min-width: 640px) {
     h2 {
-      font-size: 20px;
-      line-height: 28px;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    h2 {
-      font-size: 22px;
-      line-height: 30px;
+      font-size: var(--title-section-desk);
     }
   }
 
   h3 {
     font-family: var(--font-poppins), sans-serif;
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--title-card);
+    font-weight: var(--app-weight-medium);
+    line-height: 1.4;
     color: #1f1f1f;
   }
 
-  @media (min-width: 1024px) {
-    h3 {
-      font-size: 17px;
-      line-height: 24px;
-    }
-  }
 }
 
 .input {
@@ -404,7 +509,7 @@ body {
   border-radius: 0.75rem;
   background: #fff;
   padding: 0.625rem 0.75rem;
-  font-size: 0.875rem;
+  font-size: var(--text-input);
   color: #27272a;
   outline: none;
 }
@@ -957,18 +1062,18 @@ input[type="number"] {
 .guest-booking-details {
   --profile-ink: #1f1f1f;
   --profile-muted: #727272;
-  --profile-title-size: 1.75rem;
-  --profile-section-size: 1.25rem;
-  --profile-card-title-size: 1rem;
-  --profile-body-size: 0.9375rem;
-  --profile-secondary-size: 0.875rem;
+  --profile-title-size: var(--title-page-mob);
+  --profile-section-size: var(--title-section-mob);
+  --profile-card-title-size: var(--title-card);
+  --profile-body-size: var(--text-body);
+  --profile-secondary-size: var(--text-desc);
 }
 
 .profile-page-title,
 .reservation-page-title {
   color: var(--profile-ink);
   font-size: var(--profile-title-size);
-  font-weight: 500;
+  font-weight: var(--app-weight-medium);
   letter-spacing: -0.025em;
   line-height: 1.2;
 }
@@ -977,7 +1082,7 @@ input[type="number"] {
 .guest-booking-details h2 {
   color: var(--profile-ink);
   font-size: var(--profile-section-size);
-  font-weight: 500;
+  font-weight: var(--app-weight-medium);
   letter-spacing: -0.015em;
   line-height: 1.3;
 }
@@ -986,20 +1091,20 @@ input[type="number"] {
 .guest-booking-details h3 {
   color: var(--profile-ink);
   font-size: var(--profile-card-title-size);
-  font-weight: 500;
+  font-weight: var(--app-weight-medium);
   line-height: 1.4;
 }
 
 .profile-secondary-text {
   color: var(--profile-muted);
-  font-size: var(--profile-body-size);
-  font-weight: 400;
+  font-size: var(--profile-secondary-size);
+  font-weight: var(--app-weight-normal);
   line-height: 1.5;
 }
 
 .profile-value {
   font-size: 1.25rem;
-  font-weight: 500;
+  font-weight: var(--app-weight-medium);
   letter-spacing: -0.015em;
   line-height: 1.2;
 }
@@ -1013,58 +1118,62 @@ input[type="number"] {
   display: inline-flex;
   justify-content: center;
   gap: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--text-button);
+  font-weight: var(--app-weight-medium);
   line-height: 1.25rem;
-  white-space: nowrap;
+}
+
+.profile-button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 .profile-button--small {
-  min-height: 2.25rem;
+  min-height: var(--btn-h-sm);
   padding-inline: 1rem;
 }
 
 .profile-button--medium {
-  min-height: 2.75rem;
+  min-height: var(--btn-h-md);
   padding-inline: 1.25rem;
 }
 
 .profile-tab {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--text-button);
+  font-weight: var(--app-weight-medium);
   line-height: 1.25rem;
   white-space: nowrap;
 }
 
 .guest-profile :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea),
 .guest-booking-details :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
-  font-size: 1rem;
+  font-size: var(--text-input);
   line-height: 1.5;
 }
 
 .guest-profile :is(input:not([type="checkbox"]):not([type="radio"]), select),
 .guest-booking-details :is(input:not([type="checkbox"]):not([type="radio"]), select) {
-  min-height: 2.75rem;
+  min-height: var(--btn-h-md);
 }
 
 .guest-profile form label,
 .guest-booking-details form label {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--text-label);
+  font-weight: var(--app-weight-medium);
   line-height: 1.4;
 }
 
 .guest-profile form button[type="submit"],
 .guest-booking-details form button[type="submit"] {
-  min-height: 2.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  min-height: var(--btn-h-md);
+  font-size: var(--text-button);
+  font-weight: var(--app-weight-medium);
   line-height: 1.25rem;
 }
 
 .guest-booking-details h1 {
   font-size: var(--profile-title-size);
-  font-weight: 500;
+  font-weight: var(--app-weight-medium);
   letter-spacing: -0.025em;
   line-height: 1.2;
   overflow-wrap: anywhere;
@@ -1074,16 +1183,13 @@ input[type="number"] {
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 639px) {
+@media (min-width: 640px) {
   .guest-profile,
   .guest-booking-details {
-    --profile-title-size: 1.5rem;
-    --profile-section-size: 1.125rem;
+    --profile-title-size: var(--title-page-desk);
+    --profile-section-size: var(--title-section-desk);
   }
 
-  .profile-value--hero {
-    font-size: 1.75rem;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

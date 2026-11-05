@@ -596,7 +596,17 @@ export function getContentTypeDefinition(type: CmsContentTypeEnum): ContentTypeD
   return def;
 }
 
-export function validateContentPayload(type: CmsContentTypeEnum, payload: unknown) {
+export type ValidatedContentPayload = Record<string, unknown>;
+
+export function validateContentPayload(type: CmsContentTypeEnum, payload: unknown): ValidatedContentPayload {
   const def = getContentTypeDefinition(type);
-  return def.schema.parse(payload);
+  const validatedPayload = def.schema.parse(payload);
+
+  // Every CMS schema represents a content document. Keep that runtime
+  // contract explicit so callers do not receive Zod's generic `unknown`.
+  if (!validatedPayload || typeof validatedPayload !== "object" || Array.isArray(validatedPayload)) {
+    throw new Error(`CMS content type "${type}" must validate to an object payload.`);
+  }
+
+  return validatedPayload as ValidatedContentPayload;
 }

@@ -110,6 +110,7 @@ export async function recordConfirmedBookingAnalyticsEvent(input: {
       listingId: true,
       userId: true,
       status: true,
+      createdAt: true,
       listing: { select: { hostId: true } },
       conversations: {
         select: { id: true, guestId: true, listingId: true },
@@ -125,7 +126,10 @@ export async function recordConfirmedBookingAnalyticsEvent(input: {
           eventType: "LISTING_VIEW",
           listingId: booking.listingId,
           sessionHash,
-          occurredAt: { gte: new Date(Date.now() - ATTRIBUTION_WINDOW_MS) },
+          occurredAt: {
+            lte: booking.createdAt,
+            gte: new Date(booking.createdAt.getTime() - ATTRIBUTION_WINDOW_MS),
+          },
         },
         select: { id: true },
       })
@@ -219,6 +223,8 @@ export type ListingAnalyticsSummary = {
   listingViews: number;
   searchImpressions: number;
   attributedConfirmedBookings: number;
+  convertedSessionsCount: number;
+  uniqueViewingSessionsCount: number;
   inquiries: number;
   attributedInquiryToBookingCount: number;
   conversionRatePercentage: number | null;
@@ -231,10 +237,23 @@ export async function getListingAnalyticsSummary(input: {
   endDate: Date;
 }): Promise<ListingAnalyticsSummary> {
   if (!input.listingIds.length) {
-    return { status: "ACTIVE", message: "No listings are selected.", trackingStartedAt: null, listingViews: 0, searchImpressions: 0, attributedConfirmedBookings: 0, inquiries: 0, attributedInquiryToBookingCount: 0, conversionRatePercentage: null, viewToInquiryRatePercentage: null };
+    return {
+      status: "ACTIVE",
+      message: "No listings are selected.",
+      trackingStartedAt: null,
+      listingViews: 0,
+      searchImpressions: 0,
+      attributedConfirmedBookings: 0,
+      convertedSessionsCount: 0,
+      uniqueViewingSessionsCount: 0,
+      inquiries: 0,
+      attributedInquiryToBookingCount: 0,
+      conversionRatePercentage: null,
+      viewToInquiryRatePercentage: null,
+    };
   }
   try {
-    const [counts, firstEvent] = await Promise.all([
+    const [counts, firstEvent, viewingSessions, bookingEvents] = await Promise.all([
       prisma.listingAnalyticsEvent.groupBy({
         by: ["eventType"],
         where: {
@@ -249,11 +268,59 @@ export async function getListingAnalyticsSummary(input: {
         orderBy: { occurredAt: "asc" },
         select: { occurredAt: true },
       }),
+      prisma.listingAnalyticsEvent.findMany({
+        where: {
+          listingId: { in: input.listingIds },
+          eventType: "LISTING_VIEW",
+          isBot: false,
+          occurredAt: { gte: input.startDate, lte: input.endDate },
+          sessionHash: { not: null },
+        },
+        distinct: ["sessionHash"],
+        select: { sessionHash: true },
+      }),
+      prisma.listingAnalyticsEvent.findMany({
+        where: {
+          listingId: { in: input.listingIds },
+          eventType: "CONFIRMED_BOOKING",
+          isBot: false,
+          occurredAt: { gte: input.startDate, lte: input.endDate },
+          sessionHash: { not: null },
+        },
+        select: { sessionHash: true },
+      }),
     ]);
+
     const count = (eventType: StoredEventType) => counts.find((row) => row.eventType === eventType)?._count._all ?? 0;
     const listingViews = count("LISTING_VIEW");
     const attributedConfirmedBookings = count("CONFIRMED_BOOKING");
     const inquiries = count("INQUIRY");
+    const attributedInquiryToBookingCount = count("INQUIRY_TO_CONFIRMED_BOOKING");
+
+    const viewingSessionSet = new Set(
+      viewingSessions.map((s) => s.sessionHash).filter((h): h is string => Boolean(h)),
+    );
+    const uniqueViewingSessionsCount = viewingSessionSet.size;
+
+    // Converted sessions: viewing sessions in this window that generated at least one confirmed booking
+    const convertedSessionSet = new Set<string>();
+    for (const b of bookingEvents) {
+      if (b.sessionHash && viewingSessionSet.has(b.sessionHash)) {
+        convertedSessionSet.add(b.sessionHash);
+      }
+    }
+    const convertedSessionsCount = convertedSessionSet.size;
+
+    // True cohort conversion: converted viewing sessions / total viewing sessions
+    const conversionDenominator = uniqueViewingSessionsCount > 0 ? uniqueViewingSessionsCount : listingViews;
+    const conversionRatePercentage = conversionDenominator > 0
+      ? Math.min(100, Math.round((convertedSessionsCount / conversionDenominator) * 10_000) / 100)
+      : null;
+
+    const viewToInquiryRatePercentage = conversionDenominator > 0
+      ? Math.min(100, Math.round((inquiries / conversionDenominator) * 10_000) / 100)
+      : null;
+
     return {
       status: "ACTIVE",
       message: firstEvent
@@ -263,17 +330,28 @@ export async function getListingAnalyticsSummary(input: {
       listingViews,
       searchImpressions: count("SEARCH_IMPRESSION"),
       attributedConfirmedBookings,
+      convertedSessionsCount,
+      uniqueViewingSessionsCount,
       inquiries,
-      attributedInquiryToBookingCount: count("INQUIRY_TO_CONFIRMED_BOOKING"),
-      conversionRatePercentage: listingViews > 0
-        ? Math.round((attributedConfirmedBookings / listingViews) * 10_000) / 100
-        : null,
-      viewToInquiryRatePercentage: listingViews > 0
-        ? Math.round((inquiries / listingViews) * 10_000) / 100
-        : null,
+      attributedInquiryToBookingCount,
+      conversionRatePercentage,
+      viewToInquiryRatePercentage,
     };
   } catch {
     // Deployments that have not applied the additive telemetry migration remain usable.
-    return { status: "DATA_UNAVAILABLE", message: "Listing analytics storage is not available in this deployment yet.", trackingStartedAt: null, listingViews: 0, searchImpressions: 0, attributedConfirmedBookings: 0, inquiries: 0, attributedInquiryToBookingCount: 0, conversionRatePercentage: null, viewToInquiryRatePercentage: null };
+    return {
+      status: "DATA_UNAVAILABLE",
+      message: "Listing analytics storage is not available in this deployment yet.",
+      trackingStartedAt: null,
+      listingViews: 0,
+      searchImpressions: 0,
+      attributedConfirmedBookings: 0,
+      convertedSessionsCount: 0,
+      uniqueViewingSessionsCount: 0,
+      inquiries: 0,
+      attributedInquiryToBookingCount: 0,
+      conversionRatePercentage: null,
+      viewToInquiryRatePercentage: null,
+    };
   }
 }

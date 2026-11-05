@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 
 const querySchema = z.object({
   propertyId: z.string().min(1).optional(),
+  listingId: z.string().min(1).optional(),
   checkIn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   checkOut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   guests: z.coerce.number().int().min(1).max(100).optional(),
@@ -21,7 +22,10 @@ export const GET = apiHandler(async (req: NextRequest) => {
   const parsed = querySchema.parse(Object.fromEntries(req.nextUrl.searchParams));
   const entitlements = await getHostDashboardEntitlements(actor);
   const data = await hostListingPerformanceService.getListingPerformance(actor, {
-    ...parsed,
+    listingId: parsed.propertyId || parsed.listingId,
+    checkIn: parsed.checkIn,
+    checkOut: parsed.checkOut,
+    guests: parsed.guests,
     includeAdvancedComparisons: entitlements.features.ADVANCED_PROPERTY_COMPARISON,
   });
   if (!data) throw AppError.notFound("No host listing is available for listing performance.");

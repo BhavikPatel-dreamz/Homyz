@@ -177,7 +177,7 @@ class CmsService {
           slug: cleanSlug,
           locale: input.locale || "en",
           status: CmsContentStatus.DRAFT,
-          metadata: (input.metadata as any) || undefined,
+          metadata: input.metadata ? (input.metadata as Prisma.InputJsonValue) : undefined,
           createdById: actor.id,
           updatedById: actor.id,
         },
@@ -191,7 +191,7 @@ class CmsService {
           title: input.title,
           slug: cleanSlug,
           locale: input.locale || "en",
-          payload: validatedPayload,
+          payload: validatedPayload as Prisma.InputJsonValue,
           changeSummary: input.changeSummary || "Initial creation",
           createdById: actor.id,
         },
@@ -285,7 +285,7 @@ class CmsService {
           title: input.title ?? content.title,
           slug: input.slug ?? content.slug,
           locale: input.locale ?? content.locale,
-          payload: validatedPayload,
+          payload: validatedPayload as Prisma.InputJsonValue,
           changeSummary: input.changeSummary || `Updated draft to revision #${nextVersionNumber}`,
           createdById: actor.id,
         },
@@ -506,7 +506,7 @@ class CmsService {
           title: sourceVersion.title,
           slug: sourceVersion.slug,
           locale: sourceVersion.locale,
-          payload: sourceVersion.payload as any,
+          payload: sourceVersion.payload as Prisma.InputJsonValue,
           changeSummary: `Restored snapshot from revision #${sourceVersion.versionNumber}`,
           createdById: actor.id,
         },
@@ -666,7 +666,7 @@ class CmsService {
 
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.CmsContentWhereInput = {};
     if (type) where.type = type;
     if (status) where.status = status;
     if (search) {
@@ -1077,7 +1077,7 @@ class CmsService {
           title: targetTitle,
           slug: targetSlug,
           locale: input.targetLocale,
-          payload: validatedPayload,
+          payload: validatedPayload as Prisma.InputJsonValue,
           changeSummary: `Initial translation cloned from ${source.locale.toUpperCase()} revision #${latestVersion?.versionNumber || 1}`,
           createdById: actor.id,
         },

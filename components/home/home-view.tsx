@@ -662,10 +662,10 @@ export function HomeView({
                           loading="lazy"
                           decoding="async"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-black/5" />
-                        <div className="absolute inset-x-0 bottom-0 p-3 text-white">
-                          <div className="text-base font-medium leading-tight">{location.name}</div>
-                          <div className="mt-1 text-sm text-white/80">{location.subtitle}</div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/5" />
+                        <div className="absolute inset-x-0 bottom-0 p-3 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+                          <div className="text-base font-medium leading-tight text-white">{location.name}</div>
+                          <div className="mt-1 text-sm text-white">{location.subtitle}</div>
                         </div>
                       </div>
                     </Link>

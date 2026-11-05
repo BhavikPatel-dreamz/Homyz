@@ -480,9 +480,9 @@ export function EditorSidebar({
       className={`editor-sidebar ${mobileOpen
         ? "flex h-full w-full overflow-hidden border-0 bg-white px-5 pt-6 sm:px-8 sm:pt-8"
         : "hidden border-r border-transparent [border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1]"
-        } min-w-0 flex-col lg:col-span-1 lg:flex lg:h-full lg:w-auto lg:overflow-hidden lg:px-0 lg:pl-8 lg:pt-10`}
+        } min-w-0 flex-col lg:col-span-1 lg:flex lg:h-full lg:min-h-0 lg:w-auto lg:overflow-hidden lg:px-0 lg:pl-8 lg:pt-10`}
     >
-      <div className={`flex w-full min-w-0 flex-col overflow-hidden ${mobileOpen ? "h-full max-h-none bg-white" : "max-h-[calc(100vh-2rem)] rounded-3xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-xs"} lg:h-full lg:max-h-none lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}>
+      <div className={`flex w-full min-w-0 flex-col overflow-hidden ${mobileOpen ? "h-full max-h-none bg-white" : "max-h-[calc(100vh-2rem)] rounded-3xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-xs"} lg:h-full lg:min-h-0 lg:max-h-none lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}>
         {/* Header Title & Status Badge */}
         <div className="flex shrink-0 flex-col pb-5 lg:pb-9">
           <div className="flex items-center justify-between gap-3">
@@ -606,7 +606,7 @@ export function EditorSidebar({
         {/* Scrollable Sidebar Content Body */}
         <div className="relative min-h-0 flex-1">
           <div
-            className="visible-scrollbar h-full min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain space-y-3 pb-8 pr-1 [scrollbar-gutter:stable] lg:pb-5 lg:pr-3"
+            className="visible-scrollbar h-full min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain space-y-3 pb-8 pr-1 [scrollbar-gutter:stable] lg:pb-10 lg:pr-3"
           >
             {/* Preferences Cards Stack */}
             {editorTab === "preferences" ? (

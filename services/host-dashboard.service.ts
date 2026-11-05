@@ -1080,8 +1080,14 @@ export async function getHostDashboardData(
     : null;
 
   // 7. Authoritative inventory calculations
+  const listingsWithStays = new Set<string>();
+  for (const b of allBookings) {
+    if (b.status === BookingStatus.CONFIRMED) {
+      listingsWithStays.add(b.listingId);
+    }
+  }
   const inventoryListings = scopedListings.filter(
-    (listing) => listing.published && listing.status === "ACTIVE" && !listing.isPaused,
+    (listing) => (listing.published && listing.status === "ACTIVE" && !listing.isPaused) || listingsWithStays.has(listing.id),
   );
   const occupancyInventory = calculateDashboardInventory({
     listings: inventoryListings,
