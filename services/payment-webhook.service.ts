@@ -322,6 +322,7 @@ export async function processPaymentWebhook(
           bookingId: payment.booking.id,
           paymentId: payment.id,
           status: "CAPTURED",
+          role: "guest",
         },
       });
 
@@ -361,8 +362,27 @@ export async function processPaymentWebhook(
           bookingId: payment.booking.id,
           paymentId: payment.id,
           status: result.status,
+          role: "guest",
         },
       });
+
+      if (payment.booking.listing?.hostId && payment.booking.listing.hostId !== payment.booking.userId) {
+        await notificationService.create({
+          userId: payment.booking.listing.hostId,
+          type: NotificationType.BOOKING,
+          title: "Refund Processed",
+          message: `A refund for the reservation at ${payment.booking.listing.title} has been confirmed by the payment provider.`,
+          entityId: payment.booking.id,
+          entityType: "host_booking",
+          link: `/host/bookings/${payment.booking.id}`,
+          metadata: {
+            bookingId: payment.booking.id,
+            paymentId: payment.id,
+            status: result.status,
+            role: "host",
+          },
+        });
+      }
     } catch (err) {
       console.warn("[payment-webhook] Failed to dispatch refund notification:", err);
     }

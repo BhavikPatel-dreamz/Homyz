@@ -1,10 +1,13 @@
 import { AdminInvitationsTable } from "@/components/admin/admin-invitations-table";
 import { AdminManagementTabs } from "@/components/admin/admin-management-tabs";
+import { AdminPageHeader } from "@/components/admin/ui/admin-page-header";
 import { requirePagePermission } from "@/lib/permissions/page-guards";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
 import { adminService } from "@/services/admin.service";
 import { invitationService } from "@/services/invitation.service";
 import { prisma } from "@/lib/db/prisma";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminInvitationsPage(props: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -53,15 +56,15 @@ export default async function AdminInvitationsPage(props: {
   }));
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1>
-          Admin Invitations Management
-        </h1>
-        <p className="mt-1 text-[#727272]">
-          Invite new administrators via email, manage pending setup tokens, and audit account activations.
-        </p>
-      </div>
+    <div className="flex flex-col gap-6 font-sans">
+      <AdminPageHeader
+        title="Admin Invitations Management"
+        description="Invite new administrators via email, manage pending setup tokens, and audit account activations."
+        badge={{
+          label: `${pendingCount} Pending Invitations`,
+          variant: pendingCount > 0 ? "warning" : "neutral",
+        }}
+      />
 
       <AdminManagementTabs />
 

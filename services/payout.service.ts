@@ -3358,7 +3358,13 @@ export async function getHostEarningsOverview(
     // Default monthly: one bucket per day of the selected month
     const mYear = selectedMonthBounds.start.getUTCFullYear();
     const mMonth = selectedMonthBounds.start.getUTCMonth();
-    const totalDays = selectedMonthBounds.end.getUTCDate();
+    const isCurrentMonthSelection =
+      timeframeBounds.endDate.getUTCMonth() === mMonth &&
+      timeframeBounds.endDate.getUTCFullYear() === mYear &&
+      timeframeBounds.endDate.getUTCDate() < selectedMonthBounds.end.getUTCDate();
+    const totalDays = isCurrentMonthSelection
+      ? timeframeBounds.endDate.getUTCDate()
+      : selectedMonthBounds.end.getUTCDate();
     for (let i = 1; i <= totalDays; i++) {
       const d = new Date(Date.UTC(mYear, mMonth, i));
       const dateKey = bookingDateKey(d);
@@ -3635,16 +3641,23 @@ export async function getHostEarningsOverview(
       periodBookingsCount++;
       periodGuestsCount += (b.guests || 1);
 
-      // Source breakdown
-      const nights = Math.max(1, Math.round((b.endDate.getTime() - b.startDate.getTime()) / (24 * 60 * 60 * 1000)));
-      const cleaningPart = b.cleaningFee || 0;
-      const feePart = calc.platformFee || 0;
-      const roomPart = b.nightlyPrice ? b.nightlyPrice * nights : Math.max(0, calc.grossEarnings - cleaningPart);
-      const otherPart = Math.max(0, calc.grossEarnings - roomPart - cleaningPart);
+      // Source breakdown (Net Host Revenue breakdown)
+      const stored = extractStoredHostPayout(b);
+      let cleaningPart = 0;
+      let otherPart = 0;
+      let roomPart = 0;
+      if (stored) {
+        cleaningPart = stored.cleaningFee || 0;
+        otherPart = (stored.extraGuestFee || 0) + (stored.petFee || 0);
+        roomPart = Math.max(0, calc.netPayout - cleaningPart - otherPart);
+      } else {
+        cleaningPart = b.cleaningFee || 0;
+        roomPart = Math.max(0, calc.netPayout - cleaningPart);
+        otherPart = 0;
+      }
 
       srcBookings += roomPart;
       srcCleaning += cleaningPart;
-      srcFees += feePart;
       srcOther += otherPart;
 
       // Listing type breakdown
@@ -3758,17 +3771,21 @@ export async function getHostEarningsOverview(
   const primaryTimeframeNet = selectedBucket.monthlyRecognized;
   const deltaInfo = calculateDelta(primaryTimeframeNet, compNetEarnings);
 
-  const srcTotal = srcBookings + srcCleaning + srcFees + srcOther || primaryTimeframeNet || 1;
+  const srcTotal = srcBookings + srcCleaning + srcOther || primaryTimeframeNet || 1;
+  const bookingsPct = Math.round((srcBookings / srcTotal) * 100);
+  const cleaningPct = Math.round((srcCleaning / srcTotal) * 100);
+  const otherPct = Math.max(0, 100 - bookingsPct - cleaningPct);
+
   const sourceBreakdown: EarningsSourceBreakdown = {
     bookings: srcBookings,
     cleaningFees: srcCleaning,
-    serviceFees: srcFees,
+    serviceFees: 0,
     other: srcOther,
     total: primaryTimeframeNet,
-    bookingsPercentage: Math.round((srcBookings / srcTotal) * 100),
-    cleaningPercentage: Math.round((srcCleaning / srcTotal) * 100),
-    servicePercentage: Math.round((srcFees / srcTotal) * 100),
-    otherPercentage: Math.max(0, 100 - Math.round((srcBookings / srcTotal) * 100) - Math.round((srcCleaning / srcTotal) * 100) - Math.round((srcFees / srcTotal) * 100)),
+    bookingsPercentage: bookingsPct,
+    cleaningPercentage: cleaningPct,
+    servicePercentage: 0,
+    otherPercentage: otherPct,
   };
 
   const lTypeTotal = lTypeEntire + lTypePrivate + lTypeShared + lTypeExperience || primaryTimeframeNet || 1;
@@ -3781,9 +3798,9 @@ export async function getHostEarningsOverview(
 
   const pStatusTotal = statusPaid + statusPending + statusCancelled || primaryTimeframeNet || 1;
   const payoutStatusBreakdown: EarningsPayoutStatusItem[] = [
-    { status: "paid", label: "Paid", amount: statusPaid, percentage: Math.round((statusPaid / pStatusTotal) * 100), color: "#D97706" },
-    { status: "pending", label: "Pending", amount: statusPending, percentage: Math.round((statusPending / pStatusTotal) * 100), color: "#FCD34D" },
-    { status: "cancelled", label: "Cancelled", amount: statusCancelled, percentage: Math.max(0, 100 - Math.round((statusPaid / pStatusTotal) * 100) - Math.round((statusPending / pStatusTotal) * 100)), color: "#CBD5E1" },
+    { status: "paid", label: "Paid", amount: statusPaid, percentage: Math.round((statusPaid / pStatusTotal) * 100), color: "#10B981" },
+    { status: "pending", label: "Pending", amount: statusPending, percentage: Math.round((statusPending / pStatusTotal) * 100), color: "#F59E0B" },
+    { status: "cancelled", label: "Cancelled", amount: statusCancelled, percentage: Math.max(0, 100 - Math.round((statusPaid / pStatusTotal) * 100) - Math.round((statusPending / pStatusTotal) * 100)), color: "#EF4444" },
   ];
 
   const calcDeltaPct = (curr: number, prev: number) => {

@@ -1241,6 +1241,7 @@ export async function updateModerationCase(
     name: string | null;
     email: string | null;
     image: string | null;
+    role?: Role | null;
   } | null = null;
   try {
     // If review action is specified for a review moderation case, apply it via review service
@@ -1317,7 +1318,7 @@ export async function updateModerationCase(
     ) {
       mediaUser = await prisma.user.findUnique({
         where: { id: existing.targetId },
-        select: { id: true, name: true, email: true, image: true },
+        select: { id: true, name: true, email: true, image: true, role: true },
       });
       if (mediaUser) {
         if (
@@ -1808,7 +1809,7 @@ export async function updateModerationCase(
             message: `Your profile photo was removed for violating Homyz profile image policies (${input.resolutionCategory || "Policy Violation"}). Please upload a photo that meets our standards.`,
             entityId: mediaUser.id,
             entityType: "profile-photo-removed",
-            link: `/profile`,
+            link: mediaUser.role === Role.HOST ? `/host/account-settings` : `/profile`,
             metadata: { userId: mediaUser.id, caseId: updated.id },
           })
           .catch(() => undefined);

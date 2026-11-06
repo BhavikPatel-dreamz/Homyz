@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { Role } from "@/generated/prisma/enums";
 import { requirePageRole } from "@/lib/permissions/page-guards";
@@ -6,6 +6,7 @@ import { bookingService } from "@/services/booking.service";
 import { disputeService } from "@/services/dispute.service";
 import { HostHeader } from "@/components/host/host-header";
 import { HostBookingDetailsClient } from "@/components/host/host-booking-details-client";
+import { prisma } from "@/lib/db/prisma";
 
 export async function generateMetadata({
   params,
@@ -27,10 +28,28 @@ export default async function HostBookingDetailPage({
   const { id } = await params;
   const actor = await requirePageRole([Role.HOST, Role.ADMIN]);
 
-  const details = await bookingService.getRequestDetailsForHost(actor, id).catch((err) => {
-    if (err?.status === 404 || err?.statusCode === 404) return null;
+  let details;
+  try {
+    details = await bookingService.getRequestDetailsForHost(actor, id);
+  } catch (err: any) {
+    if (err?.status === 404 || err?.statusCode === 404) {
+      notFound();
+    }
+    if (err?.isGuest) {
+      redirect(`/bookings/${id}`);
+    }
+    if (err?.status === 403 || err?.statusCode === 403) {
+      const isGuest = await prisma.booking.findFirst({
+        where: { id, userId: actor.id },
+        select: { id: true },
+      });
+      if (isGuest) {
+        redirect(`/bookings/${id}`);
+      }
+      notFound();
+    }
     throw err;
-  });
+  }
 
   if (!details) {
     notFound();

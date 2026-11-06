@@ -7,6 +7,10 @@ import { CACHE_KEYS, hashFilters } from "@/lib/redis/keys";
 import { CACHE_TTL } from "@/lib/redis/ttl";
 import { bookingDateKey } from "@/lib/booking/booking-date";
 import { resolveDisputeNotificationDestination } from "@/lib/notifications/dispute-destination";
+import {
+  resolveHostNotificationDestination,
+  resolveNotificationRoute,
+} from "@/lib/notifications/host-destination";
 
 export type NotificationDTO = {
   id: string;
@@ -46,6 +50,58 @@ function toDTO(n: {
   createdAt: Date;
   updatedAt: Date;
 }): NotificationDTO {
+  const metadata = (n.metadata as Record<string, unknown>) || null;
+  const isLicenseOrRegulation =
+    Boolean(
+      n.entityType?.toLowerCase().includes("license") ||
+      n.entityType?.toLowerCase().includes("regulation") ||
+      n.title?.toLowerCase().includes("license") ||
+      n.title?.toLowerCase().includes("regulation")
+    );
+
+  const route = resolveNotificationRoute({
+    id: n.id,
+    type: n.type,
+    title: n.title,
+    message: n.message,
+    entityId: n.entityId,
+    entityType: n.entityType,
+    link: n.link,
+    metadata,
+  });
+
+  const isHostScoped =
+    route.context === "HOST" ||
+    n.entityType === "host_booking" ||
+    metadata?.role === "host" ||
+    n.entityType?.startsWith("listing") ||
+    isLicenseOrRegulation ||
+    n.entityType === "superhost_evaluation" ||
+    n.entityType === "guest_favorite_evaluation" ||
+    n.entityType === "pricing_availability_alert";
+
+  let link = n.link;
+  const needsResolution =
+    isHostScoped &&
+    (!link ||
+      !link.startsWith("/host/") ||
+      (isLicenseOrRegulation && !link.includes("/regulations")));
+
+  if (needsResolution) {
+    link = resolveHostNotificationDestination({
+      id: n.id,
+      type: n.type,
+      title: n.title,
+      message: n.message,
+      entityId: n.entityId,
+      entityType: n.entityType,
+      link: n.link,
+      metadata,
+    });
+  } else if (!link && route.targetUrl) {
+    link = route.targetUrl;
+  }
+
   return {
     id: n.id,
     userId: n.userId,
@@ -56,8 +112,8 @@ function toDTO(n: {
     readAt: n.readAt ? n.readAt.toISOString() : null,
     entityId: n.entityId,
     entityType: n.entityType,
-    link: n.link,
-    metadata: (n.metadata as Record<string, unknown>) || null,
+    link,
+    metadata,
     createdAt: n.createdAt.toISOString(),
     updatedAt: n.updatedAt.toISOString(),
   };
@@ -343,6 +399,8 @@ async function syncRealEventsForUser(userId: string): Promise<void> {
                 bookingId: b.id,
                 listingId: b.listingId,
                 status: b.status,
+                role: "guest",
+                recipientRole: "guest",
               },
             },
           });
@@ -404,11 +462,7 @@ async function syncRealEventsForUser(userId: string): Promise<void> {
 
             let title = `New Reservation: ${listingTitle}`;
             let message = `${guestName} booked ${listingTitle} from ${startStr} to ${endStr}.`;
-            const link = hb.status === BookingStatus.PENDING
-              ? "/host/today?tab=pending"
-              : hb.status === BookingStatus.CANCELLED
-                ? "/host/today?tab=cancelled"
-                : "/host/today?tab=upcoming";
+            const link = `/host/bookings/${hb.id}`;
 
             if (isCancelled) {
               title = `Reservation Cancelled: ${listingTitle}`;
@@ -435,6 +489,7 @@ async function syncRealEventsForUser(userId: string): Promise<void> {
                   guestName,
                   status: hb.status,
                   role: "host",
+                  recipientRole: "host",
                 },
               },
             });
@@ -471,7 +526,9 @@ async function syncRealEventsForUser(userId: string): Promise<void> {
               type: NotificationType.SYSTEM,
               title: "Complete your profile information",
               message: "Please add your birth date and contact number to complete your account setup and unlock full guest access.",
-              link: "/profile/tab/profile_management/profile_information",
+              link: user?.role === Role.HOST
+                ? "/host/account-settings"
+                : "/profile/tab/profile_management/profile_information",
               entityType: "profile_completion",
             },
           });
@@ -496,7 +553,9 @@ async function syncRealEventsForUser(userId: string): Promise<void> {
               type: NotificationType.PROMOTION,
               title: "Invite Friends & Earn Rewards",
               message: `Share your referral code ${user.referralCode} with friends to earn points toward your next getaway!`,
-              link: "/profile/tab/invite",
+              link: user?.role === Role.HOST
+                ? "/host/refer"
+                : "/profile/tab/invite",
               entityType: "referral_program",
             },
           });
@@ -716,11 +775,13 @@ async function sendHostMessageNotification(params: {
     title: `Message from ${params.senderName}`,
     message: params.messagePreview,
     entityId: params.conversationId,
-    entityType: "conversation",
+    entityType: "host_conversation",
     link: `/host/messages?id=${params.conversationId}`,
     metadata: {
       conversationId: params.conversationId,
       senderName: params.senderName,
+      role: "host",
+      recipientRole: "host",
     },
   });
 }
@@ -732,17 +793,20 @@ async function sendMessageNotification(params: {
   conversationId: string;
   isHostRecipient: boolean;
 }): Promise<NotificationDTO> {
+  const role = params.isHostRecipient ? "host" : "guest";
   return create({
     userId: params.recipientUserId,
     type: NotificationType.MESSAGE,
     title: `Message from ${params.senderName}`,
     message: params.messagePreview,
     entityId: params.conversationId,
-    entityType: "conversation",
+    entityType: params.isHostRecipient ? "host_conversation" : "conversation",
     link: params.isHostRecipient ? `/host/messages?id=${params.conversationId}` : `/messages?id=${params.conversationId}`,
     metadata: {
       conversationId: params.conversationId,
       senderName: params.senderName,
+      role,
+      recipientRole: role,
     },
   });
 }

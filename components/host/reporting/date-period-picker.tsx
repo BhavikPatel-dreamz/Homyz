@@ -228,7 +228,7 @@ export function DatePeriodPicker({
   return (
     <div
       ref={containerRef}
-      className={`relative inline-flex h-11 sm:h-12 w-full sm:w-auto shrink-0 items-center justify-between rounded-full border bg-white shadow-2xs transition-all ${
+      className={`relative inline-flex h-11 w-full sm:w-auto shrink-0 items-center justify-between rounded-full border bg-white shadow-2xs transition-all ${
         isOpen
           ? "border-[#1F1F1F] ring-2 ring-[#1F1F1F]/5"
           : "border-[#D7D7D7] hover:border-[#1F1F1F]"

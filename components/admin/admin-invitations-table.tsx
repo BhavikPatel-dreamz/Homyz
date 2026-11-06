@@ -1108,7 +1108,7 @@ export function AdminInvitationsTable({
 
             <p className="text-xs text-[var(--muted-foreground)] mb-5 leading-relaxed">
               Are you sure you want to revoke the invitation for{" "}
-              <strong className="text-muted-foreground">{revokeConfirmInv.email}</strong>?
+              <span className="font-medium text-muted-foreground">{revokeConfirmInv.email}</span>?
               The invitation link will become permanently invalid and cannot be used to set up an administrator account.
             </p>
 

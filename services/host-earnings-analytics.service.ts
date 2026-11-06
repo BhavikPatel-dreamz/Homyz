@@ -245,6 +245,7 @@ export const hostEarningsAnalyticsService = {
     const trendMap = new Map<string, { accommodation: number; net: number; fees: number; bookings: number }>();
 
     for (const booking of bookings as AnalyticsBooking[]) {
+      if (booking.endDate > now) continue;
       const payout = extractStoredHostPayout(booking);
       if (!payout || !isStoredBookingPayoutEligible(booking)) {
         unavailableFinancialSnapshotCount++;
@@ -313,7 +314,7 @@ export const hostEarningsAnalyticsService = {
           const point = trendMap.get(dateKey) ?? { accommodation: 0, net: 0, fees: 0, bookings: 0 };
           point.accommodation += dailyAccom;
           point.net += dailyNet;
-          point.fees += dailyFee;
+          point.fees += dailyFee; // point.fees += payout.hostServiceFee
           point.bookings += 1;
           trendMap.set(dateKey, point);
         }

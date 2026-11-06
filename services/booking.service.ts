@@ -1103,6 +1103,13 @@ async function getRequestDetailsForHost(actor: AuthUser, id: string): Promise<Ho
           address: true,
           photos: true,
           price: true,
+          coHosts: {
+            where: {
+              userId: actor.id,
+              status: ListingCoHostStatus.ACCEPTED,
+            },
+            select: { id: true },
+          },
         },
       },
       user: {
@@ -1121,7 +1128,18 @@ async function getRequestDetailsForHost(actor: AuthUser, id: string): Promise<Ho
     throw AppError.notFound("Booking request not found");
   }
 
-  if (booking.listing.hostId !== actor.id && actor.role !== Role.ADMIN) {
+  const isOwner = booking.listing.hostId === actor.id;
+  const isAcceptedCoHost = (booking.listing.coHosts?.length ?? 0) > 0;
+  const isAdmin = actor.role === Role.ADMIN;
+  const isGuest = booking.userId === actor.id;
+
+  if (!isOwner && !isAcceptedCoHost && !isAdmin) {
+    if (isGuest) {
+      const err = AppError.forbidden("You are the guest on this booking request");
+      (err as any).isGuest = true;
+      (err as any).bookingId = booking.id;
+      throw err;
+    }
     throw AppError.forbidden("You do not have permission to view this booking request");
   }
 
@@ -1213,7 +1231,20 @@ async function acceptBookingRequest(
       throw AppError.notFound("Booking request not found");
     }
 
-    if (booking.listing.hostId !== actor.id) {
+    const isOwner = booking.listing.hostId === actor.id;
+    let isAcceptedCoHost = false;
+    if (!isOwner && actor.role !== Role.ADMIN) {
+      const coHost = await tx.listingCoHost.findFirst({
+        where: {
+          listingId: booking.listingId,
+          userId: actor.id,
+          status: ListingCoHostStatus.ACCEPTED,
+        },
+      });
+      isAcceptedCoHost = !!coHost;
+    }
+
+    if (!isOwner && !isAcceptedCoHost && actor.role !== Role.ADMIN) {
       throw AppError.forbidden("You do not have permission to accept this booking request");
     }
 
@@ -1470,7 +1501,20 @@ async function rejectBookingRequest(
       include: { listing: true, user: true },
     });
     if (!b) throw AppError.notFound("Booking request not found");
-    if (b.listing.hostId !== actor.id) {
+    const isOwner = b.listing.hostId === actor.id;
+    let isAcceptedCoHost = false;
+    if (!isOwner && actor.role !== Role.ADMIN) {
+      const coHost = await tx.listingCoHost.findFirst({
+        where: {
+          listingId: b.listingId,
+          userId: actor.id,
+          status: ListingCoHostStatus.ACCEPTED,
+        },
+      });
+      isAcceptedCoHost = !!coHost;
+    }
+
+    if (!isOwner && !isAcceptedCoHost && actor.role !== Role.ADMIN) {
       throw AppError.forbidden("You do not have permission to reject this booking request");
     }
     if (b.status !== BookingStatus.PENDING) {
@@ -1636,6 +1680,7 @@ async function approveAllPendingForHost(actor: AuthUser): Promise<{ approved: nu
           bookingId: b.id,
           listingId: b.listing.id,
           status: BookingStatus.CONFIRMED,
+          role: "guest",
         },
       });
 
@@ -5551,8 +5596,27 @@ async function changeBookingReservation(
         bookingId: updatedBooking.id,
         listingId: updatedBooking.listingId,
         status: updatedBooking.status,
+        role: "guest",
       },
     });
+
+    if (updatedBooking.listing?.hostId && updatedBooking.listing.hostId !== updatedBooking.userId) {
+      await notificationService.create({
+        userId: updatedBooking.listing.hostId,
+        type: NotificationType.BOOKING,
+        title: `Reservation Updated: ${updatedBooking.listing.title}`,
+        message: `Reservation dates for ${updatedBooking.listing.title} have been changed to ${bookingDateKey(checkIn)} – ${bookingDateKey(checkOut)}.`,
+        entityId: updatedBooking.id,
+        entityType: "host_booking",
+        link: `/host/bookings/${updatedBooking.id}`,
+        metadata: {
+          bookingId: updatedBooking.id,
+          listingId: updatedBooking.listingId,
+          status: updatedBooking.status,
+          role: "host",
+        },
+      });
+    }
   } catch (err) {
     console.warn("Failed to send reservation update notification:", err);
   }

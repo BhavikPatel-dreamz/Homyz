@@ -15,6 +15,11 @@ import { NotificationsSkeleton } from "@/components/dashboard/section-skeletons"
 import { NotificationType } from "@/generated/prisma/enums";
 import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 import { publishUnreadNotificationCount } from "@/lib/notifications/unread-count-store";
+import {
+  resolveHostNotificationDestination,
+  resolveNotificationDestination,
+  resolveNotificationRoute,
+} from "@/lib/notifications/host-destination";
 
 type FilterTab = "ALL" | "UNREAD" | NotificationType;
 
@@ -77,7 +82,8 @@ function getTypeBadge(
       }
       const isHost =
         entityType === "host_booking" ||
-        (metadata as { role?: string } | null)?.role === "host";
+        (metadata as { role?: string } | null)?.role === "host" ||
+        resolveNotificationRoute({ type, entityType, metadata }).context === "HOST";
 
       if (isHost) {
         return {
@@ -301,7 +307,20 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
   };
 
   const handleNotificationClick = (item: NotificationDTO) => {
-    if (!item.link) return;
+    const route = resolveNotificationRoute(item, { currentMode: "guest" });
+    const isHostNotification =
+      route.context === "HOST" ||
+      item.entityType === "host_booking" ||
+      (item.metadata as { role?: string } | null)?.role === "host" ||
+      item.link?.startsWith("/host/");
+
+    const destination =
+      route.targetUrl ||
+      (isHostNotification
+        ? resolveHostNotificationDestination(item)
+        : (item.link || resolveNotificationDestination(item, { mode: "guest" })));
+
+    if (!destination) return;
 
     // If unread, mark as read immediately
     if (!item.isRead) {
@@ -334,7 +353,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       });
     }
 
-    router.push(item.link);
+    router.push(destination);
   };
 
   // Filter items

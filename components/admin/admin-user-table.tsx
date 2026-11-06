@@ -1181,7 +1181,7 @@ export function AdminUserTable({
             </div>
 
             <p className="text-xs text-[var(--muted-foreground)] mb-5 leading-relaxed">
-              Are you sure you want to permanently delete <strong className="text-muted-foreground">{deleteUser.name || deleteUser.email}</strong> ({deleteUser.email})? All active sessions and administrator access will be revoked immediately. This action cannot be undone.
+              Are you sure you want to permanently delete <span className="font-medium text-muted-foreground">{deleteUser.name || deleteUser.email}</span> ({deleteUser.email})? All active sessions and administrator access will be revoked immediately. This action cannot be undone.
             </p>
 
             <div className="flex items-center justify-end gap-2">
@@ -1241,17 +1241,17 @@ export function AdminUserTable({
               {statusConfirmUser.targetStatus === "SUSPENDED" ? (
                 <>
                   Are you sure you want to suspend administrator{" "}
-                  <strong className="text-muted-foreground">
+                  <span className="font-medium text-muted-foreground">
                     {statusConfirmUser.user.name || statusConfirmUser.user.email}
-                  </strong>{" "}
+                  </span>{" "}
                   ({statusConfirmUser.user.email})? They will immediately lose administrative portal access and all active sessions will be terminated.
                 </>
               ) : (
                 <>
                   Are you sure you want to activate administrator{" "}
-                  <strong className="text-muted-foreground">
+                  <span className="font-medium text-muted-foreground">
                     {statusConfirmUser.user.name || statusConfirmUser.user.email}
-                  </strong>{" "}
+                  </span>{" "}
                   ({statusConfirmUser.user.email})? They will regain administrative portal access based on their assigned permissions.
                 </>
               )}
@@ -1314,9 +1314,9 @@ export function AdminUserTable({
 
             <p className="text-xs text-[var(--muted-foreground)] mb-5 leading-relaxed">
               Are you sure you want to revoke all active sessions for{" "}
-              <strong className="text-muted-foreground">
+              <span className="font-medium text-muted-foreground">
                 {revokeSessionsUser.name || revokeSessionsUser.email}
-              </strong>{" "}
+              </span>{" "}
               ({revokeSessionsUser.email})? The user will be immediately logged out of all active web and mobile sessions and will be required to authenticate again.
             </p>
 

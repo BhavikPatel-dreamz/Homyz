@@ -453,7 +453,7 @@ async function verifyForListing(actor: AuthUser, listingId: string, input: strin
         : (result.error ?? "Your license is not currently eligible for automatic approval."),
     entityId: listingId,
     entityType: `SAUDI_LICENSE_VERIFICATION:${result.status}`,
-    link: `/host/listings/${listingId}`,
+    link: `/host/listings/${listingId}/regulations`,
   });
 
   // A revoked, suspended, invalid, or expired licence applies to every linked
@@ -499,7 +499,7 @@ async function verifyForListing(actor: AuthUser, listingId: string, input: strin
           message: "Your property was unpublished because its linked Saudi license is no longer valid. Reverify a renewed license before requesting publication again.",
           entityId: linkedListing.id,
           entityType: `SAUDI_LICENSE_BLOCKED:${saved.license.id}`,
-          link: `/host/listings/${linkedListing.id}`,
+          link: `/host/listings/${linkedListing.id}/regulations`,
         }),
       ]));
     }
@@ -851,7 +851,7 @@ async function submitFinal(actor: AuthUser, listingId: string, requestedMethod: 
     message: "Your listing was approved and published through Saudi license verification.",
     entityId: listingId,
     entityType: "SAUDI_LICENSE_AUTO_APPROVAL",
-    link: `/host/listings/${listingId}`,
+    link: `/host/listings/${listingId}/regulations`,
   });
   return published;
 }
@@ -893,7 +893,7 @@ async function enforceExpiry() {
           message: "Your property was unpublished because its Saudi license has expired. Renew and verify it before requesting publication again.",
           entityId: link.listing.id,
           entityType: `SAUDI_LICENSE_EXPIRED:${license.id}`,
-          link: `/host/listings/${link.listing.id}`,
+          link: `/host/listings/${link.listing.id}/regulations`,
         });
       }
     }
