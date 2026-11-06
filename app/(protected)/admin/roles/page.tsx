@@ -1,7 +1,10 @@
 import { RoleMatrixManager } from "@/components/admin/role-matrix-manager";
+import { AdminPageHeader } from "@/components/admin/ui/admin-page-header";
 import { requirePagePermission } from "@/lib/permissions/page-guards";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
 import { adminService } from "@/services/admin.service";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminRolesPage() {
   await requirePagePermission(PERMISSIONS.ROLES_VIEW);
@@ -12,15 +15,15 @@ export default async function AdminRolesPage() {
   ]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1>
-          Roles & Permissions Matrix
-        </h1>
-        <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
-          Configure administrative roles and define granular permission boundaries for each module.
-        </p>
-      </div>
+    <div className="flex flex-col gap-6 font-sans">
+      <AdminPageHeader
+        title="Roles & Permissions Matrix"
+        description="Configure administrative roles and define granular permission boundaries for each module."
+        badge={{
+          label: `${roles.length} Configured Roles`,
+          variant: "neutral",
+        }}
+      />
 
       <RoleMatrixManager
         initialRoles={roles}

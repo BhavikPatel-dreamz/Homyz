@@ -270,7 +270,7 @@ export function ActivityLogViewer({
         </div>
 
         <div className="flex items-center justify-between pt-2 border-t border-[var(--border-subtle)] text-[11px] text-[var(--muted-foreground)]">
-          <span>Displaying <strong>{filtered.length}</strong> of <strong>{pagination.total}</strong> total audit records</span>
+          <span>Displaying <span className="font-medium text-zinc-900 dark:text-zinc-100">{filtered.length}</span> of <span className="font-medium text-zinc-900 dark:text-zinc-100">{pagination.total}</span> total audit records</span>
           {hasActiveFilters && <span>Active Filters Applied</span>}
         </div>
       </div>

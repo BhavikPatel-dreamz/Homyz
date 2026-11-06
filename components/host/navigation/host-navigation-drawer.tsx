@@ -13,6 +13,10 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { lockBodyScroll } from "@/lib/ui/body-scroll-lock";
+import { HostDrawerNotifications } from "./host-drawer-notifications";
+
+export type HostDrawerView = "MENU" | "NOTIFICATIONS";
+export { HostDrawerNotifications };
 
 const drawerNavigationItemBaseClass =
   "flex min-h-12 w-full items-center rounded-xl px-3.5 py-2 text-base font-medium leading-5 transition cursor-pointer text-left md:text-[15px]";
@@ -48,14 +52,90 @@ export interface HostNavigationDrawerProps {
 export interface DrawerHeaderProps {
   onClose: () => void;
   unreadCount?: number | null;
-  onNotificationsClick: () => void;
+  onNotificationsClick?: () => void;
+  view?: HostDrawerView;
+  onBackToMenu?: () => void;
 }
 
 export function DrawerHeader({
   onClose,
   unreadCount,
   onNotificationsClick,
+  view = "MENU",
+  onBackToMenu,
 }: DrawerHeaderProps) {
+  if (view === "NOTIFICATIONS") {
+    return (
+      <div className="flex items-center justify-between px-6 sm:px-7 pt-6 sm:pt-7 pb-4 shrink-0 border-b border-zinc-100 dark:border-zinc-800">
+        <div className="flex items-center gap-2 min-w-0">
+          {/* Back button returning to Menu */}
+          <button
+            type="button"
+            onClick={onBackToMenu}
+            className="size-10 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 transition cursor-pointer -ml-2 shrink-0"
+            aria-label="Back to host menu"
+            title="Back to menu"
+          >
+            <svg
+              className="size-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 19.5L8.25 12l7.5-7.5"
+              />
+            </svg>
+          </button>
+
+          <h2
+            id="host-drawer-heading"
+            className="text-2xl sm:text-3xl font-medium tracking-tight text-zinc-900 dark:text-zinc-100 truncate"
+          >
+            Notifications
+          </h2>
+
+          {unreadCount !== null && unreadCount !== undefined && unreadCount > 0 && (
+            <span
+              aria-hidden="true"
+              className="flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-medium text-white shadow-2xs shrink-0"
+            >
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </div>
+
+        {/* Circular Close Button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="size-10 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 transition cursor-pointer shrink-0 ml-2"
+          aria-label="Close menu"
+          title="Close menu"
+        >
+          <svg
+            className="size-4.5 pointer-events-none"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-between px-6 sm:px-7 pt-6 sm:pt-7 pb-4 shrink-0">
       <h2
@@ -212,6 +292,7 @@ export interface HostResourcesCardProps {
 }
 
 export function HostResourcesCard({ onGetStarted, onSwitchTraveling }: HostResourcesCardProps) {
+  // Get started link to /host/onboarding for new hosts
   const handleSwitchTraveling = onSwitchTraveling ?? onGetStarted;
 
   return (
@@ -609,13 +690,52 @@ export function HostNavigationDrawer({
   const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isRendered, setIsRendered] = useState(false);
+  const [activeView, setActiveView] = useState<HostDrawerView>("MENU");
+  const menuScrollRef = useRef<HTMLDivElement>(null);
+  const savedMenuScrollTopRef = useRef<number>(0);
+  const activeViewRef = useRef<HostDrawerView>("MENU");
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    activeViewRef.current = activeView;
+  }, [activeView]);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   const router = useRouter();
   const pathname = usePathname();
   const drawerRef = useRef<HTMLElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+
+  const handleOpenNotifications = useCallback(() => {
+    if (menuScrollRef.current) {
+      savedMenuScrollTopRef.current = menuScrollRef.current.scrollTop;
+    }
+    setActiveView("NOTIFICATIONS");
+  }, []);
+
+  const handleBackToMenu = useCallback(() => {
+    setActiveView("MENU");
+    requestAnimationFrame(() => {
+      if (menuScrollRef.current) {
+        menuScrollRef.current.scrollTop = savedMenuScrollTopRef.current;
+      }
+    });
+  }, []);
+
+  // Reset to default MENU view when drawer closes
+  useEffect(() => {
+    if (!isOpen) {
+      const timer = setTimeout(() => {
+        setActiveView("MENU");
+        savedMenuScrollTopRef.current = 0;
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     setMounted(true);
@@ -664,6 +784,11 @@ export function HostNavigationDrawer({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        if (activeViewRef.current === "NOTIFICATIONS") {
+          e.preventDefault();
+          handleBackToMenu();
+          return;
+        }
         onCloseRef.current();
         return;
       }
@@ -694,7 +819,7 @@ export function HostNavigationDrawer({
         window.requestAnimationFrame(() => previousFocus.focus());
       }
     };
-  }, [isOpen]);
+  }, [isOpen, handleBackToMenu]);
 
   const handleNavigate = useCallback(
     (href: string) => {
@@ -752,11 +877,19 @@ export function HostNavigationDrawer({
         <DrawerHeader
           onClose={onClose}
           unreadCount={unreadCount}
-          onNotificationsClick={() => handleNavigate("/profile/tab/notifications")}
+          onNotificationsClick={handleOpenNotifications}
+          view={activeView}
+          onBackToMenu={handleBackToMenu}
         />
 
-        {/* Scrollable Middle Content */}
-        <div className="flex-1 overflow-y-auto px-6 sm:px-7 py-2 space-y-5 custom-scrollbar">
+        {/* View 1: Host Menu Content */}
+        <div
+          ref={menuScrollRef}
+          className={`flex-1 overflow-y-auto px-6 sm:px-7 py-2 space-y-5 custom-scrollbar ${
+            activeView === "MENU" ? "block" : "hidden"
+          }`}
+          aria-hidden={activeView !== "MENU"}
+        >
           {/* User Profile Card */}
           <DrawerProfile
             user={user}
@@ -779,8 +912,24 @@ export function HostNavigationDrawer({
           />
         </div>
 
-        {/* Footer */}
-        <DrawerFooter onLogout={handleLogout} />
+        {/* View 2: Host Notifications Content */}
+        <div
+          className={`flex-1 flex flex-col min-h-0 overflow-hidden ${
+            activeView === "NOTIFICATIONS" ? "flex" : "hidden"
+          }`}
+          aria-hidden={activeView !== "NOTIFICATIONS"}
+        >
+          <HostDrawerNotifications
+            isActive={activeView === "NOTIFICATIONS"}
+            onClose={onClose}
+            onNavigate={handleNavigate}
+          />
+        </div>
+
+        {/* Footer (Only in MENU view) */}
+        {activeView === "MENU" && (
+          <DrawerFooter onLogout={handleLogout} />
+        )}
       </aside>
     </div>,
     document.body

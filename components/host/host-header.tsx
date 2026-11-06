@@ -11,6 +11,7 @@ export {
   DrawerNavigation,
   DrawerFooter,
   HostResourcesCard,
+  HostDrawerNotifications,
   type HostNavigationDrawerProps,
 } from "./navigation/host-navigation-drawer";
 

@@ -143,7 +143,7 @@ export function PropertySelector({
         onClick={() => setIsOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`group flex h-11 sm:h-12 w-full sm:w-auto sm:min-w-[190px] lg:min-w-[220px] lg:max-w-[300px] shrink-0 items-center justify-between gap-2.5 sm:gap-3 rounded-full border bg-white px-3 sm:px-3.5 text-left text-xs sm:text-sm font-medium transition-all shadow-2xs cursor-pointer ${isOpen
+        className={`group flex h-11 w-full sm:w-auto sm:min-w-[190px] lg:min-w-[220px] lg:max-w-[300px] shrink-0 items-center justify-between gap-2.5 sm:gap-3 rounded-full border bg-white px-3 sm:px-3.5 text-left text-xs sm:text-sm font-medium transition-all shadow-2xs cursor-pointer ${isOpen
             ? "border-[#1F1F1F] ring-2 ring-[#1F1F1F]/5"
             : "border-[#D7D7D7] hover:border-[#1F1F1F]"
           } disabled:cursor-not-allowed disabled:opacity-50`}

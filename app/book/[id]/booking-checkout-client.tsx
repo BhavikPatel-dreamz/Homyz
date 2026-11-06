@@ -1118,7 +1118,7 @@ export function BookingCheckoutClient({
                       <div role="status" className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-xs sm:text-sm text-amber-900 shadow-2xs">
                         <div className="flex items-center gap-2 font-medium">
                           <span className="inline-block size-2 rounded-full bg-amber-500 animate-pulse" />
-                          {t("book_mock_payment_notice", "This is a mock payment step. No real money will be charged.")}
+                          <span>Test payment mode: {t("book_mock_payment_notice", "This is a mock payment step. No real money will be charged.")}</span>
                         </div>
                         <p className="mt-1 text-xs text-amber-800 leading-relaxed">
                           No payment is processed in test mode. No real payment will be processed. Do not enter a real card. Use mock test card <span className="font-mono font-medium">4242 4242 4242 4242</span>, expiry <span className="font-mono font-medium">12/30</span>, CVC <span className="font-mono font-medium">123</span>.
@@ -1147,7 +1147,7 @@ export function BookingCheckoutClient({
                             <div className="mt-6">
                               <div>
                                 <label htmlFor="mock-card-number" className="mb-3 block text-base font-normal text-[#1F1F1F]">
-                                  {t("book_card_number", "Card number")} *
+                                  {t("book_card_number", "Card Number *")}
                                 </label>
                                 <div className="relative">
                                   <input
@@ -1187,7 +1187,7 @@ export function BookingCheckoutClient({
                                 </div>
                                 <div>
                                   <label htmlFor="mock-card-cvc" className="mb-3 block text-base font-normal text-[#1F1F1F]">
-                                    {t("book_cvv", "CVV")} *
+                                    {t("book_card_code", "Card Code (CVC) *")}
                                   </label>
                                   <input
                                     id="mock-card-cvc"
@@ -1263,7 +1263,7 @@ export function BookingCheckoutClient({
                               className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
                             />
                             <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-3">
-                              <span className="text-base font-medium text-[#1f1f1f]">mada</span>
+                              <span className="text-base font-medium text-[#1f1f1f]">Local gateways (mada)</span>
                               <span className="text-xs text-zinc-500">{t("checkout_payment_deferred", "(mock/deferred)")}</span>
                             </div>
                           </label>

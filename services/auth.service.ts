@@ -139,12 +139,18 @@ async function register(input: RegisterInput): Promise<PublicUser> {
 
     if (referredById) {
       try {
+        const referrer = await prisma.user.findUnique({
+          where: { id: referredById },
+          select: { role: true },
+        });
+        const referralLink = referrer?.role === Role.HOST ? "/host/refer" : "/profile/tab/invite";
+
         await notificationService.create({
           userId: referredById,
           type: NotificationType.PROMOTION,
           title: "Friend Joined Homyz!",
           message: `${input.name || "A friend"} just joined Homyz using your referral link. You'll receive points after their first stay!`,
-          link: "/profile/tab/invite",
+          link: referralLink,
           entityType: "referral_signup",
           metadata: { referredUserId: user.id },
         });

@@ -1,5 +1,5 @@
 import { Suspense, type ReactNode } from "react";
-import { forbidden, notFound } from "next/navigation";
+import { forbidden, notFound, redirect } from "next/navigation";
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { Role } from "@/generated/prisma/enums";
 import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
@@ -38,8 +38,12 @@ async function ListingEditorData({ params }: Pick<HostListingLayoutProps, "param
 
   const listing = await listingService.getEditorWorkspaceListing(listingId);
 
-  if (!listing || listing.deletedAt) {
+  if (!listing) {
     notFound();
+  }
+
+  if (listing.deletedAt) {
+    redirect("/host/listings");
   }
 
   const isAcceptedCoHost = listing.coHosts.some(

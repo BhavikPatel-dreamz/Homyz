@@ -334,35 +334,25 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
     );
 
   return (
-    <div className="space-y-6 sm:space-y-8 pb-12 w-full min-w-0">
+    <div className="space-y-6 sm:space-y-7 pb-12 w-full min-w-0">
       {/* ── Section A: Header & Compact Unified Toolbar ── */}
       <header className="space-y-4">
-        <div>
-          <p className="text-sm sm:text-base font-medium text-[#727272]">Hosting</p>
-          <h1 className="mt-1 text-2xl min-[480px]:text-3xl sm:text-4xl font-medium tracking-tight text-[#1f1f1f]">
-            Earnings
-          </h1>
-          <p className="mt-1.5 max-w-2xl text-xs sm:text-sm text-[#727272] leading-relaxed">
-            Review realized payouts, reporting periods, and property performance from verified financial records.
-          </p>
-        </div>
-
         {/* Compact Unified Toolbar */}
-        <div className="flex flex-col gap-2.5 rounded-2xl border border-zinc-200 bg-white p-2.5 shadow-2xs sm:p-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:flex-wrap lg:flex-nowrap flex-1 min-w-0">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between w-full">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
             {/* Left: Searchable Property Selector */}
-            <div className="w-full sm:w-auto sm:min-w-[200px] lg:max-w-xs">
+            <div className="w-full sm:w-auto">
               <PropertySelector
                 listings={reporting.listings}
                 selectedListingId={reporting.selectedListingId}
                 onSelect={(id) => update({ propertyId: id })}
-                className="w-full"
+                className="w-full sm:w-auto"
                 align="left"
               />
             </div>
 
             {/* Center: Reporting Period / Date Range Picker */}
-            <div className="w-full sm:w-auto sm:min-w-[200px] lg:max-w-xs">
+            <div className="w-full sm:w-auto">
               <DatePeriodPicker
                 value={{
                   timeframe: activeTimeframe,
@@ -376,8 +366,8 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
                 }}
                 onChange={handlePeriodChange}
                 displayLabel={reporting.timeframeLabel || reporting.monthLabel}
-                className="w-full"
-                align="right"
+                className="w-full sm:w-auto"
+                align="left"
               />
             </div>
           </div>
@@ -387,10 +377,11 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
             <button
               type="button"
               onClick={() => setShowCompareModal(true)}
-              className={`group inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full min-h-[44px] sm:min-h-[48px] border px-4 py-2 text-sm font-normal transition-all duration-300 cursor-pointer ${reporting.comparison?.enabled
-                ? " bg-[#1f1f1f] text-white border border-[#1f1f1f] hover:border-[#FCDF9C] hover:bg-[#FCDF9C] hover:text-[#1f1f1f]"
-                : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50"
-                }`}
+              className={`group inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full h-11 border px-4 text-xs sm:text-sm font-medium transition-all duration-200 shadow-2xs cursor-pointer ${
+                reporting.comparison?.enabled
+                  ? "bg-[#1f1f1f] text-white border-[#1f1f1f] hover:border-[#FCDF9C] hover:bg-[#FCDF9C] hover:text-[#1f1f1f]"
+                  : "border-[#D7D7D7] bg-white text-zinc-800 hover:border-[#1F1F1F] hover:bg-zinc-50"
+              }`}
             >
               <svg
                 className="size-4 shrink-0 transition-transform group-hover:scale-105"
@@ -415,7 +406,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
                 type="button"
                 onClick={() => handleApplyComparison(null)}
                 title="Clear comparison"
-                className="flex size-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors cursor-pointer"
+                className="flex size-9 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors cursor-pointer border border-zinc-200"
               >
                 <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <line x1="18" y1="6" x2="6" y2="18" />
